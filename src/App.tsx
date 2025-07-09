@@ -12,6 +12,7 @@ import Library from "@/pages/Library";
 import Challenges from "@/pages/Challenges";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
+import Inbox from "./pages/Inbox";
 
 const queryClient = new QueryClient();
 
@@ -67,6 +68,11 @@ const AppRoutes = () => {
       <Route path="/library" element={
         <ProtectedRoute>
           <Library />
+        </ProtectedRoute>
+      } />
+      <Route path="/inbox" element={
+        <ProtectedRoute>
+          <Inbox />
         </ProtectedRoute>
       } />
       <Route path="/challenges" element={

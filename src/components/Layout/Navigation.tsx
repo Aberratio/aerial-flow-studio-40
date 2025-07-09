@@ -15,6 +15,7 @@ const Navigation = () => {
     { path: '/library', icon: BookOpen, label: 'Library' },
     { path: '/challenges', icon: Trophy, label: 'Challenges' },
     { path: '/profile', icon: User, label: 'Profile' },
+    { path: '/inbox', icon: User, label: 'Inbox' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
