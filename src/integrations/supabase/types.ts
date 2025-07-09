@@ -104,6 +104,7 @@ export type Database = {
           image_url: string | null
           instructions: string | null
           name: string
+          tags: string[] | null
           updated_at: string | null
           video_url: string | null
         }
@@ -116,6 +117,7 @@ export type Database = {
           image_url?: string | null
           instructions?: string | null
           name: string
+          tags?: string[] | null
           updated_at?: string | null
           video_url?: string | null
         }
@@ -128,6 +130,7 @@ export type Database = {
           image_url?: string | null
           instructions?: string | null
           name?: string
+          tags?: string[] | null
           updated_at?: string | null
           video_url?: string | null
         }

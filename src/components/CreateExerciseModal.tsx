@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Upload, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -24,8 +25,10 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     instructions: '',
     difficulty_level: '',
     image_url: '',
-    video_url: ''
+    video_url: '',
+    tags: [] as string[]
   });
+  const [tagInput, setTagInput] = useState('');
 
   // Update form when editing a figure
   useEffect(() => {
@@ -36,7 +39,8 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         instructions: editingFigure.instructions || '',
         difficulty_level: editingFigure.difficulty_level || '',
         image_url: editingFigure.image_url || '',
-        video_url: editingFigure.video_url || ''
+        video_url: editingFigure.video_url || '',
+        tags: editingFigure.tags || []
       });
     } else {
       setFormData({
@@ -45,9 +49,11 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         instructions: '',
         difficulty_level: '',
         image_url: '',
-        video_url: ''
+        video_url: '',
+        tags: []
       });
     }
+    setTagInput('');
   }, [editingFigure, isOpen]);
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -112,6 +118,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             difficulty_level: formData.difficulty_level || null,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
+            tags: formData.tags.length > 0 ? formData.tags : null,
             updated_at: new Date().toISOString()
           })
           .eq('id', editingFigure.id);
@@ -127,6 +134,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             difficulty_level: formData.difficulty_level || null,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
+            tags: formData.tags.length > 0 ? formData.tags : null,
             created_by: user.id
           });
 
@@ -145,10 +153,12 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         instructions: '',
         difficulty_level: '',
         image_url: '',
-        video_url: ''
+        video_url: '',
+        tags: []
       });
       setImageFile(null);
       setVideoFile(null);
+      setTagInput('');
 
       if (onExerciseCreated) onExerciseCreated();
       onClose();
@@ -177,6 +187,28 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     if (file) {
       setVideoFile(file);
       setFormData(prev => ({ ...prev, video_url: '' }));
+    }
+  };
+
+  const addTag = () => {
+    const tag = tagInput.trim();
+    if (tag && !formData.tags.includes(tag)) {
+      setFormData(prev => ({ ...prev, tags: [...prev.tags, tag] }));
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      tags: prev.tags.filter(tag => tag !== tagToRemove) 
+    }));
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTag();
     }
   };
 
@@ -243,6 +275,49 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                 placeholder="Step-by-step instructions"
                 rows={4}
               />
+            </div>
+
+            <div>
+              <Label className="text-white">Tags</Label>
+              <div className="mt-2 space-y-2">
+                <div className="flex space-x-2">
+                  <Input
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                    placeholder="Add a tag (press Enter)"
+                  />
+                  <Button
+                    type="button"
+                    onClick={addTag}
+                    disabled={!tagInput.trim()}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500"
+                  >
+                    Add
+                  </Button>
+                </div>
+                {formData.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map((tag, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="outline" 
+                        className="border-purple-500/30 text-purple-300 pr-1"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="ml-1 hover:text-red-400"
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

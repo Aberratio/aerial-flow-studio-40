@@ -1,12 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, CheckCircle, Play, Plus, Edit, Trash2 } from 'lucide-react';
+import { Search, Filter, CheckCircle, Play, Plus, Edit, Trash2, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { FigurePreviewModal } from '@/components/FigurePreviewModal';
 import { CreateExerciseModal } from '@/components/CreateExerciseModal';
+import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -18,11 +19,14 @@ const Library = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedFigure, setSelectedFigure] = useState(null);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [editingFigure, setEditingFigure] = useState(null);
   const [figures, setFigures] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, figure: null });
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
 
   const categories = ['all', 'silks', 'hoop', 'pole', 'straps'];
   const levels = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];
@@ -45,6 +49,12 @@ const Library = () => {
       if (error) throw error;
 
       setFigures(figuresData || []);
+      
+      // Extract unique tags for filtering
+      const allTags = figuresData?.flatMap(figure => figure.tags || []) || [];
+      const uniqueTags = [...new Set(allTags)].sort();
+      setAvailableTags(uniqueTags);
+      
     } catch (error) {
       console.error('Error fetching figures:', error);
       toast({
@@ -73,6 +83,7 @@ const Library = () => {
       });
 
       fetchFigures();
+      setDeleteModal({ isOpen: false, figure: null });
     } catch (error: any) {
       console.error('Error deleting figure:', error);
       toast({
@@ -98,7 +109,8 @@ const Library = () => {
     const matchesCategory = selectedCategory === 'all' || (figure.category && figure.category.toLowerCase() === selectedCategory);
     const matchesLevel = selectedLevel === 'all' || (figure.difficulty_level && figure.difficulty_level.toLowerCase() === selectedLevel);
     const matchesType = selectedType === 'all' || (figure.type && figure.type === selectedType);
-    return matchesSearch && matchesCategory && matchesLevel && matchesType;
+    const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => figure.tags?.includes(tag));
+    return matchesSearch && matchesCategory && matchesLevel && matchesType && matchesTags;
   });
 
   const getDifficultyColor = (difficulty: string) => {
@@ -216,6 +228,38 @@ const Library = () => {
                 ))}
               </div>
             </div>
+
+            {/* Tags Filter */}
+            {availableTags.length > 0 && (
+              <div>
+                <p className="text-white text-sm font-medium mb-2">Tags</p>
+                <div className="flex flex-wrap gap-2">
+                  {availableTags.map((tag) => (
+                    <Button
+                      key={tag}
+                      variant={selectedTags.includes(tag) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        if (selectedTags.includes(tag)) {
+                          setSelectedTags(selectedTags.filter(t => t !== tag));
+                        } else {
+                          setSelectedTags([...selectedTags, tag]);
+                        }
+                      }}
+                      className={selectedTags.includes(tag)
+                        ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" 
+                        : "border-white/20 text-white hover:bg-white/10"
+                      }
+                    >
+                      {tag}
+                      {selectedTags.includes(tag) && (
+                        <X className="w-3 h-3 ml-1" />
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -253,9 +297,7 @@ const Library = () => {
                       className="w-8 h-8 p-0 bg-black/50 border-red-500/20 hover:bg-red-500/20"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (confirm('Are you sure you want to delete this exercise?')) {
-                          deleteFigure(figure.id);
-                        }
+                        setDeleteModal({ isOpen: true, figure });
                       }}
                     >
                       <Trash2 className="w-3 h-3 text-red-400" />
@@ -271,12 +313,14 @@ const Library = () => {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   
-                  {/* Play Button */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                      <Play className="w-8 h-8 text-white" />
+                  {/* Play Button - Only show for videos */}
+                  {figure.video_url && (
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                        <Play className="w-8 h-8 text-white" />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
                 
                 <CardContent className="p-4">
@@ -299,6 +343,20 @@ const Library = () => {
                         <Badge variant="outline" className="border-white/20 text-white/60 text-xs">
                           by {figure.profiles.username}
                         </Badge>
+                      )}
+                      {figure.tags && figure.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                          {figure.tags.slice(0, 2).map((tag, index) => (
+                            <Badge key={index} variant="outline" className="border-purple-500/30 text-purple-300 text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                          {figure.tags.length > 2 && (
+                            <Badge variant="outline" className="border-white/20 text-white/60 text-xs">
+                              +{figure.tags.length - 2}
+                            </Badge>
+                          )}
+                        </div>
                       )}
                     </div>
                     <Button 
@@ -340,6 +398,14 @@ const Library = () => {
             description: editingFigure ? "Exercise updated successfully!" : "Exercise added successfully!",
           });
         }}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, figure: null })}
+        onConfirm={() => deleteModal.figure && deleteFigure(deleteModal.figure.id)}
+        title="Delete Exercise"
+        description={`Are you sure you want to delete "${deleteModal.figure?.name}"? This action cannot be undone.`}
       />
     </div>
   );
