@@ -4,8 +4,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthModalProps {
   open: boolean;
@@ -15,28 +17,73 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeChange }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const { login, register } = useAuth();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    username: '',
+    confirmPassword: ''
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      if (mode === 'login') {
-        await login(email, password);
-      } else {
-        await register(email, password, username);
-      }
+      await signIn(formData.email, formData.password);
+      toast({
+        title: "Welcome back!",
+        description: "You have been successfully signed in.",
+      });
       onOpenChange(false);
-      setEmail('');
-      setPassword('');
-      setUsername('');
-    } catch (error) {
-      console.error('Auth error:', error);
+    } catch (error: any) {
+      toast({
+        title: "Sign in failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "Passwords do not match. Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      await signUp(formData.email, formData.password, formData.username);
+      toast({
+        title: "Account created!",
+        description: "Please check your email to verify your account.",
+      });
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Sign up failed",
+        description: error.message || "Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -44,79 +91,165 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-effect border-white/20 text-white">
+      <DialogContent className="max-w-md bg-black/95 border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center">
-            {mode === 'login' ? 'Welcome Back' : 'Join AerialFit'}
-          </DialogTitle>
+          <DialogTitle className="text-white text-center">Welcome to Aerial</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            {mode === 'register' && (
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
+        <Tabs value={mode} onValueChange={onModeChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-white/5">
+            <TabsTrigger value="login" className="text-white data-[state=active]:bg-white/10">
+              Sign In
+            </TabsTrigger>
+            <TabsTrigger value="register" className="text-white data-[state=active]:bg-white/10">
+              Sign Up
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="login" className="space-y-4">
+            <form onSubmit={handleSignIn} className="space-y-4">
+              <div>
+                <Label htmlFor="email" className="text-white">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="password" className="text-white">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60 pr-10"
+                    placeholder="Enter your password"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white h-auto p-1"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign In'
+                )}
+              </Button>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="register" className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-4">
+              <div>
+                <Label htmlFor="signup-email" className="text-white">Email</Label>
+                <Input
+                  id="signup-email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  placeholder="Enter your email"
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="username" className="text-white">Username</Label>
                 <Input
                   id="username"
+                  name="username"
                   type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                  value={formData.username}
+                  onChange={handleInputChange}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
                   placeholder="Choose a username"
                   required
                 />
               </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                placeholder="Enter your email"
-                required
-              />
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/60"
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-          </div>
+              <div>
+                <Label htmlFor="signup-password" className="text-white">Password</Label>
+                <div className="relative">
+                  <Input
+                    id="signup-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    value={formData.password}
+                    onChange={handleInputChange}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60 pr-10"
+                    placeholder="Create a password"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white h-auto p-1"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </Button>
+                </div>
+              </div>
 
-          <Button 
-            type="submit" 
-            className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
-            disabled={isLoading}
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {mode === 'login' ? 'Sign In' : 'Create Account'}
-          </Button>
+              <div>
+                <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  placeholder="Confirm your password"
+                  required
+                />
+              </div>
 
-          <div className="text-center">
-            <button
-              type="button"
-              onClick={() => onModeChange(mode === 'login' ? 'register' : 'login')}
-              className="text-purple-400 hover:text-purple-300 text-sm"
-            >
-              {mode === 'login' 
-                ? "Don't have an account? Sign up" 
-                : 'Already have an account? Sign in'
-              }
-            </button>
-          </div>
-        </form>
+              <Button
+                type="submit"
+                className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  'Create Account'
+                )}
+              </Button>
+            </form>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

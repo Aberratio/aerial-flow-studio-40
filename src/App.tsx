@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/Layout/AppLayout";
+import { ProfileUpgradeWrapper } from "@/components/ProfileUpgradeWrapper";
 import Landing from "@/pages/Landing";
 import Feed from "@/pages/Feed";
 import Library from "@/pages/Library";
@@ -126,9 +127,11 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
+        <ProfileUpgradeWrapper>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </ProfileUpgradeWrapper>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

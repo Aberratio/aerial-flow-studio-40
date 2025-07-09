@@ -1,0 +1,129 @@
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Check, Crown, Users, BookOpen, Target, BarChart3, X } from 'lucide-react';
+
+interface PricingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUpgrade: () => void;
+}
+
+export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) => {
+  const freeFeatures = [
+    'Post updates to your feed',
+    'Invite and follow friends',
+    'View community posts',
+    'Basic profile customization'
+  ];
+
+  const premiumFeatures = [
+    'All Free features',
+    'Access to figure library',
+    'Create training sessions',
+    'Join challenges',
+    'Track your progress',
+    'Advanced analytics',
+    'Priority support'
+  ];
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-4xl bg-black/95 border-white/10">
+        <DialogHeader>
+          <DialogTitle className="text-white text-center text-2xl">
+            Choose Your Plan
+          </DialogTitle>
+          <p className="text-white/70 text-center">
+            Start your aerial journey with the perfect plan for you
+          </p>
+        </DialogHeader>
+
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
+          {/* Free Plan */}
+          <Card className="bg-white/5 border-white/10 relative">
+            <CardHeader className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Users className="w-8 h-8 text-purple-400" />
+              </div>
+              <CardTitle className="text-white text-2xl">Free</CardTitle>
+              <CardDescription className="text-white/70">
+                Perfect for getting started
+              </CardDescription>
+              <div className="mt-4">
+                <span className="text-3xl font-bold text-white">$0</span>
+                <span className="text-white/70">/month</span>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-3">
+                {freeFeatures.map((feature, index) => (
+                  <li key={index} className="flex items-center text-white/80">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="w-full border-white/20 text-white hover:bg-white/10"
+              >
+                Continue with Free
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Premium Plan */}
+          <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/50 relative">
+            <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+              RECOMMENDED
+            </Badge>
+            <CardHeader className="text-center">
+              <div className="flex items-center justify-center mb-2">
+                <Crown className="w-8 h-8 text-yellow-400" />
+              </div>
+              <CardTitle className="text-white text-2xl">Premium</CardTitle>
+              <CardDescription className="text-white/70">
+                Unlock your full potential
+              </CardDescription>
+              <div className="mt-4">
+                <span className="text-3xl font-bold text-white">$10</span>
+                <span className="text-white/70">/month</span>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <ul className="space-y-3">
+                {premiumFeatures.map((feature, index) => (
+                  <li key={index} className="flex items-center text-white/80">
+                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Button
+                onClick={onUpgrade}
+                className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+              >
+                Upgrade to Premium
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <Button
+            onClick={onClose}
+            variant="ghost"
+            className="text-white/60 hover:text-white"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Maybe later
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};

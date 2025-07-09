@@ -7,7 +7,6 @@ import AuthModal from '@/components/Auth/AuthModal';
 
 const Landing = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
 
   const features = [
     {
@@ -39,8 +38,7 @@ const Landing = () => {
     { value: '95%', label: 'Success Rate' },
   ];
 
-  const openAuth = (mode: 'login' | 'register') => {
-    setAuthMode(mode);
+  const openAuth = () => {
     setAuthModalOpen(true);
   };
 
@@ -59,13 +57,13 @@ const Landing = () => {
           <div className="flex items-center space-x-4">
             <Button 
               variant="ghost" 
-              onClick={() => openAuth('login')}
+              onClick={openAuth}
               className="text-white hover:text-purple-300"
             >
               Sign In
             </Button>
             <Button 
-              onClick={() => openAuth('register')}
+              onClick={openAuth}
               className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
             >
               Get Started
@@ -94,7 +92,7 @@ const Landing = () => {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
                   size="lg"
-                  onClick={() => openAuth('register')}
+                  onClick={openAuth}
                   className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-lg px-8"
                 >
                   Start Training Free
@@ -220,7 +218,7 @@ const Landing = () => {
 
                 <Button 
                   size="lg"
-                  onClick={() => openAuth('register')}
+                  onClick={openAuth}
                   className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
                 >
                   Get Started Free
@@ -277,7 +275,7 @@ const Landing = () => {
 
                 <Button 
                   size="lg"
-                  onClick={() => openAuth('register')}
+                  onClick={openAuth}
                   className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
                 >
                   Start Premium Trial
@@ -303,7 +301,7 @@ const Landing = () => {
               </p>
               <Button 
                 size="lg"
-                onClick={() => openAuth('register')}
+                onClick={openAuth}
                 className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-lg px-12"
               >
                 Get Started Today
@@ -317,8 +315,8 @@ const Landing = () => {
       <AuthModal 
         open={authModalOpen}
         onOpenChange={setAuthModalOpen}
-        mode={authMode}
-        onModeChange={setAuthMode}
+        mode="login"
+        onModeChange={() => {}}
       />
     </div>
   );
