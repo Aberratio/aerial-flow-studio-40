@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostPreviewModal } from '@/components/PostPreviewModal';
+import { Link } from 'react-router-dom';
 
 const Feed = () => {
   const [selectedPost, setSelectedPost] = useState(null);
@@ -13,6 +14,7 @@ const Feed = () => {
     {
       id: 1,
       user: {
+        id: 1,
         username: 'aerial_grace',
         avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b589?w=150&h=150&fit=crop&crop=face',
         verified: true
@@ -27,6 +29,7 @@ const Feed = () => {
     {
       id: 2,
       user: {
+        id: 2,
         username: 'silk_master',
         avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
         verified: false
@@ -41,6 +44,7 @@ const Feed = () => {
     {
       id: 3,
       user: {
+        id: 3,
         username: 'pole_phoenix',
         avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
         verified: true
@@ -65,24 +69,28 @@ const Feed = () => {
         {posts.map((post) => (
           <Card key={post.id} className="glass-effect border-white/10">
             <CardContent className="p-6">
-              {/* User Header */}
-              <div className="flex items-center space-x-3 mb-4">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src={post.user.avatar} />
-                  <AvatarFallback>{post.user.username[0].toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-white">{post.user.username}</span>
-                    {post.user.verified && (
-                      <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
-                        <span className="text-white text-xs">✓</span>
-                      </div>
-                    )}
-                  </div>
-                  <span className="text-muted-foreground text-sm">{post.timeAgo}</span>
-                </div>
-              </div>
+               {/* User Header */}
+               <div className="flex items-center space-x-3 mb-4">
+                 <Link to={`/profile/${post.user.id}`} className="cursor-pointer">
+                   <Avatar className="w-10 h-10 hover:scale-110 transition-transform">
+                     <AvatarImage src={post.user.avatar} />
+                     <AvatarFallback>{post.user.username[0].toUpperCase()}</AvatarFallback>
+                   </Avatar>
+                 </Link>
+                 <div className="flex-1">
+                   <div className="flex items-center space-x-2">
+                     <Link to={`/profile/${post.user.id}`} className="cursor-pointer hover:text-primary transition-colors">
+                       <span className="font-semibold text-white">{post.user.username}</span>
+                     </Link>
+                     {post.user.verified && (
+                       <div className="w-4 h-4 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
+                         <span className="text-white text-xs">✓</span>
+                       </div>
+                     )}
+                   </div>
+                   <span className="text-muted-foreground text-sm">{post.timeAgo}</span>
+                 </div>
+               </div>
 
               {/* Content */}
               <p className="text-white mb-4">{post.content}</p>

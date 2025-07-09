@@ -9,12 +9,14 @@ import { FigurePreviewModal } from '@/components/FigurePreviewModal';
 
 const Library = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [levelFilter, setLevelFilter] = useState('all');
-  const [typeFilter, setTypeFilter] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedLevel, setSelectedLevel] = useState('all');
+  const [selectedType, setSelectedType] = useState('all');
   const [selectedFigure, setSelectedFigure] = useState(null);
 
   const categories = ['all', 'silks', 'hoop', 'pole', 'straps'];
+  const levels = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];
+  const types = ['all', 'single figure', 'combo'];
   
   const figures = [
     {
@@ -22,6 +24,7 @@ const Library = () => {
       name: 'Scorpion',
       category: 'hoop',
       difficulty: 'Intermediate',
+      type: 'single figure',
       image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
       completed: false,
       description: 'A beautiful backbend pose that requires flexibility and strength.'
@@ -31,6 +34,7 @@ const Library = () => {
       name: 'Crucifix',
       category: 'silks',
       difficulty: 'Advanced',
+      type: 'single figure',
       image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop',
       completed: true,
       description: 'An impressive pose showcasing control and upper body strength.'
@@ -40,6 +44,7 @@ const Library = () => {
       name: 'Attitude',
       category: 'pole',
       difficulty: 'Beginner',
+      type: 'single figure',
       image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=300&h=300&fit=crop',
       completed: false,
       description: 'A graceful leg extension that builds balance and flexibility.'
@@ -49,6 +54,7 @@ const Library = () => {
       name: 'Bird of Paradise',
       category: 'silks',
       difficulty: 'Advanced',
+      type: 'single figure',
       image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=300&fit=crop',
       completed: false,
       description: 'An elegant pose requiring hip flexibility and core strength.'
@@ -58,6 +64,7 @@ const Library = () => {
       name: 'Star',
       category: 'hoop',
       difficulty: 'Intermediate',
+      type: 'single figure',
       image: 'https://images.unsplash.com/photo-1594736797933-d0d8e3b82d9a?w=300&h=300&fit=crop',
       completed: true,
       description: 'A symmetrical pose that showcases form and control.'
@@ -67,16 +74,39 @@ const Library = () => {
       name: 'Jasmine',
       category: 'pole',
       difficulty: 'Advanced',
+      type: 'single figure',
       image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop',
       completed: false,
       description: 'A challenging invert requiring significant upper body strength.'
+    },
+    {
+      id: 7,
+      name: 'Silk Flow Combo',
+      category: 'silks',
+      difficulty: 'Expert',
+      type: 'combo',
+      image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
+      completed: false,
+      description: 'A flowing sequence combining multiple advanced silk movements.'
+    },
+    {
+      id: 8,
+      name: 'Hoop Transition Series',
+      category: 'hoop',
+      difficulty: 'Advanced',
+      type: 'combo',
+      image: 'https://images.unsplash.com/photo-1594736797933-d0d8e3b82d9a?w=300&h=300&fit=crop',
+      completed: false,
+      description: 'A series of connected moves showcasing smooth transitions.'
     }
   ];
 
   const filteredFigures = figures.filter(figure => {
     const matchesSearch = figure.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || figure.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesLevel = selectedLevel === 'all' || figure.difficulty.toLowerCase() === selectedLevel;
+    const matchesType = selectedType === 'all' || figure.type === selectedType;
+    return matchesSearch && matchesCategory && matchesLevel && matchesType;
   });
 
   const getDifficultyColor = (difficulty: string) => {
@@ -84,6 +114,7 @@ const Library = () => {
       case 'Beginner': return 'bg-green-500/20 text-green-400 border-green-500/30';
       case 'Intermediate': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'Advanced': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'Expert': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
       default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     }
   };
@@ -109,21 +140,69 @@ const Library = () => {
             />
           </div>
           
-          <div className="flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category)}
-                className={selectedCategory === category 
-                  ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" 
-                  : "border-white/20 text-white hover:bg-white/10"
-                }
-              >
-                {category.charAt(0).toUpperCase() + category.slice(1)}
-              </Button>
-            ))}
+          <div className="space-y-3">
+            {/* Category Filter */}
+            <div>
+              <p className="text-white text-sm font-medium mb-2">Category</p>
+              <div className="flex flex-wrap gap-2">
+                {categories.map((category) => (
+                  <Button
+                    key={category}
+                    variant={selectedCategory === category ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCategory(category)}
+                    className={selectedCategory === category 
+                      ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" 
+                      : "border-white/20 text-white hover:bg-white/10"
+                    }
+                  >
+                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Level Filter */}
+            <div>
+              <p className="text-white text-sm font-medium mb-2">Level</p>
+              <div className="flex flex-wrap gap-2">
+                {levels.map((level) => (
+                  <Button
+                    key={level}
+                    variant={selectedLevel === level ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedLevel(level)}
+                    className={selectedLevel === level 
+                      ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" 
+                      : "border-white/20 text-white hover:bg-white/10"
+                    }
+                  >
+                    {level.charAt(0).toUpperCase() + level.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Type Filter */}
+            <div>
+              <p className="text-white text-sm font-medium mb-2">Type</p>
+              <div className="flex flex-wrap gap-2">
+                {types.map((type) => (
+                  <Button
+                    key={type}
+                    variant={selectedType === type ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedType(type)}
+                    className={selectedType === type 
+                      ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" 
+                      : "border-white/20 text-white hover:bg-white/10"
+                    }
+                  >
+                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 
