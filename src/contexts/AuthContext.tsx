@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
 
           console.log('AuthContext: Profile fetch result', { profile, error });
 
@@ -88,6 +88,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (hoursDiff < 1 && profile.role === 'free') {
               setIsFirstLogin(true);
             }
+          } else if (!profile && !error) {
+            console.log('AuthContext: No profile found for user, creating default user object');
+            // Create a basic user object from session data if no profile exists
+            const basicUser = {
+              id: session.user.id,
+              email: session.user.email || '',
+              username: session.user.email?.split('@')[0] || 'user',
+              avatar_url: null,
+              bio: null,
+              role: 'free' as const,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              avatar: null,
+              followersCount: 0,
+              followingCount: 0,
+            };
+            setUser(basicUser);
+            console.log('AuthContext: Basic user set', basicUser);
           } else {
             console.error('AuthContext: Profile fetch failed', error);
           }
@@ -114,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('profiles')
           .select('*')
           .eq('id', session.user.id)
-          .single()
+          .maybeSingle()
           .then(({ data: profile, error }) => {
             console.log('AuthContext: Initial profile fetch result', { profile, error });
             if (profile && !error) {
@@ -127,6 +145,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               };
               setUser(userWithCompat);
               console.log('AuthContext: Initial user set', userWithCompat);
+            } else if (!profile && !error) {
+              console.log('AuthContext: No initial profile found, creating default user object');
+              // Create a basic user object from session data if no profile exists
+              const basicUser = {
+                id: session.user.id,
+                email: session.user.email || '',
+                username: session.user.email?.split('@')[0] || 'user',
+                avatar_url: null,
+                bio: null,
+                role: 'free' as const,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                avatar: null,
+                followersCount: 0,
+                followingCount: 0,
+              };
+              setUser(basicUser);
+              console.log('AuthContext: Initial basic user set', basicUser);
             } else {
               console.error('AuthContext: Initial profile fetch failed', error);
             }
