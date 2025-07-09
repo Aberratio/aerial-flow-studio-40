@@ -6,10 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
+import { EditProfileModal } from '@/components/EditProfileModal';
+import { SettingsModal } from '@/components/SettingsModal';
 
 const Profile = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('posts');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   const stats = [
     { label: 'Posts', value: '127' },
@@ -112,10 +116,17 @@ const Profile = () => {
 
                 {/* Action Buttons */}
                 <div className="flex space-x-3">
-                  <Button className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600">
+                  <Button 
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                  >
                     Edit Profile
                   </Button>
-                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsSettingsModalOpen(true)}
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
                   </Button>
@@ -193,6 +204,16 @@ const Profile = () => {
           ))}
         </div>
       </div>
+
+      {/* Modals */}
+      <EditProfileModal 
+        isOpen={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+      />
+      <SettingsModal 
+        isOpen={isSettingsModalOpen} 
+        onClose={() => setIsSettingsModalOpen(false)} 
+      />
     </div>
   );
 };

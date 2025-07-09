@@ -102,27 +102,22 @@ export const PostPreviewModal = ({ post, isOpen, onClose }: PostPreviewModalProp
           <div className="w-96 flex flex-col bg-black/50 backdrop-blur-sm">
             {/* Header */}
             <DialogHeader className="p-4 border-b border-white/10">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={post.user.avatar} />
-                    <AvatarFallback>{post.user.username[0].toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-semibold text-white">{post.user.username}</span>
-                      {post.user.verified && (
-                        <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-xs">
-                          ✓
-                        </Badge>
-                      )}
-                    </div>
-                    <span className="text-muted-foreground text-sm">{post.timeAgo}</span>
+              <div className="flex items-center space-x-3">
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={post.user.avatar} />
+                  <AvatarFallback>{post.user.username[0].toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="font-semibold text-white">{post.user.username}</span>
+                    {post.user.verified && (
+                      <Badge className="bg-gradient-to-r from-purple-500 to-blue-500 text-xs">
+                        ✓
+                      </Badge>
+                    )}
                   </div>
+                  <span className="text-muted-foreground text-sm">{post.timeAgo}</span>
                 </div>
-                <Button variant="ghost" size="sm" onClick={onClose}>
-                  <X className="w-4 h-4" />
-                </Button>
               </div>
             </DialogHeader>
 
