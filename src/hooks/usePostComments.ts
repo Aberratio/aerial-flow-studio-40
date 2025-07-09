@@ -12,6 +12,7 @@ export interface PostComment {
     id: string;
     username: string;
     avatar_url: string | null;
+    role?: string;
   };
 }
 
@@ -37,7 +38,8 @@ export const usePostComments = (postId: string | null) => {
           profiles!post_comments_user_id_fkey (
             id,
             username,
-            avatar_url
+            avatar_url,
+            role
           )
         `)
         .eq('post_id', postId)
@@ -55,6 +57,7 @@ export const usePostComments = (postId: string | null) => {
             id: comment.profiles?.id || '',
             username: comment.profiles?.username || '',
             avatar_url: comment.profiles?.avatar_url || null,
+            role: comment.profiles?.role || 'free',
           },
         }));
 
@@ -87,7 +90,8 @@ export const usePostComments = (postId: string | null) => {
           profiles!post_comments_user_id_fkey (
             id,
             username,
-            avatar_url
+            avatar_url,
+            role
           )
         `)
         .single();
@@ -104,6 +108,7 @@ export const usePostComments = (postId: string | null) => {
             id: newComment.profiles?.id || user.id,
             username: newComment.profiles?.username || user.username,
             avatar_url: newComment.profiles?.avatar_url || user.avatar_url,
+            role: newComment.profiles?.role || user.role,
           },
         };
 

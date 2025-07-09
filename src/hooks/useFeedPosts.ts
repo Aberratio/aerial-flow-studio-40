@@ -13,6 +13,7 @@ export interface FeedPost {
     id: string;
     username: string;
     avatar_url: string | null;
+    role?: string;
   };
   likes_count: number;
   comments_count: number;
@@ -53,7 +54,8 @@ export const useFeedPosts = () => {
           profiles!posts_user_id_fkey (
             id,
             username,
-            avatar_url
+            avatar_url,
+            role
           )
         `)
         .in('user_id', userIds)
@@ -96,6 +98,7 @@ export const useFeedPosts = () => {
                 id: post.profiles?.id || '',
                 username: post.profiles?.username || '',
                 avatar_url: post.profiles?.avatar_url || null,
+                role: post.profiles?.role || 'free',
               },
               likes_count: likesCount || 0,
               comments_count: commentsCount || 0,

@@ -73,7 +73,7 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike }: PostPr
             {/* Header */}
             <DialogHeader className="p-4 border-b border-white/10">
               <div className="flex items-center space-x-3">
-                <Avatar className="w-10 h-10">
+                <Avatar className={`w-10 h-10 ${post.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-2 ring-offset-black' : ''}`}>
                   <AvatarImage src={post.user.avatar_url || undefined} />
                   <AvatarFallback>{post.user.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
@@ -133,7 +133,7 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike }: PostPr
               ) : (
                 comments.map((comment) => (
                   <div key={comment.id} className="flex space-x-3">
-                    <Avatar className="w-8 h-8">
+                    <Avatar className={`w-8 h-8 ${comment.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-1 ring-offset-black' : ''}`}>
                       <AvatarImage src={comment.user.avatar_url || undefined} />
                       <AvatarFallback>{comment.user.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
                     </Avatar>

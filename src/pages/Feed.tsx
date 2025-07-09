@@ -91,7 +91,7 @@ const Feed = () => {
                 {/* User Header */}
                 <div className="flex items-center space-x-3 mb-4">
                   <Link to={`/profile/${post.user.id}`} className="cursor-pointer">
-                    <Avatar className="w-10 h-10 hover:scale-110 transition-transform">
+                    <Avatar className={`w-10 h-10 hover:scale-110 transition-transform ${post.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-2 ring-offset-black' : ''}`}>
                       <AvatarImage src={post.user.avatar_url || undefined} />
                       <AvatarFallback>{post.user.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
                     </Avatar>

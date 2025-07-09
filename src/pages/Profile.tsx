@@ -224,7 +224,7 @@ const Profile = () => {
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
               {/* Avatar */}
               <div className="relative">
-                <Avatar className="w-32 h-32">
+                <Avatar className={`w-32 h-32 ${user?.role === 'trainer' ? 'ring-4 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-4 ring-offset-black' : ''}`}>
                   <AvatarImage src={user?.avatar} />
                   <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-4xl">
                     {user?.username?.[0]?.toUpperCase()}
@@ -263,6 +263,19 @@ const Profile = () => {
                     <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">
                       Verified Athlete
                     </Badge>
+                    {user?.role && (
+                      <Badge 
+                        className={
+                          user.role === 'trainer' 
+                            ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold" 
+                            : user.role === 'premium'
+                            ? "bg-gradient-to-r from-purple-400 to-pink-400 text-white"
+                            : "bg-white/10 text-white"
+                        }
+                      >
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </Badge>
+                    )}
                   </div>
                 </div>
 

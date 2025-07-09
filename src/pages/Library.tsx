@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { FigurePreviewModal } from '@/components/FigurePreviewModal';
+import { CreateExerciseModal } from '@/components/CreateExerciseModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -17,7 +18,7 @@ const Library = () => {
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedFigure, setSelectedFigure] = useState(null);
-  const [showAddExercise, setShowAddExercise] = useState(false);
+  const [showCreateExercise, setShowCreateExercise] = useState(false);
 
   const categories = ['all', 'silks', 'hoop', 'pole', 'straps'];
   const levels = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];
@@ -128,8 +129,21 @@ const Library = () => {
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Figure Library</h1>
-          <p className="text-muted-foreground">Explore and master aerial figures across different disciplines</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Figure Library</h1>
+              <p className="text-muted-foreground">Explore and master aerial figures across different disciplines</p>
+            </div>
+            {user?.role === 'trainer' && (
+              <Button
+                onClick={() => setShowCreateExercise(true)}
+                className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Exercise
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Search and Filters */}
@@ -280,6 +294,17 @@ const Library = () => {
         figure={selectedFigure}
         isOpen={!!selectedFigure}
         onClose={() => setSelectedFigure(null)}
+      />
+
+      <CreateExerciseModal
+        isOpen={showCreateExercise}
+        onClose={() => setShowCreateExercise(false)}
+        onExerciseCreated={() => {
+          toast({
+            title: "Success",
+            description: "Exercise added successfully!",
+          });
+        }}
       />
     </div>
   );
