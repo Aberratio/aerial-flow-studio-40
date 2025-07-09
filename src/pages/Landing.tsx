@@ -7,6 +7,7 @@ import AuthModal from '@/components/Auth/AuthModal';
 
 const Landing = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
   const features = [
     {
@@ -315,8 +316,8 @@ const Landing = () => {
       <AuthModal 
         open={authModalOpen}
         onOpenChange={setAuthModalOpen}
-        mode="login"
-        onModeChange={() => {}}
+        mode={authMode}
+        onModeChange={setAuthMode}
       />
     </div>
   );
