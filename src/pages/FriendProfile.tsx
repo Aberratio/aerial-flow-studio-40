@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ArrowLeft, UserPlus, MessageCircle, Trophy, Heart, Grid, Bookmark } from 'lucide-react';
+import { ArrowLeft, UserPlus, MessageCircle, Trophy, Heart, Grid, Bookmark, Share2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
+import { PostPreviewModal } from '@/components/PostPreviewModal';
 
 const FriendProfile = () => {
   const { id } = useParams();
+  const [selectedPost, setSelectedPost] = useState(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('posts');
@@ -31,27 +33,63 @@ const FriendProfile = () => {
   const friendPosts = [
     {
       id: 1,
-      image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
+      user: {
+        id: friendData.id,
+        username: friendData.username,
+        avatar: friendData.avatar,
+        verified: friendData.isVerified
+      },
+      content: 'Beautiful aerial silk routine today! Feeling grateful for this art form ✨',
+      image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=600&fit=crop',
       likes: 127,
-      comments: 23
+      comments: 23,
+      timeAgo: '2h ago',
+      isLiked: false
     },
     {
       id: 2,
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop',
+      user: {
+        id: friendData.id,
+        username: friendData.username,
+        avatar: friendData.avatar,
+        verified: friendData.isVerified
+      },
+      content: 'Working on my drops today. Practice makes perfect! 💪',
+      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=600&fit=crop',
       likes: 89,
-      comments: 15
+      comments: 15,
+      timeAgo: '1d ago',
+      isLiked: true
     },
     {
       id: 3,
-      image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=300&h=300&fit=crop',
+      user: {
+        id: friendData.id,
+        username: friendData.username,
+        avatar: friendData.avatar,
+        verified: friendData.isVerified
+      },
+      content: 'Flexibility training session complete! 🧘‍♀️',
+      image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=600&h=600&fit=crop',
       likes: 203,
-      comments: 31
+      comments: 31,
+      timeAgo: '2d ago',
+      isLiked: false
     },
     {
       id: 4,
-      image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=300&fit=crop',
+      user: {
+        id: friendData.id,
+        username: friendData.username,
+        avatar: friendData.avatar,
+        verified: friendData.isVerified
+      },
+      content: 'New choreo coming together nicely! Can\'t wait to share the full routine',
+      image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=600&fit=crop',
       likes: 156,
-      comments: 42
+      comments: 42,
+      timeAgo: '3d ago',
+      isLiked: true
     }
   ];
 
@@ -245,7 +283,11 @@ const FriendProfile = () => {
         {activeTab === 'posts' && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {friendPosts.map((post) => (
-              <div key={post.id} className="relative group cursor-pointer">
+              <div 
+                key={post.id} 
+                className="relative group cursor-pointer"
+                onClick={() => setSelectedPost(post)}
+              >
                 <div className="aspect-square rounded-lg overflow-hidden">
                   <img 
                     src={post.image} 
@@ -283,6 +325,12 @@ const FriendProfile = () => {
           </div>
         )}
       </div>
+
+      <PostPreviewModal 
+        post={selectedPost}
+        isOpen={!!selectedPost}
+        onClose={() => setSelectedPost(null)}
+      />
     </div>
   );
 };
