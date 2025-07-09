@@ -92,6 +92,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
           user_id: user.id,
           content,
           image_url: mediaType === 'image' ? mediaUrl : null,
+          video_url: mediaType === 'video' ? mediaUrl : null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
@@ -109,8 +110,27 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
         throw error;
       }
 
-      // Call the callback with the new post
-      onPostCreated(newPost);
+      console.log('Post created successfully:', newPost);
+      // Transform the post data to match the Feed component's expected format
+      const transformedPost = {
+        id: newPost.id,
+        content: newPost.content,
+        image: newPost.image_url,
+        video: newPost.video_url,
+        timeAgo: 'now',
+        likes: 0,
+        comments: 0,
+        isLiked: false,
+        user: {
+          id: newPost.profiles.id,
+          username: newPost.profiles.username,
+          avatar: newPost.profiles.avatar_url,
+          verified: false
+        }
+      };
+
+      // Call the callback with the transformed post
+      onPostCreated(transformedPost);
       
       // Reset form
       setContent('');

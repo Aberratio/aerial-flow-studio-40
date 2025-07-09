@@ -23,6 +23,7 @@ const Feed = () => {
       },
       content: 'Finally nailed my first scorpion on the hoop! 🦂✨ Months of practice paying off!',
       image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=600&fit=crop',
+      video: null,
       likes: 127,
       comments: 23,
       timeAgo: '2h ago',
@@ -38,6 +39,7 @@ const Feed = () => {
       },
       content: 'Working on my drops today. The key is trusting the silk and your technique! 💪',
       image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=600&fit=crop',
+      video: null,
       likes: 89,
       comments: 15,
       timeAgo: '4h ago',
@@ -53,6 +55,7 @@ const Feed = () => {
       },
       content: 'Day 15 of the flexibility challenge! My splits are getting so much better 🔥',
       image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=600&h=600&fit=crop',
+      video: null,
       likes: 203,
       comments: 31,
       timeAgo: '6h ago',
@@ -125,17 +128,32 @@ const Feed = () => {
               {/* Content */}
               <p className="text-white mb-4">{post.content}</p>
 
-              {/* Image */}
-              <div 
-                className="mb-4 rounded-lg overflow-hidden cursor-pointer"
-                onClick={() => setSelectedPost(post)}
-              >
-                <img 
-                  src={post.image} 
-                  alt="Post content"
-                  className="w-full h-80 object-cover hover:scale-105 transition-transform duration-300"
-                />
-              </div>
+              {/* Media */}
+              {post.image && (
+                <div 
+                  className="mb-4 rounded-lg overflow-hidden cursor-pointer"
+                  onClick={() => setSelectedPost(post)}
+                >
+                  <img 
+                    src={post.image} 
+                    alt="Post content"
+                    className="w-full h-80 object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+              )}
+
+              {post.video && (
+                <div 
+                  className="mb-4 rounded-lg overflow-hidden cursor-pointer"
+                  onClick={() => setSelectedPost(post)}
+                >
+                  <video 
+                    src={post.video} 
+                    className="w-full h-80 object-cover"
+                    controls
+                  />
+                </div>
+              )}
 
               {/* Actions */}
               <div className="flex items-center justify-between">
