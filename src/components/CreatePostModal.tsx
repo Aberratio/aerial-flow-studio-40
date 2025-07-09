@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, Image, Users, Lock, Globe } from 'lucide-react';
+import { X, Image, Users, Lock, Globe, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -17,14 +18,22 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const { toast } = useToast();
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
+        if (mediaType === 'image') {
+          setSelectedImage(e.target?.result as string);
+          setSelectedVideo(null);
+        } else {
+          setSelectedVideo(e.target?.result as string);
+          setSelectedImage(null);
+        }
       };
       reader.readAsDataURL(file);
     }
@@ -50,6 +59,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
       },
       content,
       image: selectedImage,
+      video: selectedVideo,
       likes: 0,
       comments: 0,
       timeAgo: 'now',
@@ -60,6 +70,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
     onPostCreated(newPost);
     setContent('');
     setSelectedImage(null);
+    setSelectedVideo(null);
     setPrivacy('public');
     onClose();
     
@@ -151,12 +162,31 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
             </div>
           )}
 
+          
+          {selectedVideo && (
+            <div className="relative">
+              <video
+                src={selectedVideo}
+                className="w-full max-h-64 object-cover rounded-lg"
+                controls
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
+                onClick={() => setSelectedVideo(null)}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleImageUpload}
+                onChange={handleFileUpload}
                 className="hidden"
                 id="image-upload"
               />
@@ -165,10 +195,32 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
                   variant="ghost"
                   className="text-muted-foreground hover:text-white"
                   asChild
+                  onClick={() => setMediaType('image')}
                 >
                   <span className="flex items-center space-x-2 cursor-pointer">
                     <Image className="w-5 h-5" />
                     <span>Add Photo</span>
+                  </span>
+                </Button>
+              </label>
+              
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="video-upload"
+              />
+              <label htmlFor="video-upload">
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-white"
+                  asChild
+                  onClick={() => setMediaType('video')}
+                >
+                  <span className="flex items-center space-x-2 cursor-pointer">
+                    <Video className="w-5 h-5" />
+                    <span>Add Video</span>
                   </span>
                 </Button>
               </label>

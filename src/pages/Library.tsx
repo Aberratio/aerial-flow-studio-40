@@ -1,18 +1,23 @@
 
 import React, { useState } from 'react';
-import { Search, Filter, CheckCircle, Play } from 'lucide-react';
+import { Search, Filter, CheckCircle, Play, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { FigurePreviewModal } from '@/components/FigurePreviewModal';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 const Library = () => {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedFigure, setSelectedFigure] = useState(null);
+  const [showAddExercise, setShowAddExercise] = useState(false);
 
   const categories = ['all', 'silks', 'hoop', 'pole', 'straps'];
   const levels = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];

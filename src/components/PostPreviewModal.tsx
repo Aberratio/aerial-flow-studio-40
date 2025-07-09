@@ -75,6 +75,56 @@ export const PostPreviewModal = ({ post, isOpen, onClose }: PostPreviewModalProp
       content: 'This is goals! How long did it take you to master this?',
       timeAgo: '45m ago',
       likes: 3
+    },
+    {
+      id: 4,
+      user: {
+        username: 'silk_master',
+        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+      },
+      content: 'The fluidity in your movements is incredible! Can you share some tips for beginners?',
+      timeAgo: '30m ago',
+      likes: 7
+    },
+    {
+      id: 5,
+      user: {
+        username: 'aerial_dreams',
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face'
+      },
+      content: 'Watching this makes me want to get back to training! So inspiring ✨',
+      timeAgo: '25m ago',
+      likes: 5
+    },
+    {
+      id: 6,
+      user: {
+        username: 'flow_artist',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face'
+      },
+      content: 'The way you transition between moves is pure poetry. Love it!',
+      timeAgo: '20m ago',
+      likes: 9
+    },
+    {
+      id: 7,
+      user: {
+        username: 'strength_warrior',
+        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face'
+      },
+      content: 'Your strength control is amazing! What exercises do you recommend for building that kind of stability?',
+      timeAgo: '15m ago',
+      likes: 6
+    },
+    {
+      id: 8,
+      user: {
+        username: 'aerial_newbie',
+        avatar: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=150&h=150&fit=crop&crop=face'
+      },
+      content: 'As someone just starting out, this gives me so much motivation! Thank you for sharing 🙏',
+      timeAgo: '10m ago',
+      likes: 4
     }
   ];
 
