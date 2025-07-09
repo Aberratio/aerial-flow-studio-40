@@ -50,18 +50,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isFirstLogin, setIsFirstLogin] = useState(false);
 
   useEffect(() => {
+    console.log('AuthContext: Setting up auth state listener');
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('AuthContext: Auth state change', event, session?.user?.id);
         setSession(session);
         
         if (session?.user) {
+          console.log('AuthContext: Getting user profile for', session.user.id);
           // Get user profile from profiles table
           const { data: profile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single();
+
+          console.log('AuthContext: Profile fetch result', { profile, error });
 
           if (profile && !error) {
             // Add backward compatibility properties
@@ -72,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               followingCount: 0, // Will be calculated from user_follows table later
             };
             setUser(userWithCompat);
+            console.log('AuthContext: User set', userWithCompat);
             
             // Check if this is a first login (profile created recently)
             const createdAt = new Date(profile.created_at);
@@ -82,20 +88,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (hoursDiff < 1 && profile.role === 'free') {
               setIsFirstLogin(true);
             }
+          } else {
+            console.error('AuthContext: Profile fetch failed', error);
           }
         } else {
+          console.log('AuthContext: No session, clearing user');
           setUser(null);
         }
         
+        console.log('AuthContext: Setting loading to false');
         setIsLoading(false);
       }
     );
 
     // Get initial session
+    console.log('AuthContext: Getting initial session');
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('AuthContext: Initial session result', session?.user?.id);
       setSession(session);
       
       if (session?.user) {
+        console.log('AuthContext: Getting initial profile for', session.user.id);
         // Get user profile from profiles table
         supabase
           .from('profiles')
@@ -103,6 +116,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .eq('id', session.user.id)
           .single()
           .then(({ data: profile, error }) => {
+            console.log('AuthContext: Initial profile fetch result', { profile, error });
             if (profile && !error) {
               // Add backward compatibility properties
               const userWithCompat = {
@@ -112,10 +126,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 followingCount: 0, // Will be calculated from user_follows table later
               };
               setUser(userWithCompat);
+              console.log('AuthContext: Initial user set', userWithCompat);
+            } else {
+              console.error('AuthContext: Initial profile fetch failed', error);
             }
+            console.log('AuthContext: Setting initial loading to false');
             setIsLoading(false);
           });
       } else {
+        console.log('AuthContext: No initial session, setting loading to false');
         setIsLoading(false);
       }
     });
