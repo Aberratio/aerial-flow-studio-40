@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,9 +14,10 @@ interface CreateExerciseModalProps {
   isOpen: boolean;
   onClose: () => void;
   onExerciseCreated?: () => void;
+  editingFigure?: any;
 }
 
-export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated }: CreateExerciseModalProps) => {
+export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editingFigure }: CreateExerciseModalProps) => {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -25,6 +26,29 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated }: Crea
     image_url: '',
     video_url: ''
   });
+
+  // Update form when editing a figure
+  useEffect(() => {
+    if (editingFigure) {
+      setFormData({
+        name: editingFigure.name || '',
+        description: editingFigure.description || '',
+        instructions: editingFigure.instructions || '',
+        difficulty_level: editingFigure.difficulty_level || '',
+        image_url: editingFigure.image_url || '',
+        video_url: editingFigure.video_url || ''
+      });
+    } else {
+      setFormData({
+        name: '',
+        description: '',
+        instructions: '',
+        difficulty_level: '',
+        image_url: '',
+        video_url: ''
+      });
+    }
+  }, [editingFigure, isOpen]);
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -77,24 +101,41 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated }: Crea
         videoUrl = videoData.publicUrl;
       }
 
-      // Create the figure
-      const { error } = await supabase
-        .from('figures')
-        .insert({
-          name: formData.name.trim(),
-          description: formData.description.trim() || null,
-          instructions: formData.instructions.trim() || null,
-          difficulty_level: formData.difficulty_level || null,
-          image_url: imageUrl || null,
-          video_url: videoUrl || null,
-          created_by: user.id
-        });
+      // Create or update the figure
+      if (editingFigure) {
+        const { error } = await supabase
+          .from('figures')
+          .update({
+            name: formData.name.trim(),
+            description: formData.description.trim() || null,
+            instructions: formData.instructions.trim() || null,
+            difficulty_level: formData.difficulty_level || null,
+            image_url: imageUrl || null,
+            video_url: videoUrl || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', editingFigure.id);
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('figures')
+          .insert({
+            name: formData.name.trim(),
+            description: formData.description.trim() || null,
+            instructions: formData.instructions.trim() || null,
+            difficulty_level: formData.difficulty_level || null,
+            image_url: imageUrl || null,
+            video_url: videoUrl || null,
+            created_by: user.id
+          });
+
+        if (error) throw error;
+      }
 
       toast({
-        title: "Exercise Added",
-        description: "Your exercise has been successfully added to the library.",
+        title: editingFigure ? "Exercise Updated" : "Exercise Added",
+        description: editingFigure ? "Your exercise has been successfully updated." : "Your exercise has been successfully added to the library.",
       });
 
       // Reset form
@@ -143,7 +184,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated }: Crea
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-white">Add New Exercise</DialogTitle>
+          <DialogTitle className="text-white">
+            {editingFigure ? 'Edit Exercise' : 'Add New Exercise'}
+          </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -305,10 +348,10 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated }: Crea
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
+                  {editingFigure ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                'Add Exercise'
+                editingFigure ? 'Update Exercise' : 'Add Exercise'
               )}
             </Button>
           </div>

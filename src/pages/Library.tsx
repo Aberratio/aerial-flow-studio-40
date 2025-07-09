@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { Search, Filter, CheckCircle, Play, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Filter, CheckCircle, Play, Plus, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { FigurePreviewModal } from '@/components/FigurePreviewModal';
 import { CreateExerciseModal } from '@/components/CreateExerciseModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Library = () => {
   const { user } = useAuth();
@@ -19,99 +20,84 @@ const Library = () => {
   const [selectedType, setSelectedType] = useState('all');
   const [selectedFigure, setSelectedFigure] = useState(null);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
+  const [editingFigure, setEditingFigure] = useState(null);
+  const [figures, setFigures] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const categories = ['all', 'silks', 'hoop', 'pole', 'straps'];
   const levels = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];
   const types = ['all', 'single figure', 'combo'];
-  
-  const figures = [
-    {
-      id: 1,
-      name: 'Scorpion',
-      category: 'hoop',
-      difficulty: 'Intermediate',
-      type: 'single figure',
-      image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
-      completed: false,
-      description: 'A beautiful backbend pose that requires flexibility and strength.'
-    },
-    {
-      id: 2,
-      name: 'Crucifix',
-      category: 'silks',
-      difficulty: 'Advanced',
-      type: 'single figure',
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop',
-      completed: true,
-      description: 'An impressive pose showcasing control and upper body strength.'
-    },
-    {
-      id: 3,
-      name: 'Attitude',
-      category: 'pole',
-      difficulty: 'Beginner',
-      type: 'single figure',
-      image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=300&h=300&fit=crop',
-      completed: false,
-      description: 'A graceful leg extension that builds balance and flexibility.'
-    },
-    {
-      id: 4,
-      name: 'Bird of Paradise',
-      category: 'silks',
-      difficulty: 'Advanced',
-      type: 'single figure',
-      image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=300&fit=crop',
-      completed: false,
-      description: 'An elegant pose requiring hip flexibility and core strength.'
-    },
-    {
-      id: 5,
-      name: 'Star',
-      category: 'hoop',
-      difficulty: 'Intermediate',
-      type: 'single figure',
-      image: 'https://images.unsplash.com/photo-1594736797933-d0d8e3b82d9a?w=300&h=300&fit=crop',
-      completed: true,
-      description: 'A symmetrical pose that showcases form and control.'
-    },
-    {
-      id: 6,
-      name: 'Jasmine',
-      category: 'pole',
-      difficulty: 'Advanced',
-      type: 'single figure',
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop',
-      completed: false,
-      description: 'A challenging invert requiring significant upper body strength.'
-    },
-    {
-      id: 7,
-      name: 'Silk Flow Combo',
-      category: 'silks',
-      difficulty: 'Expert',
-      type: 'combo',
-      image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
-      completed: false,
-      description: 'A flowing sequence combining multiple advanced silk movements.'
-    },
-    {
-      id: 8,
-      name: 'Hoop Transition Series',
-      category: 'hoop',
-      difficulty: 'Advanced',
-      type: 'combo',
-      image: 'https://images.unsplash.com/photo-1594736797933-d0d8e3b82d9a?w=300&h=300&fit=crop',
-      completed: false,
-      description: 'A series of connected moves showcasing smooth transitions.'
-    }
-  ];
 
+  // Fetch figures from database
+  const fetchFigures = async () => {
+    try {
+      setLoading(true);
+      const { data: figuresData, error } = await supabase
+        .from('figures')
+        .select(`
+          *,
+          profiles!figures_created_by_fkey (
+            username
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      setFigures(figuresData || []);
+    } catch (error) {
+      console.error('Error fetching figures:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load exercises",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete figure
+  const deleteFigure = async (figureId: string) => {
+    try {
+      const { error } = await supabase
+        .from('figures')
+        .delete()
+        .eq('id', figureId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Exercise deleted successfully",
+      });
+
+      fetchFigures();
+    } catch (error: any) {
+      console.error('Error deleting figure:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete exercise",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Check if user can edit/delete a figure
+  const canModifyFigure = (figure: any) => {
+    if (!user) return false;
+    return user.role === 'admin' || user.role === 'trainer' || figure.created_by === user.id;
+  };
+
+  useEffect(() => {
+    fetchFigures();
+  }, []);
+  
   const filteredFigures = figures.filter(figure => {
     const matchesSearch = figure.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || figure.category === selectedCategory;
-    const matchesLevel = selectedLevel === 'all' || figure.difficulty.toLowerCase() === selectedLevel;
-    const matchesType = selectedType === 'all' || figure.type === selectedType;
+    const matchesCategory = selectedCategory === 'all' || (figure.category && figure.category.toLowerCase() === selectedCategory);
+    const matchesLevel = selectedLevel === 'all' || (figure.difficulty_level && figure.difficulty_level.toLowerCase() === selectedLevel);
+    const matchesType = selectedType === 'all' || (figure.type && figure.type === selectedType);
     return matchesSearch && matchesCategory && matchesLevel && matchesType;
   });
 
@@ -125,6 +111,14 @@ const Library = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-white">Loading exercises...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
@@ -134,7 +128,7 @@ const Library = () => {
               <h1 className="text-3xl font-bold text-white mb-2">Figure Library</h1>
               <p className="text-muted-foreground">Explore and master aerial figures across different disciplines</p>
             </div>
-            {user?.role === 'trainer' && (
+            {(user?.role === 'trainer' || user?.role === 'admin') && (
               <Button
                 onClick={() => setShowCreateExercise(true)}
                 className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
@@ -227,66 +221,102 @@ const Library = () => {
 
         {/* Figures Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredFigures.map((figure) => (
-            <Card 
-              key={figure.id} 
-              className="glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer"
-              onClick={() => setSelectedFigure(figure)}
-            >
-              <div className="relative">
-                <img 
-                  src={figure.image} 
-                  alt={figure.name}
-                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                
-                {/* Completion Status */}
-                {figure.completed && (
-                  <div className="absolute top-3 right-3 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <CheckCircle className="w-5 h-5 text-white" />
+          {filteredFigures.length === 0 ? (
+            <div className="col-span-full text-center py-12 text-muted-foreground">
+              No exercises found matching your criteria.
+            </div>
+          ) : (
+            filteredFigures.map((figure) => (
+              <Card 
+                key={figure.id} 
+                className="glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative"
+                onClick={() => setSelectedFigure(figure)}
+              >
+                {/* Action buttons for owners/admins */}
+                {canModifyFigure(figure) && (
+                  <div className="absolute top-2 right-2 z-10 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-8 h-8 p-0 bg-black/50 border-white/20 hover:bg-black/70"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingFigure(figure);
+                        setShowCreateExercise(true);
+                      }}
+                    >
+                      <Edit className="w-3 h-3 text-white" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-8 h-8 p-0 bg-black/50 border-red-500/20 hover:bg-red-500/20"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (confirm('Are you sure you want to delete this exercise?')) {
+                          deleteFigure(figure.id);
+                        }
+                      }}
+                    >
+                      <Trash2 className="w-3 h-3 text-red-400" />
+                    </Button>
                   </div>
                 )}
-                
-                {/* Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                    <Play className="w-8 h-8 text-white" />
+
+                <div className="relative">
+                  <img 
+                    src={figure.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop'} 
+                    alt={figure.name}
+                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  
+                  {/* Play Button */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                      <Play className="w-8 h-8 text-white" />
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 className="font-semibold text-white text-lg">{figure.name}</h3>
-                  <Badge className={`text-xs ${getDifficultyColor(figure.difficulty)}`}>
-                    {figure.difficulty}
-                  </Badge>
-                </div>
                 
-                <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                  {figure.description}
-                </p>
-                
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline" className="border-white/20 text-white/80">
-                    {figure.category}
-                  </Badge>
-                  <Button 
-                    size="sm" 
-                    variant="ghost"
-                    className="text-purple-400 hover:text-purple-300"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedFigure(figure);
-                    }}
-                  >
-                    View Details
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <h3 className="font-semibold text-white text-lg">{figure.name}</h3>
+                    {figure.difficulty_level && (
+                      <Badge className={`text-xs ${getDifficultyColor(figure.difficulty_level)}`}>
+                        {figure.difficulty_level}
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
+                    {figure.description || 'No description available'}
+                  </p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col space-y-1">
+                      {figure.profiles?.username && (
+                        <Badge variant="outline" className="border-white/20 text-white/60 text-xs">
+                          by {figure.profiles.username}
+                        </Badge>
+                      )}
+                    </div>
+                    <Button 
+                      size="sm" 
+                      variant="ghost"
+                      className="text-purple-400 hover:text-purple-300"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedFigure(figure);
+                      }}
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
       </div>
 
@@ -298,11 +328,16 @@ const Library = () => {
 
       <CreateExerciseModal
         isOpen={showCreateExercise}
-        onClose={() => setShowCreateExercise(false)}
+        onClose={() => {
+          setShowCreateExercise(false);
+          setEditingFigure(null);
+        }}
+        editingFigure={editingFigure}
         onExerciseCreated={() => {
+          fetchFigures();
           toast({
             title: "Success",
-            description: "Exercise added successfully!",
+            description: editingFigure ? "Exercise updated successfully!" : "Exercise added successfully!",
           });
         }}
       />
