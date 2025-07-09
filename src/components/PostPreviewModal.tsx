@@ -137,10 +137,10 @@ export const PostPreviewModal = ({ post, isOpen, onClose }: PostPreviewModalProp
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 bg-black/95 border-white/10">
-        <div className="flex h-full">
+      <DialogContent className="max-w-4xl h-[90vh] p-0 bg-black/95 border-white/10 flex flex-col">
+        <div className="flex h-full min-h-0">
           {/* Image Section */}
-          <div className="flex-1 bg-black">
+          <div className="flex-1 bg-black min-h-0">
             <img 
               src={post.image} 
               alt="Post content"
@@ -204,7 +204,7 @@ export const PostPreviewModal = ({ post, isOpen, onClose }: PostPreviewModalProp
             </div>
 
             {/* Comments */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
               {comments.map((comment) => (
                 <div key={comment.id} className="flex space-x-3">
                   <Avatar className="w-8 h-8">

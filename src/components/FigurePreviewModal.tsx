@@ -126,9 +126,6 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
                     {figure.description}
                   </DialogDescription>
                 </div>
-                <Button variant="ghost" size="sm" onClick={onClose}>
-                  <X className="w-4 h-4" />
-                </Button>
               </div>
             </DialogHeader>
 
