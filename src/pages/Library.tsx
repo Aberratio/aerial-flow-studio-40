@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, CheckCircle, Play, Plus, Edit, Trash2, X } from 'lucide-react';
+import { Search, Filter, CheckCircle, Play, Plus, Edit, Trash2, X, Bookmark, AlertCircle, CircleMinus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,10 +20,12 @@ const Library = () => {
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedFigure, setSelectedFigure] = useState(null);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [editingFigure, setEditingFigure] = useState(null);
   const [figures, setFigures] = useState([]);
+  const [figuresWithProgress, setFiguresWithProgress] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, figure: null });
   const [availableTags, setAvailableTags] = useState<string[]>([]);
@@ -31,6 +33,7 @@ const Library = () => {
   const categories = ['all', 'silks', 'hoop', 'pole', 'straps'];
   const levels = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];
   const types = ['all', 'single figure', 'combo'];
+  const statuses = ['all', 'completed', 'for_later', 'failed', 'not_tried'];
 
   // Fetch figures from database
   const fetchFigures = async () => {
@@ -49,6 +52,28 @@ const Library = () => {
       if (error) throw error;
 
       setFigures(figuresData || []);
+      
+      // Fetch progress for current user if logged in
+      if (user && figuresData) {
+        const { data: progressData } = await supabase
+          .from('figure_progress')
+          .select('figure_id, status')
+          .eq('user_id', user.id);
+
+        const progressMap = new Map(progressData?.map(p => [p.figure_id, p.status]) || []);
+        
+        const figuresWithProgressData = figuresData.map(figure => ({
+          ...figure,
+          progress_status: progressMap.get(figure.id) || 'not_tried'
+        }));
+        
+        setFiguresWithProgress(figuresWithProgressData);
+      } else {
+        setFiguresWithProgress(figuresData?.map(figure => ({
+          ...figure,
+          progress_status: 'not_tried'
+        })) || []);
+      }
       
       // Extract unique tags for filtering
       const allTags = figuresData?.flatMap(figure => figure.tags || []) || [];
@@ -102,15 +127,16 @@ const Library = () => {
 
   useEffect(() => {
     fetchFigures();
-  }, []);
+  }, [user]);
   
-  const filteredFigures = figures.filter(figure => {
+  const filteredFigures = figuresWithProgress.filter(figure => {
     const matchesSearch = figure.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || (figure.category && figure.category.toLowerCase() === selectedCategory);
     const matchesLevel = selectedLevel === 'all' || (figure.difficulty_level && figure.difficulty_level.toLowerCase() === selectedLevel);
     const matchesType = selectedType === 'all' || (figure.type && figure.type === selectedType);
     const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => figure.tags?.includes(tag));
-    return matchesSearch && matchesCategory && matchesLevel && matchesType && matchesTags;
+    const matchesStatus = selectedStatus === 'all' || figure.progress_status === selectedStatus;
+    return matchesSearch && matchesCategory && matchesLevel && matchesType && matchesTags && matchesStatus;
   });
 
   const getDifficultyColor = (difficulty: string) => {
@@ -120,6 +146,15 @@ const Library = () => {
       case 'Advanced': return 'bg-red-500/20 text-red-400 border-red-500/30';
       case 'Expert': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
       default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="w-4 h-4 text-green-400" />;
+      case 'for_later': return <Bookmark className="w-4 h-4 text-blue-400" />;
+      case 'failed': return <AlertCircle className="w-4 h-4 text-red-400" />;
+      default: return null;
     }
   };
 
@@ -260,6 +295,29 @@ const Library = () => {
                 </div>
               </div>
             )}
+
+            {/* Status Filter */}
+            {user && (
+              <div>
+                <p className="text-white text-sm font-medium mb-2">Progress Status</p>
+                <div className="flex flex-wrap gap-2">
+                  {statuses.map((status) => (
+                    <Button
+                      key={status}
+                      variant={selectedStatus === status ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setSelectedStatus(status)}
+                      className={selectedStatus === status 
+                        ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" 
+                        : "border-white/20 text-white hover:bg-white/10"
+                      }
+                    >
+                      {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -312,6 +370,15 @@ const Library = () => {
                     className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  
+                  {/* Status Icon */}
+                  {user && figure.progress_status && figure.progress_status !== 'not_tried' && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <div className="w-8 h-8 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center">
+                        {getStatusIcon(figure.progress_status)}
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Play Button - Only show for videos */}
                   {figure.video_url && (

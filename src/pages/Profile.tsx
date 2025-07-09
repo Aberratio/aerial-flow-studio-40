@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Settings, Heart, MessageCircle, Grid, Bookmark, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,9 @@ const Profile = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [userPosts, setUserPosts] = useState([]);
+  const [friends, setFriends] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -87,6 +90,108 @@ const Profile = () => {
     }
   };
 
+  // Fetch user's posts from database
+  const fetchUserPosts = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(`
+          *,
+          profiles!posts_user_id_fkey (
+            username,
+            avatar_url
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+
+      // Get likes and comments counts for each post
+      const postsWithCounts = await Promise.all(
+        data?.map(async (post) => {
+          const { count: likesCount } = await supabase
+            .from('post_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', post.id);
+
+          const { count: commentsCount } = await supabase
+            .from('post_comments')
+            .select('*', { count: 'exact', head: true })
+            .eq('post_id', post.id);
+
+          return {
+            id: post.id,
+            content: post.content,
+            image: post.image_url,
+            video: post.video_url,
+            likes: likesCount || 0,
+            comments: commentsCount || 0,
+            timeAgo: post.created_at,
+            user: {
+              username: post.profiles?.username || user.username,
+              avatar: post.profiles?.avatar_url || user.avatar,
+              verified: true
+            }
+          };
+        }) || []
+      );
+
+      setUserPosts(postsWithCounts);
+    } catch (error) {
+      console.error('Error fetching user posts:', error);
+    }
+  };
+
+  // Fetch user's friends from database
+  const fetchFriends = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('user_follows')
+        .select(`
+          following_id,
+          profiles!user_follows_following_id_fkey (
+            id,
+            username,
+            avatar_url,
+            role
+          )
+        `)
+        .eq('follower_id', user.id);
+
+      if (error) throw error;
+
+      const friendsData = data?.map(follow => ({
+        id: follow.profiles?.id || '',
+        username: follow.profiles?.username || '',
+        avatar: follow.profiles?.avatar_url || null,
+        level: follow.profiles?.role === 'trainer' ? 'Trainer' : 'Member',
+        score: Math.floor(Math.random() * 5000) + 1000 // Mock score for now
+      })) || [];
+
+      setFriends(friendsData);
+    } catch (error) {
+      console.error('Error fetching friends:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      setLoading(true);
+      Promise.all([
+        fetchUserPosts(),
+        fetchFriends()
+      ]).finally(() => {
+        setLoading(false);
+      });
+    }
+  }, [user]);
+
   const stats = [
     { label: 'Posts', value: '127' },
     { label: 'Followers', value: user?.followersCount.toLocaleString() || '0' },
@@ -94,92 +199,6 @@ const Profile = () => {
     { label: 'Score', value: '2,450' }
   ];
 
-  const userPosts = [
-    {
-      id: 1,
-      user: {
-        username: user?.username || 'you',
-        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        verified: true
-      },
-      content: 'Just nailed my first perfect silk drop! The feeling of flying through the air is indescribable. Hours of practice finally paid off! 🌟',
-      image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
-      likes: 127,
-      comments: 23,
-      timeAgo: '2h ago',
-      isLiked: false
-    },
-    {
-      id: 2,
-      user: {
-        username: user?.username || 'you',
-        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        verified: true
-      },
-      content: 'Morning training session complete! Working on my strength building routine. Every day gets a little easier 💪',
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop',
-      likes: 89,
-      comments: 15,
-      timeAgo: '1d ago',
-      isLiked: true
-    },
-    {
-      id: 3,
-      user: {
-        username: user?.username || 'you',
-        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        verified: true
-      },
-      content: 'Flexibility training is paying off! Finally achieved this pose I\'ve been working towards for months 🧘‍♀️',
-      image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=300&h=300&fit=crop',
-      likes: 203,
-      comments: 31,
-      timeAgo: '3d ago',
-      isLiked: false
-    },
-    {
-      id: 4,
-      user: {
-        username: user?.username || 'you',
-        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        verified: true
-      },
-      content: 'Beautiful evening session with the golden hour lighting. These moments make all the hard work worth it ✨',
-      image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=300&fit=crop',
-      likes: 156,
-      comments: 42,
-      timeAgo: '5d ago',
-      isLiked: true
-    },
-    {
-      id: 5,
-      user: {
-        username: user?.username || 'you',
-        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        verified: true
-      },
-      content: 'Progress check! Comparing today\'s form to where I started. The journey is just as important as the destination 🌱',
-      image: 'https://images.unsplash.com/photo-1594736797933-d0d8e3b82d9a?w=300&h=300&fit=crop',
-      likes: 178,
-      comments: 28,
-      timeAgo: '1w ago',
-      isLiked: false
-    },
-    {
-      id: 6,
-      user: {
-        username: user?.username || 'you',
-        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        verified: true
-      },
-      content: 'First time attempting this advanced sequence. Not perfect yet, but getting closer every day! 🔥',
-      image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
-      likes: 134,
-      comments: 19,
-      timeAgo: '1w ago',
-      isLiked: true
-    }
-  ];
 
   const achievements = [
     { name: 'First Post', icon: '🎉', description: 'Shared your first aerial moment', points: 100 },
@@ -208,12 +227,6 @@ const Profile = () => {
     ]
   };
 
-  const friends = [
-    { id: 1, username: 'sarah_aerial', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b589?w=100&h=100&fit=crop&crop=face', level: 'Advanced', score: 3200 },
-    { id: 2, username: 'mike_silk', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', level: 'Expert', score: 4500 },
-    { id: 3, username: 'luna_hoop', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face', level: 'Intermediate', score: 2100 },
-    { id: 4, username: 'alex_flow', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face', level: 'Advanced', score: 2800 }
-  ];
 
   return (
     <div className="min-h-screen p-6">
@@ -427,19 +440,32 @@ const Profile = () => {
         <Card className="glass-effect border-white/10 mb-6">
           <CardContent className="p-6">
             <h2 className="text-xl font-bold text-white mb-4">Friends</h2>
-             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-               {friends.map((friend) => (
-                 <Link key={friend.id} to={`/profile/${friend.id}`} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                   <Avatar className="w-16 h-16 mx-auto mb-3 hover:scale-110 transition-transform">
-                     <AvatarImage src={friend.avatar} />
-                     <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
-                   </Avatar>
-                   <div className="text-white font-semibold text-sm">{friend.username}</div>
-                   <div className="text-muted-foreground text-xs">{friend.level}</div>
-                   <div className="text-purple-400 text-xs font-semibold mt-1">{friend.score.toLocaleString()} pts</div>
-                 </Link>
-               ))}
-             </div>
+            {loading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading friends...</div>
+            ) : friends.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No friends yet!</p>
+                <p className="text-sm mt-2">
+                  <Link to="/friends" className="text-purple-400 hover:text-purple-300">
+                    Find and connect with other aerial artists
+                  </Link>
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {friends.map((friend) => (
+                  <Link key={friend.id} to={`/profile/${friend.id}`} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+                    <Avatar className="w-16 h-16 mx-auto mb-3 hover:scale-110 transition-transform">
+                      <AvatarImage src={friend.avatar || undefined} />
+                      <AvatarFallback>{friend.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                    </Avatar>
+                    <div className="text-white font-semibold text-sm">{friend.username}</div>
+                    <div className="text-muted-foreground text-xs">{friend.level}</div>
+                    <div className="text-purple-400 text-xs font-semibold mt-1">{friend.score.toLocaleString()} pts</div>
+                  </Link>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -471,38 +497,57 @@ const Profile = () => {
 
         {/* Content based on active tab */}
         {activeTab === 'posts' && (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {userPosts.map((post) => (
-              <div 
-                key={post.id} 
-                className="relative group cursor-pointer"
-                onClick={() => {
-                  setSelectedPost(post);
-                  setIsPostModalOpen(true);
-                }}
-              >
-                <div className="aspect-square rounded-lg overflow-hidden">
-                  <img 
-                    src={post.image} 
-                    alt="User post"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                </div>
-                
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
-                  <div className="flex items-center text-white">
-                    <Heart className="w-5 h-5 mr-2" />
-                    {post.likes}
+          loading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading posts...</div>
+          ) : userPosts.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No posts yet!</p>
+              <p className="text-sm mt-2">
+                <Link to="/feed" className="text-purple-400 hover:text-purple-300">
+                  Share your first aerial moment
+                </Link>
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {userPosts.map((post) => (
+                <div 
+                  key={post.id} 
+                  className="relative group cursor-pointer"
+                  onClick={() => {
+                    setSelectedPost(post);
+                    setIsPostModalOpen(true);
+                  }}
+                >
+                  <div className="aspect-square rounded-lg overflow-hidden">
+                    {post.image ? (
+                      <img 
+                        src={post.image} 
+                        alt="User post"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                        <MessageCircle className="w-8 h-8 text-muted-foreground" />
+                      </div>
+                    )}
                   </div>
-                  <div className="flex items-center text-white">
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    {post.comments}
+                  
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
+                    <div className="flex items-center text-white">
+                      <Heart className="w-5 h-5 mr-2" />
+                      {post.likes}
+                    </div>
+                    <div className="flex items-center text-white">
+                      <MessageCircle className="w-5 h-5 mr-2" />
+                      {post.comments}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
         )}
 
         {activeTab === 'achievements' && (
