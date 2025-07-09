@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, Send, Loader2 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -43,6 +43,10 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike }: PostPr
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl h-[90vh] p-0 bg-black/95 border-white/10 flex flex-col">
+        <DialogTitle className="sr-only">Post by {post?.user?.username}</DialogTitle>
+        <DialogDescription className="sr-only">
+          {post?.content || 'View post details and comments'}
+        </DialogDescription>
         <div className="flex h-full min-h-0">
           {/* Media Section */}
           <div className="flex-1 bg-black min-h-0">

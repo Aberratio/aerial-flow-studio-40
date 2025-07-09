@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Mail, Users, Dumbbell } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Mail, Users, Dumbbell, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,6 +19,11 @@ const Navigation = () => {
     { path: '/inbox', icon: Mail, label: 'Inbox' },
   ];
 
+  // Admin-only items
+  const adminItems = user?.role === 'admin' ? [
+    { path: '/admin/achievements', icon: Settings, label: 'Achievements' },
+  ] : [];
+
   const isActive = (path: string) => location.pathname === path;
 
   return (
@@ -35,7 +39,6 @@ const Navigation = () => {
           </span>
         </Link>
 
-
         {/* Navigation Items */}
         <div className="flex-1 space-y-2">
           {navItems.map((item) => {
@@ -50,13 +53,38 @@ const Navigation = () => {
                     : 'text-muted-foreground hover:text-white hover:bg-white/5'
                 }`}
               >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                <span className="hidden lg:block font-medium group-hover:translate-x-1 transition-transform">
-                  {item.label}
-                </span>
+                <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="hidden lg:block font-medium">{item.label}</span>
               </Link>
             );
           })}
+
+          {/* Admin Section */}
+          {adminItems.length > 0 && (
+            <>
+              <div className="hidden lg:block border-t border-white/10 my-4"></div>
+              <div className="hidden lg:block text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+                Admin
+              </div>
+              {adminItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group ${
+                      isActive(item.path)
+                        ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white'
+                        : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className="hidden lg:block font-medium">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </>
+          )}
         </div>
 
         {/* User Profile */}

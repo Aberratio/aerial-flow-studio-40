@@ -20,6 +20,7 @@ import Training from "@/pages/Training";
 import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
 import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
 import MyJourney from "@/pages/MyJourney";
+import AchievementManagement from "@/pages/AchievementManagement";
 
 const queryClient = new QueryClient();
 
@@ -120,6 +121,11 @@ const AppRoutes = () => {
       <Route path="/training-session" element={
         <ProtectedRoute>
           <TrainingSessionPageWrapper />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/achievements" element={
+        <ProtectedRoute>
+          <AchievementManagement />
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Play, Clock, Target, User, Tag, Plus, CheckCircle, Bookmark, AlertCircle, CircleMinus } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -211,6 +211,10 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 p-0">
+          <DialogTitle className="sr-only">{figure?.name}</DialogTitle>
+          <DialogDescription className="sr-only">
+            {figure?.description || `Details and progress tracking for ${figure?.name}`}
+          </DialogDescription>
           <div className="flex flex-col lg:flex-row min-h-[80vh]">
             {/* Media Section */}
             <div className="lg:w-1/2 bg-black relative">
