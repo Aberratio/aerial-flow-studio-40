@@ -42,11 +42,13 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
     if (!user) return;
     
     setIsLoading(true);
+    console.log('Starting profile save...', { user, username, bio, email, avatarFile });
     try {
       let avatarUrl = user.avatar_url;
 
       // Upload avatar if changed
       if (avatarFile) {
+        console.log('Uploading avatar...', avatarFile);
         const fileExt = avatarFile.name.split('.').pop();
         const fileName = `${user.id}.${fileExt}`;
         
@@ -56,14 +58,17 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
 
         if (uploadError) {
           console.error('Error uploading avatar:', uploadError);
+          throw uploadError;
         } else {
           const { data } = supabase.storage
             .from('avatars')
             .getPublicUrl(fileName);
           avatarUrl = data.publicUrl;
+          console.log('Avatar uploaded successfully:', avatarUrl);
         }
       }
 
+      console.log('Updating profile in database...');
       // Update profile
       const { error } = await supabase
         .from('profiles')
@@ -77,8 +82,11 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
         .eq('id', user.id);
 
       if (error) {
+        console.error('Database update error:', error);
         throw error;
       }
+
+      console.log('Profile updated successfully!');
 
       toast({
         title: "Profile Updated",

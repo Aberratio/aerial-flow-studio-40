@@ -58,11 +58,13 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
     }
 
     setIsLoading(true);
+    console.log('Starting post creation...', { user, content, selectedFile });
     try {
       let mediaUrl = null;
 
       // Upload media file if selected
       if (selectedFile) {
+        console.log('Uploading media file...', selectedFile);
         const fileExt = selectedFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         
@@ -72,14 +74,17 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
 
         if (uploadError) {
           console.error('Error uploading file:', uploadError);
+          throw uploadError;
         } else {
           const { data } = supabase.storage
             .from('posts')
             .getPublicUrl(fileName);
           mediaUrl = data.publicUrl;
+          console.log('Media uploaded successfully:', mediaUrl);
         }
       }
 
+      console.log('Creating post in database...');
       // Create post in database
       const { data: newPost, error } = await supabase
         .from('posts')
