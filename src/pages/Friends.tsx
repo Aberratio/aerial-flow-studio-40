@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Mail, Users, UserCheck, UserX } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,7 +19,10 @@ const Friends = () => {
 
   useEffect(() => {
     const fetchFriends = async () => {
-      if (!user) return;
+      if (!user) {
+        setIsLoading(false);
+        return;
+      }
 
       try {
         const { data, error } = await supabase
@@ -36,6 +40,7 @@ const Friends = () => {
 
         if (error) {
           console.error('Error fetching friends:', error);
+          setIsLoading(false);
           return;
         }
 
@@ -80,7 +85,8 @@ const Friends = () => {
     }
   };
 
-  if (isLoading) {
+  // Show loading only if we're actually fetching data
+  if (isLoading && user) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
@@ -144,47 +150,62 @@ const Friends = () => {
           </Card>
         </div>
 
-        {/* Friends List */}
+        {/* Friends List or Empty State */}
         <Card className="glass-effect border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Your Friends</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {friends.map((friend) => (
-                <div key={friend.id} className="flex items-center space-x-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
-                  <div className="relative">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={friend.avatar} />
-                      <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    {friend.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900"></div>
-                    )}
+            {friends.length === 0 ? (
+              <div className="text-center py-12">
+                <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-semibold text-white mb-2">No friends yet</h3>
+                <p className="text-muted-foreground mb-6">Start building your aerial community by finding and connecting with other athletes</p>
+                <Button
+                  onClick={() => setShowFriendInvite(true)}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                >
+                  <UserPlus className="w-5 h-5 mr-2" />
+                  Find Friends
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {friends.map((friend) => (
+                  <div key={friend.id} className="flex items-center space-x-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                    <div className="relative">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src={friend.avatar} />
+                        <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      {friend.isOnline && (
+                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900"></div>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <Link to={`/profile/${friend.id}`} className="cursor-pointer hover:text-primary transition-colors">
+                        <h4 className="font-semibold text-white">{friend.username}</h4>
+                      </Link>
+                      <p className="text-muted-foreground text-sm">{friend.bio}</p>
+                      <p className="text-muted-foreground text-xs">{friend.mutualFriends} mutual friends</p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
+                        <Mail className="w-4 h-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-400 hover:text-red-300"
+                        onClick={() => handleUnfriend(friend.id)}
+                      >
+                        <UserX className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <Link to={`/profile/${friend.id}`} className="cursor-pointer hover:text-primary transition-colors">
-                      <h4 className="font-semibold text-white">{friend.username}</h4>
-                    </Link>
-                    <p className="text-muted-foreground text-sm">{friend.bio}</p>
-                    <p className="text-muted-foreground text-xs">{friend.mutualFriends} mutual friends</p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
-                      <Mail className="w-4 h-4" />
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-red-400 hover:text-red-300"
-                      onClick={() => handleUnfriend(friend.id)}
-                    >
-                      <UserX className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

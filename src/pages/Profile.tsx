@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Camera, Settings, Heart, MessageCircle, Grid, Bookmark, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,9 +10,12 @@ import { SettingsModal } from '@/components/SettingsModal';
 import { FigurePreviewModal } from '@/components/FigurePreviewModal';
 import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Profile = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('posts');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -21,6 +23,69 @@ const Profile = () => {
   const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user) return;
+
+    setIsUploadingAvatar(true);
+    console.log('Starting avatar upload...', file);
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) {
+        console.error('Error uploading avatar:', uploadError);
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+      
+      const avatarUrl = data.publicUrl;
+      console.log('Avatar uploaded successfully:', avatarUrl);
+
+      // Update profile in database
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Database update error:', error);
+        throw error;
+      }
+
+      console.log('Profile avatar updated successfully!');
+      
+      toast({
+        title: "Profile Photo Updated",
+        description: "Your profile photo has been successfully updated.",
+      });
+
+      // Refresh the page to show the new avatar
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Avatar upload error:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile photo",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   const stats = [
     { label: 'Posts', value: '127' },
@@ -165,12 +230,29 @@ const Profile = () => {
                     {user?.username?.[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <Button
-                  size="sm"
-                  className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-                >
-                  <Camera className="w-4 h-4" />
-                </Button>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarUpload}
+                  className="hidden"
+                  id="avatar-upload"
+                />
+                <label htmlFor="avatar-upload">
+                  <Button
+                    size="sm"
+                    disabled={isUploadingAvatar}
+                    className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 cursor-pointer"
+                    asChild
+                  >
+                    <span>
+                      {isUploadingAvatar ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4" />
+                      )}
+                    </span>
+                  </Button>
+                </label>
               </div>
 
               {/* Profile Info */}
