@@ -28,7 +28,7 @@ const Navigation = () => {
             <span className="text-white font-bold text-xl">A</span>
           </div>
           <span className="gradient-text font-bold text-xl hidden lg:block group-hover:scale-105 transition-transform">
-            AerialFit
+            AerialJourney
           </span>
         </Link>
 
