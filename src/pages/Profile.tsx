@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Camera, Settings, Heart, MessageCircle, Grid, Bookmark } from 'lucide-react';
+import { Camera, Settings, Heart, MessageCircle, Grid, Bookmark, Award } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,12 +8,15 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { SettingsModal } from '@/components/SettingsModal';
+import { FigurePreviewModal } from '@/components/FigurePreviewModal';
 
 const Profile = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('posts');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [selectedFigure, setSelectedFigure] = useState(null);
+  const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
 
   const stats = [
     { label: 'Posts', value: '127' },
@@ -198,7 +201,14 @@ const Profile = () => {
               </h3>
               <div className="flex space-x-3 overflow-x-auto pb-2">
                 {figureJourney.completed.map((figure) => (
-                  <div key={figure.id} className="flex-shrink-0 w-32">
+                  <div 
+                    key={figure.id} 
+                    className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
+                    onClick={() => {
+                      setSelectedFigure(figure);
+                      setIsFigureModalOpen(true);
+                    }}
+                  >
                     <div className="aspect-square rounded-lg overflow-hidden mb-2">
                       <img src={figure.image} alt={figure.name} className="w-full h-full object-cover" />
                     </div>
@@ -217,7 +227,14 @@ const Profile = () => {
               </h3>
               <div className="flex space-x-3 overflow-x-auto pb-2">
                 {figureJourney.inProgress.map((figure) => (
-                  <div key={figure.id} className="flex-shrink-0 w-32">
+                  <div 
+                    key={figure.id} 
+                    className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
+                    onClick={() => {
+                      setSelectedFigure(figure);
+                      setIsFigureModalOpen(true);
+                    }}
+                  >
                     <div className="aspect-square rounded-lg overflow-hidden mb-2 relative">
                       <img src={figure.image} alt={figure.name} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -239,7 +256,14 @@ const Profile = () => {
               </h3>
               <div className="flex space-x-3 overflow-x-auto pb-2">
                 {figureJourney.savedForLater.map((figure) => (
-                  <div key={figure.id} className="flex-shrink-0 w-32">
+                  <div 
+                    key={figure.id} 
+                    className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
+                    onClick={() => {
+                      setSelectedFigure(figure);
+                      setIsFigureModalOpen(true);
+                    }}
+                  >
                     <div className="aspect-square rounded-lg overflow-hidden mb-2">
                       <img src={figure.image} alt={figure.name} className="w-full h-full object-cover opacity-70" />
                     </div>
@@ -276,7 +300,7 @@ const Profile = () => {
         <div className="flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
           {[
             { id: 'posts', label: 'Posts', icon: Grid },
-            { id: 'achievements', label: 'All Achievements', icon: Badge },
+            { id: 'achievements', label: 'All Achievements', icon: Award },
             { id: 'saved', label: 'Saved', icon: Bookmark }
           ].map((tab) => {
             const Icon = tab.icon;
@@ -377,6 +401,11 @@ const Profile = () => {
       <SettingsModal 
         isOpen={isSettingsModalOpen} 
         onClose={() => setIsSettingsModalOpen(false)} 
+      />
+      <FigurePreviewModal 
+        figure={selectedFigure} 
+        isOpen={isFigureModalOpen} 
+        onClose={() => setIsFigureModalOpen(false)} 
       />
     </div>
   );

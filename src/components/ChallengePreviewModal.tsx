@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Calendar, Trophy, Users, Clock, ChevronRight, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ChallengeDetailsModal } from '@/components/ChallengeDetailsModal';
 
 interface Challenge {
   id: number;
@@ -31,6 +32,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   isOpen,
   onClose
 }) => {
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  
   if (!challenge) return null;
 
   const getStatusColor = (status: string) => {
@@ -185,6 +188,11 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             </Button>
             <Button 
               className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+              onClick={() => {
+                if (challenge.status === 'available' || challenge.status === 'in-progress') {
+                  setIsDetailsModalOpen(true);
+                }
+              }}
             >
               {getButtonText(challenge.status)}
               <ChevronRight className="ml-2 w-4 h-4" />
@@ -192,6 +200,38 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
           </div>
         </div>
       </DialogContent>
+      
+      {/* Challenge Details Modal */}
+      <ChallengeDetailsModal
+        challenge={challenge ? {
+          id: challenge.id,
+          title: challenge.title,
+          description: challenge.description,
+          level: challenge.difficulty,
+          totalDays: parseInt(challenge.duration.split(' ')[0]) || 28,
+          currentDay: challenge.status === 'in-progress' ? Math.floor(challenge.progress / 100 * 28) : 0,
+          completedDays: challenge.status === 'in-progress' ? Math.floor(challenge.progress / 100 * 28) : 0,
+          image: challenge.image,
+          days: Array.from({ length: 28 }, (_, i) => ({
+            day: i + 1,
+            title: `Day ${i + 1} Training`,
+            description: `Focus on specific movements and techniques for day ${i + 1}`,
+            duration: '30-45 mins',
+            completed: challenge.status === 'in-progress' ? i < Math.floor(challenge.progress / 100 * 28) : false,
+            figures: ['Basic Climb', 'Foot Lock', 'Straddle Up']
+          }))
+        } : null}
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        onStart={() => {
+          setIsDetailsModalOpen(false);
+          onClose();
+        }}
+        onContinue={() => {
+          setIsDetailsModalOpen(false);
+          onClose();
+        }}
+      />
     </Dialog>
   );
 };

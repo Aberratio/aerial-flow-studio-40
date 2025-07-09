@@ -13,6 +13,7 @@ import Challenges from "@/pages/Challenges";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import Inbox from "./pages/Inbox";
+import FriendProfile from "@/pages/FriendProfile";
 
 const queryClient = new QueryClient();
 
@@ -83,6 +84,11 @@ const AppRoutes = () => {
       <Route path="/profile" element={
         <ProtectedRoute>
           <Profile />
+        </ProtectedRoute>
+      } />
+      <Route path="/profile/:id" element={
+        <ProtectedRoute>
+          <FriendProfile />
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />

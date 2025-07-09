@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Search } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Search, Mail } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -15,7 +15,7 @@ const Navigation = () => {
     { path: '/library', icon: BookOpen, label: 'Library' },
     { path: '/challenges', icon: Trophy, label: 'Challenges' },
     { path: '/profile', icon: User, label: 'Profile' },
-    { path: '/inbox', icon: User, label: 'Inbox' },
+    { path: '/inbox', icon: Mail, label: 'Inbox' },
   ];
 
   const isActive = (path: string) => location.pathname === path;
