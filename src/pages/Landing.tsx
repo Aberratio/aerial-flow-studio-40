@@ -173,6 +173,121 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="px-6 py-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl lg:text-5xl font-bold mb-6">
+              Choose Your{' '}
+              <span className="gradient-text">Training</span>{' '}
+              Plan
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Start free or unlock the full potential of your aerial journey with our premium features.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <Card className="glass-effect border-white/10 p-8 relative">
+              <CardContent className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
+                  <div className="text-4xl font-bold gradient-text mb-4">$0</div>
+                  <p className="text-muted-foreground">Perfect for getting started</p>
+                </div>
+                
+                <ul className="space-y-3">
+                  <li className="flex items-center text-white">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-xs">✓</span>
+                    </div>
+                    Post training updates
+                  </li>
+                  <li className="flex items-center text-white">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-xs">✓</span>
+                    </div>
+                    Invite and connect with friends
+                  </li>
+                  <li className="flex items-center text-white">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-xs">✓</span>
+                    </div>
+                    View community feed
+                  </li>
+                </ul>
+
+                <Button 
+                  size="lg"
+                  onClick={() => openAuth('register')}
+                  className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                >
+                  Get Started Free
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Premium Plan */}
+            <Card className="glass-effect border-white/10 p-8 relative">
+              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 px-4 py-1 rounded-full text-sm font-semibold">
+                  Most Popular
+                </div>
+              </div>
+              <CardContent className="space-y-6">
+                <div className="text-center">
+                  <h3 className="text-2xl font-bold text-white mb-2">Premium</h3>
+                  <div className="text-4xl font-bold gradient-text mb-4">$10<span className="text-lg text-muted-foreground">/month</span></div>
+                  <p className="text-muted-foreground">For serious aerial athletes</p>
+                </div>
+                
+                <ul className="space-y-3">
+                  <li className="flex items-center text-white">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-xs">✓</span>
+                    </div>
+                    Everything in Free plan
+                  </li>
+                  <li className="flex items-center text-white">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-xs">✓</span>
+                    </div>
+                    Complete figure library access
+                  </li>
+                  <li className="flex items-center text-white">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-xs">✓</span>
+                    </div>
+                    Join challenges & competitions
+                  </li>
+                  <li className="flex items-center text-white">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-xs">✓</span>
+                    </div>
+                    Create custom training sessions
+                  </li>
+                  <li className="flex items-center text-white">
+                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-xs">✓</span>
+                    </div>
+                    Track progress & analytics
+                  </li>
+                </ul>
+
+                <Button 
+                  size="lg"
+                  onClick={() => openAuth('register')}
+                  className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                >
+                  Start Premium Trial
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="px-6 py-20">
         <div className="max-w-4xl mx-auto text-center">
