@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Image, Users, Lock, Globe, Video, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -24,7 +24,36 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
   const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedFigure, setSelectedFigure] = useState<any>(null);
+  const [figureSearchTerm, setFigureSearchTerm] = useState('');
+  const [availableFigures, setAvailableFigures] = useState([]);
+  const [showFigureSearch, setShowFigureSearch] = useState(false);
   const { toast } = useToast();
+
+  // Fetch available figures for selection
+  const fetchFigures = async () => {
+    try {
+      const { data: figures, error } = await supabase
+        .from('figures')
+        .select('id, name, difficulty_level, category, image_url')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setAvailableFigures(figures || []);
+    } catch (error) {
+      console.error('Error fetching figures:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchFigures();
+    }
+  }, [isOpen]);
+
+  const filteredFigures = availableFigures.filter(figure =>
+    figure.name.toLowerCase().includes(figureSearchTerm.toLowerCase())
+  );
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -93,6 +122,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
           content,
           image_url: mediaType === 'image' ? mediaUrl : null,
           video_url: mediaType === 'video' ? mediaUrl : null,
+          figure_id: selectedFigure?.id || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })

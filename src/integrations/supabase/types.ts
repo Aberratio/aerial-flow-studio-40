@@ -232,6 +232,7 @@ export type Database = {
         Row: {
           content: string
           created_at: string | null
+          figure_id: string | null
           id: string
           image_url: string | null
           updated_at: string | null
@@ -241,6 +242,7 @@ export type Database = {
         Insert: {
           content: string
           created_at?: string | null
+          figure_id?: string | null
           id?: string
           image_url?: string | null
           updated_at?: string | null
@@ -250,6 +252,7 @@ export type Database = {
         Update: {
           content?: string
           created_at?: string | null
+          figure_id?: string | null
           id?: string
           image_url?: string | null
           updated_at?: string | null
@@ -257,6 +260,13 @@ export type Database = {
           video_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "posts_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "posts_user_id_fkey"
             columns: ["user_id"]
