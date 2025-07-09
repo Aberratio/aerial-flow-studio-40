@@ -126,7 +126,10 @@ const Feed = () => {
                     )}
                   </div>
                     <span className="text-muted-foreground text-sm">
-                      {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                      {post.created_at && !isNaN(new Date(post.created_at).getTime()) 
+                        ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
+                        : 'Recently'
+                      }
                     </span>
                   </div>
                 </div>

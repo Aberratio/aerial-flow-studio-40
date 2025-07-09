@@ -290,7 +290,10 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
                                   <div className="flex items-center space-x-2 mb-1">
                                     <span className="font-semibold text-white text-sm">{post.user.username}</span>
                                     <span className="text-muted-foreground text-xs">
-                                      {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                                      {post.created_at && !isNaN(new Date(post.created_at).getTime()) 
+                                        ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
+                                        : 'Recently'
+                                      }
                                     </span>
                                   </div>
                                   <p className="text-white text-sm line-clamp-2">{post.content}</p>
@@ -350,7 +353,10 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
                                   <div className="flex items-center space-x-2 mb-1">
                                     <span className="font-semibold text-white text-sm">{post.user.username}</span>
                                     <span className="text-muted-foreground text-xs">
-                                      {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                                      {post.created_at && !isNaN(new Date(post.created_at).getTime()) 
+                                        ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
+                                        : 'Recently'
+                                      }
                                     </span>
                                   </div>
                                   <p className="text-white text-sm line-clamp-2">{post.content}</p>
