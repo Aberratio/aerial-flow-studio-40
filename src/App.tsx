@@ -14,6 +14,8 @@ import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import Inbox from "./pages/Inbox";
 import FriendProfile from "@/pages/FriendProfile";
+import Friends from "@/pages/Friends";
+import Training from "@/pages/Training";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +91,16 @@ const AppRoutes = () => {
       <Route path="/profile/:id" element={
         <ProtectedRoute>
           <FriendProfile />
+        </ProtectedRoute>
+      } />
+      <Route path="/friends" element={
+        <ProtectedRoute>
+          <Friends />
+        </ProtectedRoute>
+      } />
+      <Route path="/training" element={
+        <ProtectedRoute>
+          <Training />
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />

@@ -1,20 +1,16 @@
 
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, Plus, UserPlus, Mail } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { CreatePostModal } from '@/components/CreatePostModal';
-import { FriendInviteModal } from '@/components/FriendInviteModal';
-import { FriendRequestsModal } from '@/components/FriendRequestsModal';
 import { Link } from 'react-router-dom';
 
 const Feed = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const [showFriendInvite, setShowFriendInvite] = useState(false);
-  const [showFriendRequests, setShowFriendRequests] = useState(false);
   const [posts, setPosts] = useState([
 
     {
@@ -76,24 +72,6 @@ const Feed = () => {
             <div>
               <h1 className="text-3xl font-bold text-white mb-2">Your Feed</h1>
               <p className="text-muted-foreground">See what your fellow aerial athletes are up to</p>
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                onClick={() => setShowFriendRequests(true)}
-                variant="ghost"
-                className="text-muted-foreground hover:text-white"
-              >
-                <Mail className="w-5 h-5 mr-2" />
-                Requests
-              </Button>
-              <Button
-                onClick={() => setShowFriendInvite(true)}
-                variant="ghost"
-                className="text-muted-foreground hover:text-white"
-              >
-                <UserPlus className="w-5 h-5 mr-2" />
-                Find Friends
-              </Button>
             </div>
           </div>
         </div>
@@ -202,16 +180,6 @@ const Feed = () => {
         isOpen={showCreatePost}
         onClose={() => setShowCreatePost(false)}
         onPostCreated={handlePostCreated}
-      />
-
-      <FriendInviteModal
-        isOpen={showFriendInvite}
-        onClose={() => setShowFriendInvite(false)}
-      />
-
-      <FriendRequestsModal
-        isOpen={showFriendRequests}
-        onClose={() => setShowFriendRequests(false)}
       />
     </div>
   );

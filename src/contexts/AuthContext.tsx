@@ -9,6 +9,7 @@ interface User {
   bio?: string;
   followersCount: number;
   followingCount: number;
+  role: 'normal' | 'trainer' | 'admin';
 }
 
 interface AuthContextType {
@@ -51,7 +52,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b589?w=150&h=150&fit=crop&crop=face',
       bio: 'Aerial enthusiast and fitness lover 🎪',
       followersCount: 234,
-      followingCount: 89
+      followingCount: 89,
+      role: 'trainer'
     };
     
     setUser(mockUser);
@@ -67,7 +69,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b589?w=150&h=150&fit=crop&crop=face',
       bio: 'New to aerial arts, excited to learn! 🌟',
       followersCount: 0,
-      followingCount: 0
+      followingCount: 0,
+      role: 'normal'
     };
     
     setUser(mockUser);

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Search, Mail } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Mail, Users, Dumbbell } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -14,6 +14,8 @@ const Navigation = () => {
     { path: '/feed', icon: Home, label: 'Feed' },
     { path: '/library', icon: BookOpen, label: 'Library' },
     { path: '/challenges', icon: Trophy, label: 'Challenges' },
+    { path: '/friends', icon: Users, label: 'Friends' },
+    { path: '/training', icon: Dumbbell, label: 'Training' },
     { path: '/profile', icon: User, label: 'Profile' },
     { path: '/inbox', icon: Mail, label: 'Inbox' },
   ];
@@ -33,17 +35,6 @@ const Navigation = () => {
           </span>
         </Link>
 
-        {/* Search */}
-        <div className="mb-6 hidden lg:block">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search..."
-              className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
-            />
-          </div>
-        </div>
 
         {/* Navigation Items */}
         <div className="flex-1 space-y-2">
