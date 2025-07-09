@@ -5,9 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Save, X } from 'lucide-react';
+import { Camera, Save, X, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -21,14 +22,78 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
   const [bio, setBio] = useState(user?.bio || '');
   const [email, setEmail] = useState(user?.email || '');
   const [location, setLocation] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSave = () => {
-    // Here you would typically save to backend
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been successfully updated.",
-    });
-    onClose();
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!user) return;
+    
+    setIsLoading(true);
+    try {
+      let avatarUrl = user.avatar_url;
+
+      // Upload avatar if changed
+      if (avatarFile) {
+        const fileExt = avatarFile.name.split('.').pop();
+        const fileName = `${user.id}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, avatarFile, { upsert: true });
+
+        if (uploadError) {
+          console.error('Error uploading avatar:', uploadError);
+        } else {
+          const { data } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+          avatarUrl = data.publicUrl;
+        }
+      }
+
+      // Update profile
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          username,
+          bio,
+          email,
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Profile Updated",
+        description: "Your profile has been successfully updated.",
+      });
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update profile",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,19 +108,36 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={user?.avatar} />
+                <AvatarImage src={avatarPreview || user?.avatar_url} />
                 <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-2xl">
                   {user?.username?.[0]?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <Button
-                size="sm"
-                className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-              >
-                <Camera className="w-4 h-4" />
-              </Button>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleAvatarChange}
+                className="hidden"
+                id="avatar-upload"
+              />
+              <label htmlFor="avatar-upload">
+                <Button
+                  size="sm"
+                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  asChild
+                >
+                  <span className="cursor-pointer">
+                    <Camera className="w-4 h-4" />
+                  </span>
+                </Button>
+              </label>
             </div>
-            <Button variant="outline" size="sm" className="border-white/20 text-white hover:bg-white/10">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="border-white/20 text-white hover:bg-white/10"
+              onClick={() => document.getElementById('avatar-upload')?.click()}
+            >
               Change Photo
             </Button>
           </div>
@@ -112,9 +194,14 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
           <div className="flex space-x-3">
             <Button
               onClick={handleSave}
+              disabled={isLoading}
               className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
             >
-              <Save className="w-4 h-4 mr-2" />
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="w-4 h-4 mr-2" />
+              )}
               Save Changes
             </Button>
             <Button

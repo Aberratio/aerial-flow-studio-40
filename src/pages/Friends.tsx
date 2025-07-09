@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus, Mail, Users, UserCheck, UserX } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,46 +6,87 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FriendInviteModal } from '@/components/FriendInviteModal';
 import { FriendRequestsModal } from '@/components/FriendRequestsModal';
 import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Friends = () => {
+  const { user } = useAuth();
   const [showFriendInvite, setShowFriendInvite] = useState(false);
   const [showFriendRequests, setShowFriendRequests] = useState(false);
+  const [friends, setFriends] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock friends data
-  const [friends] = useState([
-    {
-      id: 1,
-      username: 'aerial_grace',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b589?w=150&h=150&fit=crop&crop=face',
-      bio: 'Aerial hoop enthusiast',
-      mutualFriends: 12,
-      isOnline: true
-    },
-    {
-      id: 2,
-      username: 'silk_master',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      bio: 'Aerial silk instructor',
-      mutualFriends: 8,
-      isOnline: false
-    },
-    {
-      id: 3,
-      username: 'pole_phoenix',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-      bio: 'Pole dance artist',
-      mutualFriends: 15,
-      isOnline: true
-    },
-    {
-      id: 4,
-      username: 'circus_star',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      bio: 'Circus performer',
-      mutualFriends: 5,
-      isOnline: false
+  useEffect(() => {
+    const fetchFriends = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('user_follows')
+          .select(`
+            following_id,
+            profiles!user_follows_following_id_fkey (
+              id,
+              username,
+              avatar_url,
+              bio
+            )
+          `)
+          .eq('follower_id', user.id);
+
+        if (error) {
+          console.error('Error fetching friends:', error);
+          return;
+        }
+
+        const friendsData = data?.map(follow => ({
+          id: follow.profiles.id,
+          username: follow.profiles.username,
+          avatar: follow.profiles.avatar_url,
+          bio: follow.profiles.bio || 'Aerial enthusiast',
+          mutualFriends: 0, // TODO: Calculate mutual friends
+          isOnline: Math.random() > 0.5 // TODO: Implement real online status
+        })) || [];
+
+        setFriends(friendsData);
+      } catch (error) {
+        console.error('Error fetching friends:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFriends();
+  }, [user]);
+
+  const handleUnfriend = async (friendId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_follows')
+        .delete()
+        .eq('follower_id', user.id)
+        .eq('following_id', friendId);
+
+      if (error) {
+        console.error('Error unfriending:', error);
+        return;
+      }
+
+      setFriends(friends.filter(friend => friend.id !== friendId));
+    } catch (error) {
+      console.error('Error unfriending:', error);
     }
-  ]);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6">
@@ -132,7 +173,12 @@ const Friends = () => {
                     <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
                       <Mail className="w-4 h-4" />
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="text-red-400 hover:text-red-300"
+                      onClick={() => handleUnfriend(friend.id)}
+                    >
                       <UserX className="w-4 h-4" />
                     </Button>
                   </div>

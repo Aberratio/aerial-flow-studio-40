@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Image, Users, Lock, Globe, Video } from 'lucide-react';
+import { X, Image, Users, Lock, Globe, Video, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +7,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -15,31 +17,28 @@ interface CreatePostModalProps {
 }
 
 export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostModalProps) => {
+  const { user } = useAuth();
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (mediaType === 'image') {
-          setSelectedImage(e.target?.result as string);
-          setSelectedVideo(null);
-        } else {
-          setSelectedVideo(e.target?.result as string);
-          setSelectedImage(null);
-        }
+        setSelectedFilePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!content.trim()) {
       toast({
         title: "Error",
@@ -49,35 +48,85 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
       return;
     }
 
-    const newPost = {
-      id: Date.now(),
-      user: {
-        id: 'current-user',
-        username: 'you',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-        verified: false
-      },
-      content,
-      image: selectedImage,
-      video: selectedVideo,
-      likes: 0,
-      comments: 0,
-      timeAgo: 'now',
-      isLiked: false,
-      privacy
-    };
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to create a post",
+        variant: "destructive"
+      });
+      return;
+    }
 
-    onPostCreated(newPost);
-    setContent('');
-    setSelectedImage(null);
-    setSelectedVideo(null);
-    setPrivacy('public');
-    onClose();
-    
-    toast({
-      title: "Post created!",
-      description: "Your post has been shared successfully."
-    });
+    setIsLoading(true);
+    try {
+      let mediaUrl = null;
+
+      // Upload media file if selected
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('posts')
+          .upload(fileName, selectedFile);
+
+        if (uploadError) {
+          console.error('Error uploading file:', uploadError);
+        } else {
+          const { data } = supabase.storage
+            .from('posts')
+            .getPublicUrl(fileName);
+          mediaUrl = data.publicUrl;
+        }
+      }
+
+      // Create post in database
+      const { data: newPost, error } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.id,
+          content,
+          image_url: mediaType === 'image' ? mediaUrl : null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select(`
+          *,
+          profiles (
+            id,
+            username,
+            avatar_url
+          )
+        `)
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Call the callback with the new post
+      onPostCreated(newPost);
+      
+      // Reset form
+      setContent('');
+      setSelectedFile(null);
+      setSelectedFilePreview(null);
+      setPrivacy('public');
+      onClose();
+      
+      toast({
+        title: "Post created!",
+        description: "Your post has been shared successfully."
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create post",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getPrivacyIcon = () => {
@@ -101,11 +150,11 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
             <Avatar>
-              <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" />
-              <AvatarFallback>You</AvatarFallback>
+              <AvatarImage src={user?.avatar_url} />
+              <AvatarFallback>{user?.username?.[0]?.toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-semibold text-white">You</p>
+              <p className="font-semibold text-white">{user?.username}</p>
               <Select value={privacy} onValueChange={setPrivacy}>
                 <SelectTrigger className="w-40 h-8 bg-white/5 border-white/10 text-white">
                   <div className="flex items-center space-x-2">
@@ -144,10 +193,10 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
             className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-muted-foreground resize-none"
           />
 
-          {selectedImage && (
+          {selectedFilePreview && mediaType === 'image' && (
             <div className="relative">
               <img
-                src={selectedImage}
+                src={selectedFilePreview}
                 alt="Selected"
                 className="w-full max-h-64 object-cover rounded-lg"
               />
@@ -155,18 +204,20 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
                 variant="ghost"
                 size="icon"
                 className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
-                onClick={() => setSelectedImage(null)}
+                onClick={() => {
+                  setSelectedFile(null);
+                  setSelectedFilePreview(null);
+                }}
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
           )}
 
-          
-          {selectedVideo && (
+          {selectedFilePreview && mediaType === 'video' && (
             <div className="relative">
               <video
-                src={selectedVideo}
+                src={selectedFilePreview}
                 className="w-full max-h-64 object-cover rounded-lg"
                 controls
               />
@@ -174,7 +225,10 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
                 variant="ghost"
                 size="icon"
                 className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
-                onClick={() => setSelectedVideo(null)}
+                onClick={() => {
+                  setSelectedFile(null);
+                  setSelectedFilePreview(null);
+                }}
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -230,8 +284,19 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
               <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-white">
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} className="bg-primary hover:bg-primary/90">
-                Post
+              <Button 
+                onClick={handleSubmit} 
+                disabled={isLoading}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Posting...
+                  </>
+                ) : (
+                  'Post'
+                )}
               </Button>
             </div>
           </div>
