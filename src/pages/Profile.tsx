@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Settings, Heart, MessageCircle, Grid, Bookmark, Award } from 'lucide-react';
+import { Camera, Settings, Heart, MessageCircle, Grid, Bookmark, Award, ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -12,6 +12,8 @@ import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useFigureProgress } from '@/hooks/useFigureProgress';
+import { useUserAchievements } from '@/hooks/useUserAchievements';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -27,6 +29,9 @@ const Profile = () => {
   const [userPosts, setUserPosts] = useState([]);
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const { figureProgress, loading: figureLoading, getFiguresByStatus } = useFigureProgress();
+  const { achievements, loading: achievementsLoading } = useUserAchievements();
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -200,32 +205,7 @@ const Profile = () => {
   ];
 
 
-  const achievements = [
-    { name: 'First Post', icon: '🎉', description: 'Shared your first aerial moment', points: 100 },
-    { name: 'Flexibility Master', icon: '🤸', description: 'Completed flexibility challenge', points: 500 },
-    { name: 'Community Star', icon: '⭐', description: '100+ likes on a single post', points: 250 },
-    { name: 'Consistent Trainer', icon: '💪', description: '7-day training streak', points: 350 },
-    { name: 'Perfect Form', icon: '✨', description: 'Excellent technique rating', points: 200 },
-    { name: 'Challenge Champion', icon: '🏆', description: 'Completed 5 challenges', points: 750 },
-    { name: 'Social Butterfly', icon: '🦋', description: 'Helped 10 community members', points: 300 },
-    { name: 'Dedication', icon: '🔥', description: '30-day training streak', points: 1000 }
-  ];
-
-  const figureJourney = {
-    completed: [
-      { id: 1, name: 'Basic Silk Climb', image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=150&h=150&fit=crop', difficulty: 'Beginner' },
-      { id: 2, name: 'Foot Lock', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop', difficulty: 'Beginner' },
-      { id: 3, name: 'Straddle Up', image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=150&h=150&fit=crop', difficulty: 'Intermediate' }
-    ],
-    inProgress: [
-      { id: 4, name: 'Caterpillar', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=150&h=150&fit=crop', difficulty: 'Intermediate', progress: 60 },
-      { id: 5, name: 'Scorpion', image: 'https://images.unsplash.com/photo-1594736797933-d0d8e3b82d9a?w=150&h=150&fit=crop', difficulty: 'Advanced', progress: 30 }
-    ],
-    savedForLater: [
-      { id: 6, name: 'Angel Drop', image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=150&h=150&fit=crop', difficulty: 'Advanced' },
-      { id: 7, name: 'Belay', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop', difficulty: 'Expert' }
-    ]
-  };
+  const totalScore = achievements.reduce((sum, achievement) => sum + achievement.points, 0);
 
 
   return (
@@ -332,107 +312,160 @@ const Profile = () => {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Recent Achievements</h2>
               <div className="text-sm text-muted-foreground">
-                Total Score: <span className="gradient-text font-bold">2,450 pts</span>
+                Total Score: <span className="gradient-text font-bold">{totalScore.toLocaleString()} pts</span>
               </div>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {achievements.slice(0, 4).map((achievement, index) => (
-                <div key={index} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                  <div className="text-3xl mb-2">{achievement.icon}</div>
-                  <div className="text-white font-semibold text-sm">{achievement.name}</div>
-                  <div className="text-muted-foreground text-xs">{achievement.description}</div>
-                  <div className="text-purple-400 text-xs font-semibold mt-1">+{achievement.points} pts</div>
-                </div>
-              ))}
-            </div>
+            {achievementsLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading achievements...</div>
+            ) : achievements.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No achievements earned yet!</p>
+                <p className="text-sm mt-2">Start training to unlock your first achievement</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {achievements.slice(0, 4).map((achievement, index) => (
+                  <div key={index} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+                    <div className="text-3xl mb-2">{achievement.icon}</div>
+                    <div className="text-white font-semibold text-sm">{achievement.name}</div>
+                    <div className="text-muted-foreground text-xs">{achievement.description}</div>
+                    <div className="text-purple-400 text-xs font-semibold mt-1">+{achievement.points} pts</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* My Library */}
         <Card className="glass-effect border-white/10 mb-6">
           <CardContent className="p-6">
-            <h2 className="text-xl font-bold text-white mb-4">My Figure Journey</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">My Figure Journey</h2>
+              <Link 
+                to="/profile/my-journey"
+                className="flex items-center text-purple-400 hover:text-purple-300 text-sm"
+              >
+                Show More <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+            </div>
             
-            {/* Completed */}
-            <div className="mb-6">
-              <h3 className="text-white font-semibold mb-3 flex items-center">
-                <span className="text-green-400 mr-2">✅</span>
-                Completed ({figureJourney.completed.length})
-              </h3>
-              <div className="flex space-x-3 overflow-x-auto pb-2">
-                {figureJourney.completed.map((figure) => (
-                  <div 
-                    key={figure.id} 
-                    className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
-                    onClick={() => {
-                      setSelectedFigure(figure);
-                      setIsFigureModalOpen(true);
-                    }}
-                  >
-                    <div className="aspect-square rounded-lg overflow-hidden mb-2">
-                      <img src={figure.image} alt={figure.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div className="text-white text-sm font-medium">{figure.name}</div>
-                    <div className="text-muted-foreground text-xs">{figure.difficulty}</div>
-                  </div>
-                ))}
+            {figureLoading ? (
+              <div className="text-center py-8 text-muted-foreground">Loading figures...</div>
+            ) : figureProgress.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <p>No figure progress yet!</p>
+                <p className="text-sm mt-2">
+                  <Link to="/library" className="text-purple-400 hover:text-purple-300">
+                    Explore the library to start your journey
+                  </Link>
+                </p>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Completed */}
+                {getFiguresByStatus('completed').length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-white font-semibold mb-3 flex items-center">
+                      <span className="text-green-400 mr-2">✅</span>
+                      Completed ({getFiguresByStatus('completed').length})
+                    </h3>
+                    <div className="flex space-x-3 overflow-x-auto pb-2">
+                      {getFiguresByStatus('completed').slice(0, 5).map((figure) => (
+                        <div 
+                          key={figure.id} 
+                          className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
+                          onClick={() => {
+                            setSelectedFigure(figure);
+                            setIsFigureModalOpen(true);
+                          }}
+                        >
+                          <div className="aspect-square rounded-lg overflow-hidden mb-2">
+                            {figure.image_url ? (
+                              <img src={figure.image_url} alt={figure.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                                <span className="text-2xl">🤸</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-white text-sm font-medium truncate">{figure.name}</div>
+                          <div className="text-muted-foreground text-xs">{figure.difficulty_level || 'Beginner'}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-            {/* In Progress */}
-            <div className="mb-6">
-              <h3 className="text-white font-semibold mb-3 flex items-center">
-                <span className="text-yellow-400 mr-2">⏳</span>
-                In Progress ({figureJourney.inProgress.length})
-              </h3>
-              <div className="flex space-x-3 overflow-x-auto pb-2">
-                {figureJourney.inProgress.map((figure) => (
-                  <div 
-                    key={figure.id} 
-                    className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
-                    onClick={() => {
-                      setSelectedFigure(figure);
-                      setIsFigureModalOpen(true);
-                    }}
-                  >
-                    <div className="aspect-square rounded-lg overflow-hidden mb-2 relative">
-                      <img src={figure.image} alt={figure.name} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                        <div className="text-white text-lg font-bold">{figure.progress}%</div>
-                      </div>
+                {/* For Later */}
+                {getFiguresByStatus('for_later').length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-white font-semibold mb-3 flex items-center">
+                      <span className="text-blue-400 mr-2">🔖</span>
+                      For Later ({getFiguresByStatus('for_later').length})
+                    </h3>
+                    <div className="flex space-x-3 overflow-x-auto pb-2">
+                      {getFiguresByStatus('for_later').slice(0, 5).map((figure) => (
+                        <div 
+                          key={figure.id} 
+                          className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
+                          onClick={() => {
+                            setSelectedFigure(figure);
+                            setIsFigureModalOpen(true);
+                          }}
+                        >
+                          <div className="aspect-square rounded-lg overflow-hidden mb-2">
+                            {figure.image_url ? (
+                              <img src={figure.image_url} alt={figure.name} className="w-full h-full object-cover opacity-70" />
+                            ) : (
+                              <div className="w-full h-full bg-white/5 flex items-center justify-center opacity-70">
+                                <span className="text-2xl">🤸</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-white text-sm font-medium truncate">{figure.name}</div>
+                          <div className="text-muted-foreground text-xs">{figure.difficulty_level || 'Beginner'}</div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="text-white text-sm font-medium">{figure.name}</div>
-                    <div className="text-muted-foreground text-xs">{figure.difficulty}</div>
                   </div>
-                ))}
-              </div>
-            </div>
+                )}
 
-            {/* Saved for Later */}
-            <div>
-              <h3 className="text-white font-semibold mb-3 flex items-center">
-                <span className="text-blue-400 mr-2">🔖</span>
-                Saved for Later ({figureJourney.savedForLater.length})
-              </h3>
-              <div className="flex space-x-3 overflow-x-auto pb-2">
-                {figureJourney.savedForLater.map((figure) => (
-                  <div 
-                    key={figure.id} 
-                    className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
-                    onClick={() => {
-                      setSelectedFigure(figure);
-                      setIsFigureModalOpen(true);
-                    }}
-                  >
-                    <div className="aspect-square rounded-lg overflow-hidden mb-2">
-                      <img src={figure.image} alt={figure.name} className="w-full h-full object-cover opacity-70" />
+                {/* Failed */}
+                {getFiguresByStatus('failed').length > 0 && (
+                  <div>
+                    <h3 className="text-white font-semibold mb-3 flex items-center">
+                      <span className="text-red-400 mr-2">❌</span>
+                      Failed ({getFiguresByStatus('failed').length})
+                    </h3>
+                    <div className="flex space-x-3 overflow-x-auto pb-2">
+                      {getFiguresByStatus('failed').slice(0, 5).map((figure) => (
+                        <div 
+                          key={figure.id} 
+                          className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
+                          onClick={() => {
+                            setSelectedFigure(figure);
+                            setIsFigureModalOpen(true);
+                          }}
+                        >
+                          <div className="aspect-square rounded-lg overflow-hidden mb-2">
+                            {figure.image_url ? (
+                              <img src={figure.image_url} alt={figure.name} className="w-full h-full object-cover grayscale" />
+                            ) : (
+                              <div className="w-full h-full bg-white/5 flex items-center justify-center grayscale">
+                                <span className="text-2xl">🤸</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-white text-sm font-medium truncate">{figure.name}</div>
+                          <div className="text-muted-foreground text-xs">{figure.difficulty_level || 'Beginner'}</div>
+                        </div>
+                      ))}
                     </div>
-                    <div className="text-white text-sm font-medium">{figure.name}</div>
-                    <div className="text-muted-foreground text-xs">{figure.difficulty}</div>
                   </div>
-                ))}
-              </div>
-            </div>
+                )}
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -551,16 +584,25 @@ const Profile = () => {
         )}
 
         {activeTab === 'achievements' && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {achievements.map((achievement, index) => (
-              <div key={index} className="text-center p-6 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                <div className="text-4xl mb-3">{achievement.icon}</div>
-                <div className="text-white font-semibold mb-2">{achievement.name}</div>
-                <div className="text-muted-foreground text-sm mb-3">{achievement.description}</div>
-                <div className="text-purple-400 font-bold text-lg">+{achievement.points} pts</div>
-              </div>
-            ))}
-          </div>
+          achievementsLoading ? (
+            <div className="text-center py-8 text-muted-foreground">Loading achievements...</div>
+          ) : achievements.length === 0 ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>No achievements earned yet!</p>
+              <p className="text-sm mt-2">Start training to unlock your first achievement</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {achievements.map((achievement, index) => (
+                <div key={index} className="text-center p-6 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+                  <div className="text-4xl mb-3">{achievement.icon}</div>
+                  <div className="text-white font-semibold mb-2">{achievement.name}</div>
+                  <div className="text-muted-foreground text-sm mb-3">{achievement.description}</div>
+                  <div className="text-purple-400 font-bold text-lg">+{achievement.points} pts</div>
+                </div>
+              ))}
+            </div>
+          )
         )}
 
         {activeTab === 'saved' && (

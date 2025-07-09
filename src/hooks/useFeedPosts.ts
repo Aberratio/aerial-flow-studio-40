@@ -18,6 +18,7 @@ export interface FeedPost {
   likes_count: number;
   comments_count: number;
   is_liked: boolean;
+  is_saved: boolean;
 }
 
 export const useFeedPosts = () => {
@@ -87,6 +88,14 @@ export const useFeedPosts = () => {
               .eq('user_id', user.id)
               .maybeSingle();
 
+            // Check if current user saved this post
+            const { data: userSaved } = await supabase
+              .from('saved_posts')
+              .select('id')
+              .eq('post_id', post.id)
+              .eq('user_id', user.id)
+              .maybeSingle();
+
             return {
               id: post.id,
               content: post.content,
@@ -103,6 +112,7 @@ export const useFeedPosts = () => {
               likes_count: likesCount || 0,
               comments_count: commentsCount || 0,
               is_liked: !!userLike,
+              is_saved: !!userSaved,
             };
           })
         );
@@ -163,6 +173,51 @@ export const useFeedPosts = () => {
     setPosts(prevPosts => [newPost, ...prevPosts]);
   };
 
+  // Toggle save on a post
+  const toggleSave = async (postId: string) => {
+    if (!user) return;
+
+    try {
+      const post = posts.find(p => p.id === postId);
+      if (!post) return;
+
+      // Don't allow saving own posts
+      if (post.user_id === user.id) return;
+
+      if (post.is_saved) {
+        // Remove save
+        await supabase
+          .from('saved_posts')
+          .delete()
+          .eq('post_id', postId)
+          .eq('user_id', user.id);
+
+        setPosts(prevPosts =>
+          prevPosts.map(p =>
+            p.id === postId
+              ? { ...p, is_saved: false }
+              : p
+          )
+        );
+      } else {
+        // Add save
+        await supabase
+          .from('saved_posts')
+          .insert({ post_id: postId, user_id: user.id });
+
+        setPosts(prevPosts =>
+          prevPosts.map(p =>
+            p.id === postId
+              ? { ...p, is_saved: true }
+              : p
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error toggling save:', error);
+    }
+  };
+
   // Update a post in the feed
   const updatePost = (updatedPost: FeedPost) => {
     setPosts(prevPosts =>
@@ -181,6 +236,7 @@ export const useFeedPosts = () => {
     loading,
     fetchPosts,
     toggleLike,
+    toggleSave,
     addPost,
     updatePost,
   };

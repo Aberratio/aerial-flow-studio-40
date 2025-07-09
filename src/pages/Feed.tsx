@@ -17,7 +17,7 @@ const Feed = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
-  const { posts, loading, toggleLike, addPost, updatePost } = useFeedPosts();
+  const { posts, loading, toggleLike, toggleSave, addPost, updatePost } = useFeedPosts();
   const { user } = useAuth();
 
   const handlePostCreated = (newPost: any) => {
@@ -37,6 +37,7 @@ const Feed = () => {
       likes_count: 0,
       comments_count: 0,
       is_liked: false,
+      is_saved: false,
     };
     addPost(feedPost);
   };
@@ -189,9 +190,16 @@ const Feed = () => {
                       <Share2 className="w-5 h-5" />
                     </Button>
                   </div>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
-                    <Bookmark className="w-5 h-5" />
-                  </Button>
+                  {post.user_id !== user?.id && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => toggleSave(post.id)}
+                      className={`text-muted-foreground hover:text-white ${post.is_saved ? 'text-blue-400' : ''}`}
+                    >
+                      <Bookmark className={`w-5 h-5 ${post.is_saved ? 'fill-current' : ''}`} />
+                    </Button>
+                  )}
                 </div>
               </CardContent>
             </Card>

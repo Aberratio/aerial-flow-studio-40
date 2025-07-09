@@ -19,6 +19,7 @@ import Friends from "@/pages/Friends";
 import Training from "@/pages/Training";
 import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
 import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
+import MyJourney from "@/pages/MyJourney";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +90,11 @@ const AppRoutes = () => {
       <Route path="/profile" element={
         <ProtectedRoute>
           <Profile />
+        </ProtectedRoute>
+      } />
+      <Route path="/profile/my-journey" element={
+        <ProtectedRoute>
+          <MyJourney />
         </ProtectedRoute>
       } />
       <Route path="/profile/:id" element={
