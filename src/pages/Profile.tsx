@@ -9,6 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { SettingsModal } from '@/components/SettingsModal';
 import { FigurePreviewModal } from '@/components/FigurePreviewModal';
+import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { Link } from 'react-router-dom';
 
 const Profile = () => {
@@ -18,6 +19,8 @@ const Profile = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedFigure, setSelectedFigure] = useState(null);
   const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [isPostModalOpen, setIsPostModalOpen] = useState(false);
 
   const stats = [
     { label: 'Posts', value: '127' },
@@ -29,39 +32,87 @@ const Profile = () => {
   const userPosts = [
     {
       id: 1,
+      user: {
+        username: user?.username || 'you',
+        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        verified: true
+      },
+      content: 'Just nailed my first perfect silk drop! The feeling of flying through the air is indescribable. Hours of practice finally paid off! 🌟',
       image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
       likes: 127,
-      comments: 23
+      comments: 23,
+      timeAgo: '2h ago',
+      isLiked: false
     },
     {
       id: 2,
+      user: {
+        username: user?.username || 'you',
+        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        verified: true
+      },
+      content: 'Morning training session complete! Working on my strength building routine. Every day gets a little easier 💪',
       image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=300&fit=crop',
       likes: 89,
-      comments: 15
+      comments: 15,
+      timeAgo: '1d ago',
+      isLiked: true
     },
     {
       id: 3,
+      user: {
+        username: user?.username || 'you',
+        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        verified: true
+      },
+      content: 'Flexibility training is paying off! Finally achieved this pose I\'ve been working towards for months 🧘‍♀️',
       image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=300&h=300&fit=crop',
       likes: 203,
-      comments: 31
+      comments: 31,
+      timeAgo: '3d ago',
+      isLiked: false
     },
     {
       id: 4,
+      user: {
+        username: user?.username || 'you',
+        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        verified: true
+      },
+      content: 'Beautiful evening session with the golden hour lighting. These moments make all the hard work worth it ✨',
       image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=300&h=300&fit=crop',
       likes: 156,
-      comments: 42
+      comments: 42,
+      timeAgo: '5d ago',
+      isLiked: true
     },
     {
       id: 5,
+      user: {
+        username: user?.username || 'you',
+        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        verified: true
+      },
+      content: 'Progress check! Comparing today\'s form to where I started. The journey is just as important as the destination 🌱',
       image: 'https://images.unsplash.com/photo-1594736797933-d0d8e3b82d9a?w=300&h=300&fit=crop',
       likes: 178,
-      comments: 28
+      comments: 28,
+      timeAgo: '1w ago',
+      isLiked: false
     },
     {
       id: 6,
+      user: {
+        username: user?.username || 'you',
+        avatar: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        verified: true
+      },
+      content: 'First time attempting this advanced sequence. Not perfect yet, but getting closer every day! 🔥',
       image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop',
       likes: 134,
-      comments: 19
+      comments: 19,
+      timeAgo: '1w ago',
+      isLiked: true
     }
   ];
 
@@ -327,7 +378,14 @@ const Profile = () => {
         {activeTab === 'posts' && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {userPosts.map((post) => (
-              <div key={post.id} className="relative group cursor-pointer">
+              <div 
+                key={post.id} 
+                className="relative group cursor-pointer"
+                onClick={() => {
+                  setSelectedPost(post);
+                  setIsPostModalOpen(true);
+                }}
+              >
                 <div className="aspect-square rounded-lg overflow-hidden">
                   <img 
                     src={post.image} 
@@ -368,7 +426,14 @@ const Profile = () => {
         {activeTab === 'saved' && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {userPosts.slice(0, 3).map((post) => (
-              <div key={post.id} className="relative group cursor-pointer">
+              <div 
+                key={post.id} 
+                className="relative group cursor-pointer"
+                onClick={() => {
+                  setSelectedPost(post);
+                  setIsPostModalOpen(true);
+                }}
+              >
                 <div className="aspect-square rounded-lg overflow-hidden">
                   <img 
                     src={post.image} 
@@ -407,6 +472,11 @@ const Profile = () => {
         figure={selectedFigure} 
         isOpen={isFigureModalOpen} 
         onClose={() => setIsFigureModalOpen(false)} 
+      />
+      <PostPreviewModal 
+        post={selectedPost} 
+        isOpen={isPostModalOpen} 
+        onClose={() => setIsPostModalOpen(false)} 
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Clock, Trophy, Star, Play, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface ChallengeDay {
   day: number;
@@ -34,10 +35,27 @@ interface ChallengeDetailsModalProps {
 }
 
 export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onContinue }: ChallengeDetailsModalProps) => {
+  const navigate = useNavigate();
+  
   if (!challenge) return null;
 
   const isStarted = challenge.currentDay > 0;
   const progressPercentage = (challenge.completedDays / challenge.totalDays) * 100;
+
+  const handleDayClick = (day: ChallengeDay) => {
+    onClose();
+    navigate(`/challenge/${challenge.id}/day/${day.day}`);
+  };
+
+  const handleContinue = () => {
+    onClose();
+    navigate(`/challenge/${challenge.id}/day/${challenge.currentDay}`);
+  };
+
+  const handleStart = () => {
+    onClose();
+    navigate(`/challenge/${challenge.id}/day/1`);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -95,13 +113,14 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
               {challenge.days.map((day) => (
                 <div 
                   key={day.day}
-                  className={`p-4 rounded-lg border transition-colors ${
+                  className={`p-4 rounded-lg border transition-colors cursor-pointer hover:bg-white/10 ${
                     day.completed 
                       ? 'bg-green-500/10 border-green-500/30' 
                       : day.day === challenge.currentDay
                       ? 'bg-purple-500/10 border-purple-500/30'
                       : 'bg-white/5 border-white/10'
                   }`}
+                  onClick={() => handleDayClick(day)}
                 >
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="text-white font-medium flex items-center">
@@ -133,7 +152,7 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
           <div className="flex space-x-3">
             {isStarted ? (
               <Button 
-                onClick={onContinue}
+                onClick={handleContinue}
                 className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
               >
                 <Play className="w-4 h-4 mr-2" />
@@ -141,7 +160,7 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
               </Button>
             ) : (
               <Button 
-                onClick={onStart}
+                onClick={handleStart}
                 className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
               >
                 <Play className="w-4 h-4 mr-2" />
