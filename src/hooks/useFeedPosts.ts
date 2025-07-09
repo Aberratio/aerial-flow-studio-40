@@ -163,6 +163,15 @@ export const useFeedPosts = () => {
     setPosts(prevPosts => [newPost, ...prevPosts]);
   };
 
+  // Update a post in the feed
+  const updatePost = (updatedPost: FeedPost) => {
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === updatedPost.id ? updatedPost : post
+      )
+    );
+  };
+
   useEffect(() => {
     fetchPosts();
   }, [user]);
@@ -173,5 +182,6 @@ export const useFeedPosts = () => {
     fetchPosts,
     toggleLike,
     addPost,
+    updatePost,
   };
 };

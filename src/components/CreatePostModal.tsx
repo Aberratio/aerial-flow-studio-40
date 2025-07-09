@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Image, Users, Lock, Globe, Video, Loader2 } from 'lucide-react';
+import { X, Image, Users, Lock, Globe, Video, Loader2, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,9 +14,10 @@ interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
   onPostCreated: (post: any) => void;
+  preselectedFigure?: any;
 }
 
-export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostModalProps) => {
+export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFigure }: CreatePostModalProps) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [privacy, setPrivacy] = useState('public');
@@ -48,8 +49,12 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
   useEffect(() => {
     if (isOpen) {
       fetchFigures();
+      if (preselectedFigure) {
+        setSelectedFigure(preselectedFigure);
+        setShowFigureSearch(false);
+      }
     }
-  }, [isOpen]);
+  }, [isOpen, preselectedFigure]);
 
   const filteredFigures = availableFigures.filter(figure =>
     figure.name.toLowerCase().includes(figureSearchTerm.toLowerCase())
@@ -242,11 +247,93 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }: CreatePostMo
           </div>
 
           <Textarea
-            placeholder="What's on your mind?"
+            placeholder={preselectedFigure ? `Share your version of ${preselectedFigure.name}...` : "What's on your mind?"}
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-muted-foreground resize-none"
           />
+
+          {/* Selected Figure Display */}
+          {selectedFigure && (
+            <div className="p-3 bg-white/5 rounded-lg border border-white/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {selectedFigure.image_url && (
+                    <img 
+                      src={selectedFigure.image_url} 
+                      alt={selectedFigure.name}
+                      className="w-12 h-12 rounded object-cover"
+                    />
+                  )}
+                  <div>
+                    <p className="text-white font-medium">{selectedFigure.name}</p>
+                    <p className="text-muted-foreground text-sm">{selectedFigure.difficulty_level}</p>
+                  </div>
+                </div>
+                {!preselectedFigure && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedFigure(null)}
+                    className="text-muted-foreground hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Figure Selection */}
+          {!selectedFigure && !preselectedFigure && (
+            <div className="space-y-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowFigureSearch(!showFigureSearch)}
+                className="w-full justify-start border-white/20 text-white hover:bg-white/10"
+              >
+                <Target className="w-4 h-4 mr-2" />
+                {showFigureSearch ? 'Hide Figure Selection' : 'Link to a Figure (Optional)'}
+              </Button>
+              
+              {showFigureSearch && (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    placeholder="Search figures..."
+                    value={figureSearchTerm}
+                    onChange={(e) => setFigureSearchTerm(e.target.value)}
+                    className="w-full p-2 bg-white/5 border border-white/10 rounded text-white placeholder:text-muted-foreground"
+                  />
+                  <div className="max-h-40 overflow-y-auto space-y-1">
+                    {filteredFigures.slice(0, 5).map((figure) => (
+                      <div
+                        key={figure.id}
+                        onClick={() => {
+                          setSelectedFigure(figure);
+                          setShowFigureSearch(false);
+                          setFigureSearchTerm('');
+                        }}
+                        className="p-2 hover:bg-white/10 rounded cursor-pointer flex items-center space-x-2"
+                      >
+                        {figure.image_url && (
+                          <img 
+                            src={figure.image_url} 
+                            alt={figure.name}
+                            className="w-8 h-8 rounded object-cover"
+                          />
+                        )}
+                        <div>
+                          <p className="text-white text-sm">{figure.name}</p>
+                          <p className="text-muted-foreground text-xs">{figure.difficulty_level}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {selectedFilePreview && mediaType === 'image' && (
             <div className="relative">

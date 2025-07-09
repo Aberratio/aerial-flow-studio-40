@@ -1,11 +1,13 @@
 
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, Plus, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Plus, Loader2, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { CreatePostModal } from '@/components/CreatePostModal';
+import { EditPostModal } from '@/components/EditPostModal';
 import { Link } from 'react-router-dom';
 import { useFeedPosts } from '@/hooks/useFeedPosts';
 import { useAuth } from '@/contexts/AuthContext';
@@ -14,7 +16,8 @@ import { formatDistanceToNow } from 'date-fns';
 const Feed = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
-  const { posts, loading, toggleLike, addPost } = useFeedPosts();
+  const [editingPost, setEditingPost] = useState(null);
+  const { posts, loading, toggleLike, addPost, updatePost } = useFeedPosts();
   const { user } = useAuth();
 
   const handlePostCreated = (newPost: any) => {
@@ -97,11 +100,31 @@ const Feed = () => {
                     </Avatar>
                   </Link>
                   <div className="flex-1">
+                  <div className="flex items-center justify-between flex-1">
                     <div className="flex items-center space-x-2">
                       <Link to={`/profile/${post.user.id}`} className="cursor-pointer hover:text-primary transition-colors">
                         <span className="font-semibold text-white">{post.user.username}</span>
                       </Link>
                     </div>
+                    {post.user_id === user?.id && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white h-8 w-8 p-0">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-background/95 border-white/10">
+                          <DropdownMenuItem 
+                            onClick={() => setEditingPost(post)}
+                            className="text-white hover:bg-white/10"
+                          >
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit Post
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
                     <span className="text-muted-foreground text-sm">
                       {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
                     </span>
@@ -184,6 +207,16 @@ const Feed = () => {
         isOpen={showCreatePost}
         onClose={() => setShowCreatePost(false)}
         onPostCreated={handlePostCreated}
+      />
+
+      <EditPostModal
+        isOpen={!!editingPost}
+        onClose={() => setEditingPost(null)}
+        post={editingPost}
+        onPostUpdated={(updatedPost) => {
+          updatePost(updatedPost);
+          setEditingPost(null);
+        }}
       />
     </div>
   );
