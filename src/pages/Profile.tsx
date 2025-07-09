@@ -19,7 +19,7 @@ const Profile = () => {
     { label: 'Posts', value: '127' },
     { label: 'Followers', value: user?.followersCount.toLocaleString() || '0' },
     { label: 'Following', value: user?.followingCount.toLocaleString() || '0' },
-    { label: 'Challenges', value: '4' }
+    { label: 'Score', value: '2,450' }
   ];
 
   const userPosts = [
@@ -62,10 +62,37 @@ const Profile = () => {
   ];
 
   const achievements = [
-    { name: 'First Post', icon: '🎉', description: 'Shared your first aerial moment' },
-    { name: 'Flexibility Master', icon: '🤸', description: 'Completed flexibility challenge' },
-    { name: 'Community Star', icon: '⭐', description: '100+ likes on a single post' },
-    { name: 'Consistent Trainer', icon: '💪', description: '7-day training streak' }
+    { name: 'First Post', icon: '🎉', description: 'Shared your first aerial moment', points: 100 },
+    { name: 'Flexibility Master', icon: '🤸', description: 'Completed flexibility challenge', points: 500 },
+    { name: 'Community Star', icon: '⭐', description: '100+ likes on a single post', points: 250 },
+    { name: 'Consistent Trainer', icon: '💪', description: '7-day training streak', points: 350 },
+    { name: 'Perfect Form', icon: '✨', description: 'Excellent technique rating', points: 200 },
+    { name: 'Challenge Champion', icon: '🏆', description: 'Completed 5 challenges', points: 750 },
+    { name: 'Social Butterfly', icon: '🦋', description: 'Helped 10 community members', points: 300 },
+    { name: 'Dedication', icon: '🔥', description: '30-day training streak', points: 1000 }
+  ];
+
+  const figureJourney = {
+    completed: [
+      { id: 1, name: 'Basic Silk Climb', image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=150&h=150&fit=crop', difficulty: 'Beginner' },
+      { id: 2, name: 'Foot Lock', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop', difficulty: 'Beginner' },
+      { id: 3, name: 'Straddle Up', image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=150&h=150&fit=crop', difficulty: 'Intermediate' }
+    ],
+    inProgress: [
+      { id: 4, name: 'Caterpillar', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=150&h=150&fit=crop', difficulty: 'Intermediate', progress: 60 },
+      { id: 5, name: 'Scorpion', image: 'https://images.unsplash.com/photo-1594736797933-d0d8e3b82d9a?w=150&h=150&fit=crop', difficulty: 'Advanced', progress: 30 }
+    ],
+    savedForLater: [
+      { id: 6, name: 'Angel Drop', image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=150&h=150&fit=crop', difficulty: 'Advanced' },
+      { id: 7, name: 'Belay', image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=150&h=150&fit=crop', difficulty: 'Expert' }
+    ]
+  };
+
+  const friends = [
+    { id: 1, username: 'sarah_aerial', avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b589?w=100&h=100&fit=crop&crop=face', level: 'Advanced', score: 3200 },
+    { id: 2, username: 'mike_silk', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face', level: 'Expert', score: 4500 },
+    { id: 3, username: 'luna_hoop', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face', level: 'Intermediate', score: 2100 },
+    { id: 4, username: 'alex_flow', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face', level: 'Advanced', score: 2800 }
   ];
 
   return (
@@ -139,13 +166,106 @@ const Profile = () => {
         {/* Achievements */}
         <Card className="glass-effect border-white/10 mb-6">
           <CardContent className="p-6">
-            <h2 className="text-xl font-bold text-white mb-4">Recent Achievements</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white">Recent Achievements</h2>
+              <div className="text-sm text-muted-foreground">
+                Total Score: <span className="gradient-text font-bold">2,450 pts</span>
+              </div>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {achievements.map((achievement, index) => (
-                <div key={index} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+              {achievements.slice(0, 4).map((achievement, index) => (
+                <div key={index} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
                   <div className="text-3xl mb-2">{achievement.icon}</div>
                   <div className="text-white font-semibold text-sm">{achievement.name}</div>
                   <div className="text-muted-foreground text-xs">{achievement.description}</div>
+                  <div className="text-purple-400 text-xs font-semibold mt-1">+{achievement.points} pts</div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* My Library */}
+        <Card className="glass-effect border-white/10 mb-6">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold text-white mb-4">My Figure Journey</h2>
+            
+            {/* Completed */}
+            <div className="mb-6">
+              <h3 className="text-white font-semibold mb-3 flex items-center">
+                <span className="text-green-400 mr-2">✅</span>
+                Completed ({figureJourney.completed.length})
+              </h3>
+              <div className="flex space-x-3 overflow-x-auto pb-2">
+                {figureJourney.completed.map((figure) => (
+                  <div key={figure.id} className="flex-shrink-0 w-32">
+                    <div className="aspect-square rounded-lg overflow-hidden mb-2">
+                      <img src={figure.image} alt={figure.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="text-white text-sm font-medium">{figure.name}</div>
+                    <div className="text-muted-foreground text-xs">{figure.difficulty}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* In Progress */}
+            <div className="mb-6">
+              <h3 className="text-white font-semibold mb-3 flex items-center">
+                <span className="text-yellow-400 mr-2">⏳</span>
+                In Progress ({figureJourney.inProgress.length})
+              </h3>
+              <div className="flex space-x-3 overflow-x-auto pb-2">
+                {figureJourney.inProgress.map((figure) => (
+                  <div key={figure.id} className="flex-shrink-0 w-32">
+                    <div className="aspect-square rounded-lg overflow-hidden mb-2 relative">
+                      <img src={figure.image} alt={figure.name} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="text-white text-lg font-bold">{figure.progress}%</div>
+                      </div>
+                    </div>
+                    <div className="text-white text-sm font-medium">{figure.name}</div>
+                    <div className="text-muted-foreground text-xs">{figure.difficulty}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Saved for Later */}
+            <div>
+              <h3 className="text-white font-semibold mb-3 flex items-center">
+                <span className="text-blue-400 mr-2">🔖</span>
+                Saved for Later ({figureJourney.savedForLater.length})
+              </h3>
+              <div className="flex space-x-3 overflow-x-auto pb-2">
+                {figureJourney.savedForLater.map((figure) => (
+                  <div key={figure.id} className="flex-shrink-0 w-32">
+                    <div className="aspect-square rounded-lg overflow-hidden mb-2">
+                      <img src={figure.image} alt={figure.name} className="w-full h-full object-cover opacity-70" />
+                    </div>
+                    <div className="text-white text-sm font-medium">{figure.name}</div>
+                    <div className="text-muted-foreground text-xs">{figure.difficulty}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Friends Overview */}
+        <Card className="glass-effect border-white/10 mb-6">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-bold text-white mb-4">Friends</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {friends.map((friend) => (
+                <div key={friend.id} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+                  <Avatar className="w-16 h-16 mx-auto mb-3">
+                    <AvatarImage src={friend.avatar} />
+                    <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                  <div className="text-white font-semibold text-sm">{friend.username}</div>
+                  <div className="text-muted-foreground text-xs">{friend.level}</div>
+                  <div className="text-purple-400 text-xs font-semibold mt-1">{friend.score.toLocaleString()} pts</div>
                 </div>
               ))}
             </div>
@@ -156,6 +276,7 @@ const Profile = () => {
         <div className="flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
           {[
             { id: 'posts', label: 'Posts', icon: Grid },
+            { id: 'achievements', label: 'All Achievements', icon: Badge },
             { id: 'saved', label: 'Saved', icon: Bookmark }
           ].map((tab) => {
             const Icon = tab.icon;
@@ -177,32 +298,75 @@ const Profile = () => {
           })}
         </div>
 
-        {/* Posts Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {userPosts.map((post) => (
-            <div key={post.id} className="relative group cursor-pointer">
-              <div className="aspect-square rounded-lg overflow-hidden">
-                <img 
-                  src={post.image} 
-                  alt="User post"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-              </div>
-              
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
-                <div className="flex items-center text-white">
-                  <Heart className="w-5 h-5 mr-2" />
-                  {post.likes}
+        {/* Content based on active tab */}
+        {activeTab === 'posts' && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {userPosts.map((post) => (
+              <div key={post.id} className="relative group cursor-pointer">
+                <div className="aspect-square rounded-lg overflow-hidden">
+                  <img 
+                    src={post.image} 
+                    alt="User post"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
                 </div>
-                <div className="flex items-center text-white">
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  {post.comments}
+                
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
+                  <div className="flex items-center text-white">
+                    <Heart className="w-5 h-5 mr-2" />
+                    {post.likes}
+                  </div>
+                  <div className="flex items-center text-white">
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    {post.comments}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'achievements' && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {achievements.map((achievement, index) => (
+              <div key={index} className="text-center p-6 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+                <div className="text-4xl mb-3">{achievement.icon}</div>
+                <div className="text-white font-semibold mb-2">{achievement.name}</div>
+                <div className="text-muted-foreground text-sm mb-3">{achievement.description}</div>
+                <div className="text-purple-400 font-bold text-lg">+{achievement.points} pts</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'saved' && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {userPosts.slice(0, 3).map((post) => (
+              <div key={post.id} className="relative group cursor-pointer">
+                <div className="aspect-square rounded-lg overflow-hidden">
+                  <img 
+                    src={post.image} 
+                    alt="Saved post"
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  />
+                </div>
+                
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
+                  <div className="flex items-center text-white">
+                    <Heart className="w-5 h-5 mr-2" />
+                    {post.likes}
+                  </div>
+                  <div className="flex items-center text-white">
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    {post.comments}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Modals */}

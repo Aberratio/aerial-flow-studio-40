@@ -9,6 +9,8 @@ import { FigurePreviewModal } from '@/components/FigurePreviewModal';
 
 const Library = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [levelFilter, setLevelFilter] = useState('all');
+  const [typeFilter, setTypeFilter] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedFigure, setSelectedFigure] = useState(null);
 
