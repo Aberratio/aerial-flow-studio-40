@@ -96,6 +96,7 @@ export type Database = {
       }
       figures: {
         Row: {
+          category: string | null
           created_at: string | null
           created_by: string | null
           description: string | null
@@ -103,12 +104,15 @@ export type Database = {
           id: string
           image_url: string | null
           instructions: string | null
+          level: string | null
           name: string
           tags: string[] | null
+          type: string | null
           updated_at: string | null
           video_url: string | null
         }
         Insert: {
+          category?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -116,12 +120,15 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
+          level?: string | null
           name: string
           tags?: string[] | null
+          type?: string | null
           updated_at?: string | null
           video_url?: string | null
         }
         Update: {
+          category?: string | null
           created_at?: string | null
           created_by?: string | null
           description?: string | null
@@ -129,8 +136,10 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
+          level?: string | null
           name?: string
           tags?: string[] | null
+          type?: string | null
           updated_at?: string | null
           video_url?: string | null
         }

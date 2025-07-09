@@ -24,6 +24,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     description: '',
     instructions: '',
     difficulty_level: '',
+    category: '',
+    level: '',
+    type: '',
     image_url: '',
     video_url: '',
     tags: [] as string[]
@@ -38,6 +41,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         description: editingFigure.description || '',
         instructions: editingFigure.instructions || '',
         difficulty_level: editingFigure.difficulty_level || '',
+        category: editingFigure.category || '',
+        level: editingFigure.level || '',
+        type: editingFigure.type || '',
         image_url: editingFigure.image_url || '',
         video_url: editingFigure.video_url || '',
         tags: editingFigure.tags || []
@@ -48,6 +54,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         description: '',
         instructions: '',
         difficulty_level: '',
+        category: '',
+        level: '',
+        type: '',
         image_url: '',
         video_url: '',
         tags: []
@@ -116,6 +125,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             description: formData.description.trim() || null,
             instructions: formData.instructions.trim() || null,
             difficulty_level: formData.difficulty_level || null,
+            category: formData.category || null,
+            level: formData.level || null,
+            type: formData.type || null,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
@@ -132,6 +144,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             description: formData.description.trim() || null,
             instructions: formData.instructions.trim() || null,
             difficulty_level: formData.difficulty_level || null,
+            category: formData.category || null,
+            level: formData.level || null,
+            type: formData.type || null,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
@@ -152,6 +167,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         description: '',
         instructions: '',
         difficulty_level: '',
+        category: '',
+        level: '',
+        type: '',
         image_url: '',
         video_url: '',
         tags: []
@@ -235,22 +253,58 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
               />
             </div>
 
-            <div>
-              <Label htmlFor="difficulty" className="text-white">Difficulty Level</Label>
-              <Select 
-                value={formData.difficulty_level} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}
-              >
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="Select difficulty level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                  <SelectItem value="Expert">Expert</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="difficulty" className="text-white">Difficulty Level</Label>
+                <Select 
+                  value={formData.difficulty_level} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}
+                >
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Select difficulty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                    <SelectItem value="Advanced">Advanced</SelectItem>
+                    <SelectItem value="Expert">Expert</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="category" className="text-white">Category</Label>
+                <Select 
+                  value={formData.category} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+                >
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="silks">Silks</SelectItem>
+                    <SelectItem value="hoop">Hoop</SelectItem>
+                    <SelectItem value="pole">Pole</SelectItem>
+                    <SelectItem value="straps">Straps</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="type" className="text-white">Type</Label>
+                <Select 
+                  value={formData.type} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+                >
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Select type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single figure">Single Figure</SelectItem>
+                    <SelectItem value="combo">Combo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div>
