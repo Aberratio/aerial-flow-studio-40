@@ -69,21 +69,36 @@ const TermsOfUse = () => {
                   <TableCell className="text-muted-foreground">15 points</TableCell>
                   <TableCell className="text-muted-foreground">Mastering a new aerial figure</TableCell>
                 </TableRow>
-                <TableRow className="border-white/10">
-                  <TableCell className="font-medium text-white">Follow Someone</TableCell>
-                  <TableCell className="text-muted-foreground">1 point</TableCell>
-                  <TableCell className="text-muted-foreground">Building your network</TableCell>
-                </TableRow>
-                <TableRow className="border-white/10">
-                  <TableCell className="font-medium text-white">Gain Follower</TableCell>
-                  <TableCell className="text-muted-foreground">5 points</TableCell>
-                  <TableCell className="text-muted-foreground">When someone follows you</TableCell>
-                </TableRow>
-                <TableRow className="border-white/10">
-                  <TableCell className="font-medium text-white">Complete Training Session</TableCell>
-                  <TableCell className="text-muted-foreground">20 points</TableCell>
-                  <TableCell className="text-muted-foreground">Finishing a custom training session</TableCell>
-                </TableRow>
+                 <TableRow className="border-white/10">
+                   <TableCell className="font-medium text-white">Send Friend Request</TableCell>
+                   <TableCell className="text-muted-foreground">2 points</TableCell>
+                   <TableCell className="text-muted-foreground">Reaching out to new friends</TableCell>
+                 </TableRow>
+                 <TableRow className="border-white/10">
+                   <TableCell className="font-medium text-white">Accept Friend Request</TableCell>
+                   <TableCell className="text-muted-foreground">5 points</TableCell>
+                   <TableCell className="text-muted-foreground">Welcoming new friends</TableCell>
+                 </TableRow>
+                 <TableRow className="border-white/10">
+                   <TableCell className="font-medium text-white">Friend Request Accepted</TableCell>
+                   <TableCell className="text-muted-foreground">5 points</TableCell>
+                   <TableCell className="text-muted-foreground">When someone accepts your friend request</TableCell>
+                 </TableRow>
+                 <TableRow className="border-white/10">
+                   <TableCell className="font-medium text-white">Follow Someone</TableCell>
+                   <TableCell className="text-muted-foreground">1 point</TableCell>
+                   <TableCell className="text-muted-foreground">Building your network</TableCell>
+                 </TableRow>
+                 <TableRow className="border-white/10">
+                   <TableCell className="font-medium text-white">Gain Follower</TableCell>
+                   <TableCell className="text-muted-foreground">5 points</TableCell>
+                   <TableCell className="text-muted-foreground">When someone follows you</TableCell>
+                 </TableRow>
+                 <TableRow className="border-white/10">
+                   <TableCell className="font-medium text-white">Complete Training Session</TableCell>
+                   <TableCell className="text-muted-foreground">20 points</TableCell>
+                   <TableCell className="text-muted-foreground">Finishing a custom training session</TableCell>
+                 </TableRow>
               </TableBody>
             </Table>
             

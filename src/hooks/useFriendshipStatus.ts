@@ -81,6 +81,23 @@ export const useFriendshipStatus = (userId: string) => {
 
       if (error) throw error;
 
+      // Award points for sending friend request
+      await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'friend_request_sent',
+          activity_data: { addressee_id: userId },
+          target_user_id: userId,
+          points_awarded: 2
+        });
+
+      // Add points to user score
+      await supabase.rpc('add_points_to_user', {
+        user_id: user.id,
+        points: 2
+      });
+
       // Create notification for the recipient
       await supabase
         .from('user_activities')
@@ -112,7 +129,24 @@ export const useFriendshipStatus = (userId: string) => {
 
       if (error) throw error;
 
-      // Create notification for the requester
+      // Award points for accepting friend request
+      await supabase
+        .from('user_activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'friend_request_accepted_by_me',
+          activity_data: { requester_id: userId },
+          target_user_id: userId,
+          points_awarded: 5
+        });
+
+      // Add points to user score
+      await supabase.rpc('add_points_to_user', {
+        user_id: user.id,
+        points: 5
+      });
+
+      // Award points to requester for having request accepted
       await supabase
         .from('user_activities')
         .insert({
@@ -120,8 +154,14 @@ export const useFriendshipStatus = (userId: string) => {
           activity_type: 'friend_request_accepted',
           activity_data: { accepter_username: user.username },
           target_user_id: user.id,
-          points_awarded: 0
+          points_awarded: 5
         });
+
+      // Add points to requester's score
+      await supabase.rpc('add_points_to_user', {
+        user_id: userId,
+        points: 5
+      });
 
       setStatus(prev => ({ ...prev, isFriend: true, pendingFriendRequest: 'none' }));
       return true;

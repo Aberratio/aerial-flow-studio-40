@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Mail, Users, Dumbbell, Settings, Crown, Lock } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,7 +17,7 @@ const Navigation = () => {
     { path: '/feed', icon: Home, label: 'Feed' },
     { path: '/friends', icon: Users, label: 'Friends' },
     { path: '/profile', icon: User, label: 'Profile' },
-    { path: '/inbox', icon: Mail, label: 'Inbox' },
+    { path: '/inbox', icon: Bell, label: 'Inbox' },
   ];
 
   const premiumNavItems = [

@@ -13,7 +13,6 @@ import {
   Download, 
   LogOut,
   Eye,
-  MessageCircle,
   Heart,
   Crown,
   CreditCard
@@ -42,7 +41,6 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const [privacy, setPrivacy] = useState({
     profilePublic: true,
     showProgress: true,
-    allowMessages: true,
   });
   const [darkMode, setDarkMode] = useState(true);
 
@@ -99,17 +97,6 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               </div>
               
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <MessageCircle className="w-4 h-4 text-blue-400" />
-                  <Label className="text-white">Comments</Label>
-                </div>
-                <Switch
-                  checked={notifications.comments}
-                  onCheckedChange={(checked) => setNotifications({...notifications, comments: checked})}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
                 <Label className="text-white">New Followers</Label>
                 <Switch
                   checked={notifications.follows}
@@ -161,14 +148,6 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 <Switch
                   checked={privacy.showProgress}
                   onCheckedChange={(checked) => setPrivacy({...privacy, showProgress: checked})}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Label className="text-white">Allow Messages</Label>
-                <Switch
-                  checked={privacy.allowMessages}
-                  onCheckedChange={(checked) => setPrivacy({...privacy, allowMessages: checked})}
                 />
               </div>
             </div>
