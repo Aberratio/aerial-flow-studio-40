@@ -221,7 +221,7 @@ export function UIStringManagement({
                   <SelectValue placeholder="Filter by category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All categories</SelectItem>
+                  <SelectItem value="all">All categories</SelectItem>
                   <SelectItem value="buttons">Buttons</SelectItem>
                   <SelectItem value="labels">Labels</SelectItem>
                   <SelectItem value="messages">Messages</SelectItem>
@@ -241,7 +241,7 @@ export function UIStringManagement({
                 .filter(str => {
                   const matchesSearch = str.string_key.toLowerCase().includes(uiSearchTerm.toLowerCase()) ||
                                         str.value.toLowerCase().includes(uiSearchTerm.toLowerCase());
-                  const matchesCategory = !categoryFilter || str.category === categoryFilter;
+                  const matchesCategory = categoryFilter === 'all' || !categoryFilter || str.category === categoryFilter;
                   return matchesSearch && matchesCategory;
                 })
                 .map(string => (

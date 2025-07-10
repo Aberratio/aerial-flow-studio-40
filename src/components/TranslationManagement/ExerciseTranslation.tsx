@@ -83,6 +83,8 @@ export function ExerciseTranslation({
           description: translationForm.description || null,
           instructions: translationForm.instructions || null,
           tags: translationForm.tags.length > 0 ? translationForm.tags : null
+        }, {
+          onConflict: 'figure_id,language_id'
         });
 
       if (error) throw error;
