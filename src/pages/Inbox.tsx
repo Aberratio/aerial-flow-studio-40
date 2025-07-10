@@ -6,11 +6,22 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useUserActivities, UserActivity } from '@/hooks/useUserActivities';
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 const Inbox = () => {
   const [filter, setFilter] = useState('all');
-  const { activities, loading } = useUserActivities();
+  const { activities, loading, markAllAsRead } = useUserActivities();
   const navigate = useNavigate();
+
+  // Mark all activities as read when user opens inbox
+  useEffect(() => {
+    const markAsRead = async () => {
+      if (activities.length > 0) {
+        await markAllAsRead();
+      }
+    };
+    markAsRead();
+  }, [activities.length]);
 
   const getActivityContent = (activity: UserActivity) => {
     const data = activity.activity_data || {};

@@ -18,15 +18,12 @@ const Navigation = () => {
       if (!user) return;
 
       try {
-        // Get activities from the last 24 hours that haven't been "read"
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-
+        // Get unread activities
         const { count } = await supabase
           .from('user_activities')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id)
-          .gte('created_at', yesterday.toISOString());
+          .eq('is_read', false);
 
         setUnreadCount(count || 0);
       } catch (error) {

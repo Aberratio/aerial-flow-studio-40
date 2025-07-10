@@ -93,5 +93,19 @@ export const useUserActivities = () => {
     };
   }, [user]);
 
-  return { activities, loading, refetch: () => {} };
+  const markAllAsRead = async () => {
+    if (!user) return;
+
+    try {
+      await supabase
+        .from('user_activities')
+        .update({ is_read: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false);
+    } catch (error) {
+      console.error('Error marking activities as read:', error);
+    }
+  };
+
+  return { activities, loading, markAllAsRead };
 };

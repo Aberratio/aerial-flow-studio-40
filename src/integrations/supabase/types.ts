@@ -857,6 +857,7 @@ export type Database = {
           activity_type: string
           created_at: string
           id: string
+          is_read: boolean | null
           points_awarded: number | null
           target_user_id: string | null
           user_id: string
@@ -866,6 +867,7 @@ export type Database = {
           activity_type: string
           created_at?: string
           id?: string
+          is_read?: boolean | null
           points_awarded?: number | null
           target_user_id?: string | null
           user_id: string
@@ -875,6 +877,7 @@ export type Database = {
           activity_type?: string
           created_at?: string
           id?: string
+          is_read?: boolean | null
           points_awarded?: number | null
           target_user_id?: string | null
           user_id?: string

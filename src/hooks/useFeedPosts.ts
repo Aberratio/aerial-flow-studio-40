@@ -25,14 +25,24 @@ export interface FeedPost {
 export const useFeedPosts = () => {
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [offset, setOffset] = useState(0);
   const { user } = useAuth();
+  const POSTS_PER_PAGE = 10;
 
   // Fetch posts from current user and friends/followers
-  const fetchPosts = async () => {
+  const fetchPosts = async (isLoadMore = false) => {
     if (!user) return;
 
     try {
-      setLoading(true);
+      if (isLoadMore) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+        setOffset(0);
+        setHasMore(true);
+      }
 
       // Get user's friends (accepted friendships)
       const { data: friendships } = await supabase
@@ -84,7 +94,8 @@ export const useFeedPosts = () => {
         });
       }
 
-      // Fetch posts with the conditions
+      // Fetch posts with the conditions and pagination
+      const currentOffset = isLoadMore ? offset : 0;
       const { data: postsData, error } = await supabase
         .from('posts')
         .select(`
@@ -103,7 +114,8 @@ export const useFeedPosts = () => {
           )
         `)
         .or(conditions.join(','))
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(currentOffset, currentOffset + POSTS_PER_PAGE - 1);
 
       if (error) throw error;
 
@@ -161,12 +173,25 @@ export const useFeedPosts = () => {
           })
         );
 
-        setPosts(postsWithCounts);
+        if (isLoadMore) {
+          setPosts(prevPosts => [...prevPosts, ...postsWithCounts]);
+          setOffset(prev => prev + POSTS_PER_PAGE);
+        } else {
+          setPosts(postsWithCounts);
+          setOffset(POSTS_PER_PAGE);
+        }
+        
+        // Check if there are more posts to load
+        setHasMore(postsWithCounts.length === POSTS_PER_PAGE);
       }
     } catch (error) {
       console.error('Error fetching feed posts:', error);
     } finally {
-      setLoading(false);
+      if (isLoadMore) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
@@ -297,10 +322,17 @@ export const useFeedPosts = () => {
     fetchPosts();
   }, [user]);
 
+  const loadMorePosts = () => {
+    fetchPosts(true);
+  };
+
   return {
     posts,
     loading,
+    loadingMore,
+    hasMore,
     fetchPosts,
+    loadMorePosts,
     toggleLike,
     toggleSave,
     addPost,

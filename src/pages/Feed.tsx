@@ -22,7 +22,18 @@ const Feed = () => {
   const [deletingPost, setDeletingPost] = useState(null);
   const [sharingPost, setSharingPost] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const { posts, loading, toggleLike, toggleSave, addPost, updatePost, deletePost } = useFeedPosts();
+  const { 
+    posts, 
+    loading, 
+    loadingMore, 
+    hasMore, 
+    loadMorePosts, 
+    toggleLike, 
+    toggleSave, 
+    addPost, 
+    updatePost, 
+    deletePost 
+  } = useFeedPosts();
   const { user } = useAuth();
 
   const handlePostCreated = (newPost: any) => {
@@ -239,6 +250,23 @@ const Feed = () => {
               </CardContent>
             </Card>
           ))
+        )}
+
+        {/* Load More Button */}
+        {posts.length > 0 && hasMore && (
+          <div className="flex justify-center mt-8">
+            <Button
+              onClick={loadMorePosts}
+              disabled={loadingMore}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              {loadingMore ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              {loadingMore ? 'Loading...' : 'Load More Posts'}
+            </Button>
+          </div>
         )}
       </div>
 
