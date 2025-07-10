@@ -396,24 +396,29 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
 
           <div className="space-y-2">
             <Label htmlFor="image">Challenge Image</Label>
-            <Input
-              id="image"
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  setImageFile(file);
-                }
-              }}
-              className="cursor-pointer"
-            />
+            <div className="space-y-2">
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setImageFile(file);
+                  }
+                }}
+                className="cursor-pointer"
+              />
+              <div className="text-xs text-muted-foreground">
+                {imageFile ? `Selected: ${imageFile.name}` : imageUrl ? 'Current image uploaded' : 'No file selected'}
+              </div>
+            </div>
             {imageUrl && (
               <div className="mt-2">
                 <img 
                   src={imageUrl} 
                   alt="Challenge preview" 
-                  className="w-32 h-20 object-cover rounded-md"
+                  className="w-32 h-20 object-cover rounded-md border"
                 />
               </div>
             )}

@@ -207,6 +207,17 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
         <div className="space-y-6">
           {/* Challenge Image */}
           <div className="relative h-64 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20">
+            {challenge.image_url ? (
+              <img 
+                src={challenge.image_url} 
+                alt={challenge.title}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Trophy className="w-16 h-16 text-white/20" />
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             <div className="absolute top-4 right-4">
               <Badge className={getStatusColor(challenge.status)}>
@@ -217,9 +228,6 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               <Badge variant="outline" className="border-white/30 text-white/90">
                 {challenge.training_days?.length || 0} Training Days
               </Badge>
-            </div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Trophy className="w-16 h-16 text-white/20" />
             </div>
           </div>
 

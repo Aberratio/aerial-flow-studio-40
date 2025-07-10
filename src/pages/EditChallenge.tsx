@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -469,24 +470,29 @@ const EditChallenge = () => {
 
             <div className="space-y-2">
               <Label htmlFor="image">Challenge Image</Label>
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    setImageFile(file);
-                  }
-                }}
-                className="cursor-pointer"
-              />
+              <div className="space-y-2">
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setImageFile(file);
+                    }
+                  }}
+                  className="cursor-pointer"
+                />
+                <div className="text-xs text-muted-foreground">
+                  {imageFile ? `Selected: ${imageFile.name}` : imageUrl ? 'Current image uploaded' : 'No file selected'}
+                </div>
+              </div>
               {imageUrl && (
                 <div className="mt-2">
                   <img 
                     src={imageUrl} 
                     alt="Challenge preview" 
-                    className="w-32 h-20 object-cover rounded-md"
+                    className="w-32 h-20 object-cover rounded-md border"
                   />
                 </div>
               )}
@@ -600,101 +606,131 @@ const EditChallenge = () => {
                 </Button>
               </div>
               
-              <div className="space-y-3 max-h-60 overflow-y-auto">
+              <div className="space-y-4 max-h-[400px] overflow-y-auto">
                 {trainingDays.map((day, index) => (
-                  <div key={index} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-sm font-medium">Day {index + 1}</Label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeTrainingDay(index)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label className="text-xs">Date</Label>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !day.date && "text-muted-foreground"
-                              )}
-                              size="sm"
-                            >
-                              <Calendar className="mr-2 h-4 w-4" />
-                              {day.date ? format(day.date, "PP") : <span>Pick date</span>}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <CalendarComponent
-                              mode="single"
-                              selected={day.date}
-                              onSelect={(date) => date && updateTrainingDay(index, 'date', date)}
-                              disabled={(date) => startDate ? date < startDate : date < new Date()}
-                              initialFocus
-                              className="p-3 pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
+                  <div key={index} className="border rounded-lg overflow-hidden animate-fade-in">
+                    {/* Day Header */}
+                    <div className="bg-muted/30 p-4 border-b">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold">
+                            {index + 1}
+                          </div>
+                          <Label className="text-base font-semibold">Day {index + 1}</Label>
+                          {day.isRestDay && (
+                            <Badge variant="secondary" className="text-xs">
+                              <span className="mr-1">😴</span> Rest Day
+                            </Badge>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeTrainingDay(index)}
+                          className="hover:bg-destructive/20 hover:text-destructive"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
                       </div>
                       
-                      <div className="space-y-2">
-                        <Label className="text-xs">Title</Label>
-                        <Input
-                          placeholder="Training day title"
-                          value={day.title}
-                          onChange={(e) => updateTrainingDay(index, 'title', e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="text-xs">Description</Label>
-                      <Textarea
-                        placeholder="Training day description"
-                        value={day.description}
-                        onChange={(e) => updateTrainingDay(index, 'description', e.target.value)}
-                        rows={2}
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <Label className="text-xs">Day Type</Label>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={day.isRestDay || false}
-                          onCheckedChange={(checked) => updateTrainingDay(index, 'isRestDay', checked)}
-                        />
-                        <span className="text-sm text-muted-foreground">
-                          {day.isRestDay ? 'Rest Day' : 'Training Day'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    {/* Exercise Management or Rest Day Message */}
-                    {day.isRestDay ? (
-                      <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg bg-blue-500/5">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center">
-                          <span className="text-2xl">😴</span>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Date</Label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className={cn(
+                                  "w-full justify-start text-left font-normal h-9",
+                                  !day.date && "text-muted-foreground"
+                                )}
+                              >
+                                <Calendar className="mr-2 h-4 w-4" />
+                                {day.date ? format(day.date, "MMM dd") : <span>Pick date</span>}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                              <CalendarComponent
+                                mode="single"
+                                selected={day.date}
+                                onSelect={(date) => date && updateTrainingDay(index, 'date', date)}
+                                disabled={(date) => startDate ? date < startDate : date < new Date()}
+                                initialFocus
+                                className="p-3 pointer-events-auto"
+                              />
+                            </PopoverContent>
+                          </Popover>
                         </div>
-                        <p className="font-medium">Rest Day</p>
-                        <p className="text-sm">No exercises needed - time to recover!</p>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Title</Label>
+                          <Input
+                            placeholder="e.g., Upper Body Focus"
+                            value={day.title}
+                            onChange={(e) => updateTrainingDay(index, 'title', e.target.value)}
+                            className="h-9"
+                          />
+                        </div>
                       </div>
-                    ) : (
-                      <ExerciseManagement
-                        trainingDayId={day.id || `temp-${index}`}
-                        exercises={day.exercises}
-                        onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
-                        canEdit={true}
-                      />
-                    )}
+                      
+                      <div className="mt-4 space-y-2">
+                        <Label className="text-sm font-medium">Description</Label>
+                        <Textarea
+                          placeholder="Describe what this training day focuses on..."
+                          value={day.description}
+                          onChange={(e) => updateTrainingDay(index, 'description', e.target.value)}
+                          rows={2}
+                          className="resize-none"
+                        />
+                      </div>
+                      
+                      <div className="mt-4 flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
+                          <Label className="text-sm font-medium">Day Type:</Label>
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={day.isRestDay || false}
+                              onCheckedChange={(checked) => updateTrainingDay(index, 'isRestDay', checked)}
+                            />
+                            <span className="text-sm">
+                              {day.isRestDay ? 'Rest Day' : 'Training Day'}
+                            </span>
+                          </div>
+                        </div>
+                        {!day.isRestDay && (
+                          <Badge variant="outline" className="text-xs">
+                            {day.exercises?.length || 0} exercise{(day.exercises?.length || 0) !== 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Day Content */}
+                    <div className="p-4">
+                      {day.isRestDay ? (
+                        <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg bg-blue-500/5">
+                          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <span className="text-2xl">😴</span>
+                          </div>
+                          <p className="font-medium text-base">Rest & Recovery Day</p>
+                          <p className="text-sm mt-1">No exercises needed - time to let your body recover!</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 pb-2 border-b">
+                            <CalendarDays className="w-4 h-4 text-primary" />
+                            <span className="text-sm font-medium">Exercises for this day</span>
+                          </div>
+                          <ExerciseManagement
+                            trainingDayId={day.id || `temp-${index}`}
+                            exercises={day.exercises}
+                            onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
+                            canEdit={true}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ))}
                 
