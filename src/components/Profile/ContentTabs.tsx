@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserAchievements } from '@/hooks/useUserAchievements';
+import { useSavedPosts } from '@/hooks/useSavedPosts';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ContentTabsProps {
@@ -13,6 +14,7 @@ interface ContentTabsProps {
 export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
   const { user } = useAuth();
   const { achievements, loading: achievementsLoading } = useUserAchievements();
+  const { savedPosts, loading: savedPostsLoading } = useSavedPosts();
   const [activeTab, setActiveTab] = useState('posts');
   const [userPosts, setUserPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -184,35 +186,50 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
       )}
 
       {activeTab === 'saved' && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {userPosts.slice(0, 3).map((post: any) => (
-            <div 
-              key={post.id} 
-              className="relative group cursor-pointer"
-              onClick={() => onPostSelect(post)}
-            >
-              <div className="aspect-square rounded-lg overflow-hidden">
-                <img 
-                  src={post.image} 
-                  alt="Saved post"
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-              </div>
-              
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
-                <div className="flex items-center text-white">
-                  <Heart className="w-5 h-5 mr-2" />
-                  {post.likes}
+        savedPostsLoading ? (
+          <div className="text-center py-8 text-muted-foreground">Loading saved posts...</div>
+        ) : savedPosts.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <p>No saved posts yet!</p>
+            <p className="text-sm mt-2">Save posts from other users to see them here</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {savedPosts.map((post) => (
+              <div 
+                key={post.id} 
+                className="relative group cursor-pointer"
+                onClick={() => onPostSelect(post)}
+              >
+                <div className="aspect-square rounded-lg overflow-hidden">
+                  {post.image_url ? (
+                    <img 
+                      src={post.image_url} 
+                      alt="Saved post"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                      <MessageCircle className="w-8 h-8 text-muted-foreground" />
+                    </div>
+                  )}
                 </div>
-                <div className="flex items-center text-white">
-                  <MessageCircle className="w-5 h-5 mr-2" />
-                  {post.comments}
+                
+                {/* Hover Overlay */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
+                  <div className="flex items-center text-white">
+                    <Heart className="w-5 h-5 mr-2" />
+                    {post.likes_count}
+                  </div>
+                  <div className="flex items-center text-white">
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    {post.comments_count}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       )}
     </>
   );

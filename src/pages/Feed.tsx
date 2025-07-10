@@ -212,6 +212,7 @@ const Feed = () => {
         isOpen={!!selectedPost}
         onClose={() => setSelectedPost(null)}
         onToggleLike={toggleLike}
+        onToggleSave={toggleSave}
       />
 
       <CreatePostModal

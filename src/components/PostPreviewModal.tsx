@@ -10,16 +10,19 @@ import { usePostComments } from '@/hooks/usePostComments';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import type { FeedPost } from '@/hooks/useFeedPosts';
+import { SharePostModal } from '@/components/SharePostModal';
 
 interface PostPreviewModalProps {
   post: FeedPost | null;
   isOpen: boolean;
   onClose: () => void;
   onToggleLike?: (postId: string) => void;
+  onToggleSave?: (postId: string) => void;
 }
 
-export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike }: PostPreviewModalProps) => {
+export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggleSave }: PostPreviewModalProps) => {
   const [newComment, setNewComment] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
   const { user } = useAuth();
   const { comments, loading: commentsLoading, addComment } = usePostComments(post?.id || null);
 
@@ -38,6 +41,16 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike }: PostPr
     if (onToggleLike) {
       onToggleLike(post.id);
     }
+  };
+
+  const handleToggleSave = () => {
+    if (onToggleSave) {
+      onToggleSave(post.id);
+    }
+  };
+
+  const handleShare = () => {
+    setShowShareModal(true);
   };
 
   return (
@@ -114,13 +127,25 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike }: PostPr
                     <MessageCircle className="w-5 h-5 mr-2" />
                     {comments.length || 0}
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleShare}
+                    className="text-muted-foreground hover:text-white"
+                  >
                     <Share2 className="w-5 h-5" />
                   </Button>
                 </div>
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
-                  <Bookmark className="w-5 h-5" />
-                </Button>
+                {post.user_id !== user?.id && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleToggleSave}
+                    className={`text-muted-foreground hover:text-white ${post.is_saved ? 'text-blue-400' : ''}`}
+                  >
+                    <Bookmark className={`w-5 h-5 ${post.is_saved ? 'fill-current' : ''}`} />
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -179,6 +204,13 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike }: PostPr
           </div>
         </div>
       </DialogContent>
+
+      <SharePostModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        postId={post?.id || ''}
+        userName={post?.user?.username || ''}
+      />
     </Dialog>
   );
 };
