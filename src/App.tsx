@@ -15,6 +15,8 @@ import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import BadConnection from "@/pages/BadConnection";
 import PricingPage from "@/pages/PricingPage";
+import PaymentSuccess from "@/pages/PaymentSuccess";
+import PaymentCancelled from "@/pages/PaymentCancelled";
 import AboutUs from "@/pages/AboutUs";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
@@ -90,6 +92,16 @@ const AppRoutes = () => {
       <Route path="/pricing" element={
         <ProtectedRoute>
           <PricingPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/payment-success" element={
+        <ProtectedRoute>
+          <PaymentSuccess />
+        </ProtectedRoute>
+      } />
+      <Route path="/payment-cancelled" element={
+        <ProtectedRoute>
+          <PaymentCancelled />
         </ProtectedRoute>
       } />
       <Route path="/about" element={

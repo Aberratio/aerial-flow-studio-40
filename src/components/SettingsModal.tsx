@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import PricingPlansModal from '@/components/PricingPlansModal';
 
 interface SettingsModalProps {
@@ -210,7 +211,17 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   You're currently on the free plan. Upgrade to unlock premium features!
                 </p>
                 <Button
-                  onClick={() => setIsPricingModalOpen(true)}
+                  onClick={async () => {
+                    try {
+                      const { data, error } = await supabase.functions.invoke('create-checkout', {
+                        body: { paymentType: 'subscription' }
+                      });
+                      if (error) throw error;
+                      if (data.url) window.open(data.url, '_blank');
+                    } catch (error) {
+                      console.error('Checkout error:', error);
+                    }
+                  }}
                   className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
                 >
                   <Crown className="w-4 h-4 mr-2" />

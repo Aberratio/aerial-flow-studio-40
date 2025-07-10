@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Star, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PricingPlansModalProps {
   isOpen: boolean;
@@ -71,15 +72,16 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
     setIsLoading(true);
 
     try {
-      // TODO: Implement Stripe checkout integration
-      toast({
-        title: "Feature Coming Soon",
-        description: "Stripe integration will be added soon. Please check back later!",
-        variant: "default"
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { paymentType: 'subscription' }
       });
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (error) throw error;
+      
+      // Open Stripe checkout in a new tab
+      if (data.url) {
+        window.open(data.url, '_blank');
+      }
       
     } catch (error) {
       toast({
