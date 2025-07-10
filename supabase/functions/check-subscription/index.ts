@@ -93,7 +93,14 @@ serve(async (req) => {
       updated_at: new Date().toISOString(),
     }, { onConflict: 'email' });
 
-    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier });
+    // Update user role based on subscription status
+    const newRole = hasActiveSub ? 'premium' : 'free';
+    await supabaseClient.from("profiles").update({
+      role: newRole,
+      updated_at: new Date().toISOString(),
+    }).eq('id', user.id);
+
+    logStep("Updated database with subscription info", { subscribed: hasActiveSub, subscriptionTier, userRole: newRole });
 
     return new Response(JSON.stringify({
       subscribed: hasActiveSub,

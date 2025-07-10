@@ -97,7 +97,7 @@ const PaymentSuccess = () => {
 
           {sessionId && (
             <div className="text-xs text-muted-foreground border-t border-white/10 pt-4">
-              <p>Session ID: {sessionId}</p>
+              <p>Session ID: {sessionId.substring(0, 20)}...{sessionId.substring(sessionId.length - 8)}</p>
               <p>Keep this for your records</p>
             </div>
           )}

@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, Crown, Users, BookOpen, Target, BarChart3, X } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -12,6 +14,8 @@ interface PricingModalProps {
 }
 
 export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   const freeFeatures = [
     'Post updates to your feed',
     'Invite and follow friends',
@@ -28,6 +32,32 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
     'Advanced analytics',
     'Priority support'
   ];
+
+  const handleUpgradeClick = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('create-checkout', {
+        body: { paymentType: 'subscription' }
+      });
+      
+      if (error) throw error;
+      
+      // Open Stripe checkout in a new tab
+      if (data.url) {
+        window.open(data.url, '_blank');
+        onClose(); // Close modal after opening checkout
+      }
+      
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to start checkout process. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -104,10 +134,11 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
                 ))}
               </ul>
               <Button
-                onClick={onUpgrade}
+                onClick={handleUpgradeClick}
+                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
               >
-                Upgrade to Premium
+                {isLoading ? 'Processing...' : 'Upgrade to Premium'}
               </Button>
             </CardContent>
           </Card>

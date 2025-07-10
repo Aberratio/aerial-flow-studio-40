@@ -43,10 +43,12 @@ export const useAuthState = () => {
               setUser(userWithCompat);
               console.log('AuthContext: User set', userWithCompat);
 
+              // Check if user is new and hasn't seen pricing modal yet
               const createdAt = new Date(profile.created_at);
               const now = new Date();
               const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 3600);
-              if (hoursDiff < 1 && profile.role === 'free') {
+              // Only show for truly new users who are free and haven't been shown before
+              if (hoursDiff < 1 && profile.role === 'free' && !localStorage.getItem(`pricing_shown_${profile.id}`)) {
                 setIsFirstLogin(true);
               }
             } else {
