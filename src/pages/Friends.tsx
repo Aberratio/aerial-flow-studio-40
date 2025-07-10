@@ -38,7 +38,8 @@ const Friends = () => {
               bio
             )
           `)
-          .eq('follower_id', user.id);
+          .eq('follower_id', user.id)
+          .eq('status', 'accepted');
 
         if (friendsError) {
           console.error('Error fetching friends:', friendsError);
@@ -57,7 +58,8 @@ const Friends = () => {
         const { data: requestsData, error: requestsError } = await supabase
           .from('user_follows')
           .select('id')
-          .eq('following_id', user.id);
+          .eq('following_id', user.id)
+          .eq('status', 'pending');
 
         if (requestsError) {
           console.error('Error fetching requests:', requestsError);
@@ -83,7 +85,8 @@ const Friends = () => {
         .from('user_follows')
         .delete()
         .eq('follower_id', user.id)
-        .eq('following_id', friendId);
+        .eq('following_id', friendId)
+        .eq('status', 'accepted');
 
       if (error) {
         console.error('Error unfriending:', error);

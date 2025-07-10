@@ -78,7 +78,8 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
         .from('user_follows')
         .insert({
           follower_id: user.id,
-          following_id: friendId
+          following_id: friendId,
+          status: 'pending'
         });
 
       if (error) throw error;

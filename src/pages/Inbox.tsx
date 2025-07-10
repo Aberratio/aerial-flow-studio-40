@@ -23,6 +23,8 @@ const Inbox = () => {
         return `${targetUser?.username || 'Someone'} commented on your post: "${data.content?.substring(0, 50) || ''}..."`;
       case 'follow':
         return `${targetUser?.username || 'Someone'} started following you`;
+      case 'friend_request':
+        return `${targetUser?.username || 'Someone'} sent you a friend request`;
       case 'post_created':
         return 'You created a new post (+10 points)';
       case 'challenge_day_completed':
@@ -53,6 +55,9 @@ const Inbox = () => {
           navigate(`/profile/${activity.target_user_id}`);
         }
         break;
+      case 'friend_request':
+        navigate('/friends');
+        break;
       case 'post_created':
         navigate('/feed');
         break;
@@ -78,6 +83,8 @@ const Inbox = () => {
         return <MessageCircle className="w-5 h-5 text-blue-400" />;
       case 'follow':
         return <Users className="w-5 h-5 text-green-400" />;
+      case 'friend_request':
+        return <Users className="w-5 h-5 text-blue-400" />;
       case 'challenge_day_completed':
       case 'figure_completed':
       case 'training_completed':

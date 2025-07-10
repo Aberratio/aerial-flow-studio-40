@@ -6,6 +6,7 @@ import { ProfileHeader } from '@/components/Profile/ProfileHeader';
 import { AchievementsSection } from '@/components/Profile/AchievementsSection';
 import { FigureJourneySection } from '@/components/Profile/FigureJourneySection';
 import { FriendsSection } from '@/components/Profile/FriendsSection';
+import { PendingRequestsSection } from '@/components/Profile/PendingRequestsSection';
 import { ContentTabs } from '@/components/Profile/ContentTabs';
 
 const Profile = () => {
@@ -33,6 +34,9 @@ const Profile = () => {
 
         {/* My Figure Journey */}
         <FigureJourneySection />
+
+        {/* Pending Friend Requests */}
+        <PendingRequestsSection />
 
         {/* Friends Overview */}
         <FriendsSection />

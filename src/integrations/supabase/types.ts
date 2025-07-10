@@ -845,18 +845,24 @@ export type Database = {
           follower_id: string
           following_id: string
           id: string
+          status: string | null
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           follower_id: string
           following_id: string
           id?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
           follower_id?: string
           following_id?: string
           id?: string
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {

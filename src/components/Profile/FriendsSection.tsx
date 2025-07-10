@@ -26,7 +26,8 @@ export const FriendsSection: React.FC = () => {
             role
           )
         `)
-        .eq('follower_id', user.id);
+        .eq('follower_id', user.id)
+        .eq('status', 'accepted');
 
       if (error) throw error;
 

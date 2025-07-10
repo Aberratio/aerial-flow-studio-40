@@ -54,7 +54,8 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
             bio
           )
         `)
-        .eq('following_id', user.id);
+        .eq('following_id', user.id)
+        .eq('status', 'pending');
 
       if (receivedError) throw receivedError;
 
@@ -72,7 +73,8 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
             bio
           )
         `)
-        .eq('follower_id', user.id);
+        .eq('follower_id', user.id)
+        .eq('status', 'pending');
 
       if (sentError) throw sentError;
 
@@ -121,8 +123,14 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
 
   const handleAccept = async (requestId: string, username: string) => {
     try {
-      // In this simplified implementation, we just remove the request
-      // In a real app, you might want to create a bidirectional friendship
+      // Update the request status to 'accepted'
+      const { error } = await supabase
+        .from('user_follows')
+        .update({ status: 'accepted' })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
       setRequests(prev => prev.filter(req => req.id !== requestId));
       toast({
         title: "Friend request accepted!",
