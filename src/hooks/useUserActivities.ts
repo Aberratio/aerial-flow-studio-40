@@ -97,11 +97,20 @@ export const useUserActivities = () => {
     if (!user) return;
 
     try {
-      await supabase
+      const { error } = await supabase
         .from('user_activities')
         .update({ is_read: true })
         .eq('user_id', user.id)
         .eq('is_read', false);
+      
+      if (error) {
+        console.error('Error marking activities as read:', error);
+      } else {
+        // Update local state to reflect the change immediately
+        setActivities(prev => 
+          prev.map(activity => ({ ...activity, is_read: true }))
+        );
+      }
     } catch (error) {
       console.error('Error marking activities as read:', error);
     }

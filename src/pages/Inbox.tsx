@@ -15,16 +15,15 @@ const Inbox = () => {
 
   // Mark all activities as read when user opens inbox
   useEffect(() => {
-    const markAsRead = async () => {
-      if (activities.length > 0 && !loading) {
-        await markAllAsRead();
-      }
-    };
-    
-    if (!loading) {
-      markAsRead();
+    if (!loading && activities.length > 0) {
+      // Add a small delay to ensure the component has mounted
+      const timer = setTimeout(() => {
+        markAllAsRead();
+      }, 500);
+      
+      return () => clearTimeout(timer);
     }
-  }, [loading, markAllAsRead]); // Run when loading state changes
+  }, [loading, activities.length, markAllAsRead]);
 
   const getActivityContent = (activity: UserActivity) => {
     const data = activity.activity_data || {};
