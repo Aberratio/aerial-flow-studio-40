@@ -63,10 +63,18 @@ export default function TranslationManagement() {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [selectedUIString, setSelectedUIString] = useState<UIString | null>(null);
   const [selectedPage, setSelectedPage] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [uiSearchTerm, setUISearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('exercises');
+  const [uiStringForm, setUIStringForm] = useState({
+    string_key: '',
+    category: '',
+    value: ''
+  });
+  const [editingStringId, setEditingStringId] = useState<string | null>(null);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -92,6 +100,7 @@ export default function TranslationManagement() {
     fetchFigures();
     fetchUIStrings();
     fetchStaticPages();
+    fetchTranslations();
   }, []);
 
   const fetchLanguages = async () => {
@@ -122,6 +131,19 @@ export default function TranslationManagement() {
     }
   };
 
+  const fetchTranslations = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('figure_translations')
+        .select('*');
+
+      if (error) throw error;
+      setTranslations(data || []);
+    } catch (error) {
+      console.error('Error fetching translations:', error);
+    }
+  };
+
   const fetchUIStrings = async () => {
     try {
       const { data, error } = await supabase
@@ -133,6 +155,63 @@ export default function TranslationManagement() {
       setUIStrings(data || []);
     } catch (error) {
       console.error('Error fetching UI strings:', error);
+    }
+  };
+
+  const saveUIString = async () => {
+    if (!uiStringForm.string_key || !selectedLanguage || !uiStringForm.value) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (editingStringId) {
+        // Update existing string
+        const { error } = await supabase
+          .from('ui_strings')
+          .update({
+            value: uiStringForm.value,
+            category: uiStringForm.category || null
+          })
+          .eq('id', editingStringId);
+
+        if (error) throw error;
+      } else {
+        // Create new string
+        const { error } = await supabase
+          .from('ui_strings')
+          .insert({
+            string_key: uiStringForm.string_key,
+            language_id: selectedLanguage,
+            value: uiStringForm.value,
+            category: uiStringForm.category || null
+          });
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "UI string saved successfully"
+      });
+
+      // Reset form
+      setUIStringForm({ string_key: '', category: '', value: '' });
+      setEditingStringId(null);
+      fetchUIStrings();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save UI string",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -183,17 +262,84 @@ export default function TranslationManagement() {
               </TabsList>
 
               <TabsContent value="exercises" className="mt-6">
-                <div className="text-center py-8">
-                  <Languages className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">Exercise Translations</h3>
-                  <p className="text-muted-foreground">Exercise translation management will be available here</p>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Figures List */}
+                  <Card className="glass-effect border-white/10">
+                    <CardHeader>
+                      <CardTitle className="text-white">Exercises</CardTitle>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search exercises..."
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10 bg-white/5 border-white/10 text-white"
+                        />
+                      </div>
+                    </CardHeader>
+                    <CardContent className="max-h-96 overflow-y-auto">
+                      <div className="space-y-2">
+                        {figures.filter(f => f.name.toLowerCase().includes(searchTerm.toLowerCase())).map(figure => (
+                          <div
+                            key={figure.id}
+                            onClick={() => setSelectedFigure(figure)}
+                            className={`p-3 rounded-lg cursor-pointer transition-colors ${
+                              selectedFigure?.id === figure.id
+                                ? 'bg-purple-500/20 border border-purple-500/30'
+                                : 'bg-white/5 hover:bg-white/10'
+                            }`}
+                          >
+                            <div className="font-medium text-white">{figure.name}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {figure.category} • {figure.difficulty_level}
+                            </div>
+                            <div className="flex space-x-1 mt-2">
+                              {languages.map(lang => {
+                                const hasTranslation = translations.some(t => t.figure_id === figure.id && t.language_id === lang.id);
+                                return (
+                                  <div
+                                    key={lang.id}
+                                    className={`w-2 h-2 rounded-full ${
+                                      hasTranslation ? 'bg-green-500' : 'bg-gray-500'
+                                    }`}
+                                    title={`${lang.native_name} ${hasTranslation ? 'translated' : 'not translated'}`}
+                                  />
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="lg:col-span-2">
+                    {selectedFigure ? (
+                      <Card className="glass-effect border-white/10">
+                        <CardHeader>
+                          <CardTitle className="text-white">Translate: {selectedFigure.name}</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-muted-foreground">Exercise translation interface would go here</p>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <Card className="glass-effect border-white/10">
+                        <CardContent className="p-8 text-center">
+                          <Languages className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                          <h3 className="text-xl font-semibold text-white mb-2">Select an Exercise</h3>
+                          <p className="text-muted-foreground">Choose an exercise to translate</p>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="ui-strings" className="mt-6">
                 <div className="space-y-6">
                   <div className="text-sm text-muted-foreground">
-                    Manage translations for UI elements like buttons, labels, messages, and alerts.
+                    Manage translations for UI elements. Total strings: {uiStrings.length}
                   </div>
                   
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -206,13 +352,19 @@ export default function TranslationManagement() {
                           <Label className="text-white">String Key</Label>
                           <Input 
                             placeholder="e.g., button.save, alert.success"
+                            value={uiStringForm.string_key}
+                            onChange={(e) => setUIStringForm(prev => ({ ...prev, string_key: e.target.value }))}
                             className="bg-white/5 border-white/10 text-white"
+                            disabled={!!editingStringId}
                           />
                         </div>
                         
                         <div>
                           <Label className="text-white">Category</Label>
-                          <Select>
+                          <Select 
+                            value={uiStringForm.category} 
+                            onValueChange={(value) => setUIStringForm(prev => ({ ...prev, category: value }))}
+                          >
                             <SelectTrigger className="bg-white/5 border-white/10 text-white">
                               <SelectValue placeholder="Select category" />
                             </SelectTrigger>
@@ -228,7 +380,7 @@ export default function TranslationManagement() {
 
                         <div>
                           <Label className="text-white">Language</Label>
-                          <Select>
+                          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
                             <SelectTrigger className="bg-white/5 border-white/10 text-white">
                               <SelectValue placeholder="Select language" />
                             </SelectTrigger>
@@ -246,27 +398,87 @@ export default function TranslationManagement() {
                           <Label className="text-white">Translation</Label>
                           <Textarea
                             placeholder="Enter the translated text"
+                            value={uiStringForm.value}
+                            onChange={(e) => setUIStringForm(prev => ({ ...prev, value: e.target.value }))}
                             className="bg-white/5 border-white/10 text-white"
                             rows={3}
                           />
                         </div>
 
-                        <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500">
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Translation
-                        </Button>
+                        <div className="flex space-x-2">
+                          <Button 
+                            onClick={saveUIString} 
+                            disabled={isLoading}
+                            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
+                          >
+                            <Save className="w-4 h-4 mr-2" />
+                            {editingStringId ? 'Update' : 'Save'} Translation
+                          </Button>
+                          {editingStringId && (
+                            <Button 
+                              variant="outline"
+                              onClick={() => {
+                                setEditingStringId(null);
+                                setUIStringForm({ string_key: '', category: '', value: '' });
+                              }}
+                              className="border-white/20 text-white"
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
                       </CardContent>
                     </Card>
 
                     <Card className="glass-effect border-white/10">
                       <CardHeader>
-                        <CardTitle className="text-white text-lg">Existing Strings</CardTitle>
+                        <CardTitle className="text-white text-lg">UI Strings</CardTitle>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                          <Input
+                            placeholder="Search strings..."
+                            value={uiSearchTerm}
+                            onChange={(e) => setUISearchTerm(e.target.value)}
+                            className="pl-10 bg-white/5 border-white/10 text-white"
+                          />
+                        </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-2 max-h-96 overflow-y-auto">
-                          <div className="text-sm text-muted-foreground">
-                            No UI strings found. Add some translations to get started.
-                          </div>
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {uiStrings
+                            .filter(str => 
+                              str.string_key.toLowerCase().includes(uiSearchTerm.toLowerCase()) ||
+                              str.value.toLowerCase().includes(uiSearchTerm.toLowerCase())
+                            )
+                            .map(string => (
+                            <div key={string.id} className="p-3 bg-white/5 rounded-lg">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1">
+                                  <div className="text-white font-medium text-sm">{string.string_key}</div>
+                                  <div className="text-muted-foreground text-xs mb-1">
+                                    {string.language_id.toUpperCase()} • {string.category}
+                                  </div>
+                                  <div className="text-white text-sm">{string.value}</div>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => {
+                                    setUIStringForm({
+                                      string_key: string.string_key,
+                                      category: string.category || '',
+                                      value: string.value
+                                    });
+                                    setSelectedLanguage(string.language_id);
+                                    setEditingStringId(string.id);
+                                  }}
+                                  className="text-white hover:bg-white/10"
+                                >
+                                  Edit
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
                         </div>
                       </CardContent>
                     </Card>
