@@ -5,8 +5,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Upload, Loader2 } from 'lucide-react';
+import { Upload, Loader2, Languages } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -31,7 +33,36 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     video_url: '',
     tags: [] as string[]
   });
+  const [translations, setTranslations] = useState<Record<string, {
+    name: string;
+    description: string;
+    instructions: string;
+    tags: string[];
+  }>>({});
+  const [availableLanguages, setAvailableLanguages] = useState<Array<{id: string, name: string, native_name: string}>>([]);
   const [tagInput, setTagInput] = useState('');
+  const [translationTagInputs, setTranslationTagInputs] = useState<Record<string, string>>({});
+
+  // Fetch available languages
+  useEffect(() => {
+    const fetchLanguages = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('languages')
+          .select('id, name, native_name')
+          .order('is_default', { ascending: false });
+
+        if (error) throw error;
+        setAvailableLanguages(data || []);
+      } catch (error) {
+        console.error('Error fetching languages:', error);
+      }
+    };
+
+    if (isOpen) {
+      fetchLanguages();
+    }
+  }, [isOpen]);
 
   // Update form when editing a figure
   useEffect(() => {
@@ -48,6 +79,33 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         video_url: editingFigure.video_url || '',
         tags: editingFigure.tags || []
       });
+
+      // Fetch existing translations
+      const fetchTranslations = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('figure_translations')
+            .select('*')
+            .eq('figure_id', editingFigure.id);
+
+          if (error) throw error;
+
+          const translationData: Record<string, any> = {};
+          data?.forEach(translation => {
+            translationData[translation.language_id] = {
+              name: translation.name || '',
+              description: translation.description || '',
+              instructions: translation.instructions || '',
+              tags: translation.tags || []
+            };
+          });
+          setTranslations(translationData);
+        } catch (error) {
+          console.error('Error fetching translations:', error);
+        }
+      };
+
+      fetchTranslations();
     } else {
       setFormData({
         name: '',
@@ -61,8 +119,10 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         video_url: '',
         tags: []
       });
+      setTranslations({});
     }
     setTagInput('');
+    setTranslationTagInputs({});
   }, [editingFigure, isOpen]);
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -117,6 +177,8 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
       }
 
       // Create or update the figure
+      let figureId = editingFigure?.id;
+      
       if (editingFigure) {
         const { error } = await supabase
           .from('figures')
@@ -137,7 +199,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('figures')
           .insert({
             name: formData.name.trim(),
@@ -151,9 +213,51 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             video_url: videoUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
             created_by: user.id
-          });
+          })
+          .select('id')
+          .single();
 
         if (error) throw error;
+        figureId = data.id;
+      }
+
+      // Save translations
+      for (const [languageId, translation] of Object.entries(translations)) {
+        if (translation.name.trim()) {
+          const translationData = {
+            figure_id: figureId,
+            language_id: languageId,
+            name: translation.name.trim(),
+            description: translation.description.trim() || null,
+            instructions: translation.instructions.trim() || null,
+            tags: translation.tags.length > 0 ? translation.tags : null
+          };
+
+          // Check if translation already exists
+          const { data: existingTranslation } = await supabase
+            .from('figure_translations')
+            .select('id')
+            .eq('figure_id', figureId)
+            .eq('language_id', languageId)
+            .single();
+
+          if (existingTranslation) {
+            // Update existing translation
+            const { error: translationError } = await supabase
+              .from('figure_translations')
+              .update(translationData)
+              .eq('id', existingTranslation.id);
+
+            if (translationError) throw translationError;
+          } else {
+            // Create new translation
+            const { error: translationError } = await supabase
+              .from('figure_translations')
+              .insert(translationData);
+
+            if (translationError) throw translationError;
+          }
+        }
       }
 
       toast({
@@ -174,9 +278,11 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         video_url: '',
         tags: []
       });
+      setTranslations({});
       setImageFile(null);
       setVideoFile(null);
       setTagInput('');
+      setTranslationTagInputs({});
 
       if (onExerciseCreated) onExerciseCreated();
       onClose();
@@ -230,6 +336,37 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     }
   };
 
+  const addTranslationTag = (languageId: string) => {
+    const tag = translationTagInputs[languageId]?.trim();
+    if (tag && !translations[languageId]?.tags?.includes(tag)) {
+      setTranslations(prev => ({
+        ...prev,
+        [languageId]: {
+          ...prev[languageId],
+          tags: [...(prev[languageId]?.tags || []), tag]
+        }
+      }));
+      setTranslationTagInputs(prev => ({ ...prev, [languageId]: '' }));
+    }
+  };
+
+  const removeTranslationTag = (languageId: string, tagToRemove: string) => {
+    setTranslations(prev => ({
+      ...prev,
+      [languageId]: {
+        ...prev[languageId],
+        tags: prev[languageId]?.tags?.filter(tag => tag !== tagToRemove) || []
+      }
+    }));
+  };
+
+  const handleTranslationKeyPress = (e: React.KeyboardEvent, languageId: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTranslationTag(languageId);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10">
@@ -240,7 +377,16 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="basic">Basic Info</TabsTrigger>
+              <TabsTrigger value="translations" className="flex items-center">
+                <Languages className="w-4 h-4 mr-2" />
+                Translations
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="basic" className="space-y-4 mt-6">
             <div>
               <Label htmlFor="name" className="text-white">Exercise Name *</Label>
               <Input
@@ -457,7 +603,105 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                 />
               </div>
             </div>
-          </div>
+            </TabsContent>
+
+            <TabsContent value="translations" className="space-y-4 mt-6">
+              <div className="text-sm text-muted-foreground mb-4">
+                Add translations for this exercise in different languages. This helps make your content accessible to more users.
+              </div>
+              
+              {availableLanguages.filter(lang => lang.id !== 'en').map(language => (
+                <Card key={language.id} className="glass-effect border-white/10">
+                  <CardHeader>
+                    <CardTitle className="text-white text-lg">{language.native_name}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label className="text-white">Exercise Name</Label>
+                      <Input
+                        value={translations[language.id]?.name || ''}
+                        onChange={(e) => setTranslations(prev => ({
+                          ...prev,
+                          [language.id]: { ...prev[language.id], name: e.target.value }
+                        }))}
+                        className="bg-white/5 border-white/10 text-white"
+                        placeholder={`Exercise name in ${language.native_name}`}
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-white">Description</Label>
+                      <Textarea
+                        value={translations[language.id]?.description || ''}
+                        onChange={(e) => setTranslations(prev => ({
+                          ...prev,
+                          [language.id]: { ...prev[language.id], description: e.target.value }
+                        }))}
+                        className="bg-white/5 border-white/10 text-white"
+                        rows={3}
+                        placeholder={`Description in ${language.native_name}`}
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-white">Instructions</Label>
+                      <Textarea
+                        value={translations[language.id]?.instructions || ''}
+                        onChange={(e) => setTranslations(prev => ({
+                          ...prev,
+                          [language.id]: { ...prev[language.id], instructions: e.target.value }
+                        }))}
+                        className="bg-white/5 border-white/10 text-white"
+                        rows={4}
+                        placeholder={`Instructions in ${language.native_name}`}
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="text-white">Tags</Label>
+                      <div className="flex space-x-2 mt-2">
+                        <Input
+                          value={translationTagInputs[language.id] || ''}
+                          onChange={(e) => setTranslationTagInputs(prev => ({ ...prev, [language.id]: e.target.value }))}
+                          onKeyPress={(e) => handleTranslationKeyPress(e, language.id)}
+                          className="bg-white/5 border-white/10 text-white"
+                          placeholder="Add a tag (press Enter)"
+                        />
+                        <Button
+                          type="button"
+                          onClick={() => addTranslationTag(language.id)}
+                          disabled={!translationTagInputs[language.id]?.trim()}
+                          className="bg-gradient-to-r from-purple-500 to-pink-500"
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      {translations[language.id]?.tags?.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {translations[language.id].tags.map((tag, index) => (
+                            <Badge 
+                              key={index} 
+                              variant="outline" 
+                              className="border-purple-500/30 text-purple-300 pr-1"
+                            >
+                              {tag}
+                              <button
+                                type="button"
+                                onClick={() => removeTranslationTag(language.id, tag)}
+                                className="ml-1 hover:text-red-400"
+                              >
+                                ×
+                              </button>
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </TabsContent>
+          </Tabs>
 
           <div className="flex space-x-3 pt-4">
             <Button

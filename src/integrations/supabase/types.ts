@@ -265,6 +265,57 @@ export type Database = {
           },
         ]
       }
+      figure_translations: {
+        Row: {
+          created_at: string
+          description: string | null
+          figure_id: string
+          id: string
+          instructions: string | null
+          language_id: string
+          name: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          figure_id: string
+          id?: string
+          instructions?: string | null
+          language_id: string
+          name: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          figure_id?: string
+          id?: string
+          instructions?: string | null
+          language_id?: string
+          name?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "figure_translations_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figure_translations_language_id_fkey"
+            columns: ["language_id"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       figures: {
         Row: {
           category: string | null
@@ -365,6 +416,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      languages: {
+        Row: {
+          created_at: string
+          id: string
+          is_default: boolean
+          name: string
+          native_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          is_default?: boolean
+          name: string
+          native_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          native_name?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       orders: {
         Row: {

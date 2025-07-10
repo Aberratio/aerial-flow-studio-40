@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import AppLayout from "@/components/Layout/AppLayout";
 import { ProfileUpgradeWrapper } from "@/components/ProfileUpgradeWrapper";
 import Landing from "@/pages/Landing";
@@ -29,6 +30,7 @@ import MyJourney from "@/pages/MyJourney";
 import EditChallenge from "@/pages/EditChallenge";
 import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
 import AchievementManagement from "@/pages/AchievementManagement";
+import TranslationManagement from "@/pages/TranslationManagement";
 import PremiumRoute from "@/components/PremiumRoute";
 
 const queryClient = new QueryClient();
@@ -185,6 +187,11 @@ const AppRoutes = () => {
           <AchievementManagement />
         </ProtectedRoute>
       } />
+      <Route path="/admin/translations" element={
+        <ProtectedRoute>
+          <TranslationManagement />
+        </ProtectedRoute>
+      } />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -196,11 +203,13 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <ProfileUpgradeWrapper>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </ProfileUpgradeWrapper>
+        <LanguageProvider>
+          <ProfileUpgradeWrapper>
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </ProfileUpgradeWrapper>
+        </LanguageProvider>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>

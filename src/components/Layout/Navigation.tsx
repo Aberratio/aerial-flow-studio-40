@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Languages } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -97,6 +97,10 @@ const Navigation: React.FC<NavigationProps> = ({
     path: '/admin/achievements',
     icon: Settings,
     label: 'Achievements'
+  }, {
+    path: '/admin/translations',
+    icon: Languages,
+    label: 'Translations'
   }] : [];
   const isActive = (path: string) => location.pathname === path;
   return <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
@@ -169,18 +173,20 @@ const Navigation: React.FC<NavigationProps> = ({
 
         {/* User Profile */}
         <div className={`border-t border-white/10 ${isMobile ? 'pt-2' : 'pt-4'}`}>
-          <Link to="/profile" onClick={isMobile ? onClose : undefined} className="flex items-center space-x-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer">
-            <Avatar className="w-8 h-8">
-              <AvatarImage src={user?.avatar} />
-              <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500">
-                {user?.username?.[0]?.toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className={`flex-1 ${isMobile ? 'block' : 'hidden lg:block'}`}>
-              <p className="text-white font-medium text-sm">{user?.username}</p>
-              <p className="text-muted-foreground text-xs">{user?.email}</p>
-            </div>
-          </Link>
+          <div className="space-y-2">
+            <Link to="/profile" onClick={isMobile ? onClose : undefined} className="flex items-center space-x-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer">
+              <Avatar className="w-8 h-8">
+                <AvatarImage src={user?.avatar} />
+                <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500">
+                  {user?.username?.[0]?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className={`flex-1 ${isMobile ? 'block' : 'hidden lg:block'}`}>
+                <p className="text-white font-medium text-sm">{user?.username}</p>
+                <p className="text-muted-foreground text-xs">{user?.email}</p>
+              </div>
+            </Link>
+          </div>
           <Button onClick={() => {
           logout();
           if (isMobile && onClose) onClose();
