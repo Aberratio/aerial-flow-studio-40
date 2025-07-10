@@ -108,6 +108,7 @@ export type Database = {
           end_date: string
           id: string
           start_date: string
+          status: string
           title: string
           updated_at: string | null
         }
@@ -118,6 +119,7 @@ export type Database = {
           end_date: string
           id?: string
           start_date: string
+          status?: string
           title: string
           updated_at?: string | null
         }
@@ -128,6 +130,7 @@ export type Database = {
           end_date?: string
           id?: string
           start_date?: string
+          status?: string
           title?: string
           updated_at?: string | null
         }

@@ -1,65 +1,68 @@
-import React, { useState } from 'react';
-import { Calendar, Trophy, Users, Clock, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, Trophy, Users, Clock, ChevronRight, Plus } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import ChallengePreviewModal from '@/components/ChallengePreviewModal';
+import CreateChallengeModal from '@/components/CreateChallengeModal';
+import { useUserRole } from '@/hooks/useUserRole';
+import { supabase } from '@/integrations/supabase/client';
 
 const Challenges = () => {
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [challenges, setChallenges] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { canCreateChallenges } = useUserRole();
 
-  const challenges = [
-    {
-      id: 1,
-      title: '28-Day Flexibility Challenge',
-      description: 'Improve your flexibility with daily stretching routines designed for aerial athletes.',
-      duration: '28 days',
-      participants: 1247,
-      difficulty: 'Beginner',
-      progress: 65,
-      status: 'in-progress',
-      image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=400&h=200&fit=crop',
-      category: 'Flexibility'
-    },
-    {
-      id: 2,
-      title: 'Strength Building Bootcamp',
-      description: 'Build the foundational strength needed for advanced aerial movements.',
-      duration: '21 days',
-      participants: 892,
-      difficulty: 'Intermediate',
-      progress: 0,
-      status: 'available',
-      image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=200&fit=crop',
-      category: 'Strength'
-    },
-    {
-      id: 3,
-      title: 'Master Your Drops',
-      description: 'Learn and perfect various drop techniques across different aerial disciplines.',
-      duration: '14 days',
-      participants: 456,
-      difficulty: 'Advanced',
-      progress: 100,
-      status: 'completed',
-      image: 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=400&h=200&fit=crop',
-      category: 'Technique'
-    },
-    {
-      id: 4,
-      title: 'Flow and Grace',
-      description: 'Develop smooth transitions and graceful movements in your aerial practice.',
-      duration: '30 days',
-      participants: 634,
-      difficulty: 'Intermediate',
-      progress: 0,
-      status: 'available',
-      image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=200&fit=crop',
-      category: 'Flow'
+  useEffect(() => {
+    fetchChallenges();
+  }, []);
+
+  const fetchChallenges = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      
+      // Transform data to match the expected format
+      const transformedData = data?.map(challenge => ({
+        id: challenge.id,
+        title: challenge.title,
+        description: challenge.description,
+        duration: calculateDuration(challenge.start_date, challenge.end_date),
+        participants: 0, // Will be calculated from challenge_participants table
+        difficulty: 'Intermediate', // Default for now
+        progress: 0, // Will be calculated based on user participation
+        status: 'available', // Default for now
+        image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=400&h=200&fit=crop', // Default image
+        category: 'General', // Default for now
+        start_date: challenge.start_date,
+        end_date: challenge.end_date
+      })) || [];
+      
+      setChallenges(transformedData);
+    } catch (error) {
+      console.error('Error fetching challenges:', error);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
+
+  const calculateDuration = (startDate: string, endDate: string) => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `${diffDays} days`;
+  };
 
   const openChallengeModal = (challenge) => {
     setSelectedChallenge(challenge);
@@ -102,8 +105,21 @@ const Challenges = () => {
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Challenges</h1>
-          <p className="text-muted-foreground">Push your limits with structured training programs</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Challenges</h1>
+              <p className="text-muted-foreground">Push your limits with structured training programs</p>
+            </div>
+            {canCreateChallenges && (
+              <Button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Challenge
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Stats Overview */}
@@ -129,7 +145,25 @@ const Challenges = () => {
 
         {/* Challenges Grid */}
         <div className="grid lg:grid-cols-2 gap-6">
-          {challenges.map((challenge) => (
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <Card key={index} className="glass-effect border-white/10 animate-pulse">
+                <div className="h-48 bg-gray-300 rounded-t-lg"></div>
+                <CardContent className="p-6">
+                  <div className="h-4 bg-gray-300 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-300 rounded mb-4"></div>
+                  <div className="h-8 bg-gray-300 rounded"></div>
+                </CardContent>
+              </Card>
+            ))
+          ) : challenges.length === 0 ? (
+            <div className="col-span-2 text-center py-12">
+              <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">No Challenges Available</h3>
+              <p className="text-muted-foreground">Check back later for new challenges!</p>
+            </div>
+          ) : (
+            challenges.map((challenge) => (
             <Card 
               key={challenge.id} 
               className="glass-effect border-white/10 hover-lift overflow-hidden cursor-pointer"
@@ -205,7 +239,8 @@ const Challenges = () => {
                 </Button>
               </CardContent>
             </Card>
-          ))}
+            ))
+          )}
         </div>
       </div>
 
@@ -214,6 +249,13 @@ const Challenges = () => {
         challenge={selectedChallenge}
         isOpen={isModalOpen}
         onClose={closeChallengeModal}
+      />
+
+      {/* Create Challenge Modal */}
+      <CreateChallengeModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onChallengeCreated={fetchChallenges}
       />
     </div>
   );
