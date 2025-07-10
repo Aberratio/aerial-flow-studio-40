@@ -15,7 +15,7 @@ interface ProfileHeaderProps {
 }
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onSettings }) => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [stats, setStats] = useState({
@@ -73,8 +73,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
         description: "Your profile photo has been successfully updated.",
       });
 
-      // Refresh the page to show the new avatar
-      window.location.reload();
+      // Refresh user data to show new avatar
+      await refreshUser();
     } catch (error: any) {
       console.error('Avatar upload error:', error);
       toast({

@@ -14,7 +14,7 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, session, isLoading, isFirstLogin, setIsFirstLogin, clearAuth, refetchCounts } = useAuthState();
+  const { user, session, isLoading, isFirstLogin, setIsFirstLogin, clearAuth, refetchCounts, refreshUser } = useAuthState();
   const { signIn, signUp, signOut, login, register, logout } = useAuthOperations();
 
   const handleSignOut = async () => {
@@ -33,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isFirstLogin, 
       setIsFirstLogin,
       refetchCounts,
+      refreshUser,
       // Backward compatibility
       login,
       register,

@@ -151,6 +151,27 @@ export const useAuthState = () => {
     }
   }, [followersCount, followingCount, session?.user?.id]);
 
+  const refreshUser = async () => {
+    if (session?.user) {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (!error && profile) {
+        const userWithCompat = {
+          ...profile,
+          avatar: profile.avatar_url,
+          followersCount,
+          followingCount,
+        };
+        setUser(userWithCompat);
+        console.log('AuthContext: User refreshed', userWithCompat);
+      }
+    }
+  };
+
   return {
     user,
     session,
@@ -159,5 +180,6 @@ export const useAuthState = () => {
     setIsFirstLogin,
     clearAuth,
     refetchCounts,
+    refreshUser,
   };
 };

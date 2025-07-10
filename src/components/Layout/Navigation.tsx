@@ -106,7 +106,7 @@ const Navigation: React.FC<NavigationProps> = ({
   }] : [];
   const isActive = (path: string) => location.pathname === path;
   return <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
-      <div className="flex flex-col h-full p-4">
+      <div className="flex flex-col h-full p-4 overflow-y-auto">
         {/* Logo */}
         <Link to="/feed" onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 group ${isMobile ? 'mb-4 my-4' : 'mb-8 my-[50px]'}`}>
           <div className="w-10 h-10 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl flex items-center justify-center">
@@ -121,17 +121,9 @@ const Navigation: React.FC<NavigationProps> = ({
         <div className="flex-1 space-y-2">
           {freeNavItems.map(item => {
           const Icon = item.icon;
-          return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
-                <div className="relative">
-                  <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                  {item.path === '/inbox' && unreadCount > 0 && <Badge className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </Badge>}
-                </div>
+            return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+                <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
-                {item.path === '/inbox' && unreadCount > 0 && <Badge className={`ml-auto bg-red-500 text-white text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </Badge>}
               </Link>;
         })}
 

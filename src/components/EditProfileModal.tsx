@@ -16,7 +16,7 @@ interface EditProfileModalProps {
 }
 
 export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [username, setUsername] = useState(user?.username || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -87,6 +87,9 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
       }
 
       console.log('Profile updated successfully!');
+
+      // Refresh user data to show new avatar
+      await refreshUser();
 
       toast({
         title: "Profile Updated",
