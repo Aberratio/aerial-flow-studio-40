@@ -171,6 +171,26 @@ export const useFriendshipStatus = (userId: string) => {
     }
   };
 
+  const removeFriend = async () => {
+    if (!user || !userId) return false;
+
+    try {
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .or(`and(requester_id.eq.${user.id},addressee_id.eq.${userId}),and(requester_id.eq.${userId},addressee_id.eq.${user.id})`)
+        .eq('status', 'accepted');
+
+      if (error) throw error;
+
+      setStatus(prev => ({ ...prev, isFriend: false }));
+      return true;
+    } catch (error) {
+      console.error('Error removing friend:', error);
+      return false;
+    }
+  };
+
   const followUser = async () => {
     if (!user || !userId) return false;
 
@@ -229,6 +249,7 @@ export const useFriendshipStatus = (userId: string) => {
     acceptFriendRequest,
     rejectFriendRequest,
     cancelFriendRequest,
+    removeFriend,
     followUser,
     unfollowUser
   };

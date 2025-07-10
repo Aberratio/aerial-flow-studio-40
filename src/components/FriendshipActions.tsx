@@ -1,7 +1,8 @@
-import React from 'react';
-import { UserPlus, UserCheck, UserX, Clock, Heart, HeartOff } from 'lucide-react';
+import React, { useState } from 'react';
+import { UserPlus, UserCheck, UserX, Clock, Heart, HeartOff, UserMinus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
 
 interface FriendshipActionsProps {
@@ -12,6 +13,7 @@ interface FriendshipActionsProps {
 
 export const FriendshipActions = ({ userId, size = 'default', variant = 'default' }: FriendshipActionsProps) => {
   const { toast } = useToast();
+  const [showRemoveFriendModal, setShowRemoveFriendModal] = useState(false);
   const {
     isFriend,
     isFollowing,
@@ -21,6 +23,7 @@ export const FriendshipActions = ({ userId, size = 'default', variant = 'default
     acceptFriendRequest,
     rejectFriendRequest,
     cancelFriendRequest,
+    removeFriend,
     followUser,
     unfollowUser
   } = useFriendshipStatus(userId);
@@ -103,6 +106,23 @@ export const FriendshipActions = ({ userId, size = 'default', variant = 'default
     }
   };
 
+  const handleRemoveFriend = async () => {
+    const success = await removeFriend();
+    if (success) {
+      toast({
+        title: "Friend removed",
+        description: "You are no longer friends with this user."
+      });
+      setShowRemoveFriendModal(false);
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to remove friend.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex space-x-2">
@@ -136,9 +156,9 @@ export const FriendshipActions = ({ userId, size = 'default', variant = 'default
 
       {/* Friendship Button */}
       {isFriend ? (
-        <Button size={size} variant="outline" disabled>
-          <UserCheck className="w-4 h-4 mr-2" />
-          Friends
+        <Button size={size} variant="outline" onClick={() => setShowRemoveFriendModal(true)}>
+          <UserMinus className="w-4 h-4 mr-2" />
+          Remove Friend
         </Button>
       ) : pendingFriendRequest === 'sent' ? (
         <Button size={size} variant="outline" onClick={handleCancelFriendRequest}>
@@ -161,6 +181,14 @@ export const FriendshipActions = ({ userId, size = 'default', variant = 'default
           Add Friend
         </Button>
       )}
+
+      <ConfirmDeleteModal
+        isOpen={showRemoveFriendModal}
+        onClose={() => setShowRemoveFriendModal(false)}
+        onConfirm={handleRemoveFriend}
+        title="Remove Friend"
+        description="Are you sure you want to remove this friend? You will no longer be able to see their friends-only content and they won't see yours."
+      />
     </div>
   );
 };

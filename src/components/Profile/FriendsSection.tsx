@@ -19,28 +19,55 @@ export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('user_follows')
+      // Get accepted friendships where user is either requester or addressee
+      const { data: friendships, error: friendshipsError } = await supabase
+        .from('friendships')
         .select(`
-          following_id,
-          profiles!user_follows_following_id_fkey (
+          requester_id,
+          addressee_id,
+          requester:profiles!friendships_requester_id_fkey (
+            id,
+            username,
+            avatar_url,
+            role
+          ),
+          addressee:profiles!friendships_addressee_id_fkey (
             id,
             username,
             avatar_url,
             role
           )
         `)
-        .eq('follower_id', user.id);
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
-      if (error) throw error;
+      if (friendshipsError) throw friendshipsError;
 
-      const friendsData = data?.map(follow => ({
-        id: follow.profiles?.id || '',
-        username: follow.profiles?.username || '',
-        avatar: follow.profiles?.avatar_url || null,
-        level: follow.profiles?.role === 'trainer' ? 'Trainer' : 'Member',
-        score: Math.floor(Math.random() * 5000) + 1000 // Mock score for now
-      })) || [];
+      // Get the friend profiles (the other person in each friendship)
+      const friendProfiles = friendships?.map(friendship => {
+        const isRequester = friendship.requester_id === user.id;
+        return isRequester ? friendship.addressee : friendship.requester;
+      }).filter(Boolean) || [];
+
+      // Get scores for all friends
+      const friendIds = friendProfiles.map(friend => friend?.id).filter(Boolean);
+      const { data: scores } = await supabase
+        .from('user_scores')
+        .select('user_id, total_points')
+        .in('user_id', friendIds);
+
+      const scoresMap = scores?.reduce((acc, score) => {
+        acc[score.user_id] = score.total_points;
+        return acc;
+      }, {} as Record<string, number>) || {};
+
+      const friendsData = friendProfiles.map(friend => ({
+        id: friend?.id || '',
+        username: friend?.username || '',
+        avatar: friend?.avatar_url || null,
+        level: friend?.role === 'trainer' ? 'Trainer' : 'Member',
+        score: scoresMap[friend?.id || ''] || 0
+      }));
 
       setFriends(friendsData);
     } catch (error) {
@@ -72,7 +99,7 @@ export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {friends.map((friend: any) => (
-              <Link key={friend.id} to={`/profile/${friend.id}`} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
+              <div key={friend.id} onClick={() => window.location.href = `/profile/${friend.id}`} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
                 <Avatar className="w-16 h-16 mx-auto mb-3 hover:scale-110 transition-transform">
                   <AvatarImage src={friend.avatar || undefined} />
                   <AvatarFallback>{friend.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
@@ -80,7 +107,7 @@ export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }
                 <div className="text-white font-semibold text-sm">{friend.username}</div>
                 <div className="text-muted-foreground text-xs">{friend.level}</div>
                 <div className="text-purple-400 text-xs font-semibold mt-1">{friend.score.toLocaleString()} pts</div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
