@@ -47,7 +47,13 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
   const progressPercentage = (challenge.completedDays / challenge.totalDays) * 100;
 
   const handleDayClick = (day: ChallengeDay) => {
+    console.log({day})
+    console.log({challenge})
+
     onClose();
+
+    console.log("HI!")
+
     // Find the actual training day from the challenge data
     const trainingDay = challenge.training_days?.find((td: any, index: number) => {
       return index + 1 === day.day; // Match by position/order
