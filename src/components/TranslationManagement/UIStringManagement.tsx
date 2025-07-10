@@ -38,6 +38,7 @@ export function UIStringManagement({
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
   const [uiSearchTerm, setUISearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [showUntranslated, setShowUntranslated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [uiStringForm, setUIStringForm] = useState({
     string_key: '',
@@ -233,18 +234,49 @@ export function UIStringManagement({
                   <SelectItem value="time">Time</SelectItem>
                 </SelectContent>
               </Select>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="showUntranslated"
+                  checked={showUntranslated}
+                  onChange={(e) => setShowUntranslated(e.target.checked)}
+                  className="rounded border-white/20"
+                />
+                <label htmlFor="showUntranslated" className="text-white text-sm">
+                  Show only untranslated strings
+                </label>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 max-h-96 overflow-y-auto">
-              {uiStrings
-                .filter(str => {
+              {(() => {
+                const filteredStrings = uiStrings.filter(str => {
                   const matchesSearch = str.string_key.toLowerCase().includes(uiSearchTerm.toLowerCase()) ||
                                         str.value.toLowerCase().includes(uiSearchTerm.toLowerCase());
                   const matchesCategory = categoryFilter === 'all' || !categoryFilter || str.category === categoryFilter;
+                  
+                  if (showUntranslated) {
+                    // Find string keys that exist in one language but not in others
+                    const stringKey = str.string_key;
+                    const languagesWithThisKey = uiStrings
+                      .filter(s => s.string_key === stringKey)
+                      .map(s => s.language_id);
+                    
+                    // Check if this string key is missing in some languages
+                    const allLanguageIds = languages.map(l => l.id);
+                    const isMissingInSomeLanguages = allLanguageIds.some(langId => 
+                      !languagesWithThisKey.includes(langId)
+                    );
+                    
+                    return matchesSearch && matchesCategory && isMissingInSomeLanguages;
+                  }
+                  
                   return matchesSearch && matchesCategory;
-                })
-                .map(string => (
+                });
+                
+                return filteredStrings;
+              })().map(string => (
                 <div key={string.id} className="p-3 bg-white/5 rounded-lg">
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
