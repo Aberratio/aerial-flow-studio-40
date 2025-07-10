@@ -163,6 +163,14 @@ export const useFriendshipStatus = (userId: string) => {
         points: 5
       });
 
+      // Create mutual follow relationships when friendship is accepted
+      await supabase
+        .from('user_follows')
+        .insert([
+          { follower_id: user.id, following_id: userId },
+          { follower_id: userId, following_id: user.id }
+        ]);
+
       setStatus(prev => ({ ...prev, isFriend: true, pendingFriendRequest: 'none' }));
       return true;
     } catch (error) {

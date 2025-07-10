@@ -27,30 +27,44 @@ const Friends = () => {
       }
 
       try {
-        // Fetch friends (people the current user is following)
-        const { data: friendsData, error: friendsError } = await supabase
-          .from('user_follows')
+        // Fetch friends from friendships table
+        const { data: friendshipData, error: friendshipError } = await supabase
+          .from('friendships')
           .select(`
-            following_id,
-            profiles!user_follows_following_id_fkey (
+            requester_id,
+            addressee_id,
+            requester:profiles!friendships_requester_id_fkey (
+              id,
+              username,
+              avatar_url,
+              bio
+            ),
+            addressee:profiles!friendships_addressee_id_fkey (
               id,
               username,
               avatar_url,
               bio
             )
           `)
-          .eq('follower_id', user.id);
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
-        if (friendsError) {
-          console.error('Error fetching friends:', friendsError);
+        if (friendshipError) {
+          console.error('Error fetching friends:', friendshipError);
         } else {
-          const formattedFriends = friendsData?.map(follow => ({
-            id: follow.profiles.id,
-            username: follow.profiles.username,
-            avatar: follow.profiles.avatar_url,
-            bio: follow.profiles.bio || 'Aerial enthusiast',
+          // Get the friend profiles (the other person in each friendship)
+          const friendProfiles = friendshipData?.map(friendship => {
+            const isRequester = friendship.requester_id === user.id;
+            return isRequester ? friendship.addressee : friendship.requester;
+          }).filter(Boolean) || [];
+
+          const formattedFriends = friendProfiles.map(friend => ({
+            id: friend?.id || '',
+            username: friend?.username || '',
+            avatar: friend?.avatar_url || null,
+            bio: friend?.bio || 'Aerial enthusiast',
             mutualFriends: 0
-          })) || [];
+          }));
           setFriends(formattedFriends);
         }
 
@@ -81,16 +95,30 @@ const Friends = () => {
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      // Remove from friendships table
+      const { error: friendshipError } = await supabase
+        .from('friendships')
+        .delete()
+        .or(`and(requester_id.eq.${user.id},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${user.id})`)
+        .eq('status', 'accepted');
+
+      if (friendshipError) {
+        console.error('Error removing friendship:', friendshipError);
+        return;
+      }
+
+      // Also remove from user_follows table (both directions)
+      await supabase
         .from('user_follows')
         .delete()
         .eq('follower_id', user.id)
         .eq('following_id', friendId);
 
-      if (error) {
-        console.error('Error unfriending:', error);
-        return;
-      }
+      await supabase
+        .from('user_follows')
+        .delete()
+        .eq('follower_id', friendId)
+        .eq('following_id', user.id);
 
       setFriends(friends.filter(friend => friend.id !== friendId));
     } catch (error) {
@@ -195,9 +223,6 @@ const Friends = () => {
                       <p className="text-muted-foreground text-xs">{friend.mutualFriends} mutual friends</p>
                     </div>
                     <div className="flex space-x-2">
-                      <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
-                        <Mail className="w-4 h-4" />
-                      </Button>
                       <Button 
                         variant="ghost" 
                         size="sm" 
