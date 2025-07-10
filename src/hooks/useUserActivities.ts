@@ -35,46 +35,12 @@ export const useUserActivities = () => {
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(20);
+          .limit(50);
 
         if (activitiesError) {
           console.error('Error fetching user activities:', activitiesError);
           return;
         }
-
-        // Get friend requests received
-        const { data: friendRequestsData, error: friendRequestsError } = await supabase
-          .from('user_follows')
-          .select(`
-            id,
-            created_at,
-            follower_id,
-            profiles!user_follows_follower_id_fkey (
-              username,
-              avatar_url
-            )
-          `)
-          .eq('following_id', user.id)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false });
-
-        if (friendRequestsError) {
-          console.error('Error fetching friend requests:', friendRequestsError);
-        }
-
-        // Convert friend requests to activity format
-        const friendRequestActivities = (friendRequestsData || []).map(request => ({
-          id: `friend_request_${request.id}`,
-          activity_type: 'friend_request',
-          activity_data: { request_id: request.id },
-          target_user_id: request.follower_id,
-          points_awarded: 0,
-          created_at: request.created_at,
-          target_user: {
-            username: request.profiles?.username || '',
-            avatar_url: request.profiles?.avatar_url || null
-          }
-        }));
 
         // Get target users data for regular activities
         const activitiesWithUsers = await Promise.all(
@@ -95,11 +61,7 @@ export const useUserActivities = () => {
           })
         );
 
-        // Combine and sort all activities
-        const allActivities = [...activitiesWithUsers, ...friendRequestActivities];
-        allActivities.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-        setActivities(allActivities.slice(0, 20)); // Keep only the latest 20
+        setActivities(activitiesWithUsers.slice(0, 20));
       } catch (error) {
         console.error('Error fetching user activities:', error);
       } finally {

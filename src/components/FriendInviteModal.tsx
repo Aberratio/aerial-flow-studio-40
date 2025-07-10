@@ -74,7 +74,8 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
     if (!user) return;
 
     try {
-      const { error } = await supabase
+      // Insert the friend request
+      const { error: followError } = await supabase
         .from('user_follows')
         .insert({
           follower_id: user.id,
@@ -82,7 +83,22 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
           status: 'pending'
         });
 
-      if (error) throw error;
+      if (followError) throw followError;
+
+      // Create activity notification for the recipient
+      const { error: activityError } = await supabase
+        .from('user_activities')
+        .insert({
+          user_id: friendId,
+          activity_type: 'friend_request',
+          activity_data: { requester_id: user.id, requester_username: user.username },
+          target_user_id: user.id,
+          points_awarded: 0
+        });
+
+      if (activityError) {
+        console.error('Error creating friend request activity:', activityError);
+      }
 
       setSentInvites(prev => [...prev, friendId]);
       toast({

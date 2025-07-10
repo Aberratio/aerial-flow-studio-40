@@ -110,12 +110,37 @@ export const PendingRequestsSection: React.FC = () => {
 
   const handleAccept = async (requestId: string, username: string) => {
     try {
-      const { error } = await supabase
+      // Get the request details first
+      const { data: requestData, error: requestError } = await supabase
+        .from('user_follows')
+        .select('follower_id')
+        .eq('id', requestId)
+        .single();
+
+      if (requestError) throw requestError;
+
+      // Update the request status to 'accepted'
+      const { error: updateError } = await supabase
         .from('user_follows')
         .update({ status: 'accepted' })
         .eq('id', requestId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
+
+      // Create activity notification for the requester
+      const { error: activityError } = await supabase
+        .from('user_activities')
+        .insert({
+          user_id: requestData.follower_id,
+          activity_type: 'friend_request_accepted',
+          activity_data: { accepter_username: user?.username },
+          target_user_id: user?.id,
+          points_awarded: 0
+        });
+
+      if (activityError) {
+        console.error('Error creating friend request accepted activity:', activityError);
+      }
 
       setRequests(prev => prev.filter(req => req.id !== requestId));
       toast({

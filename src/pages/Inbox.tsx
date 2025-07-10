@@ -25,6 +25,8 @@ const Inbox = () => {
         return `${targetUser?.username || 'Someone'} started following you`;
       case 'friend_request':
         return `${targetUser?.username || 'Someone'} sent you a friend request`;
+      case 'friend_request_accepted':
+        return `${data.accepter_username || 'Someone'} accepted your friend request`;
       case 'post_created':
         return 'You created a new post (+10 points)';
       case 'challenge_day_completed':
@@ -56,6 +58,7 @@ const Inbox = () => {
         }
         break;
       case 'friend_request':
+      case 'friend_request_accepted':
         navigate('/friends');
         break;
       case 'post_created':
@@ -85,6 +88,8 @@ const Inbox = () => {
         return <Users className="w-5 h-5 text-green-400" />;
       case 'friend_request':
         return <Users className="w-5 h-5 text-blue-400" />;
+      case 'friend_request_accepted':
+        return <Users className="w-5 h-5 text-green-500" />;
       case 'challenge_day_completed':
       case 'figure_completed':
       case 'training_completed':
@@ -97,6 +102,7 @@ const Inbox = () => {
   const filteredActivities = activities.filter(activity => {
     if (filter === 'likes') return activity.activity_type === 'like';
     if (filter === 'comments') return activity.activity_type === 'comment';
+    if (filter === 'friends') return ['friend_request', 'friend_request_accepted', 'follow'].includes(activity.activity_type);
     return true;
   });
 
@@ -110,7 +116,8 @@ const Inbox = () => {
           {[
             { id: 'all', label: 'All' },
             { id: 'likes', label: 'Likes' },
-            { id: 'comments', label: 'Comments' }
+            { id: 'comments', label: 'Comments' },
+            { id: 'friends', label: 'Friends' }
           ].map((tab) => (
             <Button
               key={tab.id}
