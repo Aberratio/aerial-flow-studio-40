@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Language {
   id: string;
@@ -13,6 +14,7 @@ interface LanguageContextType {
   setCurrentLanguage: (languageId: string) => void;
   languages: Language[];
   isLoading: boolean;
+  t: (key: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -32,43 +34,107 @@ interface LanguageProviderProps {
 export const LanguageProvider = ({ children }: LanguageProviderProps) => {
   const [currentLanguage, setCurrentLanguage] = useState<string>('en');
   const [languages, setLanguages] = useState<Language[]>([]);
+  const [uiStrings, setUiStrings] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const fetchLanguages = async () => {
+    const initializeLanguage = async () => {
       try {
-        const { data, error } = await supabase
+        // Fetch available languages
+        const { data: languagesData, error: langError } = await supabase
           .from('languages')
           .select('*')
           .order('is_default', { ascending: false });
 
-        if (error) throw error;
+        if (langError) throw langError;
+        setLanguages(languagesData || []);
 
-        setLanguages(data || []);
-        
-        // Set default language from localStorage or use the default one
-        const savedLanguage = localStorage.getItem('selectedLanguage');
-        if (savedLanguage && data?.some(lang => lang.id === savedLanguage)) {
-          setCurrentLanguage(savedLanguage);
+        // Get user's language preference if logged in
+        if (user) {
+          const { data: settings, error: settingsError } = await supabase
+            .from('user_settings')
+            .select('language_preference')
+            .eq('user_id', user.id)
+            .single();
+
+          if (!settingsError && settings) {
+            setCurrentLanguage(settings.language_preference);
+          } else {
+            // Create default settings for new user
+            await supabase
+              .from('user_settings')
+              .insert({
+                user_id: user.id,
+                language_preference: 'en'
+              });
+          }
         } else {
-          const defaultLang = data?.find(lang => lang.is_default);
-          if (defaultLang) {
-            setCurrentLanguage(defaultLang.id);
+          // Use localStorage for non-logged in users
+          const savedLanguage = localStorage.getItem('selectedLanguage');
+          if (savedLanguage && languagesData?.some(lang => lang.id === savedLanguage)) {
+            setCurrentLanguage(savedLanguage);
           }
         }
       } catch (error) {
-        console.error('Error fetching languages:', error);
+        console.error('Error initializing language:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchLanguages();
-  }, []);
+    initializeLanguage();
+  }, [user]);
 
-  const handleSetCurrentLanguage = (languageId: string) => {
+  // Fetch UI strings when language changes
+  useEffect(() => {
+    const fetchUIStrings = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('ui_strings')
+          .select('string_key, value')
+          .eq('language_id', currentLanguage);
+
+        if (error) throw error;
+
+        const strings: Record<string, string> = {};
+        data?.forEach(item => {
+          strings[item.string_key] = item.value;
+        });
+        setUiStrings(strings);
+      } catch (error) {
+        console.error('Error fetching UI strings:', error);
+      }
+    };
+
+    if (currentLanguage) {
+      fetchUIStrings();
+    }
+  }, [currentLanguage]);
+
+  const handleSetCurrentLanguage = async (languageId: string) => {
     setCurrentLanguage(languageId);
-    localStorage.setItem('selectedLanguage', languageId);
+    
+    if (user) {
+      // Save to database for logged in users
+      try {
+        await supabase
+          .from('user_settings')
+          .upsert({
+            user_id: user.id,
+            language_preference: languageId
+          });
+      } catch (error) {
+        console.error('Error saving language preference:', error);
+      }
+    } else {
+      // Save to localStorage for non-logged in users
+      localStorage.setItem('selectedLanguage', languageId);
+    }
+  };
+
+  const t = (key: string): string => {
+    return uiStrings[key] || key;
   };
 
   return (
@@ -77,7 +143,8 @@ export const LanguageProvider = ({ children }: LanguageProviderProps) => {
         currentLanguage, 
         setCurrentLanguage: handleSetCurrentLanguage, 
         languages, 
-        isLoading 
+        isLoading,
+        t
       }}
     >
       {children}

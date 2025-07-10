@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { LanguageSelector } from '@/components/LanguageSelector';
 import { supabase } from '@/integrations/supabase/client';
 interface NavigationProps {
   isOpen?: boolean;
@@ -186,6 +187,10 @@ const Navigation: React.FC<NavigationProps> = ({
                 <p className="text-muted-foreground text-xs">{user?.email}</p>
               </div>
             </Link>
+            
+            <div className={`px-3 ${isMobile ? 'block' : 'hidden lg:block'}`}>
+              <LanguageSelector />
+            </div>
           </div>
           <Button onClick={() => {
           logout();
