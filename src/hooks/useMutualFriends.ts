@@ -18,27 +18,44 @@ export const useMutualFriends = (userId1: string, userId2: string) => {
       try {
         setLoading(true);
 
-        // Get friends of user1 (people user1 is following with accepted status)
-        const { data: user1Friends, error: error1 } = await supabase
-          .from('user_follows')
-          .select('following_id')
-          .eq('follower_id', userId1)
-          .eq('status', 'accepted');
+        // Get friends of user1 (accepted friendships)
+        const { data: user1Friendships, error: error1 } = await supabase
+          .from('friendships')
+          .select('requester_id, addressee_id')
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${userId1},addressee_id.eq.${userId1}`);
 
         if (error1) throw error1;
 
-        // Get friends of user2 (people user2 is following with accepted status)
-        const { data: user2Friends, error: error2 } = await supabase
-          .from('user_follows')
-          .select('following_id')
-          .eq('follower_id', userId2)
-          .eq('status', 'accepted');
+        // Get friends of user2 (accepted friendships)
+        const { data: user2Friendships, error: error2 } = await supabase
+          .from('friendships')
+          .select('requester_id, addressee_id')
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${userId2},addressee_id.eq.${userId2}`);
 
         if (error2) throw error2;
 
+        // Extract friend IDs for both users
+        const user1FriendIds = new Set<string>();
+        user1Friendships?.forEach(friendship => {
+          if (friendship.requester_id === userId1) {
+            user1FriendIds.add(friendship.addressee_id);
+          } else {
+            user1FriendIds.add(friendship.requester_id);
+          }
+        });
+
+        const user2FriendIds = new Set<string>();
+        user2Friendships?.forEach(friendship => {
+          if (friendship.requester_id === userId2) {
+            user2FriendIds.add(friendship.addressee_id);
+          } else {
+            user2FriendIds.add(friendship.requester_id);
+          }
+        });
+
         // Find common friend IDs
-        const user1FriendIds = new Set(user1Friends?.map(f => f.following_id) || []);
-        const user2FriendIds = new Set(user2Friends?.map(f => f.following_id) || []);
         
         const mutualFriendIds = [...user1FriendIds].filter(id => user2FriendIds.has(id));
 

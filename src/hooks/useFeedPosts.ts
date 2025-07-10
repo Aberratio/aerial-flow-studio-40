@@ -27,23 +27,64 @@ export const useFeedPosts = () => {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  // Fetch posts from current user and friends
+  // Fetch posts from current user and friends/followers
   const fetchPosts = async () => {
     if (!user) return;
 
     try {
       setLoading(true);
 
-      // Get user's friends (people they follow)
-      const { data: friendIds } = await supabase
+      // Get user's friends (accepted friendships)
+      const { data: friendships } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+
+      // Get user's follows
+      const { data: follows } = await supabase
         .from('user_follows')
         .select('following_id')
         .eq('follower_id', user.id);
 
-      const friendIdList = friendIds?.map(f => f.following_id) || [];
-      const userIds = [user.id, ...friendIdList];
+      // Extract friend IDs (people who are actual friends)
+      const friendIds = new Set<string>();
+      friendships?.forEach(friendship => {
+        if (friendship.requester_id === user.id) {
+          friendIds.add(friendship.addressee_id);
+        } else {
+          friendIds.add(friendship.requester_id);
+        }
+      });
 
-      // Fetch posts from user and friends with user info and counts
+      // Extract follow IDs (people user follows but aren't friends with)
+      const followIds = new Set<string>();
+      follows?.forEach(follow => {
+        if (!friendIds.has(follow.following_id)) {
+          followIds.add(follow.following_id);
+        }
+      });
+
+      // Build query conditions
+      const conditions = [`user_id.eq.${user.id}`]; // User's own posts
+
+      // Add friends' posts (both public and friends-only)
+      if (friendIds.size > 0) {
+        const friendIdsArray = Array.from(friendIds);
+        friendIdsArray.forEach(friendId => {
+          conditions.push(`and(user_id.eq.${friendId},privacy.in.(public,friends))`);
+        });
+      }
+
+      // Add followed users' public posts only
+      if (followIds.size > 0) {
+        const followIdsArray = Array.from(followIds);
+        followIdsArray.forEach(followId => {
+          conditions.push(`and(user_id.eq.${followId},privacy.eq.public)`);
+        });
+      }
+
+      // Fetch posts with the conditions
       const { data: postsData, error } = await supabase
         .from('posts')
         .select(`
@@ -61,7 +102,7 @@ export const useFeedPosts = () => {
             role
           )
         `)
-        .in('user_id', userIds)
+        .or(conditions.join(','))
         .order('created_at', { ascending: false });
 
       if (error) throw error;

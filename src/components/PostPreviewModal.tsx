@@ -99,7 +99,10 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
                     <span className="font-semibold text-white">{post.user.username}</span>
                   </div>
                   <span className="text-muted-foreground text-sm">
-                    {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                    {post.created_at && !isNaN(new Date(post.created_at).getTime()) 
+                      ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
+                      : 'Recently'
+                    }
                   </span>
                 </div>
               </div>
@@ -142,6 +145,7 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
                     size="sm" 
                     onClick={handleToggleSave}
                     className={`text-muted-foreground hover:text-white ${post.is_saved ? 'text-blue-400' : ''}`}
+                    title="Save for later"
                   >
                     <Bookmark className={`w-5 h-5 ${post.is_saved ? 'fill-current' : ''}`} />
                   </Button>
@@ -171,7 +175,10 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
                         <div className="flex items-center space-x-2 mb-1">
                           <span className="font-semibold text-white text-sm">{comment.user.username}</span>
                           <span className="text-muted-foreground text-xs">
-                            {formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })}
+                            {comment.created_at && !isNaN(new Date(comment.created_at).getTime()) 
+                              ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })
+                              : 'Recently'
+                            }
                           </span>
                         </div>
                         <p className="text-white text-sm">{comment.content}</p>
