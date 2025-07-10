@@ -133,8 +133,20 @@ const Navigation = () => {
           )}
         </div>
 
-        {/* About Us Link */}
-        <div className="mt-auto mb-4">
+        {/* Footer Links */}
+        <div className="mt-auto mb-4 space-y-2">
+          <Link
+            to="/privacy-policy"
+            className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
+          >
+            Privacy Policy
+          </Link>
+          <Link
+            to="/terms-of-use"
+            className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
+          >
+            Terms of Use
+          </Link>
           <Link
             to="/about"
             className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"

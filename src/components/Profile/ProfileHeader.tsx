@@ -6,6 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserScore } from '@/hooks/useUserScore';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProfileHeaderProps {
@@ -20,9 +21,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
   const [stats, setStats] = useState({
     posts: 0,
     followers: 0,
-    following: 0,
-    score: 0
+    following: 0
   });
+  const { score } = useUserScore();
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -109,19 +110,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
           .select('*', { count: 'exact', head: true })
           .eq('follower_id', user.id);
 
-        // Calculate score based on posts and achievements
-        const { count: achievementsCount } = await supabase
-          .from('user_achievements')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-
-        const calculatedScore = (postsCount || 0) * 10 + (achievementsCount || 0) * 100;
-
         setStats({
           posts: postsCount || 0,
           followers: followersCount || 0,
-          following: followingCount || 0,
-          score: calculatedScore
+          following: followingCount || 0
         });
       } catch (error) {
         console.error('Error fetching stats:', error);
@@ -135,7 +127,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
     { label: 'Posts', value: stats.posts.toLocaleString() },
     { label: 'Followers', value: stats.followers.toLocaleString() },
     { label: 'Following', value: stats.following.toLocaleString() },
-    { label: 'Score', value: stats.score.toLocaleString() }
+    { label: 'Score', value: score.toLocaleString() }
   ];
 
   return (

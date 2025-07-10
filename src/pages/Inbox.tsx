@@ -4,84 +4,83 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { useUserActivities, UserActivity } from '@/hooks/useUserActivities';
+import { useNavigate } from 'react-router-dom';
 
 const Inbox = () => {
   const [filter, setFilter] = useState('all');
+  const { activities, loading } = useUserActivities();
+  const navigate = useNavigate();
 
-  const activities = [
-    {
-      id: 1,
-      type: 'like',
-      user: {
-        username: 'sarah_aerial',
-        avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b589?w=100&h=100&fit=crop&crop=face'
-      },
-      content: 'liked your post "Perfect Caterpillar form! 🐛"',
-      timeAgo: '2 minutes ago',
-      isRead: false
-    },
-    {
-      id: 2,
-      type: 'comment',
-      user: {
-        username: 'mike_silk',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face'
-      },
-      content: 'commented: "Amazing progress! Your form is getting so much better 🔥"',
-      timeAgo: '1 hour ago',
-      isRead: false
-    },
-    {
-      id: 3,
-      type: 'follow',
-      user: {
-        username: 'luna_hoop',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face'
-      },
-      content: 'started following you',
-      timeAgo: '3 hours ago',
-      isRead: false
-    },
-    {
-      id: 4,
-      type: 'achievement',
-      content: 'You earned the "Consistency Champion" badge! 🏆',
-      timeAgo: '1 day ago',
-      isRead: true
-    },
-    {
-      id: 5,
-      type: 'like',
-      user: {
-        username: 'alex_flow',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face'
-      },
-      content: 'liked your challenge completion "7-Day Flexibility Challenge"',
-      timeAgo: '2 days ago',
-      isRead: true
-    },
-    {
-      id: 6,
-      type: 'comment',
-      user: {
-        username: 'yoga_master',
-        avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop&crop=face'
-      },
-      content: 'commented: "Would love to see your tutorial on this move!"',
-      timeAgo: '3 days ago',
-      isRead: true
+  const getActivityContent = (activity: UserActivity) => {
+    const data = activity.activity_data || {};
+    const targetUser = activity.target_user;
+    
+    switch (activity.activity_type) {
+      case 'like':
+        return `${targetUser?.username || 'Someone'} liked your post`;
+      case 'comment':
+        return `${targetUser?.username || 'Someone'} commented on your post: "${data.content?.substring(0, 50) || ''}..."`;
+      case 'follow':
+        return `${targetUser?.username || 'Someone'} started following you`;
+      case 'post_created':
+        return 'You created a new post (+10 points)';
+      case 'challenge_day_completed':
+        return `You completed a challenge day (+25 points)`;
+      case 'figure_completed':
+        return `You mastered a new figure (+15 points)`;
+      case 'training_completed':
+        return `You completed a training session (+20 points)`;
+      default:
+        return 'New activity';
     }
-  ];
+  };
 
-  const getActivityIcon = (type: string) => {
-    switch (type) {
+  const handleActivityClick = (activity: UserActivity) => {
+    const data = activity.activity_data || {};
+    
+    switch (activity.activity_type) {
+      case 'like':
+      case 'comment':
+        if (data.post_id) {
+          navigate(`/feed?post=${data.post_id}`);
+        } else {
+          navigate('/feed');
+        }
+        break;
+      case 'follow':
+        if (activity.target_user_id) {
+          navigate(`/profile/${activity.target_user_id}`);
+        }
+        break;
+      case 'post_created':
+        navigate('/feed');
+        break;
+      case 'challenge_day_completed':
+        navigate('/challenges');
+        break;
+      case 'figure_completed':
+        navigate('/library');
+        break;
+      case 'training_completed':
+        navigate('/training');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const getActivityIcon = (activity_type: string) => {
+    switch (activity_type) {
       case 'like':
         return <Heart className="w-5 h-5 text-pink-400" />;
       case 'comment':
         return <MessageCircle className="w-5 h-5 text-blue-400" />;
       case 'follow':
         return <Users className="w-5 h-5 text-green-400" />;
-      case 'achievement':
+      case 'challenge_day_completed':
+      case 'figure_completed':
+      case 'training_completed':
         return <Trophy className="w-5 h-5 text-yellow-400" />;
       default:
         return <Star className="w-5 h-5 text-purple-400" />;
@@ -89,9 +88,8 @@ const Inbox = () => {
   };
 
   const filteredActivities = activities.filter(activity => {
-    if (filter === 'unread') return !activity.isRead;
-    if (filter === 'likes') return activity.type === 'like';
-    if (filter === 'comments') return activity.type === 'comment';
+    if (filter === 'likes') return activity.activity_type === 'like';
+    if (filter === 'comments') return activity.activity_type === 'comment';
     return true;
   });
 
@@ -104,7 +102,6 @@ const Inbox = () => {
         <div className="flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
           {[
             { id: 'all', label: 'All' },
-            { id: 'unread', label: 'Unread' },
             { id: 'likes', label: 'Likes' },
             { id: 'comments', label: 'Comments' }
           ].map((tab) => (
@@ -125,50 +122,59 @@ const Inbox = () => {
 
         {/* Activities List */}
         <div className="space-y-4">
-          {filteredActivities.map((activity) => (
-            <Card key={activity.id} className={`glass-effect border-white/10 ${!activity.isRead ? 'border-purple-500/30' : ''}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start space-x-4">
-                  {/* Icon */}
-                  <div className="mt-1">
-                    {getActivityIcon(activity.type)}
-                  </div>
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+              <p className="text-muted-foreground mt-2">Loading activities...</p>
+            </div>
+          ) : (
+            filteredActivities.map((activity) => (
+              <Card 
+                key={activity.id} 
+                className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
+                onClick={() => handleActivityClick(activity)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start space-x-4">
+                    {/* Icon */}
+                    <div className="mt-1">
+                      {getActivityIcon(activity.activity_type)}
+                    </div>
 
-                  {/* Avatar (if user activity) */}
-                  {activity.user && (
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={activity.user.avatar} />
-                      <AvatarFallback>{activity.user.username[0].toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                  )}
+                    {/* Avatar (if target user exists) */}
+                    {activity.target_user && (
+                      <Avatar className="w-10 h-10">
+                        <AvatarImage src={activity.target_user.avatar_url || undefined} />
+                        <AvatarFallback>{activity.target_user.username[0]?.toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                    )}
 
-                  {/* Content */}
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        {activity.user ? (
+                    {/* Content */}
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between">
+                        <div>
                           <p className="text-white">
-                            <span className="font-semibold">{activity.user.username}</span>{' '}
-                            <span className="text-muted-foreground">{activity.content}</span>
+                            {getActivityContent(activity)}
                           </p>
-                        ) : (
-                          <p className="text-white">{activity.content}</p>
-                        )}
-                        <div className="flex items-center space-x-2 mt-1">
-                          <Clock className="w-3 h-3 text-muted-foreground" />
-                          <span className="text-muted-foreground text-sm">{activity.timeAgo}</span>
+                          <div className="flex items-center space-x-2 mt-1">
+                            <Clock className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-muted-foreground text-sm">
+                              {new Date(activity.created_at).toLocaleString()}
+                            </span>
+                            {activity.points_awarded > 0 && (
+                              <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">
+                                +{activity.points_awarded} pts
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
-                      
-                      {!activity.isRead && (
-                        <Badge className="bg-purple-500 text-white text-xs">New</Badge>
-                      )}
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {filteredActivities.length === 0 && (

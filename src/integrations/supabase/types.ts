@@ -734,6 +734,36 @@ export type Database = {
           },
         ]
       }
+      user_activities: {
+        Row: {
+          activity_data: Json | null
+          activity_type: string
+          created_at: string
+          id: string
+          points_awarded: number | null
+          target_user_id: string | null
+          user_id: string
+        }
+        Insert: {
+          activity_data?: Json | null
+          activity_type: string
+          created_at?: string
+          id?: string
+          points_awarded?: number | null
+          target_user_id?: string | null
+          user_id: string
+        }
+        Update: {
+          activity_data?: Json | null
+          activity_type?: string
+          created_at?: string
+          id?: string
+          points_awarded?: number | null
+          target_user_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_follows: {
         Row: {
           created_at: string | null
@@ -770,12 +800,49 @@ export type Database = {
           },
         ]
       }
+      user_scores: {
+        Row: {
+          created_at: string
+          id: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_points_to_user: {
+        Args: { user_id: string; points: number }
+        Returns: undefined
+      }
+      create_activity_with_points: {
+        Args: {
+          user_id: string
+          activity_type: string
+          activity_data?: Json
+          target_user_id?: string
+          points?: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       user_role: "free" | "premium" | "trainer" | "admin"

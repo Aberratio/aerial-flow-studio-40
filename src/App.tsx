@@ -16,6 +16,8 @@ import NotFound from "@/pages/NotFound";
 import BadConnection from "@/pages/BadConnection";
 import PricingPage from "@/pages/PricingPage";
 import AboutUs from "@/pages/AboutUs";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfUse from "@/pages/TermsOfUse";
 import Inbox from "./pages/Inbox";
 import FriendProfile from "@/pages/FriendProfile";
 import Friends from "@/pages/Friends";
@@ -93,6 +95,16 @@ const AppRoutes = () => {
       <Route path="/about" element={
         <ProtectedRoute>
           <AboutUs />
+        </ProtectedRoute>
+      } />
+      <Route path="/privacy-policy" element={
+        <ProtectedRoute>
+          <PrivacyPolicy />
+        </ProtectedRoute>
+      } />
+      <Route path="/terms-of-use" element={
+        <ProtectedRoute>
+          <TermsOfUse />
         </ProtectedRoute>
       } />
       <Route path="/connection-error" element={<BadConnection />} />
