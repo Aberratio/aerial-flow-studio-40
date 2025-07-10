@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
+import ChallengeExerciseModal from '@/components/ChallengeExerciseModal';
 
 interface Exercise {
   id: string;
@@ -58,6 +59,7 @@ const ChallengeDayOverview = () => {
   const [totalDays, setTotalDays] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
   const [participationStatus, setParticipationStatus] = useState<string>('active');
+  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
   const { toast } = useToast();
@@ -179,18 +181,9 @@ const ChallengeDayOverview = () => {
   };
 
   const handleStartDay = () => {
-    if (!trainingDay || !challenge) return;
+    if (!trainingDay || trainingDay.exercises.length === 0) return;
     
-    navigate('/training-session', { 
-      state: { 
-        type: 'challenge-day',
-        challengeId,
-        dayId,
-        exercises: trainingDay.exercises,
-        title: trainingDay.title,
-        challengeTitle: challenge.title
-      }
-    });
+    setIsExerciseModalOpen(true);
   };
 
   const canEditChallenge = () => {
@@ -482,6 +475,18 @@ const ChallengeDayOverview = () => {
             Back to Challenge
           </Button>
         </div>
+
+        {/* Exercise Modal */}
+        {trainingDay && (
+          <ChallengeExerciseModal
+            isOpen={isExerciseModalOpen}
+            onClose={() => setIsExerciseModalOpen(false)}
+            challengeId={challengeId!}
+            dayId={dayId!}
+            dayNumber={dayNumber}
+            exercises={trainingDay.exercises}
+          />
+        )}
       </div>
     </div>
   );

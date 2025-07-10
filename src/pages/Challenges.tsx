@@ -37,29 +37,31 @@ const Challenges = () => {
   const fetchChallenges = async () => {
     setIsLoading(true);
     try {
-      let query = supabase.from('challenges').select('*');
-      
-      // Filter based on active tab
-      if (activeTab === 'active') {
-        const now = new Date().toISOString();
-        query = query.lte('start_date', now).gte('end_date', now).eq('status', 'published');
-      } else if (activeTab === 'completed') {
-        const now = new Date().toISOString();
-        query = query.lt('end_date', now).eq('status', 'published');
-      } else if (activeTab === 'not-started') {
-        const now = new Date().toISOString();
-        query = query.gt('start_date', now).eq('status', 'published');
-      } else {
-        // All challenges - show published ones
-        query = query.eq('status', 'published');
-      }
-      
-      const { data, error } = await query.order('created_at', { ascending: false });
+      // Get all published challenges first
+      const { data: allChallenges, error } = await supabase
+        .from('challenges')
+        .select('*')
+        .eq('status', 'published')
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       
+      // Get user's participation data if logged in
+      let userParticipation = {};
+      if (user) {
+        const { data: participationData } = await supabase
+          .from('challenge_participants')
+          .select('challenge_id, status')
+          .eq('user_id', user.id);
+        
+        userParticipation = participationData?.reduce((acc, p) => {
+          acc[p.challenge_id] = p.status;
+          return acc;
+        }, {}) || {};
+      }
+      
       // Get participant counts for each challenge
-      const challengeIds = data?.map(c => c.id) || [];
+      const challengeIds = allChallenges?.map(c => c.id) || [];
       const { data: participantData } = await supabase
         .from('challenge_participants')
         .select('challenge_id')
@@ -70,24 +72,66 @@ const Challenges = () => {
         return acc;
       }, {}) || {};
       
-      // Transform data to match the expected format
-      const transformedData = data?.map(challenge => ({
-        id: challenge.id,
-        title: challenge.title,
-        description: challenge.description,
-        start_date: challenge.start_date,
-        end_date: challenge.end_date,
-        status: getChallengeStatus(challenge.start_date, challenge.end_date),
-        created_by: challenge.created_by,
-        duration: calculateDuration(challenge.start_date, challenge.end_date),
-        participants: participantCounts[challenge.id] || 0,
-        difficulty: challenge.difficulty_level ? 
-          challenge.difficulty_level.charAt(0).toUpperCase() + challenge.difficulty_level.slice(1) : 
-          'Intermediate',
-        progress: 0, // Will be calculated based on user participation
-        image: challenge.image_url || 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=400&h=200&fit=crop',
-        category: 'General', // Default for now
-      })) || [];
+      // Transform and filter data based on user participation and active tab
+      let transformedData = allChallenges?.map(challenge => {
+        const now = new Date();
+        const startDate = new Date(challenge.start_date);
+        const endDate = new Date(challenge.end_date);
+        const userParticipating = userParticipation[challenge.id];
+        
+        let status;
+        if (userParticipating) {
+          // User is participating - status based on their participation
+          if (userParticipating === 'completed') {
+            status = 'completed';
+          } else if (userParticipating === 'failed') {
+            status = 'failed';
+          } else if (now >= startDate && now <= endDate) {
+            status = 'active';
+          } else if (now > endDate) {
+            status = 'completed';
+          } else {
+            status = 'not-started';
+          }
+        } else {
+          // User not participating - status based on dates
+          if (now < startDate) {
+            status = 'not-started';
+          } else if (now >= startDate && now <= endDate) {
+            status = 'not-started'; // Available to join
+          } else {
+            status = 'completed'; // Challenge ended
+          }
+        }
+        
+        return {
+          id: challenge.id,
+          title: challenge.title,
+          description: challenge.description,
+          start_date: challenge.start_date,
+          end_date: challenge.end_date,
+          status,
+          created_by: challenge.created_by,
+          duration: calculateDuration(challenge.start_date, challenge.end_date),
+          participants: participantCounts[challenge.id] || 0,
+          difficulty: challenge.difficulty_level ? 
+            challenge.difficulty_level.charAt(0).toUpperCase() + challenge.difficulty_level.slice(1) : 
+            'Intermediate',
+          progress: 0, // Will be calculated based on user participation
+          image: challenge.image_url || 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=400&h=200&fit=crop',
+          category: 'General', // Default for now
+          userParticipating: !!userParticipating
+        };
+      }) || [];
+      
+      // Filter based on active tab
+      if (activeTab === 'active') {
+        transformedData = transformedData.filter(c => c.status === 'active');
+      } else if (activeTab === 'completed') {
+        transformedData = transformedData.filter(c => c.status === 'completed' || c.status === 'failed');
+      } else if (activeTab === 'not-started') {
+        transformedData = transformedData.filter(c => c.status === 'not-started');
+      }
       
       setChallenges(transformedData);
     } catch (error) {
@@ -199,10 +243,11 @@ const Challenges = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'not-started': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'active': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'completed': return 'bg-green-500/20 text-green-400 border-green-500/30';
-      default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+      case 'not-started': return 'bg-blue-500/90 text-blue-100 border-blue-500/30';
+      case 'active': return 'bg-yellow-500/90 text-yellow-100 border-yellow-500/30';
+      case 'completed': return 'bg-green-500/90 text-green-100 border-green-500/30';
+      case 'failed': return 'bg-red-500/90 text-red-100 border-red-500/30';
+      default: return 'bg-gray-500/90 text-gray-100 border-gray-500/30';
     }
   };
 
