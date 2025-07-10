@@ -62,6 +62,8 @@ interface Challenge {
   end_date: string;
   status: string;
   created_by: string;
+  difficulty_level?: string;
+  image_url?: string;
 }
 
 const EditChallenge = () => {
@@ -78,6 +80,8 @@ const EditChallenge = () => {
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>('');
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -121,6 +125,7 @@ const EditChallenge = () => {
       setStartDate(new Date(challengeData.start_date));
       setEndDate(new Date(challengeData.end_date));
       setDifficultyLevel(challengeData.difficulty_level || 'intermediate');
+      setImageUrl(challengeData.image_url || '');
       
       // Set selected achievements
       setSelectedAchievements(
@@ -177,6 +182,31 @@ const EditChallenge = () => {
     }
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `challenges/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('challenges')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('challenges')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
+
   const saveChallenge = async () => {
     if (!user || !challenge) return;
     
@@ -192,6 +222,17 @@ const EditChallenge = () => {
     setIsLoading(true);
 
     try {
+      let uploadedImageUrl = imageUrl;
+      
+      // Upload image if a new file is selected
+      if (imageFile) {
+        const uploadedUrl = await uploadImage(imageFile);
+        if (uploadedUrl) {
+          uploadedImageUrl = uploadedUrl;
+          setImageUrl(uploadedUrl);
+        }
+      }
+
       // Update challenge
       const { error: updateError } = await supabase
         .from('challenges')
@@ -201,6 +242,7 @@ const EditChallenge = () => {
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           difficulty_level: difficultyLevel,
+          image_url: uploadedImageUrl || null,
         })
         .eq('id', challengeId);
 
@@ -423,6 +465,31 @@ const EditChallenge = () => {
                   </SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="image">Challenge Image</Label>
+              <Input
+                id="image"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setImageFile(file);
+                  }
+                }}
+                className="cursor-pointer"
+              />
+              {imageUrl && (
+                <div className="mt-2">
+                  <img 
+                    src={imageUrl} 
+                    alt="Challenge preview" 
+                    className="w-32 h-20 object-cover rounded-md"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -22,6 +22,7 @@ interface Challenge {
   end_date: string;
   status: string;
   created_by: string;
+  image_url?: string;
   achievements?: Array<{
     id: string;
     name: string;
@@ -323,14 +324,14 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
       {challenge.training_days && (
         <ChallengeDetailsModal
           challenge={{
-            id: parseInt(challenge.id) || 1,
+            id: challenge.id,
             title: challenge.title,
             description: challenge.description,
             level: getDifficultyFromChallenge(),
             totalDays: challenge.training_days.length,
             currentDay: 0,
             completedDays: 0,
-            image: '',
+            image: challenge.image_url || '',
             days: challenge.training_days.map((day, index) => ({
               day: index + 1,
               dayId: day.id, // Add the actual training day ID

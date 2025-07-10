@@ -17,7 +17,7 @@ interface ChallengeDay {
 }
 
 interface Challenge {
-  id: number;
+  id: string;
   title: string;
   description: string;
   level: string;
@@ -47,12 +47,10 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
   const progressPercentage = (challenge.completedDays / challenge.totalDays) * 100;
 
   const handleDayClick = (day: ChallengeDay) => {
-    console.log({day})
-    console.log({challenge})
-
+    // Skip if it's a rest day
+    if (day.isRestDay) return;
+    
     onClose();
-
-    console.log("HI!")
 
     // Find the actual training day from the challenge data
     const trainingDay = challenge.training_days?.find((td: any, index: number) => {
@@ -146,7 +144,11 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
               {challenge.days.map((day) => (
                 <div 
                   key={day.day}
-                  className={`p-4 rounded-lg border transition-colors cursor-pointer hover:bg-white/10 ${
+                  className={`p-4 rounded-lg border transition-colors ${
+                    day.isRestDay 
+                      ? 'opacity-60 cursor-not-allowed' 
+                      : 'cursor-pointer hover:bg-white/10'
+                  } ${
                     day.completed 
                       ? 'bg-green-500/10 border-green-500/30' 
                       : day.day === challenge.currentDay

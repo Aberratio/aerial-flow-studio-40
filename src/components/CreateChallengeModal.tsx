@@ -68,6 +68,8 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [challengeId, setChallengeId] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string>('');
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -100,11 +102,38 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
     setSelectedAchievements([]);
     setTrainingDays([]);
     setChallengeId(null);
+    setImageFile(null);
+    setImageUrl('');
   };
 
   const handleClose = () => {
     resetForm();
     onClose();
+  };
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `challenges/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('challenges')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data } = supabase.storage
+        .from('challenges')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
   };
 
   const saveDraft = async () => {
@@ -122,6 +151,17 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
     setIsLoading(true);
 
     try {
+      let uploadedImageUrl = imageUrl;
+      
+      // Upload image if a new file is selected
+      if (imageFile) {
+        const uploadedUrl = await uploadImage(imageFile);
+        if (uploadedUrl) {
+          uploadedImageUrl = uploadedUrl;
+          setImageUrl(uploadedUrl);
+        }
+      }
+
       const challengeData = {
         title: title.trim(),
         description: description.trim() || null,
@@ -129,7 +169,8 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
         created_by: user.id,
-        status: 'draft'
+        status: 'draft',
+        image_url: uploadedImageUrl || null
       };
 
       let result;
@@ -351,6 +392,31 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
               rows={4}
               maxLength={500}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image">Challenge Image</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  setImageFile(file);
+                }
+              }}
+              className="cursor-pointer"
+            />
+            {imageUrl && (
+              <div className="mt-2">
+                <img 
+                  src={imageUrl} 
+                  alt="Challenge preview" 
+                  className="w-32 h-20 object-cover rounded-md"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
