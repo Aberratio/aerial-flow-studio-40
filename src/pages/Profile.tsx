@@ -14,10 +14,15 @@ const Profile = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [selectedPost, setSelectedPost] = useState(null);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
+  const [friendsRefreshTrigger, setFriendsRefreshTrigger] = useState(0);
 
   const handlePostSelect = (post: any) => {
     setSelectedPost(post);
     setIsPostModalOpen(true);
+  };
+
+  const handleFriendsUpdated = () => {
+    setFriendsRefreshTrigger(prev => prev + 1);
   };
 
   return (
@@ -36,10 +41,10 @@ const Profile = () => {
         <FigureJourneySection />
 
         {/* Pending Friend Requests */}
-        <PendingRequestsSection />
+        <PendingRequestsSection onFriendsUpdated={handleFriendsUpdated} />
 
         {/* Friends Overview */}
-        <FriendsSection />
+        <FriendsSection refreshTrigger={friendsRefreshTrigger} />
 
         {/* Content Tabs */}
         <ContentTabs onPostSelect={handlePostSelect} />

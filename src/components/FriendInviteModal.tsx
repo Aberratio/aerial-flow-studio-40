@@ -7,18 +7,22 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { ProfilePreviewModal } from '@/components/ProfilePreviewModal';
 
 interface FriendInviteModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onFriendAdded?: () => void;
 }
 
-export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) => {
+export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInviteModalProps) => {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestedFriends, setSuggestedFriends] = useState<any[]>([]);
   const [sentInvites, setSentInvites] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showProfilePreview, setShowProfilePreview] = useState(false);
   const { toast } = useToast();
 
   // Fetch suggested friends from database
@@ -31,7 +35,7 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
       // Get users that the current user is not following and exclude themselves
       const { data: currentFollows } = await supabase
         .from('user_follows')
-        .select('following_id')
+        .select('following_id, status')
         .eq('follower_id', user.id);
 
       const followingIds = currentFollows?.map(f => f.following_id) || [];
@@ -70,10 +74,15 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
         const profileFriendIds = new Set(profileFriends?.map(f => f.following_id) || []);
         const mutualFriendsCount = [...currentUserFriendIds].filter(id => profileFriendIds.has(id)).length;
 
+        // Check if there's already a pending request
+        const existingRequest = currentFollows?.find(f => f.following_id === profile.id);
+        const hasPendingRequest = existingRequest?.status === 'pending';
+
         return {
           ...profile,
           mutualFriends: mutualFriendsCount,
-          isOnline: Math.random() > 0.5 // Temporary random status
+          isOnline: Math.random() > 0.5, // Temporary random status
+          hasPendingRequest
         };
       }));
 
@@ -120,6 +129,8 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
       }
 
       setSentInvites(prev => [...prev, friendId]);
+      // Refresh the suggested friends to update the UI
+      fetchSuggestedFriends();
       toast({
         title: "Friend request sent!",
         description: `Your friend request has been sent to ${username}.`
@@ -169,7 +180,13 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
             ) : (
               suggestedFriends.map((friend) => (
                 <div key={friend.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
-                  <div className="flex items-center space-x-3">
+                  <div 
+                    className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-white/5 rounded p-2 -m-2"
+                    onClick={() => {
+                      setSelectedUserId(friend.id);
+                      setShowProfilePreview(true);
+                    }}
+                  >
                     <div className="relative">
                       <Avatar>
                         <AvatarImage src={friend.avatar_url} />
@@ -190,7 +207,7 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
                     </div>
                   </div>
 
-                  {sentInvites.includes(friend.id) ? (
+                  {sentInvites.includes(friend.id) || friend.hasPendingRequest ? (
                     <div className="flex items-center space-x-2 text-green-400">
                       <Check className="w-4 h-4" />
                       <span className="text-sm">Sent</span>
@@ -198,7 +215,10 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
                   ) : (
                     <Button
                       size="sm"
-                      onClick={() => handleSendInvite(friend.id, friend.username)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSendInvite(friend.id, friend.username);
+                      }}
                       className="bg-primary hover:bg-primary/90"
                     >
                       <UserPlus className="w-4 h-4 mr-2" />
@@ -210,6 +230,13 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
             )}
           </div>
         </div>
+
+        {/* Profile Preview Modal */}
+        <ProfilePreviewModal
+          isOpen={showProfilePreview}
+          onClose={() => setShowProfilePreview(false)}
+          userId={selectedUserId || ''}
+        />
       </DialogContent>
     </Dialog>
   );

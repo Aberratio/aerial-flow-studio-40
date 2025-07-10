@@ -17,6 +17,7 @@ const Friends = () => {
   const [friends, setFriends] = useState<any[]>([]);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const fetchFriendsAndRequests = async () => {
@@ -75,7 +76,7 @@ const Friends = () => {
     };
 
     fetchFriendsAndRequests();
-  }, [user]);
+  }, [user, refreshTrigger]);
 
   const handleUnfriend = async (friendId: string) => {
     if (!user) return;
@@ -97,6 +98,10 @@ const Friends = () => {
     } catch (error) {
       console.error('Error unfriending:', error);
     }
+  };
+
+  const handleFriendsUpdated = () => {
+    setRefreshTrigger(prev => prev + 1);
   };
 
   // Show loading only if we're actually fetching data
@@ -215,11 +220,13 @@ const Friends = () => {
       <FriendInviteModal
         isOpen={showFriendInvite}
         onClose={() => setShowFriendInvite(false)}
+        onFriendAdded={handleFriendsUpdated}
       />
 
       <FriendRequestsModal
         isOpen={showFriendRequests}
         onClose={() => setShowFriendRequests(false)}
+        onFriendsUpdated={handleFriendsUpdated}
       />
     </div>
   );

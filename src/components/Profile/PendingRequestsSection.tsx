@@ -20,7 +20,11 @@ interface PendingRequest {
   type: 'received' | 'sent';
 }
 
-export const PendingRequestsSection: React.FC = () => {
+interface PendingRequestsSectionProps {
+  onFriendsUpdated?: () => void;
+}
+
+export const PendingRequestsSection: React.FC<PendingRequestsSectionProps> = ({ onFriendsUpdated }) => {
   const { user, refetchCounts } = useAuth();
   const [requests, setRequests] = useState<PendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,6 +148,7 @@ export const PendingRequestsSection: React.FC = () => {
 
       setRequests(prev => prev.filter(req => req.id !== requestId));
       refetchCounts(); // Update follower/following counts
+      onFriendsUpdated?.(); // Notify parent to refresh friends list
       toast({
         title: "Friend request accepted!",
         description: `You and ${username} are now friends.`

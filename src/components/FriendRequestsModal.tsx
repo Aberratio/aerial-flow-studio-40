@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
+import { ProfilePreviewModal } from '@/components/ProfilePreviewModal';
 
 interface FriendRequest {
   id: string;
@@ -25,12 +26,15 @@ interface FriendRequest {
 interface FriendRequestsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onFriendsUpdated?: () => void;
 }
 
-export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProps) => {
+export const FriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: FriendRequestsModalProps) => {
   const { user, refetchCounts } = useAuth();
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [loading, setLoading] = useState(false);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [showProfilePreview, setShowProfilePreview] = useState(false);
   const { toast } = useToast();
 
   // Fetch friend requests from database
@@ -157,6 +161,7 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
 
       setRequests(prev => prev.filter(req => req.id !== requestId));
       refetchCounts(); // Update follower/following counts
+      onFriendsUpdated?.(); // Notify parent to refresh friends list
       toast({
         title: "Friend request accepted!",
         description: `You and ${username} are now friends.`
@@ -246,7 +251,13 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
               
               {receivedRequests.map((request) => (
                   <div key={request.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
-                    <div className="flex items-center space-x-3">
+                    <div 
+                      className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-white/5 rounded p-2 -m-2"
+                      onClick={() => {
+                        setSelectedUserId(request.user.id);
+                        setShowProfilePreview(true);
+                      }}
+                    >
                       <Avatar>
                         <AvatarImage src={request.user.avatar_url || undefined} />
                         <AvatarFallback>{request.user.username[0].toUpperCase()}</AvatarFallback>
@@ -262,7 +273,10 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
                   <div className="flex space-x-2">
                     <Button
                       size="sm"
-                      onClick={() => handleAccept(request.id, request.user.username)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAccept(request.id, request.user.username);
+                      }}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       <Check className="w-4 h-4 mr-1" />
@@ -271,7 +285,10 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleReject(request.id, request.user.username)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReject(request.id, request.user.username);
+                      }}
                       className="text-muted-foreground hover:text-white hover:bg-red-600/20"
                     >
                       <X className="w-4 h-4 mr-1" />
@@ -295,7 +312,13 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
               
               {sentRequests.map((request) => (
                   <div key={request.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
-                    <div className="flex items-center space-x-3">
+                    <div 
+                      className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-white/5 rounded p-2 -m-2"
+                      onClick={() => {
+                        setSelectedUserId(request.user.id);
+                        setShowProfilePreview(true);
+                      }}
+                    >
                       <Avatar>
                         <AvatarImage src={request.user.avatar_url || undefined} />
                         <AvatarFallback>{request.user.username[0].toUpperCase()}</AvatarFallback>
@@ -316,7 +339,10 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => handleCancelSent(request.id, request.user.username)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCancelSent(request.id, request.user.username);
+                      }}
                       className="text-muted-foreground hover:text-white hover:bg-red-600/20"
                     >
                       <X className="w-4 h-4" />
@@ -336,6 +362,13 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
             </>
           )}
         </div>
+
+        {/* Profile Preview Modal */}
+        <ProfilePreviewModal
+          isOpen={showProfilePreview}
+          onClose={() => setShowProfilePreview(false)}
+          userId={selectedUserId || ''}
+        />
       </DialogContent>
     </Dialog>
   );

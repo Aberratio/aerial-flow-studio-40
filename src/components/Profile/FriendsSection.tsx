@@ -5,7 +5,11 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
-export const FriendsSection: React.FC = () => {
+interface FriendsSectionProps {
+  refreshTrigger?: number;
+}
+
+export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }) => {
   const { user } = useAuth();
   const [friends, setFriends] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +53,7 @@ export const FriendsSection: React.FC = () => {
 
   useEffect(() => {
     fetchFriends();
-  }, [user]);
+  }, [user, refreshTrigger]);
 
   return (
     <Card className="glass-effect border-white/10 mb-6">
