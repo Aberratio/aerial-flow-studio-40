@@ -17,9 +17,10 @@ import Inbox from "./pages/Inbox";
 import FriendProfile from "@/pages/FriendProfile";
 import Friends from "@/pages/Friends";
 import Training from "@/pages/Training";
-import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
 import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
 import MyJourney from "@/pages/MyJourney";
+import EditChallenge from "@/pages/EditChallenge";
+import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
 import AchievementManagement from "@/pages/AchievementManagement";
 
 const queryClient = new QueryClient();
@@ -121,6 +122,11 @@ const AppRoutes = () => {
       <Route path="/training-session" element={
         <ProtectedRoute>
           <TrainingSessionPageWrapper />
+        </ProtectedRoute>
+      } />
+      <Route path="/challenges/:challengeId/edit" element={
+        <ProtectedRoute>
+          <EditChallenge />
         </ProtectedRoute>
       } />
       <Route path="/admin/achievements" element={

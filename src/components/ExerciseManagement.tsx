@@ -124,6 +124,34 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
       return;
     }
 
+    // For temporary training day IDs (when creating new challenges), 
+    // we'll handle the save in the parent component
+    if (trainingDayId.startsWith('temp-')) {
+      const newExercise: Exercise = {
+        id: `temp-${Date.now()}`,
+        figure_id: selectedFigure,
+        order_index: editingExercise ? editingExercise.order_index : exercises.length,
+        sets,
+        reps,
+        hold_time_seconds: holdTime,
+        rest_time_seconds: restTime,
+        video_url: videoUrl || undefined,
+        audio_url: audioUrl || undefined,
+        notes: notes || undefined,
+        figure: availableFigures.find(f => f.id === selectedFigure)
+      };
+
+      const updatedExercises = editingExercise
+        ? exercises.map(ex => ex.id === editingExercise.id ? newExercise : ex)
+        : [...exercises, newExercise];
+
+      onExercisesChange(updatedExercises);
+      setIsAddModalOpen(false);
+      resetForm();
+      return;
+    }
+
+    // Handle saving to database for existing training days
     try {
       const exerciseData = {
         training_day_id: trainingDayId,

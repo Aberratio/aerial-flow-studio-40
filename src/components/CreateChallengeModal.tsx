@@ -191,27 +191,53 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
       if (insertError) throw insertError;
     }
 
-    // Save training days
+    // Save training days and their exercises
     if (trainingDays.length > 0) {
-      const trainingDaysData = trainingDays.map(day => ({
-        challenge_id: challengeIdToUse,
-        day_date: day.date.toISOString().split('T')[0],
-        title: day.title,
-        description: day.description
-      }));
-
-      const { error: trainingError } = await supabase
+      // First, delete existing training days (this will cascade delete exercises)
+      const { error: deleteError } = await supabase
         .from('challenge_training_days')
         .delete()
         .eq('challenge_id', challengeIdToUse);
 
-      if (trainingError) throw trainingError;
+      if (deleteError) throw deleteError;
 
-      const { error: insertError } = await supabase
-        .from('challenge_training_days')
-        .insert(trainingDaysData);
+      // Insert training days one by one to get their IDs
+      for (const day of trainingDays) {
+        const { data: trainingDayData, error: dayError } = await supabase
+          .from('challenge_training_days')
+          .insert({
+            challenge_id: challengeIdToUse,
+            day_date: day.date.toISOString().split('T')[0],
+            title: day.title,
+            description: day.description
+          })
+          .select()
+          .single();
 
-      if (insertError) throw insertError;
+        if (dayError) throw dayError;
+
+        // Now save exercises for this training day
+        if (day.exercises && day.exercises.length > 0) {
+          const exerciseData = day.exercises.map((exercise, index) => ({
+            training_day_id: trainingDayData.id,
+            figure_id: exercise.figure_id,
+            order_index: exercise.order_index || index,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            hold_time_seconds: exercise.hold_time_seconds,
+            rest_time_seconds: exercise.rest_time_seconds,
+            video_url: exercise.video_url,
+            audio_url: exercise.audio_url,
+            notes: exercise.notes
+          }));
+
+          const { error: exerciseError } = await supabase
+            .from('training_day_exercises')
+            .insert(exerciseData);
+
+          if (exerciseError) throw exerciseError;
+        }
+      }
     }
   };
 
