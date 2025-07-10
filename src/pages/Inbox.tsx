@@ -7,10 +7,13 @@ import { Badge } from '@/components/ui/badge';
 import { useUserActivities, UserActivity } from '@/hooks/useUserActivities';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
-
 const Inbox = () => {
   const [filter, setFilter] = useState('all');
-  const { activities, loading, markAllAsRead } = useUserActivities();
+  const {
+    activities,
+    loading,
+    markAllAsRead
+  } = useUserActivities();
   const navigate = useNavigate();
 
   // Mark all activities as read when user opens inbox
@@ -20,15 +23,12 @@ const Inbox = () => {
       const timer = setTimeout(() => {
         markAllAsRead();
       }, 500);
-      
       return () => clearTimeout(timer);
     }
   }, [loading, activities.length, markAllAsRead]);
-
   const getActivityContent = (activity: UserActivity) => {
     const data = activity.activity_data || {};
     const targetUser = activity.target_user;
-    
     switch (activity.activity_type) {
       case 'like':
         return `${targetUser?.username || 'Someone'} liked your post`;
@@ -53,10 +53,8 @@ const Inbox = () => {
         return 'New activity';
     }
   };
-
   const handleActivityClick = (activity: UserActivity) => {
     const data = activity.activity_data || {};
-    
     switch (activity.activity_type) {
       case 'like':
       case 'comment':
@@ -92,7 +90,6 @@ const Inbox = () => {
         break;
     }
   };
-
   const getActivityIcon = (activity_type: string) => {
     switch (activity_type) {
       case 'like':
@@ -114,7 +111,6 @@ const Inbox = () => {
         return <Star className="w-5 h-5 text-purple-400" />;
     }
   };
-
   const filteredActivities = activities.filter(activity => {
     if (filter === 'likes') return activity.activity_type === 'like';
     if (filter === 'comments') return activity.activity_type === 'comment';
@@ -122,50 +118,38 @@ const Inbox = () => {
     if (filter === 'followers') return ['follow', 'new_follower'].includes(activity.activity_type);
     return true;
   });
-
-  return (
-    <div className="min-h-screen p-6">
+  return <div className="min-h-screen p-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-8">Inbox</h1>
+        <h1 className="text-3xl font-bold text-white mb-8 my-[32px]">Inbox</h1>
 
         {/* Filter Tabs - Hidden on mobile, show only "All" */}
         <div className="hidden md:flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
-          {[
-            { id: 'all', label: 'All' },
-            { id: 'likes', label: 'Likes' },
-            { id: 'comments', label: 'Comments' },
-            { id: 'friends', label: 'Friends' },
-            { id: 'followers', label: 'Followers' }
-          ].map((tab) => (
-            <Button
-              key={tab.id}
-              variant={filter === tab.id ? "default" : "ghost"}
-              className={`flex-1 ${
-                filter === tab.id 
-                  ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500' 
-                  : 'text-muted-foreground hover:text-white'
-              }`}
-              onClick={() => setFilter(tab.id)}
-            >
+          {[{
+          id: 'all',
+          label: 'All'
+        }, {
+          id: 'likes',
+          label: 'Likes'
+        }, {
+          id: 'comments',
+          label: 'Comments'
+        }, {
+          id: 'friends',
+          label: 'Friends'
+        }, {
+          id: 'followers',
+          label: 'Followers'
+        }].map(tab => <Button key={tab.id} variant={filter === tab.id ? "default" : "ghost"} className={`flex-1 ${filter === tab.id ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500' : 'text-muted-foreground hover:text-white'}`} onClick={() => setFilter(tab.id)}>
               {tab.label}
-            </Button>
-          ))}
+            </Button>)}
         </div>
 
         {/* Activities List */}
         <div className="space-y-4">
-          {loading ? (
-            <div className="text-center py-8">
+          {loading ? <div className="text-center py-8">
               <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
               <p className="text-muted-foreground mt-2">Loading activities...</p>
-            </div>
-          ) : (
-            filteredActivities.map((activity) => (
-              <Card 
-                key={activity.id} 
-                className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
-                onClick={() => handleActivityClick(activity)}
-              >
+            </div> : filteredActivities.map(activity => <Card key={activity.id} className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors" onClick={() => handleActivityClick(activity)}>
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-4">
                     {/* Icon */}
@@ -174,12 +158,10 @@ const Inbox = () => {
                     </div>
 
                     {/* Avatar (if target user exists) */}
-                    {activity.target_user && (
-                      <Avatar className="w-10 h-10">
+                    {activity.target_user && <Avatar className="w-10 h-10">
                         <AvatarImage src={activity.target_user.avatar_url || undefined} />
                         <AvatarFallback>{activity.target_user.username[0]?.toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                    )}
+                      </Avatar>}
 
                     {/* Content */}
                     <div className="flex-1">
@@ -193,31 +175,23 @@ const Inbox = () => {
                             <span className="text-muted-foreground text-sm">
                               {new Date(activity.created_at).toLocaleString()}
                             </span>
-                            {activity.points_awarded > 0 && (
-                              <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">
+                            {activity.points_awarded > 0 && <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">
                                 +{activity.points_awarded} pts
-                              </Badge>
-                            )}
+                              </Badge>}
                           </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            ))
-          )}
+              </Card>)}
         </div>
 
-        {filteredActivities.length === 0 && (
-          <div className="text-center py-12">
+        {filteredActivities.length === 0 && <div className="text-center py-12">
             <div className="text-muted-foreground text-lg">No activities found</div>
             <div className="text-muted-foreground text-sm">Check back later for updates!</div>
-          </div>
-        )}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Inbox;
