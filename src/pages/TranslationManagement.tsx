@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Label } from '@/components/ui/label';
-import { Search, Plus, Save, Trash2, Languages } from 'lucide-react';
+import { Search, Plus, Save, Trash2, Languages, Type, FileText } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -39,21 +39,34 @@ interface Language {
   is_default: boolean;
 }
 
+interface UIString {
+  id: string;
+  string_key: string;
+  language_id: string;
+  value: string;
+  category?: string;
+}
+
+interface StaticPage {
+  id: string;
+  page_key: string;
+  language_id: string;
+  title: string;
+  content: string;
+}
+
 export default function TranslationManagement() {
   const [figures, setFigures] = useState<Figure[]>([]);
   const [translations, setTranslations] = useState<Translation[]>([]);
+  const [uiStrings, setUIStrings] = useState<UIString[]>([]);
+  const [staticPages, setStaticPages] = useState<StaticPage[]>([]);
   const [languages, setLanguages] = useState<Language[]>([]);
   const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<string>('');
+  const [selectedPage, setSelectedPage] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [translationForm, setTranslationForm] = useState({
-    name: '',
-    description: '',
-    instructions: '',
-    tags: [] as string[]
-  });
-  const [tagInput, setTagInput] = useState('');
+  const [activeTab, setActiveTab] = useState('exercises');
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -77,19 +90,9 @@ export default function TranslationManagement() {
   useEffect(() => {
     fetchLanguages();
     fetchFigures();
+    fetchUIStrings();
+    fetchStaticPages();
   }, []);
-
-  useEffect(() => {
-    if (selectedFigure) {
-      fetchTranslations(selectedFigure.id);
-    }
-  }, [selectedFigure]);
-
-  useEffect(() => {
-    if (selectedFigure && selectedLanguage) {
-      loadTranslationForLanguage();
-    }
-  }, [selectedFigure, selectedLanguage]);
 
   const fetchLanguages = async () => {
     try {
@@ -119,155 +122,32 @@ export default function TranslationManagement() {
     }
   };
 
-  const fetchTranslations = async (figureId: string) => {
+  const fetchUIStrings = async () => {
     try {
       const { data, error } = await supabase
-        .from('figure_translations')
+        .from('ui_strings')
         .select('*')
-        .eq('figure_id', figureId);
+        .order('string_key');
 
       if (error) throw error;
-      setTranslations(data || []);
+      setUIStrings(data || []);
     } catch (error) {
-      console.error('Error fetching translations:', error);
+      console.error('Error fetching UI strings:', error);
     }
   };
 
-  const loadTranslationForLanguage = () => {
-    const translation = translations.find(t => t.language_id === selectedLanguage);
-    
-    if (translation) {
-      setTranslationForm({
-        name: translation.name || '',
-        description: translation.description || '',
-        instructions: translation.instructions || '',
-        tags: translation.tags || []
-      });
-    } else {
-      // Load default values from the original figure
-      setTranslationForm({
-        name: selectedFigure?.name || '',
-        description: selectedFigure?.description || '',
-        instructions: selectedFigure?.instructions || '',
-        tags: selectedFigure?.tags || []
-      });
-    }
-    setTagInput('');
-  };
-
-  const saveTranslation = async () => {
-    if (!selectedFigure || !selectedLanguage) return;
-
-    setIsLoading(true);
+  const fetchStaticPages = async () => {
     try {
-      const existingTranslation = translations.find(t => t.language_id === selectedLanguage);
-      
-      const translationData = {
-        figure_id: selectedFigure.id,
-        language_id: selectedLanguage,
-        name: translationForm.name.trim(),
-        description: translationForm.description.trim() || null,
-        instructions: translationForm.instructions.trim() || null,
-        tags: translationForm.tags.length > 0 ? translationForm.tags : null
-      };
-
-      if (existingTranslation) {
-        // Update existing translation
-        const { error } = await supabase
-          .from('figure_translations')
-          .update(translationData)
-          .eq('id', existingTranslation.id);
-
-        if (error) throw error;
-      } else {
-        // Create new translation
-        const { error } = await supabase
-          .from('figure_translations')
-          .insert(translationData);
-
-        if (error) throw error;
-      }
-
-      toast({
-        title: "Translation Saved",
-        description: "The translation has been successfully saved."
-      });
-
-      // Refresh translations
-      fetchTranslations(selectedFigure.id);
-    } catch (error: any) {
-      console.error('Error saving translation:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save translation",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const deleteTranslation = async () => {
-    if (!selectedFigure || !selectedLanguage) return;
-
-    const existingTranslation = translations.find(t => t.language_id === selectedLanguage);
-    if (!existingTranslation) return;
-
-    setIsLoading(true);
-    try {
-      const { error } = await supabase
-        .from('figure_translations')
-        .delete()
-        .eq('id', existingTranslation.id);
+      const { data, error } = await supabase
+        .from('static_pages')
+        .select('*')
+        .order('page_key');
 
       if (error) throw error;
-
-      toast({
-        title: "Translation Deleted",
-        description: "The translation has been successfully deleted."
-      });
-
-      // Refresh translations and clear form
-      fetchTranslations(selectedFigure.id);
-      setTranslationForm({
-        name: '',
-        description: '',
-        instructions: '',
-        tags: []
-      });
-    } catch (error: any) {
-      console.error('Error deleting translation:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to delete translation",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+      setStaticPages(data || []);
+    } catch (error) {
+      console.error('Error fetching static pages:', error);
     }
-  };
-
-  const addTag = () => {
-    const tag = tagInput.trim();
-    if (tag && !translationForm.tags.includes(tag)) {
-      setTranslationForm(prev => ({ ...prev, tags: [...prev.tags, tag] }));
-      setTagInput('');
-    }
-  };
-
-  const removeTag = (tagToRemove: string) => {
-    setTranslationForm(prev => ({ 
-      ...prev, 
-      tags: prev.tags.filter(tag => tag !== tagToRemove) 
-    }));
-  };
-
-  const filteredFigures = figures.filter(figure =>
-    figure.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  const getTranslationStatus = (figureId: string, languageId: string) => {
-    return translations.some(t => t.figure_id === figureId && t.language_id === languageId);
   };
 
   return (
@@ -278,190 +158,226 @@ export default function TranslationManagement() {
             <Languages className="w-8 h-8 mr-3" />
             Translation Management
           </h1>
-          <p className="text-muted-foreground">Manage exercise translations for different languages</p>
+          <p className="text-muted-foreground">Manage translations for exercises, UI strings, and static pages</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Figures List */}
-          <Card className="glass-effect border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white">Exercises</CardTitle>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search exercises..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-white/5 border-white/10 text-white"
-                />
-              </div>
-            </CardHeader>
-            <CardContent className="max-h-96 overflow-y-auto">
-              <div className="space-y-2">
-                {filteredFigures.map(figure => (
-                  <div
-                    key={figure.id}
-                    onClick={() => setSelectedFigure(figure)}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedFigure?.id === figure.id
-                        ? 'bg-purple-500/20 border border-purple-500/30'
-                        : 'bg-white/5 hover:bg-white/10'
-                    }`}
-                  >
-                    <div className="font-medium text-white">{figure.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {figure.category} • {figure.difficulty_level}
-                    </div>
-                    <div className="flex space-x-1 mt-2">
-                      {languages.map(lang => (
-                        <div
-                          key={lang.id}
-                          className={`w-2 h-2 rounded-full ${
-                            getTranslationStatus(figure.id, lang.id)
-                              ? 'bg-green-500'
-                              : 'bg-gray-500'
-                          }`}
-                          title={`${lang.native_name} ${getTranslationStatus(figure.id, lang.id) ? 'translated' : 'not translated'}`}
-                        />
-                      ))}
-                    </div>
+        <Card className="glass-effect border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white">Translation Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="exercises">
+                  <Languages className="w-4 h-4 mr-2" />
+                  Exercises
+                </TabsTrigger>
+                <TabsTrigger value="ui-strings">
+                  <Type className="w-4 h-4 mr-2" />
+                  UI Strings
+                </TabsTrigger>
+                <TabsTrigger value="pages">
+                  <FileText className="w-4 h-4 mr-2" />
+                  Static Pages
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="exercises" className="mt-6">
+                <div className="text-center py-8">
+                  <Languages className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Exercise Translations</h3>
+                  <p className="text-muted-foreground">Exercise translation management will be available here</p>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="ui-strings" className="mt-6">
+                <div className="space-y-6">
+                  <div className="text-sm text-muted-foreground">
+                    Manage translations for UI elements like buttons, labels, messages, and alerts.
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="glass-effect border-white/10">
+                      <CardHeader>
+                        <CardTitle className="text-white text-lg">Add/Edit UI String</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <Label className="text-white">String Key</Label>
+                          <Input 
+                            placeholder="e.g., button.save, alert.success"
+                            className="bg-white/5 border-white/10 text-white"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-white">Category</Label>
+                          <Select>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                              <SelectValue placeholder="Select category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="buttons">Buttons</SelectItem>
+                              <SelectItem value="labels">Labels</SelectItem>
+                              <SelectItem value="messages">Messages</SelectItem>
+                              <SelectItem value="alerts">Alerts</SelectItem>
+                              <SelectItem value="navigation">Navigation</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-          {/* Translation Form */}
-          <div className="lg:col-span-2">
-            {selectedFigure ? (
-              <Card className="glass-effect border-white/10">
-                <CardHeader>
-                  <CardTitle className="text-white">
-                    Translate: {selectedFigure.name}
-                  </CardTitle>
-                  <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                      <SelectValue placeholder="Select language to translate" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {languages.map(lang => (
-                        <SelectItem key={lang.id} value={lang.id}>
-                          <div className="flex items-center space-x-2">
-                            <span>{lang.native_name}</span>
-                            {getTranslationStatus(selectedFigure.id, lang.id) && (
-                              <Badge variant="outline" className="text-xs">Translated</Badge>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </CardHeader>
+                        <div>
+                          <Label className="text-white">Language</Label>
+                          <Select>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                              <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {languages.map(lang => (
+                                <SelectItem key={lang.id} value={lang.id}>
+                                  {lang.native_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
 
-                {selectedLanguage && (
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label className="text-white">Exercise Name *</Label>
-                      <Input
-                        value={translationForm.name}
-                        onChange={(e) => setTranslationForm(prev => ({ ...prev, name: e.target.value }))}
-                        className="bg-white/5 border-white/10 text-white"
-                        placeholder="Exercise name in selected language"
-                      />
-                    </div>
+                        <div>
+                          <Label className="text-white">Translation</Label>
+                          <Textarea
+                            placeholder="Enter the translated text"
+                            className="bg-white/5 border-white/10 text-white"
+                            rows={3}
+                          />
+                        </div>
 
-                    <div>
-                      <Label className="text-white">Description</Label>
-                      <Textarea
-                        value={translationForm.description}
-                        onChange={(e) => setTranslationForm(prev => ({ ...prev, description: e.target.value }))}
-                        className="bg-white/5 border-white/10 text-white"
-                        rows={3}
-                        placeholder="Description in selected language"
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white">Instructions</Label>
-                      <Textarea
-                        value={translationForm.instructions}
-                        onChange={(e) => setTranslationForm(prev => ({ ...prev, instructions: e.target.value }))}
-                        className="bg-white/5 border-white/10 text-white"
-                        rows={4}
-                        placeholder="Instructions in selected language"
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white">Tags</Label>
-                      <div className="flex space-x-2 mt-2">
-                        <Input
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                          className="bg-white/5 border-white/10 text-white"
-                          placeholder="Add a tag (press Enter)"
-                        />
-                        <Button onClick={addTag} disabled={!tagInput.trim()}>
-                          <Plus className="w-4 h-4" />
+                        <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500">
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Translation
                         </Button>
-                      </div>
-                      {translationForm.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {translationForm.tags.map((tag, index) => (
-                            <Badge 
-                              key={index} 
-                              variant="outline" 
-                              className="border-purple-500/30 text-purple-300"
-                            >
-                              {tag}
-                              <button
-                                onClick={() => removeTag(tag)}
-                                className="ml-1 hover:text-red-400"
-                              >
-                                ×
-                              </button>
-                            </Badge>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="glass-effect border-white/10">
+                      <CardHeader>
+                        <CardTitle className="text-white text-lg">Existing Strings</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 max-h-96 overflow-y-auto">
+                          <div className="text-sm text-muted-foreground">
+                            No UI strings found. Add some translations to get started.
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="pages" className="mt-6">
+                <div className="space-y-6">
+                  <div className="text-sm text-muted-foreground">
+                    Manage content for static pages like Privacy Policy, Terms of Use, and About Us in multiple languages.
+                  </div>
+                  
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card className="glass-effect border-white/10">
+                      <CardHeader>
+                        <CardTitle className="text-white text-lg">Edit Page Content</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <Label className="text-white">Page</Label>
+                          <Select>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                              <SelectValue placeholder="Select page" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="privacy-policy">Privacy Policy</SelectItem>
+                              <SelectItem value="terms-of-use">Terms of Use</SelectItem>
+                              <SelectItem value="about-us">About Us</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label className="text-white">Language</Label>
+                          <Select>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                              <SelectValue placeholder="Select language" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {languages.map(lang => (
+                                <SelectItem key={lang.id} value={lang.id}>
+                                  {lang.native_name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label className="text-white">Title</Label>
+                          <Input 
+                            placeholder="Page title"
+                            className="bg-white/5 border-white/10 text-white"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-white">Content</Label>
+                          <Textarea
+                            placeholder="Page content (Markdown supported)"
+                            className="bg-white/5 border-white/10 text-white"
+                            rows={10}
+                          />
+                        </div>
+
+                        <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500">
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Page
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="glass-effect border-white/10">
+                      <CardHeader>
+                        <CardTitle className="text-white text-lg">Page Versions</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {['privacy-policy', 'terms-of-use', 'about-us'].map(pageKey => (
+                            <div key={pageKey} className="p-4 bg-white/5 rounded-lg">
+                              <h4 className="text-white font-medium mb-2 capitalize">
+                                {pageKey.replace('-', ' ')}
+                              </h4>
+                              <div className="flex space-x-2">
+                                {languages.map(lang => {
+                                  const hasTranslation = staticPages.some(
+                                    page => page.page_key === pageKey && page.language_id === lang.id
+                                  );
+                                  return (
+                                    <Badge
+                                      key={lang.id}
+                                      variant={hasTranslation ? "default" : "outline"}
+                                      className={hasTranslation ? "bg-green-500" : "border-gray-500"}
+                                    >
+                                      {lang.id.toUpperCase()}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                            </div>
                           ))}
                         </div>
-                      )}
-                    </div>
-
-                    <div className="flex space-x-3 pt-4">
-                      <Button
-                        onClick={saveTranslation}
-                        disabled={isLoading || !translationForm.name.trim()}
-                        className="bg-gradient-to-r from-purple-500 to-pink-500"
-                      >
-                        <Save className="w-4 h-4 mr-2" />
-                        {isLoading ? 'Saving...' : 'Save Translation'}
-                      </Button>
-                      
-                      {translations.some(t => t.language_id === selectedLanguage) && (
-                        <Button
-                          variant="destructive"
-                          onClick={deleteTranslation}
-                          disabled={isLoading}
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete Translation
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
-            ) : (
-              <Card className="glass-effect border-white/10">
-                <CardContent className="p-8 text-center">
-                  <Languages className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">Select an Exercise</h3>
-                  <p className="text-muted-foreground">Choose an exercise from the list to start translating</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

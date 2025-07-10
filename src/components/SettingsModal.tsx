@@ -18,7 +18,9 @@ import {
   CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import PricingPlansModal from '@/components/PricingPlansModal';
 
@@ -29,6 +31,7 @@ interface SettingsModalProps {
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const { user } = useAuth();
+  const { currentLanguage, setCurrentLanguage, languages } = useLanguage();
   const { toast } = useToast();
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [notifications, setNotifications] = useState({
@@ -173,6 +176,34 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           <Separator className="bg-white/10" />
 
+          {/* Language */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Globe className="w-5 h-5 text-blue-400" />
+              <h3 className="text-white font-semibold">Language</h3>
+            </div>
+            
+            <div className="pl-7">
+              <Label className="text-white text-sm">App Language</Label>
+              <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
+                <SelectTrigger className="w-full bg-white/5 border-white/10 text-white mt-2">
+                  <SelectValue>
+                    {languages.find(lang => lang.id === currentLanguage)?.native_name}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {languages.map(language => (
+                    <SelectItem key={language.id} value={language.id}>
+                      {language.native_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <Separator className="bg-white/10" />
+
           {/* Subscription & Billing */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -224,7 +255,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
           {/* Data & Account */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
-              <Globe className="w-5 h-5 text-blue-400" />
+              <Download className="w-5 h-5 text-blue-400" />
               <h3 className="text-white font-semibold">Data & Account</h3>
             </div>
             
