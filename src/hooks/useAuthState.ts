@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User } from '@/types/auth';
 import type { Session } from '@supabase/supabase-js';
+import { useFollowCounts } from './useFollowCounts';
 
 export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
+  
+  // Get follow counts for the current user
+  const { followersCount, followingCount, refetchCounts } = useFollowCounts(session?.user?.id || '');
 
   useEffect(() => {
     console.log('AuthContext: Setting up auth state listener');
@@ -33,8 +37,8 @@ export const useAuthState = () => {
               const userWithCompat = {
                 ...profile,
                 avatar: profile.avatar_url,
-                followersCount: 0,
-                followingCount: 0,
+                followersCount,
+                followingCount,
               };
               setUser(userWithCompat);
               console.log('AuthContext: User set', userWithCompat);
@@ -57,8 +61,8 @@ export const useAuthState = () => {
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
                 avatar: null,
-                followersCount: 0,
-                followingCount: 0,
+                followersCount,
+                followingCount,
               };
               setUser(basicUser);
             }
@@ -96,8 +100,8 @@ export const useAuthState = () => {
             const userWithCompat = {
               ...profile,
               avatar: profile.avatar_url,
-              followersCount: 0,
-              followingCount: 0,
+              followersCount,
+              followingCount,
             };
             setUser(userWithCompat);
           } else {
@@ -111,8 +115,8 @@ export const useAuthState = () => {
               created_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
               avatar: null,
-              followersCount: 0,
-              followingCount: 0,
+              followersCount,
+              followingCount,
             };
             setUser(basicUser);
           }
@@ -134,6 +138,17 @@ export const useAuthState = () => {
     setSession(null);
   };
 
+  // Update user counts when follow counts change
+  useEffect(() => {
+    if (user && session?.user?.id) {
+      setUser(prev => prev ? {
+        ...prev,
+        followersCount,
+        followingCount,
+      } : null);
+    }
+  }, [followersCount, followingCount, session?.user?.id]);
+
   return {
     user,
     session,
@@ -141,5 +156,6 @@ export const useAuthState = () => {
     isFirstLogin,
     setIsFirstLogin,
     clearAuth,
+    refetchCounts,
   };
 };

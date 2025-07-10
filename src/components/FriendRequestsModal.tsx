@@ -28,7 +28,7 @@ interface FriendRequestsModalProps {
 }
 
 export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProps) => {
-  const { user } = useAuth();
+  const { user, refetchCounts } = useAuth();
   const [requests, setRequests] = useState<FriendRequest[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -156,6 +156,7 @@ export const FriendRequestsModal = ({ isOpen, onClose }: FriendRequestsModalProp
       }
 
       setRequests(prev => prev.filter(req => req.id !== requestId));
+      refetchCounts(); // Update follower/following counts
       toast({
         title: "Friend request accepted!",
         description: `You and ${username} are now friends.`

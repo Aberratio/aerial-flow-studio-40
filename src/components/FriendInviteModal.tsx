@@ -51,12 +51,31 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
 
       if (error) throw error;
 
-      // TODO: Calculate mutual friends count
-      const profilesWithMutualFriends = profiles?.map(profile => ({
-        ...profile,
-        mutualFriends: Math.floor(Math.random() * 5), // Temporary random number
-        isOnline: Math.random() > 0.5 // Temporary random status
-      })) || [];
+      // Calculate mutual friends for each profile
+      const profilesWithMutualFriends = await Promise.all((profiles || []).map(async (profile) => {
+        // Get mutual friends count
+        const { data: currentUserFriends } = await supabase
+          .from('user_follows')
+          .select('following_id')
+          .eq('follower_id', user.id)
+          .eq('status', 'accepted');
+
+        const { data: profileFriends } = await supabase
+          .from('user_follows')
+          .select('following_id')
+          .eq('follower_id', profile.id)
+          .eq('status', 'accepted');
+
+        const currentUserFriendIds = new Set(currentUserFriends?.map(f => f.following_id) || []);
+        const profileFriendIds = new Set(profileFriends?.map(f => f.following_id) || []);
+        const mutualFriendsCount = [...currentUserFriendIds].filter(id => profileFriendIds.has(id)).length;
+
+        return {
+          ...profile,
+          mutualFriends: mutualFriendsCount,
+          isOnline: Math.random() > 0.5 // Temporary random status
+        };
+      }));
 
       setSuggestedFriends(profilesWithMutualFriends);
     } catch (error) {

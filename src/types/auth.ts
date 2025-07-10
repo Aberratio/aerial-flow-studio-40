@@ -24,6 +24,7 @@ export interface AuthContextType {
   isLoading: boolean;
   isFirstLogin: boolean;
   setIsFirstLogin: (value: boolean) => void;
+  refetchCounts: () => void;
   // Backward compatibility
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, username: string) => Promise<void>;

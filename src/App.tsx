@@ -21,7 +21,7 @@ import AboutUs from "@/pages/AboutUs";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfUse from "@/pages/TermsOfUse";
 import Inbox from "./pages/Inbox";
-import FriendProfile from "@/pages/FriendProfile";
+import FriendProfile from "@/pages/FriendProfileReal";
 import Friends from "@/pages/Friends";
 import Training from "@/pages/Training";
 import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";

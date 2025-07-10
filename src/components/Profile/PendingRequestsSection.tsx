@@ -21,7 +21,7 @@ interface PendingRequest {
 }
 
 export const PendingRequestsSection: React.FC = () => {
-  const { user } = useAuth();
+  const { user, refetchCounts } = useAuth();
   const [requests, setRequests] = useState<PendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -143,6 +143,7 @@ export const PendingRequestsSection: React.FC = () => {
       }
 
       setRequests(prev => prev.filter(req => req.id !== requestId));
+      refetchCounts(); // Update follower/following counts
       toast({
         title: "Friend request accepted!",
         description: `You and ${username} are now friends.`
