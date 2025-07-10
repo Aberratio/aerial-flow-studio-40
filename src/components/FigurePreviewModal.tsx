@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Play, Clock, Target, User, Tag, Plus, CheckCircle, Bookmark, AlertCircle, CircleMinus } from 'lucide-react';
+import { X, Play, Clock, Target, User, Tag, Plus, CheckCircle, Bookmark, AlertCircle, CircleMinus, Share2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { CreatePostModal } from '@/components/CreatePostModal';
+import { ShareExerciseModal } from '@/components/ShareExerciseModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -26,6 +27,7 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
   const [selectedPost, setSelectedPost] = useState(null);
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [figureProgress, setFigureProgress] = useState<any>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -258,6 +260,14 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
                         {figure.difficulty_level}
                       </Badge>
                     )}
+                    <Button
+                      onClick={() => setShowShareModal(true)}
+                      size="sm"
+                      variant="ghost"
+                      className="text-muted-foreground hover:text-white"
+                    >
+                      <Share2 className="w-4 h-4" />
+                    </Button>
                     <Button
                       onClick={onClose}
                       className="w-8 h-8 p-0 bg-black/50 hover:bg-black/70"
@@ -615,6 +625,14 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
           setShowCreatePost(false);
         }}
         preselectedFigure={figure}
+      />
+
+      {/* Share Exercise Modal */}
+      <ShareExerciseModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        exerciseId={figure?.id || ''}
+        exerciseName={figure?.name || ''}
       />
     </>
   );

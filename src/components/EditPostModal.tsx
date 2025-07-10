@@ -159,12 +159,14 @@ export const EditPostModal = ({ isOpen, onClose, post, onPostUpdated }: EditPost
               <label className="text-white text-sm font-medium mb-2 block">Privacy Setting</label>
               <Select value={privacy} onValueChange={setPrivacy}>
                 <SelectTrigger className="w-40 h-10 bg-white/5 border-white/10 text-white">
-                  <div className="flex items-center space-x-2">
-                    {getPrivacyIcon()}
-                    <SelectValue />
-                  </div>
+                  <SelectValue>
+                    <div className="flex items-center space-x-2">
+                      {getPrivacyIcon()}
+                      <span className="capitalize">{privacy === 'friends' ? 'Friends only' : privacy === 'private' ? 'Only me' : 'Public'}</span>
+                    </div>
+                  </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="bg-background/95 border-white/10">
+                <SelectContent className="bg-background/95 border-white/10 z-50">
                   <SelectItem value="public">
                     <div className="flex items-center space-x-2">
                       <Globe className="w-4 h-4" />
