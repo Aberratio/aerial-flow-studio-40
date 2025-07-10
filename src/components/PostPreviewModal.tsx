@@ -55,14 +55,14 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl h-[90vh] p-0 bg-black/95 border-white/10 flex flex-col">
+      <DialogContent className="w-[95vw] max-w-4xl h-[90vh] sm:h-[90vh] p-0 bg-black/95 border-white/10 flex flex-col">
         <DialogTitle className="sr-only">Post by {post?.user?.username}</DialogTitle>
         <DialogDescription className="sr-only">
           {post?.content || 'View post details and comments'}
         </DialogDescription>
-        <div className="flex h-full min-h-0">
+        <div className="flex flex-col sm:flex-row h-full min-h-0">
           {/* Media Section */}
-          <div className="flex-1 bg-black min-h-0">
+          <div className="flex-1 bg-black min-h-0 h-64 sm:h-full">
             {post.image_url && (
               <img 
                 src={post.image_url} 
@@ -86,19 +86,19 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
           </div>
 
           {/* Details Section */}
-          <div className="w-96 flex flex-col bg-black/50 backdrop-blur-sm">
+          <div className="w-full sm:w-96 flex flex-col bg-black/50 backdrop-blur-sm">
             {/* Header */}
-            <DialogHeader className="p-4 border-b border-white/10">
+            <DialogHeader className="p-3 sm:p-4 border-b border-white/10 flex-shrink-0">
               <div className="flex items-center space-x-3">
-                <Avatar className={`w-10 h-10 ${post.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-2 ring-offset-black' : ''}`}>
+                <Avatar className={`w-8 h-8 sm:w-10 sm:h-10 ${post.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-2 ring-offset-black' : ''}`}>
                   <AvatarImage src={post.user.avatar_url || undefined} />
                   <AvatarFallback>{post.user.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-white">{post.user.username}</span>
+                    <span className="font-semibold text-white text-sm sm:text-base">{post.user.username}</span>
                   </div>
-                  <span className="text-muted-foreground text-sm">
+                  <span className="text-muted-foreground text-xs sm:text-sm">
                     {post.created_at && !isNaN(new Date(post.created_at).getTime()) 
                       ? formatDistanceToNow(new Date(post.created_at), { addSuffix: true })
                       : 'Recently'
@@ -109,34 +109,34 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
             </DialogHeader>
 
             {/* Content */}
-            <div className="p-4 border-b border-white/10">
-              <p className="text-white">{post.content}</p>
+            <div className="p-3 sm:p-4 border-b border-white/10 flex-shrink-0">
+              <p className="text-white text-sm sm:text-base">{post.content}</p>
             </div>
 
             {/* Actions */}
-            <div className="p-4 border-b border-white/10">
+            <div className="p-3 sm:p-4 border-b border-white/10 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-3 sm:space-x-6">
                   <Button 
                     variant="ghost" 
                     size="sm"
                     onClick={handleToggleLike}
-                    className={`text-muted-foreground hover:text-white ${post.is_liked ? 'text-pink-400' : ''}`}
+                    className={`text-muted-foreground hover:text-white ${post.is_liked ? 'text-pink-400' : ''} px-2 sm:px-3`}
                   >
-                    <Heart className={`w-5 h-5 mr-2 ${post.is_liked ? 'fill-current' : ''}`} />
-                    {post.likes_count || 0}
+                    <Heart className={`w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 ${post.is_liked ? 'fill-current' : ''}`} />
+                    <span className="text-xs sm:text-sm">{post.likes_count || 0}</span>
                   </Button>
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    {comments.length || 0}
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white px-2 sm:px-3">
+                    <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                    <span className="text-xs sm:text-sm">{comments.length || 0}</span>
                   </Button>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={handleShare}
-                    className="text-muted-foreground hover:text-white"
+                    className="text-muted-foreground hover:text-white px-2 sm:px-3"
                   >
-                    <Share2 className="w-5 h-5" />
+                    <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
                 </div>
                 {post.user_id !== user?.id && (
@@ -144,44 +144,44 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
                     variant="ghost" 
                     size="sm" 
                     onClick={handleToggleSave}
-                    className={`text-muted-foreground hover:text-white ${post.is_saved ? 'text-blue-400' : ''}`}
+                    className={`text-muted-foreground hover:text-white ${post.is_saved ? 'text-blue-400' : ''} px-2 sm:px-3`}
                     title="Save for later"
                   >
-                    <Bookmark className={`w-5 h-5 ${post.is_saved ? 'fill-current' : ''}`} />
+                    <Bookmark className={`w-4 h-4 sm:w-5 sm:h-5 ${post.is_saved ? 'fill-current' : ''}`} />
                   </Button>
                 )}
               </div>
             </div>
 
             {/* Comments */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0">
               {commentsLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 </div>
               ) : comments.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  No comments yet. Be the first to comment!
+                  <p className="text-sm">No comments yet. Be the first to comment!</p>
                 </div>
               ) : (
                 comments.map((comment) => (
-                  <div key={comment.id} className="flex space-x-3">
-                    <Avatar className={`w-8 h-8 ${comment.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-1 ring-offset-black' : ''}`}>
+                  <div key={comment.id} className="flex space-x-2 sm:space-x-3">
+                    <Avatar className={`w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0 ${comment.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-1 ring-offset-black' : ''}`}>
                       <AvatarImage src={comment.user.avatar_url || undefined} />
                       <AvatarFallback>{comment.user.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <div className="bg-white/5 rounded-lg p-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="bg-white/5 rounded-lg p-2 sm:p-3">
                         <div className="flex items-center space-x-2 mb-1">
-                          <span className="font-semibold text-white text-sm">{comment.user.username}</span>
-                          <span className="text-muted-foreground text-xs">
+                          <span className="font-semibold text-white text-xs sm:text-sm truncate">{comment.user.username}</span>
+                          <span className="text-muted-foreground text-xs flex-shrink-0">
                             {comment.created_at && !isNaN(new Date(comment.created_at).getTime()) 
                               ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })
                               : 'Recently'
                             }
                           </span>
                         </div>
-                        <p className="text-white text-sm">{comment.content}</p>
+                        <p className="text-white text-xs sm:text-sm break-words">{comment.content}</p>
                       </div>
                     </div>
                   </div>
@@ -190,21 +190,21 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
             </div>
 
             {/* Comment Input */}
-            <div className="p-4 border-t border-white/10">
+            <div className="p-3 sm:p-4 border-t border-white/10 flex-shrink-0">
               <div className="flex space-x-2">
                 <Input
                   placeholder="Add a comment..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60 text-sm"
                   onKeyPress={(e) => e.key === 'Enter' && handleSubmitComment()}
                 />
                 <Button 
                   size="sm" 
                   onClick={handleSubmitComment}
-                  className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
+                  className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 flex-shrink-0"
                 >
-                  <Send className="w-4 h-4" />
+                  <Send className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </div>
             </div>

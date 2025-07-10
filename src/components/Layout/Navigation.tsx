@@ -5,12 +5,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 
-const Navigation = () => {
+interface NavigationProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Navigation: React.FC<NavigationProps> = ({ isOpen = false, onClose }) => {
   const location = useLocation();
   const { user, logout } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const isMobile = useIsMobile();
 
   // Fetch unread notifications count
   useEffect(() => {
@@ -79,15 +86,23 @@ const Navigation = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="fixed left-0 top-0 h-full w-20 lg:w-64 glass-effect border-r border-white/10 z-50">
+    <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${
+      isMobile 
+        ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` 
+        : 'w-20 lg:w-64'
+    }`}>
       <div className="flex flex-col h-full p-4">
         {/* Logo */}
-        <Link to="/feed" className="flex items-center space-x-3 mb-8 group">
+        <Link 
+          to="/feed" 
+          className="flex items-center space-x-3 mb-8 group"
+          onClick={isMobile ? onClose : undefined}
+        >
           <div className="w-10 h-10 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-xl">A</span>
+            <span className="text-white font-bold text-xl">C</span>
           </div>
-          <span className="gradient-text font-bold text-xl hidden lg:block group-hover:scale-105 transition-transform">
-            AerialJourney
+          <span className={`gradient-text font-bold text-xl ${isMobile ? 'block' : 'hidden lg:block'} group-hover:scale-105 transition-transform`}>
+            CoreFlow
           </span>
         </Link>
 
@@ -99,6 +114,7 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 to={item.path}
+                onClick={isMobile ? onClose : undefined}
                 className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${
                   isActive(item.path)
                     ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white'
@@ -113,9 +129,9 @@ const Navigation = () => {
                     </Badge>
                   )}
                 </div>
-                <span className="hidden lg:block font-medium">{item.label}</span>
+                <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
                 {item.path === '/inbox' && unreadCount > 0 && (
-                  <Badge className="hidden lg:block ml-auto bg-red-500 text-white text-xs">
+                  <Badge className={`ml-auto bg-red-500 text-white text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </Badge>
                 )}
@@ -124,14 +140,14 @@ const Navigation = () => {
           })}
 
           {/* Premium Section */}
-          <div className="hidden lg:block border-t border-white/10 my-4"></div>
+          <div className={`border-t border-white/10 my-4 ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
           <div className="flex items-center space-x-2 px-3 mb-2">
             <Crown className="w-4 h-4 text-yellow-400" />
-            <span className="hidden lg:block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <span className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider ${isMobile ? 'block' : 'hidden lg:block'}`}>
               Premium
             </span>
             {!hasPremiumAccess && (
-              <Badge className="hidden lg:block bg-yellow-500/20 text-yellow-400 text-xs">
+              <Badge className={`bg-yellow-500/20 text-yellow-400 text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
                 Upgrade
               </Badge>
             )}
@@ -145,6 +161,7 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 to={isDisabled ? '/pricing' : item.path}
+                onClick={isMobile ? onClose : undefined}
                 className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${
                   isActive(item.path) && !isDisabled
                     ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white'
@@ -154,9 +171,9 @@ const Navigation = () => {
                 }`}
               >
                 <Icon className={`w-5 h-5 flex-shrink-0 ${!isDisabled ? 'group-hover:scale-110' : ''} transition-transform`} />
-                <span className="hidden lg:block font-medium">{item.label}</span>
+                <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
                 {isDisabled && (
-                  <Lock className="w-3 h-3 hidden lg:block ml-auto text-muted-foreground/50" />
+                  <Lock className={`w-3 h-3 ml-auto text-muted-foreground/50 ${isMobile ? 'block' : 'hidden lg:block'}`} />
                 )}
               </Link>
             );
@@ -165,8 +182,8 @@ const Navigation = () => {
           {/* Admin Section */}
           {adminItems.length > 0 && (
             <>
-              <div className="hidden lg:block border-t border-white/10 my-4"></div>
-              <div className="hidden lg:block text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2">
+              <div className={`border-t border-white/10 my-4 ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
+              <div className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2 ${isMobile ? 'block' : 'hidden lg:block'}`}>
                 Admin
               </div>
               {adminItems.map((item) => {
@@ -175,6 +192,7 @@ const Navigation = () => {
                   <Link
                     key={item.path}
                     to={item.path}
+                    onClick={isMobile ? onClose : undefined}
                     className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group ${
                       isActive(item.path)
                         ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white'
@@ -182,7 +200,7 @@ const Navigation = () => {
                     }`}
                   >
                     <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
-                    <span className="hidden lg:block font-medium">{item.label}</span>
+                    <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
                   </Link>
                 );
               })}
@@ -194,6 +212,7 @@ const Navigation = () => {
         <div className="border-t border-white/10 pt-4">
           <Link 
             to="/profile" 
+            onClick={isMobile ? onClose : undefined}
             className="flex items-center space-x-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             <Avatar className="w-8 h-8">
@@ -202,19 +221,22 @@ const Navigation = () => {
                 {user?.username?.[0]?.toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <div className="hidden lg:block flex-1">
+            <div className={`flex-1 ${isMobile ? 'block' : 'hidden lg:block'}`}>
               <p className="text-white font-medium text-sm">{user?.username}</p>
               <p className="text-muted-foreground text-xs">{user?.email}</p>
             </div>
           </Link>
           <Button
-            onClick={logout}
+            onClick={() => {
+              logout();
+              if (isMobile && onClose) onClose();
+            }}
             variant="ghost"
             size="sm"
             className="w-full mt-2 text-muted-foreground hover:text-white justify-start"
           >
             <LogOut className="w-4 h-4 mr-3" />
-            <span className="hidden lg:block">Logout</span>
+            <span className={isMobile ? 'block' : 'hidden lg:block'}>Logout</span>
           </Button>
           
           {/* Footer Links */}

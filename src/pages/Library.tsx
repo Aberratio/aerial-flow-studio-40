@@ -29,6 +29,7 @@ const Library = () => {
   const [loading, setLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, figure: null });
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [showFigureSearch, setShowFigureSearch] = useState(false);
 
   const categories = ['all', 'silks', 'hoop', 'pole', 'straps'];
   const levels = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];
@@ -200,7 +201,18 @@ const Library = () => {
             />
           </div>
           
-          <div className="space-y-3">
+          <div className="sm:hidden">
+            <Button
+              variant="outline"
+              className="w-full border-white/20 text-white hover:bg-white/10 mb-4"
+              onClick={() => setShowFigureSearch(!showFigureSearch)}
+            >
+              <Filter className="w-4 h-4 mr-2" />
+              Filters
+            </Button>
+          </div>
+          
+          <div className={`space-y-3 ${showFigureSearch ? 'block' : 'hidden sm:block'}`}>
             {/* Category Filter */}
             <div>
               <p className="text-white text-sm font-medium mb-2">Category</p>

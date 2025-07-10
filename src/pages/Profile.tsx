@@ -26,8 +26,8 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen p-3 sm:p-6">
+      <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
         {/* Profile Header */}
         <ProfileHeader 
           onEditProfile={() => setIsEditModalOpen(true)}
