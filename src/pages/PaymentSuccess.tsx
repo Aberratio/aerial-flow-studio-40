@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Crown, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const PaymentSuccess = () => {
   const [isVerifying, setIsVerifying] = useState(true);
   const [verified, setVerified] = useState(false);
   const { toast } = useToast();
+  const { refetchCounts } = useAuth();
 
   useEffect(() => {
     const verifyPayment = async () => {
@@ -23,12 +25,30 @@ const PaymentSuccess = () => {
 
       try {
         // Check subscription status to refresh data
+        const { data, error } = await supabase.functions.invoke('check-subscription');
+        if (error) throw error;
+        
+        // Wait a moment for Stripe to fully process the payment
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Check again to ensure we get the updated status
         await supabase.functions.invoke('check-subscription');
+        
+        // Refresh user auth context to update role
+        if (refetchCounts) {
+          await refetchCounts();
+        }
+        
+        // Force a page reload to ensure all components get the updated user data
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+        
         setVerified(true);
         
         toast({
           title: "Payment Successful!",
-          description: "Your payment has been processed successfully.",
+          description: "Your premium subscription is now active!",
         });
       } catch (error) {
         console.error('Error verifying payment:', error);

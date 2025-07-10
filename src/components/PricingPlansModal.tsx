@@ -39,7 +39,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
     {
       id: 'premium',
       name: 'Premium',
-      price: '$9.99',
+      price: '$10',
       period: 'per month',
       description: 'Unlock advanced features and unlimited access',
       features: [

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -93,7 +93,7 @@ export const useUserActivities = () => {
     };
   }, [user]);
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -105,7 +105,7 @@ export const useUserActivities = () => {
     } catch (error) {
       console.error('Error marking activities as read:', error);
     }
-  };
+  }, [user]);
 
   return { activities, loading, markAllAsRead };
 };

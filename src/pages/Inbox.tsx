@@ -16,12 +16,15 @@ const Inbox = () => {
   // Mark all activities as read when user opens inbox
   useEffect(() => {
     const markAsRead = async () => {
-      if (activities.length > 0) {
+      if (activities.length > 0 && !loading) {
         await markAllAsRead();
       }
     };
-    markAsRead();
-  }, [activities.length]);
+    
+    if (!loading) {
+      markAsRead();
+    }
+  }, [loading, markAllAsRead]); // Run when loading state changes
 
   const getActivityContent = (activity: UserActivity) => {
     const data = activity.activity_data || {};
