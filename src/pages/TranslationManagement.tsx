@@ -75,6 +75,20 @@ export default function TranslationManagement() {
     value: ''
   });
   const [editingStringId, setEditingStringId] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [selectedPageContent, setSelectedPageContent] = useState<StaticPage | null>(null);
+  const [pageForm, setPageForm] = useState({
+    page_key: '',
+    title: '',
+    content: ''
+  });
+  const [editingPageId, setEditingPageId] = useState<string | null>(null);
+  const [translationForm, setTranslationForm] = useState({
+    name: '',
+    description: '',
+    instructions: '',
+    tags: [] as string[]
+  });
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -229,6 +243,129 @@ export default function TranslationManagement() {
     }
   };
 
+  const saveTranslation = async () => {
+    if (!selectedFigure || !selectedLanguage || !translationForm.name) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('figure_translations')
+        .upsert({
+          figure_id: selectedFigure.id,
+          language_id: selectedLanguage,
+          name: translationForm.name,
+          description: translationForm.description || null,
+          instructions: translationForm.instructions || null,
+          tags: translationForm.tags.length > 0 ? translationForm.tags : null
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Exercise translation saved successfully"
+      });
+
+      setTranslationForm({ name: '', description: '', instructions: '', tags: [] });
+      fetchTranslations();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save translation",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveStaticPage = async () => {
+    if (!pageForm.page_key || !selectedLanguage || !pageForm.title || !pageForm.content) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      if (editingPageId) {
+        const { error } = await supabase
+          .from('static_pages')
+          .update({
+            title: pageForm.title,
+            content: pageForm.content
+          })
+          .eq('id', editingPageId);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('static_pages')
+          .upsert({
+            page_key: pageForm.page_key,
+            language_id: selectedLanguage,
+            title: pageForm.title,
+            content: pageForm.content
+          });
+
+        if (error) throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Static page saved successfully"
+      });
+
+      setPageForm({ page_key: '', title: '', content: '' });
+      setEditingPageId(null);
+      fetchStaticPages();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save static page",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Load existing translation when figure/language changes
+  useEffect(() => {
+    if (selectedFigure && selectedLanguage) {
+      const existingTranslation = translations.find(
+        t => t.figure_id === selectedFigure.id && t.language_id === selectedLanguage
+      );
+      
+      if (existingTranslation) {
+        setTranslationForm({
+          name: existingTranslation.name,
+          description: existingTranslation.description || '',
+          instructions: existingTranslation.instructions || '',
+          tags: existingTranslation.tags || []
+        });
+      } else {
+        // Load default language content
+        setTranslationForm({
+          name: selectedFigure.name,
+          description: selectedFigure.description || '',
+          instructions: selectedFigure.instructions || '',
+          tags: selectedFigure.tags || []
+        });
+      }
+    }
+  }, [selectedFigure, selectedLanguage, translations]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-6">
       <div className="max-w-7xl mx-auto">
@@ -319,8 +456,80 @@ export default function TranslationManagement() {
                         <CardHeader>
                           <CardTitle className="text-white">Translate: {selectedFigure.name}</CardTitle>
                         </CardHeader>
-                        <CardContent>
-                          <p className="text-muted-foreground">Exercise translation interface would go here</p>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <Label className="text-white">Target Language</Label>
+                            <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                                <SelectValue placeholder="Select language" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {languages.map(lang => (
+                                  <SelectItem key={lang.id} value={lang.id}>
+                                    {lang.native_name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {selectedLanguage && (
+                            <>
+                              <div>
+                                <Label className="text-white">Exercise Name *</Label>
+                                <Input
+                                  placeholder="Translated exercise name"
+                                  value={translationForm.name}
+                                  onChange={(e) => setTranslationForm(prev => ({ ...prev, name: e.target.value }))}
+                                  className="bg-white/5 border-white/10 text-white"
+                                />
+                              </div>
+
+                              <div>
+                                <Label className="text-white">Description</Label>
+                                <Textarea
+                                  placeholder="Translated description"
+                                  value={translationForm.description}
+                                  onChange={(e) => setTranslationForm(prev => ({ ...prev, description: e.target.value }))}
+                                  className="bg-white/5 border-white/10 text-white"
+                                  rows={3}
+                                />
+                              </div>
+
+                              <div>
+                                <Label className="text-white">Instructions</Label>
+                                <Textarea
+                                  placeholder="Translated instructions"
+                                  value={translationForm.instructions}
+                                  onChange={(e) => setTranslationForm(prev => ({ ...prev, instructions: e.target.value }))}
+                                  className="bg-white/5 border-white/10 text-white"
+                                  rows={4}
+                                />
+                              </div>
+
+                              <div>
+                                <Label className="text-white">Tags (comma separated)</Label>
+                                <Input
+                                  placeholder="tag1, tag2, tag3"
+                                  value={translationForm.tags.join(', ')}
+                                  onChange={(e) => setTranslationForm(prev => ({ 
+                                    ...prev, 
+                                    tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag) 
+                                  }))}
+                                  className="bg-white/5 border-white/10 text-white"
+                                />
+                              </div>
+
+                              <Button 
+                                onClick={saveTranslation} 
+                                disabled={isLoading}
+                                className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+                              >
+                                <Save className="w-4 h-4 mr-2" />
+                                Save Translation
+                              </Button>
+                            </>
+                          )}
                         </CardContent>
                       </Card>
                     ) : (
@@ -433,23 +642,44 @@ export default function TranslationManagement() {
                     <Card className="glass-effect border-white/10">
                       <CardHeader>
                         <CardTitle className="text-white text-lg">UI Strings</CardTitle>
-                        <div className="relative">
-                          <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                          <Input
-                            placeholder="Search strings..."
-                            value={uiSearchTerm}
-                            onChange={(e) => setUISearchTerm(e.target.value)}
-                            className="pl-10 bg-white/5 border-white/10 text-white"
-                          />
+                        <div className="space-y-3">
+                          <div className="relative">
+                            <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
+                            <Input
+                              placeholder="Search strings..."
+                              value={uiSearchTerm}
+                              onChange={(e) => setUISearchTerm(e.target.value)}
+                              className="pl-10 bg-white/5 border-white/10 text-white"
+                            />
+                          </div>
+                          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                            <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                              <SelectValue placeholder="Filter by category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">All categories</SelectItem>
+                              <SelectItem value="buttons">Buttons</SelectItem>
+                              <SelectItem value="labels">Labels</SelectItem>
+                              <SelectItem value="messages">Messages</SelectItem>
+                              <SelectItem value="alerts">Alerts</SelectItem>
+                              <SelectItem value="navigation">Navigation</SelectItem>
+                              <SelectItem value="exercises">Exercises</SelectItem>
+                              <SelectItem value="settings">Settings</SelectItem>
+                              <SelectItem value="profile">Profile</SelectItem>
+                              <SelectItem value="time">Time</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3 max-h-96 overflow-y-auto">
                           {uiStrings
-                            .filter(str => 
-                              str.string_key.toLowerCase().includes(uiSearchTerm.toLowerCase()) ||
-                              str.value.toLowerCase().includes(uiSearchTerm.toLowerCase())
-                            )
+                            .filter(str => {
+                              const matchesSearch = str.string_key.toLowerCase().includes(uiSearchTerm.toLowerCase()) ||
+                                                    str.value.toLowerCase().includes(uiSearchTerm.toLowerCase());
+                              const matchesCategory = !categoryFilter || str.category === categoryFilter;
+                              return matchesSearch && matchesCategory;
+                            })
                             .map(string => (
                             <div key={string.id} className="p-3 bg-white/5 rounded-lg">
                               <div className="flex justify-between items-start">
@@ -500,7 +730,20 @@ export default function TranslationManagement() {
                       <CardContent className="space-y-4">
                         <div>
                           <Label className="text-white">Page</Label>
-                          <Select>
+                          <Select value={pageForm.page_key} onValueChange={(value) => {
+                            setPageForm(prev => ({ ...prev, page_key: value }));
+                            // Load existing content if available
+                            if (value && selectedLanguage) {
+                              const existing = staticPages.find(p => p.page_key === value && p.language_id === selectedLanguage);
+                              if (existing) {
+                                setPageForm(prev => ({ ...prev, title: existing.title, content: existing.content }));
+                                setEditingPageId(existing.id);
+                              } else {
+                                setPageForm(prev => ({ ...prev, title: '', content: '' }));
+                                setEditingPageId(null);
+                              }
+                            }
+                          }}>
                             <SelectTrigger className="bg-white/5 border-white/10 text-white">
                               <SelectValue placeholder="Select page" />
                             </SelectTrigger>
@@ -514,7 +757,20 @@ export default function TranslationManagement() {
 
                         <div>
                           <Label className="text-white">Language</Label>
-                          <Select>
+                          <Select value={selectedLanguage} onValueChange={(value) => {
+                            setSelectedLanguage(value);
+                            // Load existing content if available
+                            if (value && pageForm.page_key) {
+                              const existing = staticPages.find(p => p.page_key === pageForm.page_key && p.language_id === value);
+                              if (existing) {
+                                setPageForm(prev => ({ ...prev, title: existing.title, content: existing.content }));
+                                setEditingPageId(existing.id);
+                              } else {
+                                setPageForm(prev => ({ ...prev, title: '', content: '' }));
+                                setEditingPageId(null);
+                              }
+                            }
+                          }}>
                             <SelectTrigger className="bg-white/5 border-white/10 text-white">
                               <SelectValue placeholder="Select language" />
                             </SelectTrigger>
@@ -532,22 +788,30 @@ export default function TranslationManagement() {
                           <Label className="text-white">Title</Label>
                           <Input 
                             placeholder="Page title"
+                            value={pageForm.title}
+                            onChange={(e) => setPageForm(prev => ({ ...prev, title: e.target.value }))}
                             className="bg-white/5 border-white/10 text-white"
                           />
                         </div>
 
                         <div>
-                          <Label className="text-white">Content</Label>
+                          <Label className="text-white">Content (Markdown)</Label>
                           <Textarea
                             placeholder="Page content (Markdown supported)"
+                            value={pageForm.content}
+                            onChange={(e) => setPageForm(prev => ({ ...prev, content: e.target.value }))}
                             className="bg-white/5 border-white/10 text-white"
                             rows={10}
                           />
                         </div>
 
-                        <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500">
+                        <Button 
+                          onClick={saveStaticPage}
+                          disabled={isLoading}
+                          className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+                        >
                           <Save className="w-4 h-4 mr-2" />
-                          Save Page
+                          {editingPageId ? 'Update' : 'Save'} Page
                         </Button>
                       </CardContent>
                     </Card>
@@ -563,16 +827,35 @@ export default function TranslationManagement() {
                               <h4 className="text-white font-medium mb-2 capitalize">
                                 {pageKey.replace('-', ' ')}
                               </h4>
-                              <div className="flex space-x-2">
+                              <div className="flex space-x-2 mb-3">
                                 {languages.map(lang => {
-                                  const hasTranslation = staticPages.some(
+                                  const page = staticPages.find(
                                     page => page.page_key === pageKey && page.language_id === lang.id
                                   );
                                   return (
                                     <Badge
                                       key={lang.id}
-                                      variant={hasTranslation ? "default" : "outline"}
-                                      className={hasTranslation ? "bg-green-500" : "border-gray-500"}
+                                      variant={page ? "default" : "outline"}
+                                      className={`cursor-pointer ${page ? "bg-green-500 hover:bg-green-600" : "border-gray-500 hover:bg-white/10"}`}
+                                      onClick={() => {
+                                        if (page) {
+                                          setPageForm({
+                                            page_key: pageKey,
+                                            title: page.title,
+                                            content: page.content
+                                          });
+                                          setSelectedLanguage(lang.id);
+                                          setEditingPageId(page.id);
+                                        } else {
+                                          setPageForm({
+                                            page_key: pageKey,
+                                            title: '',
+                                            content: ''
+                                          });
+                                          setSelectedLanguage(lang.id);
+                                          setEditingPageId(null);
+                                        }
+                                      }}
                                     >
                                       {lang.id.toUpperCase()}
                                     </Badge>
