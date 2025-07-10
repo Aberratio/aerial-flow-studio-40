@@ -1,22 +1,29 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Mail, Users, Dumbbell, Settings } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Mail, Users, Dumbbell, Settings, Crown, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 
 const Navigation = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
-  const navItems = [
+  // Check if user has premium access
+  const hasPremiumAccess = user?.role && ['premium', 'trainer', 'admin'].includes(user.role);
+
+  const freeNavItems = [
     { path: '/feed', icon: Home, label: 'Feed' },
-    { path: '/library', icon: BookOpen, label: 'Library' },
-    { path: '/challenges', icon: Trophy, label: 'Challenges' },
     { path: '/friends', icon: Users, label: 'Friends' },
-    { path: '/training', icon: Dumbbell, label: 'Training' },
     { path: '/profile', icon: User, label: 'Profile' },
     { path: '/inbox', icon: Mail, label: 'Inbox' },
+  ];
+
+  const premiumNavItems = [
+    { path: '/library', icon: BookOpen, label: 'Library', premium: true },
+    { path: '/challenges', icon: Trophy, label: 'Challenges', premium: true },
+    { path: '/training', icon: Dumbbell, label: 'Training', premium: true },
   ];
 
   // Admin-only items
@@ -39,9 +46,9 @@ const Navigation = () => {
           </span>
         </Link>
 
-        {/* Navigation Items */}
+        {/* Free Navigation Items */}
         <div className="flex-1 space-y-2">
-          {navItems.map((item) => {
+          {freeNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
@@ -55,6 +62,45 @@ const Navigation = () => {
               >
                 <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                 <span className="hidden lg:block font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* Premium Section */}
+          <div className="hidden lg:block border-t border-white/10 my-4"></div>
+          <div className="flex items-center space-x-2 px-3 mb-2">
+            <Crown className="w-4 h-4 text-yellow-400" />
+            <span className="hidden lg:block text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Premium
+            </span>
+            {!hasPremiumAccess && (
+              <Badge className="hidden lg:block bg-yellow-500/20 text-yellow-400 text-xs">
+                Upgrade
+              </Badge>
+            )}
+          </div>
+          
+          {premiumNavItems.map((item) => {
+            const Icon = item.icon;
+            const isDisabled = !hasPremiumAccess;
+            
+            return (
+              <Link
+                key={item.path}
+                to={isDisabled ? '/pricing' : item.path}
+                className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${
+                  isActive(item.path) && !isDisabled
+                    ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white'
+                    : isDisabled
+                    ? 'text-muted-foreground/50 cursor-not-allowed'
+                    : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Icon className={`w-5 h-5 flex-shrink-0 ${!isDisabled ? 'group-hover:scale-110' : ''} transition-transform`} />
+                <span className="hidden lg:block font-medium">{item.label}</span>
+                {isDisabled && (
+                  <Lock className="w-3 h-3 hidden lg:block ml-auto text-muted-foreground/50" />
+                )}
               </Link>
             );
           })}

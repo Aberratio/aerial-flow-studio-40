@@ -13,6 +13,8 @@ import Library from "@/pages/Library";
 import Challenges from "@/pages/Challenges";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
+import BadConnection from "@/pages/BadConnection";
+import PricingPage from "@/pages/PricingPage";
 import Inbox from "./pages/Inbox";
 import FriendProfile from "@/pages/FriendProfile";
 import Friends from "@/pages/Friends";
@@ -22,6 +24,7 @@ import MyJourney from "@/pages/MyJourney";
 import EditChallenge from "@/pages/EditChallenge";
 import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
 import AchievementManagement from "@/pages/AchievementManagement";
+import PremiumRoute from "@/components/PremiumRoute";
 
 const queryClient = new QueryClient();
 
@@ -76,9 +79,17 @@ const AppRoutes = () => {
       } />
       <Route path="/library" element={
         <ProtectedRoute>
-          <Library />
+          <PremiumRoute>
+            <Library />
+          </PremiumRoute>
         </ProtectedRoute>
       } />
+      <Route path="/pricing" element={
+        <ProtectedRoute>
+          <PricingPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/connection-error" element={<BadConnection />} />
       <Route path="/inbox" element={
         <ProtectedRoute>
           <Inbox />
@@ -86,7 +97,9 @@ const AppRoutes = () => {
       } />
       <Route path="/challenges" element={
         <ProtectedRoute>
-          <Challenges />
+          <PremiumRoute>
+            <Challenges />
+          </PremiumRoute>
         </ProtectedRoute>
       } />
       <Route path="/profile" element={
@@ -111,22 +124,30 @@ const AppRoutes = () => {
       } />
       <Route path="/training" element={
         <ProtectedRoute>
-          <Training />
+          <PremiumRoute>
+            <Training />
+          </PremiumRoute>
         </ProtectedRoute>
       } />
       <Route path="/challenge/:challengeId/day/:dayId" element={
         <ProtectedRoute>
-          <ChallengeDayOverview />
+          <PremiumRoute>
+            <ChallengeDayOverview />
+          </PremiumRoute>
         </ProtectedRoute>
       } />
       <Route path="/training-session" element={
         <ProtectedRoute>
-          <TrainingSessionPageWrapper />
+          <PremiumRoute>
+            <TrainingSessionPageWrapper />
+          </PremiumRoute>
         </ProtectedRoute>
       } />
       <Route path="/challenges/:challengeId/edit" element={
         <ProtectedRoute>
-          <EditChallenge />
+          <PremiumRoute>
+            <EditChallenge />
+          </PremiumRoute>
         </ProtectedRoute>
       } />
       <Route path="/admin/achievements" element={
