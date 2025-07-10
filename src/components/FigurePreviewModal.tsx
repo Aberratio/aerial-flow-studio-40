@@ -244,7 +244,7 @@ export const FigurePreviewModal = ({
             <div className="lg:w-1/2 flex flex-col bg-black/50 backdrop-blur-sm">
               {/* Header */}
               <div className="p-6 border-b border-white/10">
-                <div className="flex items-start justify-between mb-4 my-[8px]">
+                <div className="flex items-start justify-between mb-4 my-[23px]">
                   <h2 className="text-2xl font-bold text-white">{figure.name}</h2>
                   <div className="flex items-center space-x-2 my-0">
                     {figure.difficulty_level && <Badge className={`${getDifficultyColor(figure.difficulty_level)}`}>
