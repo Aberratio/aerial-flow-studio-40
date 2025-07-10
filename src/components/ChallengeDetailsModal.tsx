@@ -25,6 +25,8 @@ interface Challenge {
   completedDays: number;
   image: string;
   days: ChallengeDay[];
+  training_days?: any[];
+  start_date?: string;
 }
 
 interface ChallengeDetailsModalProps {
@@ -45,23 +47,42 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
 
   const handleDayClick = (day: ChallengeDay) => {
     onClose();
-    // Use the actual training day ID if available
-    const dayIdentifier = day.dayId || day.day;
-    navigate(`/challenge/${challenge.id}/day/${dayIdentifier}`);
+    // Find the actual training day from the challenge data
+    const trainingDay = challenge.training_days?.find((td: any) => {
+      const dayNum = new Date(td.day_date).getDate() - new Date(challenge.start_date).getDate() + 1;
+      return dayNum === day.day;
+    });
+    
+    if (trainingDay) {
+      navigate(`/challenge/${challenge.id}/day/${trainingDay.id}`);
+    } else {
+      console.error('Could not find training day for day', day.day);
+    }
   };
 
   const handleContinue = () => {
     onClose();
-    const currentDay = challenge.days.find(d => d.day === challenge.currentDay);
-    const dayIdentifier = currentDay?.dayId || challenge.currentDay;
-    navigate(`/challenge/${challenge.id}/day/${dayIdentifier}`);
+    const trainingDay = challenge.training_days?.find((td: any) => {
+      const dayNum = new Date(td.day_date).getDate() - new Date(challenge.start_date).getDate() + 1;
+      return dayNum === challenge.currentDay;
+    });
+    
+    if (trainingDay) {
+      navigate(`/challenge/${challenge.id}/day/${trainingDay.id}`);
+    } else {
+      console.error('Could not find training day for current day', challenge.currentDay);
+    }
   };
 
   const handleStart = () => {
     onClose();
-    const firstDay = challenge.days[0];
-    const dayIdentifier = firstDay?.dayId || 1;
-    navigate(`/challenge/${challenge.id}/day/${dayIdentifier}`);
+    const firstTrainingDay = challenge.training_days?.[0];
+    
+    if (firstTrainingDay) {
+      navigate(`/challenge/${challenge.id}/day/${firstTrainingDay.id}`);
+    } else {
+      console.error('No training days found for challenge');
+    }
   };
 
   return (

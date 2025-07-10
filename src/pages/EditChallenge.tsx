@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -69,6 +70,7 @@ const EditChallenge = () => {
   const [description, setDescription] = useState('');
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [difficultyLevel, setDifficultyLevel] = useState('intermediate');
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
   const [trainingDays, setTrainingDays] = useState<TrainingDay[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -116,6 +118,7 @@ const EditChallenge = () => {
       setDescription(challengeData.description || '');
       setStartDate(new Date(challengeData.start_date));
       setEndDate(new Date(challengeData.end_date));
+      setDifficultyLevel(challengeData.difficulty_level || 'intermediate');
       
       // Set selected achievements
       setSelectedAchievements(
@@ -195,6 +198,7 @@ const EditChallenge = () => {
           description: description.trim() || null,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
+          difficulty_level: difficultyLevel,
         })
         .eq('id', challengeId);
 
@@ -385,6 +389,35 @@ const EditChallenge = () => {
                 rows={4}
                 maxLength={500}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="difficulty">Difficulty Level</Label>
+              <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select difficulty level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beginner">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                      Beginner
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="intermediate">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
+                      Intermediate
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="advanced">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                      Advanced
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-2 gap-4">

@@ -182,6 +182,7 @@ export type Database = {
           difficulty_level: string | null
           end_date: string
           id: string
+          image_url: string | null
           start_date: string
           status: string
           title: string
@@ -194,6 +195,7 @@ export type Database = {
           difficulty_level?: string | null
           end_date: string
           id?: string
+          image_url?: string | null
           start_date: string
           status?: string
           title: string
@@ -206,6 +208,7 @@ export type Database = {
           difficulty_level?: string | null
           end_date?: string
           id?: string
+          image_url?: string | null
           start_date?: string
           status?: string
           title?: string
