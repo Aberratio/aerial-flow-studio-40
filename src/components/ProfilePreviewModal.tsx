@@ -4,10 +4,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { MapPin, Calendar, Users, Award } from 'lucide-react';
+import { MapPin, Calendar, Users, Award, Check, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useMutualFriends } from '@/hooks/useMutualFriends';
+import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
+import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -24,6 +26,15 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
   const [achievements, setAchievements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { mutualFriends } = useMutualFriends(user?.id || '', userId);
+  const { 
+    isFriend, 
+    pendingFriendRequest, 
+    loading: friendshipLoading,
+    acceptFriendRequest,
+    rejectFriendRequest,
+    sendFriendRequest 
+  } = useFriendshipStatus(userId);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen && userId) {
@@ -131,11 +142,52 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
                   )}
                 </div>
               </div>
-              <Link to={`/profile/${userId}`}>
-                <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-                  View Full Profile
-                </Button>
-              </Link>
+              <div className="flex gap-2">
+                {pendingFriendRequest === 'received' && (
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        const success = await acceptFriendRequest();
+                        if (success) {
+                          toast({
+                            title: "Friend request accepted!",
+                            description: `You and ${profile.username} are now friends.`
+                          });
+                        }
+                      }}
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                      disabled={friendshipLoading}
+                    >
+                      <Check className="w-4 h-4 mr-1" />
+                      Accept
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={async () => {
+                        const success = await rejectFriendRequest();
+                        if (success) {
+                          toast({
+                            title: "Friend request declined",
+                            description: `You declined ${profile.username}'s friend request.`
+                          });
+                        }
+                      }}
+                      className="text-muted-foreground hover:text-white hover:bg-red-600/20"
+                      disabled={friendshipLoading}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Decline
+                    </Button>
+                  </>
+                )}
+                <Link to={`/profile/${userId}`}>
+                  <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                    View Full Profile
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             {/* Achievements */}

@@ -50,9 +50,9 @@ const Landing = () => {
         <nav className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">A</span>
+              <span className="text-white font-bold text-xl">C</span>
             </div>
-            <span className="gradient-text font-bold text-2xl">AerialFit</span>
+            <span className="gradient-text font-bold text-2xl">CoreFlow</span>
           </div>
           
           <div className="flex items-center space-x-4">
@@ -298,7 +298,7 @@ const Landing = () => {
                 Your Training?
               </h2>
               <p className="text-xl text-muted-foreground">
-                Join thousands of aerial athletes who are already using AerialFit to reach new heights in their practice.
+                Join thousands of aerial athletes who are already using CoreFlow to reach new heights in their practice.
               </p>
               <Button 
                 size="lg"
