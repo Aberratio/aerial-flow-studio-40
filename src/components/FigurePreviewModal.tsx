@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { CreatePostModal } from '@/components/CreatePostModal';
 import { ShareExerciseModal } from '@/components/ShareExerciseModal';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -21,6 +22,7 @@ interface FigurePreviewModalProps {
 
 export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewModalProps) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [communityPosts, setCommunityPosts] = useState([]);
   const [friendsPosts, setFriendsPosts] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
@@ -151,6 +153,7 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
     try {
       setUpdatingStatus(true);
       
+      // Use upsert with proper conflict resolution
       const { data, error } = await supabase
         .from('figure_progress')
         .upsert({
@@ -158,6 +161,8 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
           figure_id: figure.id,
           status: status,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,figure_id'
         })
         .select()
         .single();
@@ -165,8 +170,17 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
       if (error) throw error;
       
       setFigureProgress(data);
+      toast({
+        title: "Status updated!",
+        description: `Exercise marked as ${status.replace('_', ' ')}.`,
+      });
     } catch (error) {
       console.error('Error updating figure status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update exercise status. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setUpdatingStatus(false);
     }
