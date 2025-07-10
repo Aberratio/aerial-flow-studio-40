@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, UserPlus, Check, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface FriendInviteModalProps {
   isOpen: boolean;
@@ -12,51 +14,88 @@ interface FriendInviteModalProps {
 }
 
 export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) => {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
-  const [sentInvites, setSentInvites] = useState<number[]>([]);
+  const [suggestedFriends, setSuggestedFriends] = useState<any[]>([]);
+  const [sentInvites, setSentInvites] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const suggestedFriends = [
-    {
-      id: 1,
-      username: 'aerial_star',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b589?w=150&h=150&fit=crop&crop=face',
-      mutualFriends: 3,
-      isOnline: true
-    },
-    {
-      id: 2,
-      username: 'flow_master',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      mutualFriends: 1,
-      isOnline: false
-    },
-    {
-      id: 3,
-      username: 'silk_dancer',
-      avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
-      mutualFriends: 5,
-      isOnline: true
-    },
-    {
-      id: 4,
-      username: 'pole_artist',
-      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&h=150&fit=crop&crop=face',
-      mutualFriends: 2,
-      isOnline: false
+  // Fetch suggested friends from database
+  const fetchSuggestedFriends = async () => {
+    if (!user || !isOpen) return;
+
+    try {
+      setLoading(true);
+      
+      // Get users that the current user is not following and exclude themselves
+      const { data: currentFollows } = await supabase
+        .from('user_follows')
+        .select('following_id')
+        .eq('follower_id', user.id);
+
+      const followingIds = currentFollows?.map(f => f.following_id) || [];
+      const excludeIds = [user.id, ...followingIds];
+
+      let query = supabase
+        .from('profiles')
+        .select('id, username, avatar_url, bio')
+        .not('id', 'in', `(${excludeIds.join(',')})`)
+        .limit(20);
+
+      if (searchQuery.trim()) {
+        query = query.ilike('username', `%${searchQuery}%`);
+      }
+
+      const { data: profiles, error } = await query;
+
+      if (error) throw error;
+
+      // TODO: Calculate mutual friends count
+      const profilesWithMutualFriends = profiles?.map(profile => ({
+        ...profile,
+        mutualFriends: Math.floor(Math.random() * 5), // Temporary random number
+        isOnline: Math.random() > 0.5 // Temporary random status
+      })) || [];
+
+      setSuggestedFriends(profilesWithMutualFriends);
+    } catch (error) {
+      console.error('Error fetching suggested friends:', error);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  const filteredFriends = suggestedFriends.filter(friend =>
-    friend.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    fetchSuggestedFriends();
+  }, [user, isOpen, searchQuery]);
 
-  const handleSendInvite = (friendId: number, username: string) => {
-    setSentInvites(prev => [...prev, friendId]);
-    toast({
-      title: "Friend request sent!",
-      description: `Your friend request has been sent to ${username}.`
-    });
+  const handleSendInvite = async (friendId: string, username: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_follows')
+        .insert({
+          follower_id: user.id,
+          following_id: friendId
+        });
+
+      if (error) throw error;
+
+      setSentInvites(prev => [...prev, friendId]);
+      toast({
+        title: "Friend request sent!",
+        description: `Your friend request has been sent to ${username}.`
+      });
+    } catch (error) {
+      console.error('Error sending friend request:', error);
+      toast({
+        title: "Error",
+        description: "Failed to send friend request. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -78,50 +117,60 @@ export const FriendInviteModal = ({ isOpen, onClose }: FriendInviteModalProps) =
           </div>
 
           <div className="space-y-3 max-h-96 overflow-y-auto">
-            <h3 className="text-sm font-medium text-muted-foreground">Suggested for you</h3>
+            <h3 className="text-sm font-medium text-muted-foreground">
+              {searchQuery ? `Search results for "${searchQuery}"` : 'Suggested for you'}
+            </h3>
             
-            {filteredFriends.map((friend) => (
-              <div key={friend.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
-                <div className="flex items-center space-x-3">
-                  <div className="relative">
-                    <Avatar>
-                      <AvatarImage src={friend.avatar} />
-                      <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    {friend.isOnline && (
-                      <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
-                    )}
-                  </div>
-                  <div>
-                    <p className="font-medium text-white">{friend.username}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {friend.mutualFriends} mutual friends
-                    </p>
-                  </div>
-                </div>
-
-                {sentInvites.includes(friend.id) ? (
-                  <div className="flex items-center space-x-2 text-green-400">
-                    <Check className="w-4 h-4" />
-                    <span className="text-sm">Sent</span>
-                  </div>
-                ) : (
-                  <Button
-                    size="sm"
-                    onClick={() => handleSendInvite(friend.id, friend.username)}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Add Friend
-                  </Button>
-                )}
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+                <p className="text-muted-foreground mt-2">Loading...</p>
               </div>
-            ))}
-
-            {filteredFriends.length === 0 && searchQuery && (
+            ) : suggestedFriends.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <p>No users found matching "{searchQuery}"</p>
+                <p>{searchQuery ? `No users found matching "${searchQuery}"` : 'No users to suggest at the moment'}</p>
               </div>
+            ) : (
+              suggestedFriends.map((friend) => (
+                <div key={friend.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                  <div className="flex items-center space-x-3">
+                    <div className="relative">
+                      <Avatar>
+                        <AvatarImage src={friend.avatar_url} />
+                        <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      {friend.isOnline && (
+                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium text-white">{friend.username}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {friend.bio || 'Aerial enthusiast'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {friend.mutualFriends} mutual friends
+                      </p>
+                    </div>
+                  </div>
+
+                  {sentInvites.includes(friend.id) ? (
+                    <div className="flex items-center space-x-2 text-green-400">
+                      <Check className="w-4 h-4" />
+                      <span className="text-sm">Sent</span>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => handleSendInvite(friend.id, friend.username)}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      <UserPlus className="w-4 h-4 mr-2" />
+                      Add Friend
+                    </Button>
+                  )}
+                </div>
+              ))
             )}
           </div>
         </div>

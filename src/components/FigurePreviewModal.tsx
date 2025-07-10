@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Play, Clock, Target, User, Tag, Plus, CheckCircle, Bookmark, AlertCircle, CircleMinus, Share2 } from 'lucide-react';
+import { X, Play, Clock, Target, User, Tag, Plus, CheckCircle, Bookmark, AlertCircle, CircleMinus, Share2, Edit } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +30,7 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showStatusOptions, setShowStatusOptions] = useState(false);
   const [loading, setLoading] = useState(false);
   const [figureProgress, setFigureProgress] = useState<any>(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
@@ -170,6 +171,7 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
       if (error) throw error;
       
       setFigureProgress(data);
+      setShowStatusOptions(false); // Hide options after successful update
       toast({
         title: "Status updated!",
         description: `Exercise marked as ${status.replace('_', ' ')}.`,
@@ -323,74 +325,91 @@ export const FigurePreviewModal = ({ figure, isOpen, onClose }: FigurePreviewMod
                 )}
               </div>
 
-              {/* Progress Status Section */}
-              <div className="p-6 border-b border-white/10">
-                <h3 className="text-lg font-semibold text-white mb-4">My Progress</h3>
-                <div className="space-y-3">
-                  {/* Current Status */}
-                  {figureProgress && (
-                    <div className="flex items-center space-x-2 mb-4">
-                      <span className="text-muted-foreground">Current status:</span>
-                      <Badge className={getStatusColor(figureProgress.status)}>
-                        {getStatusIcon(figureProgress.status)}
-                        <span className="ml-1 capitalize">{figureProgress.status.replace('_', ' ')}</span>
-                      </Badge>
-                    </div>
-                  )}
-                  
-                  {/* Status Buttons */}
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateFigureStatus('completed')}
-                      disabled={updatingStatus}
-                      className={`border-green-500/30 text-green-400 hover:bg-green-500/20 ${
-                        figureProgress?.status === 'completed' ? 'bg-green-500/20' : ''
-                      }`}
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Completed
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateFigureStatus('for_later')}
-                      disabled={updatingStatus}
-                      className={`border-blue-500/30 text-blue-400 hover:bg-blue-500/20 ${
-                        figureProgress?.status === 'for_later' ? 'bg-blue-500/20' : ''
-                      }`}
-                    >
-                      <Bookmark className="w-4 h-4 mr-2" />
-                      For Later
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateFigureStatus('failed')}
-                      disabled={updatingStatus}
-                      className={`border-red-500/30 text-red-400 hover:bg-red-500/20 ${
-                        figureProgress?.status === 'failed' ? 'bg-red-500/20' : ''
-                      }`}
-                    >
-                      <AlertCircle className="w-4 h-4 mr-2" />
-                      Failed
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => updateFigureStatus('not_tried')}
-                      disabled={updatingStatus}
-                      className={`border-gray-500/30 text-gray-400 hover:bg-gray-500/20 ${
-                        figureProgress?.status === 'not_tried' || !figureProgress ? 'bg-gray-500/20' : ''
-                      }`}
-                    >
-                      <CircleMinus className="w-4 h-4 mr-2" />
-                      Not Tried
-                    </Button>
-                  </div>
-                </div>
-              </div>
+               {/* Progress Status Section */}
+               <div className="p-6 border-b border-white/10">
+                 <h3 className="text-lg font-semibold text-white mb-4">My Progress</h3>
+                 <div className="space-y-3">
+                   {/* Current Status with Edit Icon */}
+                   <div className="flex items-center justify-between">
+                     <div className="flex items-center space-x-2">
+                       <span className="text-muted-foreground">Current status:</span>
+                       {figureProgress ? (
+                         <Badge className={getStatusColor(figureProgress.status)}>
+                           {getStatusIcon(figureProgress.status)}
+                           <span className="ml-1 capitalize">{figureProgress.status.replace('_', ' ')}</span>
+                         </Badge>
+                       ) : (
+                         <Badge className={getStatusColor('not_tried')}>
+                           {getStatusIcon('not_tried')}
+                           <span className="ml-1">Not Tried</span>
+                         </Badge>
+                       )}
+                     </div>
+                     <Button
+                       variant="ghost"
+                       size="sm"
+                       onClick={() => setShowStatusOptions(!showStatusOptions)}
+                       className="text-muted-foreground hover:text-white"
+                     >
+                       <Edit className="w-4 h-4" />
+                     </Button>
+                   </div>
+                   
+                   {/* Status Options - Only show when editing */}
+                   {showStatusOptions && (
+                     <div className="grid grid-cols-2 gap-2 mt-4">
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => updateFigureStatus('completed')}
+                         disabled={updatingStatus}
+                         className={`border-green-500/30 text-green-400 hover:bg-green-500/20 ${
+                           figureProgress?.status === 'completed' ? 'bg-green-500/20' : ''
+                         }`}
+                       >
+                         <CheckCircle className="w-4 h-4 mr-2" />
+                         Completed
+                       </Button>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => updateFigureStatus('for_later')}
+                         disabled={updatingStatus}
+                         className={`border-blue-500/30 text-blue-400 hover:bg-blue-500/20 ${
+                           figureProgress?.status === 'for_later' ? 'bg-blue-500/20' : ''
+                         }`}
+                       >
+                         <Bookmark className="w-4 h-4 mr-2" />
+                         For Later
+                       </Button>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => updateFigureStatus('failed')}
+                         disabled={updatingStatus}
+                         className={`border-red-500/30 text-red-400 hover:bg-red-500/20 ${
+                           figureProgress?.status === 'failed' ? 'bg-red-500/20' : ''
+                         }`}
+                       >
+                         <AlertCircle className="w-4 h-4 mr-2" />
+                         Failed
+                       </Button>
+                       <Button
+                         variant="outline"
+                         size="sm"
+                         onClick={() => updateFigureStatus('not_tried')}
+                         disabled={updatingStatus}
+                         className={`border-gray-500/30 text-gray-400 hover:bg-gray-500/20 ${
+                           figureProgress?.status === 'not_tried' || !figureProgress ? 'bg-gray-500/20' : ''
+                         }`}
+                       >
+                         <CircleMinus className="w-4 h-4 mr-2" />
+                         Not Tried
+                       </Button>
+                     </div>
+                   )}
+                 </div>
+               </div>
 
               {/* Instructions */}
               {figure.instructions && (
