@@ -103,6 +103,7 @@ export type Database = {
           completed: boolean | null
           id: string
           joined_at: string | null
+          status: string | null
           user_id: string
         }
         Insert: {
@@ -110,6 +111,7 @@ export type Database = {
           completed?: boolean | null
           id?: string
           joined_at?: string | null
+          status?: string | null
           user_id: string
         }
         Update: {
@@ -117,6 +119,7 @@ export type Database = {
           completed?: boolean | null
           id?: string
           joined_at?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: [

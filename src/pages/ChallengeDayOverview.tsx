@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -55,8 +57,10 @@ const ChallengeDayOverview = () => {
   const [dayNumber, setDayNumber] = useState<number>(0);
   const [totalDays, setTotalDays] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [participationStatus, setParticipationStatus] = useState<string>('active');
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (challengeId && dayId) {
@@ -77,6 +81,20 @@ const ChallengeDayOverview = () => {
 
       if (challengeError) throw challengeError;
       setChallenge(challengeData);
+
+      // Fetch user's participation status
+      if (user) {
+        const { data: participationData } = await supabase
+          .from('challenge_participants')
+          .select('status')
+          .eq('challenge_id', challengeId)
+          .eq('user_id', user.id)
+          .single();
+        
+        if (participationData) {
+          setParticipationStatus(participationData.status);
+        }
+      }
 
       // Fetch all training days for this challenge to determine day number
       const { data: allDays, error: allDaysError } = await supabase
@@ -182,6 +200,33 @@ const ChallengeDayOverview = () => {
     );
   };
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!user || !challengeId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('challenge_participants')
+        .update({ status: newStatus })
+        .eq('challenge_id', challengeId)
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      setParticipationStatus(newStatus);
+      toast({
+        title: "Status Updated",
+        description: `Challenge status changed to ${newStatus}`
+      });
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update status. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
@@ -258,17 +303,35 @@ const ChallengeDayOverview = () => {
               <div>
                 <CardTitle className="text-white text-2xl mb-2">{trainingDay.title}</CardTitle>
                 <p className="text-muted-foreground mb-4">{trainingDay.description}</p>
-                <div className="flex items-center space-x-4">
-                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                    Day {dayNumber} of {totalDays}
-                  </Badge>
-                  <div className="flex items-center text-muted-foreground">
-                    <Clock className="w-4 h-4 mr-1" />
-                    {calculateDuration()}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
+                      Day {dayNumber} of {totalDays}
+                    </Badge>
+                    <div className="flex items-center text-muted-foreground">
+                      <Clock className="w-4 h-4 mr-1" />
+                      {calculateDuration()}
+                    </div>
+                    <div className="flex items-center text-muted-foreground">
+                      <Trophy className="w-4 h-4 mr-1" />
+                      {trainingDay.exercises.length} exercises
+                    </div>
                   </div>
-                  <div className="flex items-center text-muted-foreground">
-                    <Trophy className="w-4 h-4 mr-1" />
-                    {trainingDay.exercises.length} exercises
+                  
+                  {/* Status Selector */}
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-muted-foreground">Status:</span>
+                    <Select value={participationStatus} onValueChange={handleStatusChange}>
+                      <SelectTrigger className="w-32 h-8 border-white/20 bg-black/20">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Active</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="failed">Failed</SelectItem>
+                        <SelectItem value="paused">Paused</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>

@@ -5,9 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 import ChallengePreviewModal from '@/components/ChallengePreviewModal';
 import CreateChallengeModal from '@/components/CreateChallengeModal';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 
 const Challenges = () => {
@@ -16,7 +18,7 @@ const Challenges = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [challenges, setChallenges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('active');
   const [stats, setStats] = useState({
     activeChallenges: 0,
     completedChallenges: 0,
@@ -24,6 +26,8 @@ const Challenges = () => {
     averageDuration: '0 days'
   });
   const { canCreateChallenges } = useUserRole();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchChallenges();
@@ -156,6 +160,36 @@ const Challenges = () => {
   const openChallengeModal = (challenge) => {
     setSelectedChallenge(challenge);
     setIsModalOpen(true);
+  };
+
+  const handleJoinChallenge = async (challengeId: string) => {
+    if (!user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('challenge_participants')
+        .insert({
+          challenge_id: challengeId,
+          user_id: user.id,
+          status: 'active'
+        });
+      
+      if (error) throw error;
+      
+      // Refresh challenges to update participant count
+      fetchChallenges();
+      toast({
+        title: "Success!",
+        description: "You've joined the challenge. Good luck!"
+      });
+    } catch (error) {
+      console.error('Error joining challenge:', error);
+      toast({
+        title: "Error",
+        description: "Failed to join challenge. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const closeChallengeModal = () => {
@@ -325,17 +359,41 @@ const Challenges = () => {
                         </Badge>
                       </div>
 
-                      {/* Action Button */}
-                      <Button 
-                        className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          openChallengeModal(challenge);
-                        }}
-                      >
-                        {getButtonText(challenge.status)}
-                        <ChevronRight className="ml-2 w-4 h-4" />
-                      </Button>
+                      {/* Action Buttons */}
+                      {challenge.status === 'not-started' ? (
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline"
+                            className="flex-1 border-white/20 text-white hover:bg-white/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openChallengeModal(challenge);
+                            }}
+                          >
+                            Preview
+                          </Button>
+                          <Button 
+                            className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleJoinChallenge(challenge.id);
+                            }}
+                          >
+                            Join Challenge
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button 
+                          className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openChallengeModal(challenge);
+                          }}
+                        >
+                          {getButtonText(challenge.status)}
+                          <ChevronRight className="ml-2 w-4 h-4" />
+                        </Button>
+                      )}
                     </CardContent>
                   </Card>
                 ))

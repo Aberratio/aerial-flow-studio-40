@@ -220,7 +220,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             <div className="absolute top-4 right-4">
-              <Badge className={getStatusColor(challenge.status)}>
+              <Badge className={`${getStatusColor(challenge.status)} bg-black/80 backdrop-blur-sm`}>
                 {challenge.status === 'published' ? 'Available' : challenge.status}
               </Badge>
             </div>
