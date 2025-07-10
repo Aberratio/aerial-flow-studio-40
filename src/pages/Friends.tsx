@@ -15,17 +15,19 @@ const Friends = () => {
   const [showFriendInvite, setShowFriendInvite] = useState(false);
   const [showFriendRequests, setShowFriendRequests] = useState(false);
   const [friends, setFriends] = useState<any[]>([]);
+  const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchFriends = async () => {
+    const fetchFriendsAndRequests = async () => {
       if (!user) {
         setIsLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await supabase
+        // Fetch friends (people the current user is following)
+        const { data: friendsData, error: friendsError } = await supabase
           .from('user_follows')
           .select(`
             following_id,
@@ -38,30 +40,39 @@ const Friends = () => {
           `)
           .eq('follower_id', user.id);
 
-        if (error) {
-          console.error('Error fetching friends:', error);
-          setIsLoading(false);
-          return;
+        if (friendsError) {
+          console.error('Error fetching friends:', friendsError);
+        } else {
+          const formattedFriends = friendsData?.map(follow => ({
+            id: follow.profiles.id,
+            username: follow.profiles.username,
+            avatar: follow.profiles.avatar_url,
+            bio: follow.profiles.bio || 'Aerial enthusiast',
+            mutualFriends: 0
+          })) || [];
+          setFriends(formattedFriends);
         }
 
-        const friendsData = data?.map(follow => ({
-          id: follow.profiles.id,
-          username: follow.profiles.username,
-          avatar: follow.profiles.avatar_url,
-          bio: follow.profiles.bio || 'Aerial enthusiast',
-          mutualFriends: 0, // TODO: Calculate mutual friends
-          isOnline: Math.random() > 0.5 // TODO: Implement real online status
-        })) || [];
+        // Fetch pending requests (people who are following the current user)
+        const { data: requestsData, error: requestsError } = await supabase
+          .from('user_follows')
+          .select('id')
+          .eq('following_id', user.id);
 
-        setFriends(friendsData);
+        if (requestsError) {
+          console.error('Error fetching requests:', requestsError);
+        } else {
+          setPendingRequestsCount(requestsData?.length || 0);
+        }
+
       } catch (error) {
-        console.error('Error fetching friends:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchFriends();
+    fetchFriendsAndRequests();
   }, [user]);
 
   const handleUnfriend = async (friendId: string) => {
@@ -124,7 +135,7 @@ const Friends = () => {
         </div>
 
         {/* Friends Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Card className="glass-effect border-white/10">
             <CardContent className="p-6 text-center">
               <Users className="w-8 h-8 mx-auto mb-2 text-primary" />
@@ -134,17 +145,8 @@ const Friends = () => {
           </Card>
           <Card className="glass-effect border-white/10">
             <CardContent className="p-6 text-center">
-              <div className="w-8 h-8 mx-auto mb-2 bg-green-500 rounded-full flex items-center justify-center">
-                <div className="w-4 h-4 bg-white rounded-full"></div>
-              </div>
-              <h3 className="text-2xl font-bold text-white">{friends.filter(f => f.isOnline).length}</h3>
-              <p className="text-muted-foreground">Online Now</p>
-            </CardContent>
-          </Card>
-          <Card className="glass-effect border-white/10">
-            <CardContent className="p-6 text-center">
               <Mail className="w-8 h-8 mx-auto mb-2 text-purple-500" />
-              <h3 className="text-2xl font-bold text-white">3</h3>
+              <h3 className="text-2xl font-bold text-white">{pendingRequestsCount}</h3>
               <p className="text-muted-foreground">Pending Requests</p>
             </CardContent>
           </Card>
@@ -178,9 +180,6 @@ const Friends = () => {
                         <AvatarImage src={friend.avatar} />
                         <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
-                      {friend.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-gray-900"></div>
-                      )}
                     </div>
                     <div className="flex-1">
                       <Link to={`/profile/${friend.id}`} className="cursor-pointer hover:text-primary transition-colors">

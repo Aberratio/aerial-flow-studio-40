@@ -15,6 +15,7 @@ import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
 import BadConnection from "@/pages/BadConnection";
 import PricingPage from "@/pages/PricingPage";
+import AboutUs from "@/pages/AboutUs";
 import Inbox from "./pages/Inbox";
 import FriendProfile from "@/pages/FriendProfile";
 import Friends from "@/pages/Friends";
@@ -87,6 +88,11 @@ const AppRoutes = () => {
       <Route path="/pricing" element={
         <ProtectedRoute>
           <PricingPage />
+        </ProtectedRoute>
+      } />
+      <Route path="/about" element={
+        <ProtectedRoute>
+          <AboutUs />
         </ProtectedRoute>
       } />
       <Route path="/connection-error" element={<BadConnection />} />

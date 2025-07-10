@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Camera, Settings } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
   const { user } = useAuth();
   const { toast } = useToast();
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [stats, setStats] = useState({
+    posts: 0,
+    followers: 0,
+    following: 0,
+    score: 0
+  });
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -80,11 +86,56 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
     }
   };
 
-  const stats = [
-    { label: 'Posts', value: '127' },
-    { label: 'Followers', value: user?.followersCount?.toLocaleString() || '0' },
-    { label: 'Following', value: user?.followingCount?.toLocaleString() || '0' },
-    { label: 'Score', value: '2,450' }
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user) return;
+
+      try {
+        // Fetch posts count
+        const { count: postsCount } = await supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        // Fetch followers count (people following this user)
+        const { count: followersCount } = await supabase
+          .from('user_follows')
+          .select('*', { count: 'exact', head: true })
+          .eq('following_id', user.id);
+
+        // Fetch following count (people this user follows)
+        const { count: followingCount } = await supabase
+          .from('user_follows')
+          .select('*', { count: 'exact', head: true })
+          .eq('follower_id', user.id);
+
+        // Calculate score based on posts and achievements
+        const { count: achievementsCount } = await supabase
+          .from('user_achievements')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
+
+        const calculatedScore = (postsCount || 0) * 10 + (achievementsCount || 0) * 100;
+
+        setStats({
+          posts: postsCount || 0,
+          followers: followersCount || 0,
+          following: followingCount || 0,
+          score: calculatedScore
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, [user]);
+
+  const displayStats = [
+    { label: 'Posts', value: stats.posts.toLocaleString() },
+    { label: 'Followers', value: stats.followers.toLocaleString() },
+    { label: 'Following', value: stats.following.toLocaleString() },
+    { label: 'Score', value: stats.score.toLocaleString() }
   ];
 
   return (
@@ -129,9 +180,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
             <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
               <h1 className="text-3xl font-bold text-white">{user?.username}</h1>
               <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
-                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">
-                  Verified Athlete
-                </Badge>
                 {user?.role && (
                   <Badge 
                     className={
@@ -152,7 +200,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
 
             {/* Stats */}
             <div className="grid grid-cols-4 gap-4 mb-6">
-              {stats.map((stat, index) => (
+              {displayStats.map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="gradient-text text-2xl font-bold">{stat.value}</div>
                   <div className="text-muted-foreground text-sm">{stat.label}</div>

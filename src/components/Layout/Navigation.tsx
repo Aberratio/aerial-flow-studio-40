@@ -133,6 +133,16 @@ const Navigation = () => {
           )}
         </div>
 
+        {/* About Us Link */}
+        <div className="mt-auto mb-4">
+          <Link
+            to="/about"
+            className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
+          >
+            About Us
+          </Link>
+        </div>
+
         {/* User Profile */}
         <div className="border-t border-white/10 pt-4">
           <div className="flex items-center space-x-3 px-3 py-2">

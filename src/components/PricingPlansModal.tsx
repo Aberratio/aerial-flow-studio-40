@@ -55,27 +55,6 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
       bgColor: 'bg-purple-500/10',
       borderColor: 'border-purple-500/50',
       popular: true
-    },
-    {
-      id: 'pro',
-      name: 'Pro',
-      price: '$19.99',
-      period: 'per month',
-      description: 'For serious athletes and trainers',
-      features: [
-        'Everything in Premium',
-        'Custom exercise creation',
-        'Advanced analytics',
-        'Video analysis tools',
-        'Priority support',
-        'Coaching features',
-        'API access',
-        'White-label options'
-      ],
-      icon: Zap,
-      color: 'text-yellow-400',
-      bgColor: 'bg-yellow-500/10',
-      borderColor: 'border-yellow-500/50'
     }
   ];
 
@@ -124,7 +103,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
           </p>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-3 gap-6 mt-6">
+        <div className="grid md:grid-cols-2 gap-6 mt-6">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = plan.current;
