@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Trophy, Users, Clock, ChevronRight, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,18 +7,40 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ChallengeDetailsModal } from '@/components/ChallengeDetailsModal';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Challenge {
-  id: number;
+  id: string;
   title: string;
   description: string;
-  duration: string;
-  participants: number;
-  difficulty: string;
-  progress: number;
+  start_date: string;
+  end_date: string;
   status: string;
-  image: string;
-  category: string;
+  created_by: string;
+  achievements?: Array<{
+    id: string;
+    name: string;
+    points: number;
+    icon: string;
+  }>;
+  training_days?: Array<{
+    id: string;
+    day_date: string;
+    title: string;
+    description: string;
+    exercises?: Array<{
+      id: string;
+      figure: {
+        name: string;
+        difficulty_level: string;
+      };
+      sets?: number;
+      reps?: number;
+      hold_time_seconds?: number;
+    }>;
+  }>;
+  participants_count?: number;
 }
 
 interface ChallengePreviewModalProps {
@@ -28,19 +50,95 @@ interface ChallengePreviewModalProps {
 }
 
 const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
-  challenge,
+  challenge: initialChallenge,
   isOpen,
   onClose
 }) => {
+  const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
   
+  useEffect(() => {
+    if (isOpen && initialChallenge) {
+      fetchChallengeDetails(initialChallenge.id);
+    }
+  }, [isOpen, initialChallenge]);
+
+  const fetchChallengeDetails = async (challengeId: string) => {
+    setIsLoading(true);
+    try {
+      // Fetch challenge with achievements and training days
+      const { data: challengeData, error: challengeError } = await supabase
+        .from('challenges')
+        .select(`
+          *,
+          challenge_achievements (
+            achievement:achievements (
+              id, name, points, icon
+            )
+          ),
+          challenge_training_days (
+            id, day_date, title, description,
+            training_day_exercises (
+              id, sets, reps, hold_time_seconds,
+              figure:figures (
+                name, difficulty_level
+              )
+            )
+          )
+        `)
+        .eq('id', challengeId)
+        .single();
+
+      if (challengeError) throw challengeError;
+
+      // Fetch participants count
+      const { count: participantsCount } = await supabase
+        .from('challenge_participants')
+        .select('*', { count: 'exact', head: true })
+        .eq('challenge_id', challengeId);
+
+      setChallenge({
+        ...challengeData,
+        achievements: challengeData.challenge_achievements?.map((ca: any) => ca.achievement) || [],
+        training_days: challengeData.challenge_training_days || [],
+        participants_count: participantsCount || 0
+      });
+    } catch (error) {
+      console.error('Error fetching challenge details:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!challenge) return null;
+
+  const calculateDuration = () => {
+    const start = new Date(challenge.start_date);
+    const end = new Date(challenge.end_date);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `${diffDays} days`;
+  };
+
+  const getDifficultyFromTrainingDays = () => {
+    if (!challenge.training_days?.length) return 'Beginner';
+    
+    const difficulties = challenge.training_days
+      .flatMap(day => day.exercises || [])
+      .map(ex => ex.figure?.difficulty_level)
+      .filter(Boolean);
+    
+    if (difficulties.includes('advanced')) return 'Advanced';
+    if (difficulties.includes('intermediate')) return 'Intermediate';
+    return 'Beginner';
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'available': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'in-progress': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'completed': return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'published': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
+      case 'draft': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
     }
   };
@@ -56,12 +154,23 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
   const getButtonText = (status: string) => {
     switch (status) {
-      case 'available': return 'Start Challenge';
-      case 'in-progress': return 'Continue Challenge';
-      case 'completed': return 'View Results';
+      case 'published': return 'Start Challenge';
+      case 'draft': return 'Preview Draft';
       default: return 'View Challenge';
     }
   };
+
+  if (isLoading) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl glass-effect border-white/10 text-white">
+          <div className="flex items-center justify-center py-12">
+            <div className="text-muted-foreground">Loading challenge details...</div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -72,22 +181,20 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
         <div className="space-y-6">
           {/* Challenge Image */}
-          <div className="relative h-64 rounded-lg overflow-hidden">
-            <img 
-              src={challenge.image} 
-              alt={challenge.title}
-              className="w-full h-full object-cover"
-            />
+          <div className="relative h-64 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20">
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             <div className="absolute top-4 right-4">
               <Badge className={getStatusColor(challenge.status)}>
-                {challenge.status.replace('-', ' ')}
+                {challenge.status === 'published' ? 'Available' : challenge.status}
               </Badge>
             </div>
             <div className="absolute bottom-4 left-4">
               <Badge variant="outline" className="border-white/30 text-white/90">
-                {challenge.category}
+                {challenge.training_days?.length || 0} Training Days
               </Badge>
+            </div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Trophy className="w-16 h-16 text-white/20" />
             </div>
           </div>
 
@@ -97,84 +204,70 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               {challenge.description}
             </p>
 
-            {/* Progress Bar (only show for in-progress challenges) */}
-            {challenge.status === 'in-progress' && (
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-white">Progress</span>
-                  <span className="text-muted-foreground">{challenge.progress}% complete</span>
-                </div>
-                <Progress value={challenge.progress} className="h-3" />
-              </div>
-            )}
-
             {/* Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Card className="glass-effect border-white/10 p-4 text-center">
                 <Clock className="w-5 h-5 text-purple-400 mx-auto mb-2" />
                 <div className="text-sm text-muted-foreground">Duration</div>
-                <div className="text-white font-semibold">{challenge.duration}</div>
+                <div className="text-white font-semibold">{calculateDuration()}</div>
               </Card>
               
               <Card className="glass-effect border-white/10 p-4 text-center">
                 <Users className="w-5 h-5 text-purple-400 mx-auto mb-2" />
                 <div className="text-sm text-muted-foreground">Participants</div>
-                <div className="text-white font-semibold">{challenge.participants.toLocaleString()}</div>
+                <div className="text-white font-semibold">{challenge.participants_count?.toLocaleString() || '0'}</div>
               </Card>
               
               <Card className="glass-effect border-white/10 p-4 text-center">
                 <Trophy className="w-5 h-5 text-purple-400 mx-auto mb-2" />
                 <div className="text-sm text-muted-foreground">Difficulty</div>
-                <Badge className={getDifficultyColor(challenge.difficulty)}>
-                  {challenge.difficulty}
+                <Badge className={getDifficultyColor(getDifficultyFromTrainingDays())}>
+                  {getDifficultyFromTrainingDays()}
                 </Badge>
               </Card>
               
               <Card className="glass-effect border-white/10 p-4 text-center">
                 <Calendar className="w-5 h-5 text-purple-400 mx-auto mb-2" />
-                <div className="text-sm text-muted-foreground">Status</div>
-                <div className="text-white font-semibold capitalize">{challenge.status.replace('-', ' ')}</div>
+                <div className="text-sm text-muted-foreground">Training Days</div>
+                <div className="text-white font-semibold">{challenge.training_days?.length || 0}</div>
               </Card>
             </div>
 
-            {/* Challenge Description */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-white">What you'll achieve</h3>
-              <div className="space-y-2 text-muted-foreground">
-                {challenge.category === 'Flexibility' && (
-                  <ul className="space-y-1">
-                    <li>• Improve overall flexibility and range of motion</li>
-                    <li>• Reduce muscle tension and prevent injuries</li>
-                    <li>• Enhance your aerial performance capabilities</li>
-                    <li>• Build a consistent stretching routine</li>
-                  </ul>
-                )}
-                {challenge.category === 'Strength' && (
-                  <ul className="space-y-1">
-                    <li>• Build foundational strength for aerial movements</li>
-                    <li>• Increase core stability and control</li>
-                    <li>• Develop grip strength and endurance</li>
-                    <li>• Progress to more advanced aerial techniques</li>
-                  </ul>
-                )}
-                {challenge.category === 'Technique' && (
-                  <ul className="space-y-1">
-                    <li>• Master advanced aerial drop techniques</li>
-                    <li>• Improve execution and form</li>
-                    <li>• Build confidence in complex movements</li>
-                    <li>• Learn safety and proper technique</li>
-                  </ul>
-                )}
-                {challenge.category === 'Flow' && (
-                  <ul className="space-y-1">
-                    <li>• Develop smooth, graceful transitions</li>
-                    <li>• Improve rhythm and musicality</li>
-                    <li>• Create beautiful aerial sequences</li>
-                    <li>• Express artistry through movement</li>
-                  </ul>
-                )}
+            {/* Achievements */}
+            {challenge.achievements && challenge.achievements.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-white">Challenge Achievements</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {challenge.achievements.map((achievement) => (
+                    <Card key={achievement.id} className="glass-effect border-white/10 p-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-lg">{achievement.icon}</span>
+                        <div>
+                          <div className="font-medium text-white">{achievement.name}</div>
+                          <div className="text-xs text-purple-400">{achievement.points} points</div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Training Overview */}
+            {challenge.training_days && challenge.training_days.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold text-white">Training Overview</h3>
+                <div className="text-muted-foreground">
+                  <p>This {calculateDuration()} challenge includes {challenge.training_days.length} structured training days with progressively challenging exercises.</p>
+                  <ul className="mt-2 space-y-1">
+                    <li>• Comprehensive training schedule</li>
+                    <li>• Exercise demonstrations and instructions</li>
+                    <li>• Progressive difficulty levels</li>
+                    <li>• Achievement rewards for completion</li>
+                  </ul>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Action Buttons */}
@@ -189,10 +282,11 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             <Button 
               className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
               onClick={() => {
-                if (challenge.status === 'available' || challenge.status === 'in-progress') {
+                if (challenge.status === 'published') {
                   setIsDetailsModalOpen(true);
                 }
               }}
+              disabled={challenge.status !== 'published'}
             >
               {getButtonText(challenge.status)}
               <ChevronRight className="ml-2 w-4 h-4" />
@@ -202,36 +296,38 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
       </DialogContent>
       
       {/* Challenge Details Modal */}
-      <ChallengeDetailsModal
-        challenge={challenge ? {
-          id: challenge.id,
-          title: challenge.title,
-          description: challenge.description,
-          level: challenge.difficulty,
-          totalDays: parseInt(challenge.duration.split(' ')[0]) || 28,
-          currentDay: challenge.status === 'in-progress' ? Math.floor(challenge.progress / 100 * 28) : 0,
-          completedDays: challenge.status === 'in-progress' ? Math.floor(challenge.progress / 100 * 28) : 0,
-          image: challenge.image,
-          days: Array.from({ length: 28 }, (_, i) => ({
-            day: i + 1,
-            title: `Day ${i + 1} Training`,
-            description: `Focus on specific movements and techniques for day ${i + 1}`,
-            duration: '30-45 mins',
-            completed: challenge.status === 'in-progress' ? i < Math.floor(challenge.progress / 100 * 28) : false,
-            figures: ['Basic Climb', 'Foot Lock', 'Straddle Up']
-          }))
-        } : null}
-        isOpen={isDetailsModalOpen}
-        onClose={() => setIsDetailsModalOpen(false)}
-        onStart={() => {
-          setIsDetailsModalOpen(false);
-          onClose();
-        }}
-        onContinue={() => {
-          setIsDetailsModalOpen(false);
-          onClose();
-        }}
-      />
+      {challenge.training_days && (
+        <ChallengeDetailsModal
+          challenge={{
+            id: parseInt(challenge.id) || 1,
+            title: challenge.title,
+            description: challenge.description,
+            level: getDifficultyFromTrainingDays(),
+            totalDays: challenge.training_days.length,
+            currentDay: 0,
+            completedDays: 0,
+            image: '',
+            days: challenge.training_days.map((day, index) => ({
+              day: index + 1,
+              title: day.title || `Day ${index + 1}`,
+              description: day.description || 'Training session',
+              duration: '30-45 mins',
+              completed: false,
+              figures: day.exercises?.map(ex => ex.figure.name) || []
+            }))
+          }}
+          isOpen={isDetailsModalOpen}
+          onClose={() => setIsDetailsModalOpen(false)}
+          onStart={() => {
+            setIsDetailsModalOpen(false);
+            onClose();
+          }}
+          onContinue={() => {
+            setIsDetailsModalOpen(false);
+            onClose();
+          }}
+        />
+      )}
     </Dialog>
   );
 };

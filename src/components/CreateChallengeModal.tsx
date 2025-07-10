@@ -14,6 +14,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
+import ExerciseManagement from '@/components/ExerciseManagement';
+
 interface CreateChallengeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,10 +30,30 @@ interface Achievement {
   points: number;
 }
 
+interface Exercise {
+  id: string;
+  figure_id: string;
+  order_index: number;
+  sets?: number;
+  reps?: number;
+  hold_time_seconds?: number;
+  rest_time_seconds?: number;
+  video_url?: string;
+  audio_url?: string;
+  notes?: string;
+  figure?: {
+    id: string;
+    name: string;
+    difficulty_level: string;
+    category: string;
+  };
+}
+
 interface TrainingDay {
   date: Date;
   title: string;
   description: string;
+  exercises: Exercise[];
 }
 
 const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateChallengeModalProps) => {
@@ -197,7 +219,8 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
     setTrainingDays([...trainingDays, { 
       date: new Date(), 
       title: '', 
-      description: '' 
+      description: '',
+      exercises: []
     }]);
   };
 
@@ -471,6 +494,14 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                       rows={2}
                     />
                   </div>
+                  
+                  {/* Exercise Management */}
+                  <ExerciseManagement
+                    trainingDayId={`temp-${index}`}
+                    exercises={day.exercises}
+                    onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
+                    canEdit={true}
+                  />
                 </div>
               ))}
               

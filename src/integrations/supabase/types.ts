@@ -534,6 +534,66 @@ export type Database = {
         }
         Relationships: []
       }
+      training_day_exercises: {
+        Row: {
+          audio_url: string | null
+          created_at: string
+          figure_id: string
+          hold_time_seconds: number | null
+          id: string
+          notes: string | null
+          order_index: number
+          reps: number | null
+          rest_time_seconds: number | null
+          sets: number | null
+          training_day_id: string
+          video_url: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string
+          figure_id: string
+          hold_time_seconds?: number | null
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps?: number | null
+          rest_time_seconds?: number | null
+          sets?: number | null
+          training_day_id: string
+          video_url?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string
+          figure_id?: string
+          hold_time_seconds?: number | null
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps?: number | null
+          rest_time_seconds?: number | null
+          sets?: number | null
+          training_day_id?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_day_exercises_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_day_exercises_training_day_id_fkey"
+            columns: ["training_day_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_training_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_session_figures: {
         Row: {
           figure_id: string

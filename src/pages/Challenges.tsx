@@ -37,15 +37,16 @@ const Challenges = () => {
         id: challenge.id,
         title: challenge.title,
         description: challenge.description,
+        start_date: challenge.start_date,
+        end_date: challenge.end_date,
+        status: challenge.status,
+        created_by: challenge.created_by,
         duration: calculateDuration(challenge.start_date, challenge.end_date),
         participants: 0, // Will be calculated from challenge_participants table
         difficulty: 'Intermediate', // Default for now
         progress: 0, // Will be calculated based on user participation
-        status: 'available', // Default for now
         image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=400&h=200&fit=crop', // Default image
         category: 'General', // Default for now
-        start_date: challenge.start_date,
-        end_date: challenge.end_date
       })) || [];
       
       setChallenges(transformedData);
