@@ -21,8 +21,7 @@ export const useFollowCounts = (userId: string) => {
       const { count: followersCount, error: followersError } = await supabase
         .from('user_follows')
         .select('*', { count: 'exact', head: true })
-        .eq('following_id', userId)
-        .eq('status', 'accepted');
+        .eq('following_id', userId);
 
       if (followersError) throw followersError;
 
@@ -30,8 +29,7 @@ export const useFollowCounts = (userId: string) => {
       const { count: followingCount, error: followingError } = await supabase
         .from('user_follows')
         .select('*', { count: 'exact', head: true })
-        .eq('follower_id', userId)
-        .eq('status', 'accepted');
+        .eq('follower_id', userId);
 
       if (followingError) throw followingError;
 

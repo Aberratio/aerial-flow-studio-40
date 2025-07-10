@@ -59,17 +59,16 @@ const FriendProfile = () => {
           .eq('user_id', id)
           .single();
 
-        // Check friendship status
-        const { data: followData } = await supabase
-          .from('user_follows')
+        // Check friendship status using the new friendships table
+        const { data: friendshipData } = await supabase
+          .from('friendships')
           .select('status')
-          .eq('follower_id', user.id)
-          .eq('following_id', id)
+          .or(`and(requester_id.eq.${user.id},addressee_id.eq.${id}),and(requester_id.eq.${id},addressee_id.eq.${user.id})`)
           .maybeSingle();
 
         let status = 'not_friends';
-        if (followData) {
-          status = followData.status === 'accepted' ? 'friends' : 'pending';
+        if (friendshipData) {
+          status = friendshipData.status === 'accepted' ? 'friends' : 'pending';
         }
 
         // Get friend's posts
@@ -147,10 +146,10 @@ const FriendProfile = () => {
 
     try {
       const { error } = await supabase
-        .from('user_follows')
+        .from('friendships')
         .insert({
-          follower_id: user.id,
-          following_id: id,
+          requester_id: user.id,
+          addressee_id: id,
           status: 'pending'
         });
 

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FriendInviteModal } from '@/components/FriendInviteModal';
-import { FriendRequestsModal } from '@/components/FriendRequestsModal';
+import { NewFriendRequestsModal } from '@/components/NewFriendRequestsModal';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -39,8 +39,7 @@ const Friends = () => {
               bio
             )
           `)
-          .eq('follower_id', user.id)
-          .eq('status', 'accepted');
+          .eq('follower_id', user.id);
 
         if (friendsError) {
           console.error('Error fetching friends:', friendsError);
@@ -55,11 +54,11 @@ const Friends = () => {
           setFriends(formattedFriends);
         }
 
-        // Fetch pending requests (people who are following the current user)
+        // Fetch pending friend requests (friendships table)
         const { data: requestsData, error: requestsError } = await supabase
-          .from('user_follows')
+          .from('friendships')
           .select('id')
-          .eq('following_id', user.id)
+          .eq('addressee_id', user.id)
           .eq('status', 'pending');
 
         if (requestsError) {
@@ -86,8 +85,7 @@ const Friends = () => {
         .from('user_follows')
         .delete()
         .eq('follower_id', user.id)
-        .eq('following_id', friendId)
-        .eq('status', 'accepted');
+        .eq('following_id', friendId);
 
       if (error) {
         console.error('Error unfriending:', error);
@@ -223,7 +221,7 @@ const Friends = () => {
         onFriendAdded={handleFriendsUpdated}
       />
 
-      <FriendRequestsModal
+      <NewFriendRequestsModal
         isOpen={showFriendRequests}
         onClose={() => setShowFriendRequests(false)}
         onFriendsUpdated={handleFriendsUpdated}

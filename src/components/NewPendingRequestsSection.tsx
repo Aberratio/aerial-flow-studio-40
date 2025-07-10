@@ -20,11 +20,11 @@ interface PendingRequest {
   type: 'received' | 'sent';
 }
 
-interface PendingRequestsSectionProps {
+interface NewPendingRequestsSectionProps {
   onFriendsUpdated?: () => void;
 }
 
-export const PendingRequestsSection: React.FC<PendingRequestsSectionProps> = ({ onFriendsUpdated }) => {
+export const NewPendingRequestsSection: React.FC<NewPendingRequestsSectionProps> = ({ onFriendsUpdated }) => {
   const { user, refetchCounts } = useAuth();
   const [requests, setRequests] = useState<PendingRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,65 +38,65 @@ export const PendingRequestsSection: React.FC<PendingRequestsSectionProps> = ({ 
 
       // Get received requests (people who sent friend requests to current user)
       const { data: receivedData, error: receivedError } = await supabase
-        .from('user_follows')
+        .from('friendships')
         .select(`
           id,
           created_at,
-          follower_id,
-          profiles!user_follows_follower_id_fkey (
+          requester_id,
+          profiles!friendships_requester_id_fkey (
             id,
             username,
             avatar_url,
             bio
           )
         `)
-        .eq('following_id', user.id)
+        .eq('addressee_id', user.id)
         .eq('status', 'pending');
 
       if (receivedError) throw receivedError;
 
       // Get sent requests (people current user sent requests to)
       const { data: sentData, error: sentError } = await supabase
-        .from('user_follows')
+        .from('friendships')
         .select(`
           id,
           created_at,
-          following_id,
-          profiles!user_follows_following_id_fkey (
+          addressee_id,
+          profiles!friendships_addressee_id_fkey (
             id,
             username,
             avatar_url,
             bio
           )
         `)
-        .eq('follower_id', user.id)
+        .eq('requester_id', user.id)
         .eq('status', 'pending');
 
       if (sentError) throw sentError;
 
       // Format received requests
-      const receivedRequests: PendingRequest[] = receivedData?.map(follow => ({
-        id: follow.id,
+      const receivedRequests: PendingRequest[] = receivedData?.map(friendship => ({
+        id: friendship.id,
         user: {
-          id: follow.profiles?.id || '',
-          username: follow.profiles?.username || '',
-          avatar_url: follow.profiles?.avatar_url || null,
-          bio: follow.profiles?.bio || null,
+          id: friendship.profiles?.id || '',
+          username: friendship.profiles?.username || '',
+          avatar_url: friendship.profiles?.avatar_url || null,
+          bio: friendship.profiles?.bio || null,
         },
-        timestamp: formatDistanceToNow(new Date(follow.created_at), { addSuffix: true }),
+        timestamp: formatDistanceToNow(new Date(friendship.created_at), { addSuffix: true }),
         type: 'received' as const
       })) || [];
 
       // Format sent requests
-      const sentRequests: PendingRequest[] = sentData?.map(follow => ({
-        id: follow.id,
+      const sentRequests: PendingRequest[] = sentData?.map(friendship => ({
+        id: friendship.id,
         user: {
-          id: follow.profiles?.id || '',
-          username: follow.profiles?.username || '',
-          avatar_url: follow.profiles?.avatar_url || null,
-          bio: follow.profiles?.bio || null,
+          id: friendship.profiles?.id || '',
+          username: friendship.profiles?.username || '',
+          avatar_url: friendship.profiles?.avatar_url || null,
+          bio: friendship.profiles?.bio || null,
         },
-        timestamp: formatDistanceToNow(new Date(follow.created_at), { addSuffix: true }),
+        timestamp: formatDistanceToNow(new Date(friendship.created_at), { addSuffix: true }),
         type: 'sent' as const
       })) || [];
 
@@ -114,36 +114,27 @@ export const PendingRequestsSection: React.FC<PendingRequestsSectionProps> = ({ 
 
   const handleAccept = async (requestId: string, username: string) => {
     try {
-      // Get the request details first
-      const { data: requestData, error: requestError } = await supabase
-        .from('user_follows')
-        .select('follower_id')
-        .eq('id', requestId)
-        .single();
-
-      if (requestError) throw requestError;
-
       // Update the request status to 'accepted'
       const { error: updateError } = await supabase
-        .from('user_follows')
+        .from('friendships')
         .update({ status: 'accepted' })
         .eq('id', requestId);
 
       if (updateError) throw updateError;
 
-      // Create activity notification for the requester
-      const { error: activityError } = await supabase
-        .from('user_activities')
-        .insert({
-          user_id: requestData.follower_id,
-          activity_type: 'friend_request_accepted',
-          activity_data: { accepter_username: user?.username },
-          target_user_id: user?.id,
-          points_awarded: 0
-        });
-
-      if (activityError) {
-        console.error('Error creating friend request accepted activity:', activityError);
+      // Get the request details for notification
+      const request = requests.find(r => r.id === requestId);
+      if (request) {
+        // Create activity notification for the requester
+        await supabase
+          .from('user_activities')
+          .insert({
+            user_id: request.user.id,
+            activity_type: 'friend_request_accepted',
+            activity_data: { accepter_username: user?.username },
+            target_user_id: user?.id,
+            points_awarded: 0
+          });
       }
 
       setRequests(prev => prev.filter(req => req.id !== requestId));
@@ -166,7 +157,7 @@ export const PendingRequestsSection: React.FC<PendingRequestsSectionProps> = ({ 
   const handleReject = async (requestId: string, username: string) => {
     try {
       const { error } = await supabase
-        .from('user_follows')
+        .from('friendships')
         .delete()
         .eq('id', requestId);
 
@@ -190,7 +181,7 @@ export const PendingRequestsSection: React.FC<PendingRequestsSectionProps> = ({ 
   const handleCancel = async (requestId: string, username: string) => {
     try {
       const { error } = await supabase
-        .from('user_follows')
+        .from('friendships')
         .delete()
         .eq('id', requestId);
 

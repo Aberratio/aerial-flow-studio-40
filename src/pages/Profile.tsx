@@ -6,7 +6,7 @@ import { ProfileHeader } from '@/components/Profile/ProfileHeader';
 import { AchievementsSection } from '@/components/Profile/AchievementsSection';
 import { FigureJourneySection } from '@/components/Profile/FigureJourneySection';
 import { FriendsSection } from '@/components/Profile/FriendsSection';
-import { PendingRequestsSection } from '@/components/Profile/PendingRequestsSection';
+import { NewPendingRequestsSection } from '@/components/NewPendingRequestsSection';
 import { ContentTabs } from '@/components/Profile/ContentTabs';
 
 const Profile = () => {
@@ -41,7 +41,7 @@ const Profile = () => {
         <FigureJourneySection />
 
         {/* Pending Friend Requests */}
-        <PendingRequestsSection onFriendsUpdated={handleFriendsUpdated} />
+        <NewPendingRequestsSection onFriendsUpdated={handleFriendsUpdated} />
 
         {/* Friends Overview */}
         <FriendsSection refreshTrigger={friendsRefreshTrigger} />

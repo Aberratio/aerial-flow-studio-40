@@ -324,6 +324,48 @@ export type Database = {
           },
         ]
       }
+      friendships: {
+        Row: {
+          addressee_id: string
+          created_at: string
+          id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          addressee_id: string
+          created_at?: string
+          id?: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          addressee_id?: string
+          created_at?: string
+          id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "friendships_addressee_id_fkey"
+            columns: ["addressee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friendships_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           amount: number | null
@@ -845,7 +887,6 @@ export type Database = {
           follower_id: string
           following_id: string
           id: string
-          status: string | null
           updated_at: string | null
         }
         Insert: {
@@ -853,7 +894,6 @@ export type Database = {
           follower_id: string
           following_id: string
           id?: string
-          status?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -861,7 +901,6 @@ export type Database = {
           follower_id?: string
           following_id?: string
           id?: string
-          status?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -913,6 +952,10 @@ export type Database = {
       add_points_to_user: {
         Args: { user_id: string; points: number }
         Returns: undefined
+      }
+      are_users_friends: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: boolean
       }
       create_activity_with_points: {
         Args: {

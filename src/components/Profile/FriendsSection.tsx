@@ -30,8 +30,7 @@ export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }
             role
           )
         `)
-        .eq('follower_id', user.id)
-        .eq('status', 'accepted');
+        .eq('follower_id', user.id);
 
       if (error) throw error;
 

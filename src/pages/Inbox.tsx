@@ -22,11 +22,12 @@ const Inbox = () => {
       case 'comment':
         return `${targetUser?.username || 'Someone'} commented on your post: "${data.content?.substring(0, 50) || ''}..."`;
       case 'follow':
-        return `${targetUser?.username || 'Someone'} started following you`;
+      case 'new_follower':
+        return `${activity.activity_data?.follower_username || 'Someone'} started following you`;
       case 'friend_request':
-        return `${targetUser?.username || 'Someone'} sent you a friend request`;
+        return `${activity.activity_data?.requester_username || 'Someone'} sent you a friend request`;
       case 'friend_request_accepted':
-        return `${data.accepter_username || 'Someone'} accepted your friend request`;
+        return `${activity.activity_data?.accepter_username || 'Someone'} accepted your friend request`;
       case 'post_created':
         return 'You created a new post (+10 points)';
       case 'challenge_day_completed':
@@ -53,8 +54,9 @@ const Inbox = () => {
         }
         break;
       case 'follow':
-        if (activity.target_user_id) {
-          navigate(`/profile/${activity.target_user_id}`);
+      case 'new_follower':
+        if (activity.target_user_id || activity.activity_data?.follower_id) {
+          navigate(`/profile/${activity.target_user_id || activity.activity_data.follower_id}`);
         }
         break;
       case 'friend_request':
@@ -85,6 +87,7 @@ const Inbox = () => {
       case 'comment':
         return <MessageCircle className="w-5 h-5 text-blue-400" />;
       case 'follow':
+      case 'new_follower':
         return <Users className="w-5 h-5 text-green-400" />;
       case 'friend_request':
         return <Users className="w-5 h-5 text-blue-400" />;
@@ -102,7 +105,8 @@ const Inbox = () => {
   const filteredActivities = activities.filter(activity => {
     if (filter === 'likes') return activity.activity_type === 'like';
     if (filter === 'comments') return activity.activity_type === 'comment';
-    if (filter === 'friends') return ['friend_request', 'friend_request_accepted', 'follow'].includes(activity.activity_type);
+    if (filter === 'friends') return ['friend_request', 'friend_request_accepted'].includes(activity.activity_type);
+    if (filter === 'followers') return ['follow', 'new_follower'].includes(activity.activity_type);
     return true;
   });
 
@@ -117,7 +121,8 @@ const Inbox = () => {
             { id: 'all', label: 'All' },
             { id: 'likes', label: 'Likes' },
             { id: 'comments', label: 'Comments' },
-            { id: 'friends', label: 'Friends' }
+            { id: 'friends', label: 'Friends' },
+            { id: 'followers', label: 'Followers' }
           ].map((tab) => (
             <Button
               key={tab.id}

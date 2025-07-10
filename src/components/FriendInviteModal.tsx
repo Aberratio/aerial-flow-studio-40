@@ -35,7 +35,7 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
       // Get users that the current user is not following and exclude themselves
       const { data: currentFollows } = await supabase
         .from('user_follows')
-        .select('following_id, status')
+        .select('following_id')
         .eq('follower_id', user.id);
 
       const followingIds = currentFollows?.map(f => f.following_id) || [];
@@ -61,21 +61,24 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
         const { data: currentUserFriends } = await supabase
           .from('user_follows')
           .select('following_id')
-          .eq('follower_id', user.id)
-          .eq('status', 'accepted');
+          .eq('follower_id', user.id);
 
         const { data: profileFriends } = await supabase
           .from('user_follows')
           .select('following_id')
-          .eq('follower_id', profile.id)
-          .eq('status', 'accepted');
+          .eq('follower_id', profile.id);
 
         const currentUserFriendIds = new Set(currentUserFriends?.map(f => f.following_id) || []);
         const profileFriendIds = new Set(profileFriends?.map(f => f.following_id) || []);
         const mutualFriendsCount = [...currentUserFriendIds].filter(id => profileFriendIds.has(id)).length;
 
-        // Check if there's already a pending request
-        const existingRequest = currentFollows?.find(f => f.following_id === profile.id);
+        // Check if there's already a pending friend request
+        const { data: existingRequest } = await supabase
+          .from('friendships')
+          .select('status')
+          .or(`and(requester_id.eq.${user.id},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${user.id})`)
+          .maybeSingle();
+
         const hasPendingRequest = existingRequest?.status === 'pending';
 
         return {
@@ -103,15 +106,15 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
 
     try {
       // Insert the friend request
-      const { error: followError } = await supabase
-        .from('user_follows')
+      const { error: friendshipError } = await supabase
+        .from('friendships')
         .insert({
-          follower_id: user.id,
-          following_id: friendId,
+          requester_id: user.id,
+          addressee_id: friendId,
           status: 'pending'
         });
 
-      if (followError) throw followError;
+      if (friendshipError) throw friendshipError;
 
       // Create activity notification for the recipient
       const { error: activityError } = await supabase
