@@ -257,19 +257,8 @@ export function UIStringManagement({
                   const matchesCategory = categoryFilter === 'all' || !categoryFilter || str.category === categoryFilter;
                   
                   if (showUntranslated) {
-                    // Find string keys that exist in one language but not in others
-                    const stringKey = str.string_key;
-                    const languagesWithThisKey = uiStrings
-                      .filter(s => s.string_key === stringKey)
-                      .map(s => s.language_id);
-                    
-                    // Check if this string key is missing in some languages
-                    const allLanguageIds = languages.map(l => l.id);
-                    const isMissingInSomeLanguages = allLanguageIds.some(langId => 
-                      !languagesWithThisKey.includes(langId)
-                    );
-                    
-                    return matchesSearch && matchesCategory && isMissingInSomeLanguages;
+                    // Show strings that have a key but empty or missing value
+                    return matchesSearch && matchesCategory && (!str.value || str.value.trim() === '');
                   }
                   
                   return matchesSearch && matchesCategory;

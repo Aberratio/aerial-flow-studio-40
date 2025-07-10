@@ -199,6 +199,9 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   ))}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground mt-1">
+                Changes the language of the entire application interface
+              </p>
             </div>
           </div>
 

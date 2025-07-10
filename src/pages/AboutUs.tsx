@@ -89,18 +89,10 @@ Have questions or feedback? We'd love to hear from you! Reach out to us at hello
         <ReactMarkdown
           components={{
           h1: ({ children }) => (
-            <Card className="glass-effect border-white/10 mb-6">
-              <CardHeader>
-                <CardTitle className="text-white">{children}</CardTitle>
-              </CardHeader>
-            </Card>
+            <h1 className="text-3xl font-bold text-white mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">{children}</h1>
           ),
           h2: ({ children }) => (
-            <Card className="glass-effect border-white/10 mb-6">
-              <CardHeader>
-                <CardTitle className="text-white text-xl">{children}</CardTitle>
-              </CardHeader>
-            </Card>
+            <h2 className="text-2xl font-semibold text-white mb-4 mt-8">{children}</h2>
           ),
           h3: ({ children }) => (
             <h3 className="text-lg font-semibold text-white mb-3">{children}</h3>

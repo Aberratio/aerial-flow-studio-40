@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Navigation from './Navigation';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { user } = useAuth();
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -41,10 +43,12 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Button>
       )}
 
-      {/* Language Selector - Top Right */}
-      <div className="fixed top-4 right-4 z-50">
-        <LanguageSelector />
-      </div>
+      {/* Language Selector - Top Right (Admin Only) */}
+      {user?.role === 'admin' && (
+        <div className="fixed top-4 right-4 z-50">
+          <LanguageSelector />
+        </div>
+      )}
       
       {/* Mobile Overlay */}
       {isMobile && sidebarOpen && (
