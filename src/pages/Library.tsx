@@ -8,12 +8,14 @@ import { FigurePreviewModal } from '@/components/FigurePreviewModal';
 import { CreateExerciseModal } from '@/components/CreateExerciseModal';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 const Library = () => {
   const {
     user
   } = useAuth();
+  const { t } = useLanguage();
   const {
     toast
   } = useToast();
@@ -37,7 +39,7 @@ const Library = () => {
   const [showFigureSearch, setShowFigureSearch] = useState(false);
   const categories = ['all', 'silks', 'hoop', 'pole', 'straps'];
   const levels = ['all', 'beginner', 'intermediate', 'advanced', 'expert'];
-  const types = ['all', 'single figure', 'combo'];
+  const types = ['all', 'single_figure', 'combo'];
   const statuses = ['all', 'completed', 'for_later', 'failed', 'not_tried'];
 
   // Fetch figures from database
@@ -84,7 +86,7 @@ const Library = () => {
       console.error('Error fetching figures:', error);
       toast({
         title: "Error",
-        description: "Failed to load exercises",
+        description: t('library.error_load'),
         variant: "destructive"
       });
     } finally {
@@ -101,7 +103,7 @@ const Library = () => {
       if (error) throw error;
       toast({
         title: "Success",
-        description: "Exercise deleted successfully"
+        description: t('library.success_deleted')
       });
       fetchFigures();
       setDeleteModal({
@@ -112,7 +114,7 @@ const Library = () => {
       console.error('Error deleting figure:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to delete exercise",
+        description: error.message || t('library.error_delete'),
         variant: "destructive"
       });
     }
@@ -163,7 +165,7 @@ const Library = () => {
   };
   if (loading) {
     return <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-white">Loading exercises...</div>
+        <div className="text-white">{t('library.loading')}</div>
       </div>;
   }
   return <div className="min-h-screen p-6">
@@ -171,12 +173,12 @@ const Library = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2 my-[32px]">Figure Library</h1>
-              <p className="text-muted-foreground">Explore and master aerial figures across different disciplines</p>
+              <h1 className="text-3xl font-bold text-white mb-2 my-[32px]">{t('library.title')}</h1>
+              <p className="text-muted-foreground">{t('library.subtitle')}</p>
             </div>
             {(user?.role === 'trainer' || user?.role === 'admin') && <Button onClick={() => setShowCreateExercise(true)} className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600">
                 <Plus className="w-4 h-4 mr-2" />
-                Add Exercise
+                {t('library.add_exercise')}
               </Button>}
           </div>
         </div>
@@ -185,50 +187,50 @@ const Library = () => {
         <div className="mb-8 space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
-            <Input type="text" placeholder="Search figures..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60" />
+            <Input type="text" placeholder={t('library.search_placeholder')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60" />
           </div>
           
           <div className="sm:hidden">
             <Button variant="outline" className="w-full border-white/20 text-white hover:bg-white/10 mb-4" onClick={() => setShowFigureSearch(!showFigureSearch)}>
               <Filter className="w-4 h-4 mr-2" />
-              Filters
+              {t('library.filters')}
             </Button>
           </div>
           
           <div className={`space-y-3 ${showFigureSearch ? 'block' : 'hidden sm:block'}`}>
             {/* Category Filter */}
             <div>
-              <p className="text-white text-sm font-medium mb-2">Category</p>
+              <p className="text-white text-sm font-medium mb-2">{t('library.category')}</p>
               <div className="flex flex-wrap gap-2">
                 {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => setSelectedCategory(category)} className={selectedCategory === category ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
-                    {category.charAt(0).toUpperCase() + category.slice(1)}
+                    {t(`exercises.category.${category}`)}
                   </Button>)}
               </div>
             </div>
 
             {/* Level Filter */}
             <div>
-              <p className="text-white text-sm font-medium mb-2">Level</p>
+              <p className="text-white text-sm font-medium mb-2">{t('library.level')}</p>
               <div className="flex flex-wrap gap-2">
                 {levels.map(level => <Button key={level} variant={selectedLevel === level ? "default" : "outline"} size="sm" onClick={() => setSelectedLevel(level)} className={selectedLevel === level ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
-                    {level.charAt(0).toUpperCase() + level.slice(1)}
+                    {t(`exercises.difficulty.${level}`)}
                   </Button>)}
               </div>
             </div>
 
             {/* Type Filter */}
             <div>
-              <p className="text-white text-sm font-medium mb-2">Type</p>
+              <p className="text-white text-sm font-medium mb-2">{t('library.type')}</p>
               <div className="flex flex-wrap gap-2">
                 {types.map(type => <Button key={type} variant={selectedType === type ? "default" : "outline"} size="sm" onClick={() => setSelectedType(type)} className={selectedType === type ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
-                    {type.charAt(0).toUpperCase() + type.slice(1)}
+                    {t(`exercises.type.${type}`)}
                   </Button>)}
               </div>
             </div>
 
             {/* Tags Filter */}
             {availableTags.length > 0 && <div>
-                <p className="text-white text-sm font-medium mb-2">Tags</p>
+                <p className="text-white text-sm font-medium mb-2">{t('library.tags')}</p>
                 <div className="flex flex-wrap gap-2">
                   {availableTags.map(tag => <Button key={tag} variant={selectedTags.includes(tag) ? "default" : "outline"} size="sm" onClick={() => {
                 if (selectedTags.includes(tag)) {
@@ -245,10 +247,10 @@ const Library = () => {
 
             {/* Status Filter */}
             {user && <div>
-                <p className="text-white text-sm font-medium mb-2">Progress Status</p>
+                <p className="text-white text-sm font-medium mb-2">{t('library.progress_status')}</p>
                 <div className="flex flex-wrap gap-2">
                   {statuses.map(status => <Button key={status} variant={selectedStatus === status ? "default" : "outline"} size="sm" onClick={() => setSelectedStatus(status)} className={selectedStatus === status ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
-                      {status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
+                      {t(`exercises.status.${status}`)}
                     </Button>)}
                 </div>
               </div>}
@@ -258,7 +260,7 @@ const Library = () => {
         {/* Figures Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredFigures.length === 0 ? <div className="col-span-full text-center py-12 text-muted-foreground">
-              No exercises found matching your criteria.
+              {t('library.no_exercises')}
             </div> : filteredFigures.map(figure => <Card key={figure.id} className="glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative" onClick={() => setSelectedFigure(figure)}>
                 {/* Action buttons for owners/admins */}
                 {canModifyFigure(figure) && <div className="absolute top-2 right-2 z-10 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -308,7 +310,7 @@ const Library = () => {
                   </div>
                   
                   <p className="text-muted-foreground text-sm mb-3 line-clamp-2">
-                    {figure.description || 'No description available'}
+                    {figure.description || t('library.no_description')}
                   </p>
                   
                   <div className="flex items-center justify-between">
@@ -329,7 +331,7 @@ const Library = () => {
                 e.stopPropagation();
                 setSelectedFigure(figure);
               }}>
-                      View Details
+                      {t('library.view_details')}
                     </Button>
                   </div>
                 </CardContent>
@@ -353,7 +355,7 @@ const Library = () => {
       <ConfirmDeleteModal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({
       isOpen: false,
       figure: null
-    })} onConfirm={() => deleteModal.figure && deleteFigure(deleteModal.figure.id)} title="Delete Exercise" description={`Are you sure you want to delete "${deleteModal.figure?.name}"? This action cannot be undone.`} />
+    })} onConfirm={() => deleteModal.figure && deleteFigure(deleteModal.figure.id)} title={t('library.delete_exercise')} description={t('library.delete_confirm').replace('{name}', deleteModal.figure?.name || '')} />
     </div>;
 };
 export default Library;
