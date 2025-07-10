@@ -99,18 +99,18 @@ const Feed = () => {
         {/* Create Post Section */}
         <Card className="glass-effect border-white/10 mb-6">
           <CardContent className="p-4">
-            <div className="flex items-center space-x-3">
-              <Avatar>
+            <div className="flex items-center space-x-3 w-full">
+              <Avatar className="flex-shrink-0">
                 <AvatarImage src={user?.avatar_url || undefined} />
                 <AvatarFallback>{user?.username?.[0]?.toUpperCase() || 'U'}</AvatarFallback>
               </Avatar>
               <Button
                 onClick={() => setShowCreatePost(true)}
                 variant="ghost"
-                className="flex-1 justify-start text-muted-foreground hover:text-white bg-white/5 hover:bg-white/10 h-12"
+                className="flex-1 min-w-0 justify-start text-muted-foreground hover:text-white bg-white/5 hover:bg-white/10 h-12 text-sm sm:text-base"
               >
-                <Plus className="w-5 h-5 mr-2" />
-                What's on your mind?
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
+                <span className="truncate">What's on your mind?</span>
               </Button>
             </div>
           </CardContent>
@@ -207,33 +207,33 @@ const Feed = () => {
                 )}
 
                 {/* Actions */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-6">
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center space-x-2 sm:space-x-6 min-w-0 flex-1">
                     <Button 
                       variant="ghost" 
                       size="sm"
                       onClick={() => toggleLike(post.id)}
-                      className={`text-muted-foreground hover:text-white ${post.is_liked ? 'text-pink-400' : ''}`}
+                      className={`text-muted-foreground hover:text-white ${post.is_liked ? 'text-pink-400' : ''} px-2 sm:px-3`}
                     >
-                      <Heart className={`w-5 h-5 mr-2 ${post.is_liked ? 'fill-current' : ''}`} />
-                      {post.likes_count}
+                      <Heart className={`w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 ${post.is_liked ? 'fill-current' : ''}`} />
+                      <span className="text-xs sm:text-sm">{post.likes_count}</span>
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      className="text-muted-foreground hover:text-white"
+                      className="text-muted-foreground hover:text-white px-2 sm:px-3"
                       onClick={() => setSelectedPost(post)}
                     >
-                      <MessageCircle className="w-5 h-5 mr-2" />
-                      {post.comments_count}
+                      <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+                      <span className="text-xs sm:text-sm">{post.comments_count}</span>
                     </Button>
                     <Button 
                       variant="ghost" 
                       size="sm" 
                       onClick={() => handleShare(post)}
-                      className="text-muted-foreground hover:text-white"
+                      className="text-muted-foreground hover:text-white px-2 sm:px-3"
                     >
-                      <Share2 className="w-5 h-5" />
+                      <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
                   </div>
                   {post.user_id !== user?.id && (
@@ -241,9 +241,9 @@ const Feed = () => {
                       variant="ghost" 
                       size="sm" 
                       onClick={() => toggleSave(post.id)}
-                      className={`text-muted-foreground hover:text-white ${post.is_saved ? 'text-blue-400' : ''}`}
+                      className={`text-muted-foreground hover:text-white ${post.is_saved ? 'text-blue-400' : ''} px-2 sm:px-3 flex-shrink-0`}
                     >
-                      <Bookmark className={`w-5 h-5 ${post.is_saved ? 'fill-current' : ''}`} />
+                      <Bookmark className={`w-4 h-4 sm:w-5 sm:h-5 ${post.is_saved ? 'fill-current' : ''}`} />
                     </Button>
                   )}
                 </div>

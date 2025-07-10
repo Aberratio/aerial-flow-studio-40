@@ -29,7 +29,7 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto glass-effect border-white/10">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">Profile Preview</DialogTitle>
         </DialogHeader>

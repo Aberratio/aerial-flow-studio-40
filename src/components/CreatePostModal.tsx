@@ -184,7 +184,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] glass-effect border-white/10">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">Create New Post</DialogTitle>
         </DialogHeader>
@@ -324,7 +324,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
               <img
                 src={selectedFilePreview}
                 alt="Selected"
-                className="w-full max-h-64 object-cover rounded-lg"
+                className="w-full max-h-48 sm:max-h-64 object-cover rounded-lg"
               />
               <Button
                 variant="ghost"
@@ -344,7 +344,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
             <div className="relative">
               <video
                 src={selectedFilePreview}
-                className="w-full max-h-64 object-cover rounded-lg"
+                className="w-full max-h-48 sm:max-h-64 object-cover rounded-lg"
                 controls
               />
               <Button
@@ -361,7 +361,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
             </div>
           )}
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-2">
               <input
                 type="file"
@@ -373,13 +373,14 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
               <label htmlFor="image-upload">
                 <Button
                   variant="ghost"
-                  className="text-muted-foreground hover:text-white"
+                  className="text-muted-foreground hover:text-white text-sm"
                   asChild
                   onClick={() => setMediaType('image')}
                 >
                   <span className="flex items-center space-x-2 cursor-pointer">
-                    <Image className="w-5 h-5" />
-                    <span>Add Photo</span>
+                    <Image className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Add Photo</span>
+                    <span className="sm:hidden">Photo</span>
                   </span>
                 </Button>
               </label>
@@ -394,31 +395,33 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
               <label htmlFor="video-upload">
                 <Button
                   variant="ghost"
-                  className="text-muted-foreground hover:text-white"
+                  className="text-muted-foreground hover:text-white text-sm"
                   asChild
                   onClick={() => setMediaType('video')}
                 >
                   <span className="flex items-center space-x-2 cursor-pointer">
-                    <Video className="w-5 h-5" />
-                    <span>Add Video</span>
+                    <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">Add Video</span>
+                    <span className="sm:hidden">Video</span>
                   </span>
                 </Button>
               </label>
             </div>
 
-            <div className="flex space-x-2">
-              <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-white">
+            <div className="flex space-x-2 justify-end">
+              <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-white text-sm">
                 Cancel
               </Button>
               <Button 
                 onClick={handleSubmit} 
                 disabled={isLoading}
-                className="bg-primary hover:bg-primary/90"
+                className="bg-primary hover:bg-primary/90 text-sm"
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Posting...
+                    <span className="hidden sm:inline">Posting...</span>
+                    <span className="sm:hidden">...</span>
                   </>
                 ) : (
                   'Post'

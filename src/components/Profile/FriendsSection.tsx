@@ -97,16 +97,18 @@ export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
             {friends.map((friend: any) => (
-              <div key={friend.id} onClick={() => window.location.href = `/profile/${friend.id}`} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer">
-                <Avatar className="w-16 h-16 mx-auto mb-3 hover:scale-110 transition-transform">
+              <div key={friend.id} onClick={() => window.location.href = `/profile/${friend.id}`} className="flex sm:flex-col items-center sm:text-center p-3 sm:p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer space-x-3 sm:space-x-0">
+                <Avatar className="w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0 sm:mx-auto sm:mb-3 hover:scale-110 transition-transform">
                   <AvatarImage src={friend.avatar || undefined} />
                   <AvatarFallback>{friend.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
                 </Avatar>
-                <div className="text-white font-semibold text-sm">{friend.username}</div>
-                <div className="text-muted-foreground text-xs">{friend.level}</div>
-                <div className="text-purple-400 text-xs font-semibold mt-1">{friend.score.toLocaleString()} pts</div>
+                <div className="flex-1 sm:flex-none min-w-0">
+                  <div className="text-white font-semibold text-sm truncate sm:text-center">{friend.username}</div>
+                  <div className="text-muted-foreground text-xs sm:text-center">{friend.level}</div>
+                  <div className="text-purple-400 text-xs font-semibold mt-1 sm:text-center">{friend.score.toLocaleString()} pts</div>
+                </div>
               </div>
             ))}
           </div>

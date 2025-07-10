@@ -155,26 +155,26 @@ const Friends = () => {
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+              <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Friends</h1>
-              <p className="text-muted-foreground">Connect with fellow aerial athletes</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Friends</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">Connect with fellow aerial athletes</p>
             </div>
-            <div className="flex space-x-2">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
               <Button
                 onClick={() => setShowFriendRequests(true)}
                 variant="outline"
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto"
               >
-                <Mail className="w-5 h-5 mr-2" />
-                Friend Requests
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="text-sm sm:text-base">Friend Requests</span>
               </Button>
               <Button
                 onClick={() => setShowFriendInvite(true)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto"
               >
-                <UserPlus className="w-5 h-5 mr-2" />
-                Find Friends
+                <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="text-sm sm:text-base">Find Friends</span>
               </Button>
             </div>
           </div>
@@ -245,25 +245,25 @@ const Friends = () => {
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {friends.map((friend) => (
-                  <div key={friend.id} className="flex items-center space-x-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => window.location.href = `/profile/${friend.id}`}>
-                    <div className="relative">
-                      <Avatar className="w-12 h-12">
+                  <div key={friend.id} className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => window.location.href = `/profile/${friend.id}`}>
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                         <AvatarImage src={friend.avatar} />
                         <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white">{friend.username}</h4>
-                      <p className="text-muted-foreground text-sm">{friend.bio}</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-white text-sm sm:text-base truncate">{friend.username}</h4>
+                      <p className="text-muted-foreground text-xs sm:text-sm truncate">{friend.bio}</p>
                       <p className="text-muted-foreground text-xs">{friend.mutualFriends} mutual friends</p>
                     </div>
-                     <div className="flex space-x-2">
+                     <div className="flex-shrink-0">
                        <Button 
                          variant="ghost" 
                          size="sm" 
-                         className="text-red-400 hover:text-red-300"
+                         className="text-red-400 hover:text-red-300 h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-3"
                          onClick={(e) => {
                            e.stopPropagation();
                            setFriendToRemove(friend.id);
