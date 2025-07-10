@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, Plus, Loader2, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Plus, Loader2, MoreHorizontal, Edit, Trash2, Globe, Users, Lock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -72,6 +72,17 @@ const Feed = () => {
   const handleShare = (post: any) => {
     setSharingPost(post);
   };
+
+  const getPrivacyIcon = (privacy: string) => {
+    switch (privacy) {
+      case 'friends':
+        return <Users className="w-3 h-3 text-blue-400" />;
+      case 'private':
+        return <Lock className="w-3 h-3 text-red-400" />;
+      default:
+        return <Globe className="w-3 h-3 text-green-400" />;
+    }
+  };
   if (loading) {
     return <div className="min-h-screen p-6 flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -124,6 +135,11 @@ const Feed = () => {
                       <Link to={`/profile/${post.user.id}`} className="cursor-pointer hover:text-primary transition-colors">
                         <span className="font-semibold text-white">{post.user.username}</span>
                       </Link>
+                      {post.user_id === user?.id && (
+                        <div className="flex items-center">
+                          {getPrivacyIcon(post.privacy)}
+                        </div>
+                      )}
                     </div>
                     {post.user_id === user?.id && <DropdownMenu>
                         <DropdownMenuTrigger asChild>

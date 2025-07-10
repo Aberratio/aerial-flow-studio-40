@@ -262,26 +262,16 @@ export const EditPostModal = ({ isOpen, onClose, post, onPostUpdated }: EditPost
                 </Button>
               </label>
               
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="video-upload-edit"
-              />
-              <label htmlFor="video-upload-edit">
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-white"
-                  asChild
-                  onClick={() => setMediaType('video')}
-                >
-                  <span className="flex items-center space-x-2 cursor-pointer">
-                    <Video className="w-5 h-5" />
-                    <span>Change Video</span>
-                  </span>
-                </Button>
-              </label>
+              <Button
+                variant="ghost"
+                className="text-muted-foreground/50 cursor-not-allowed"
+                disabled={true}
+              >
+                <span className="flex items-center space-x-2">
+                  <Video className="w-5 h-5" />
+                  <span>Change Video (Coming Soon)</span>
+                </span>
+              </Button>
             </div>
 
             <div className="flex space-x-2">

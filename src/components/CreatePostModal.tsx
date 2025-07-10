@@ -391,21 +391,19 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
                 onChange={handleFileUpload}
                 className="hidden"
                 id="video-upload"
+                disabled
               />
-              <label htmlFor="video-upload">
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-white text-sm"
-                  asChild
-                  onClick={() => setMediaType('video')}
-                >
-                  <span className="flex items-center space-x-2 cursor-pointer">
-                    <Video className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden sm:inline">Add Video</span>
-                    <span className="sm:hidden">Video</span>
-                  </span>
-                </Button>
-              </label>
+              <Button
+                variant="ghost"
+                className="text-muted-foreground/50 text-sm cursor-not-allowed"
+                disabled={true}
+              >
+                <span className="flex items-center space-x-2">
+                  <Video className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Add Video (Coming Soon)</span>
+                  <span className="sm:hidden">Video</span>
+                </span>
+              </Button>
             </div>
 
             <div className="flex space-x-2 justify-end">

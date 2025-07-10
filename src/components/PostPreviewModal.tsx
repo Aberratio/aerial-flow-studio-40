@@ -62,12 +62,13 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
         </DialogDescription>
         <div className="flex flex-col sm:flex-row h-full min-h-0">
           {/* Media Section */}
-          <div className="flex-1 bg-black min-h-0 h-64 sm:h-full">
+          <div className="flex-1 bg-black min-h-0 h-64 sm:h-full flex items-center justify-center">
             {post.image_url && (
               <img 
                 src={post.image_url} 
                 alt="Post content"
-                className="w-full h-full object-contain"
+                className="max-w-full max-h-full object-contain cursor-zoom-in"
+                style={{ minHeight: '400px' }}
               />
             )}
             {post.video_url && (
