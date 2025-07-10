@@ -11,6 +11,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +51,7 @@ interface TrainingDay {
   title: string;
   description: string;
   exercises: Exercise[];
+  isRestDay?: boolean;
 }
 
 interface Challenge {
@@ -267,7 +269,8 @@ const EditChallenge = () => {
             challenge_id: challengeId,
             day_date: day.date.toISOString().split('T')[0],
             title: day.title,
-            description: day.description
+            description: day.description || null,
+            is_rest_day: day.isRestDay || false,
           })
           .select()
           .single();
@@ -300,12 +303,14 @@ const EditChallenge = () => {
   };
 
   const addTrainingDay = () => {
-    setTrainingDays([...trainingDays, { 
-      date: new Date(), 
-      title: '', 
+    const newDay = {
+      date: null,
+      title: `Day ${trainingDays.length + 1}`,
       description: '',
-      exercises: []
-    }]);
+      exercises: [],
+      isRestDay: false,
+    };
+    setTrainingDays([...trainingDays, newDay as TrainingDay]);
   };
 
   const removeTrainingDay = (index: number) => {
@@ -593,13 +598,36 @@ const EditChallenge = () => {
                       />
                     </div>
                     
-                    {/* Exercise Management */}
-                    <ExerciseManagement
-                      trainingDayId={day.id || `temp-${index}`}
-                      exercises={day.exercises}
-                      onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
-                      canEdit={true}
-                    />
+                    <div className="space-y-2">
+                      <Label className="text-xs">Day Type</Label>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={day.isRestDay || false}
+                          onCheckedChange={(checked) => updateTrainingDay(index, 'isRestDay', checked)}
+                        />
+                        <span className="text-sm text-muted-foreground">
+                          {day.isRestDay ? 'Rest Day' : 'Training Day'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Exercise Management or Rest Day Message */}
+                    {day.isRestDay ? (
+                      <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg bg-blue-500/5">
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center">
+                          <span className="text-2xl">😴</span>
+                        </div>
+                        <p className="font-medium">Rest Day</p>
+                        <p className="text-sm">No exercises needed - time to recover!</p>
+                      </div>
+                    ) : (
+                      <ExerciseManagement
+                        trainingDayId={day.id || `temp-${index}`}
+                        exercises={day.exercises}
+                        onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
+                        canEdit={true}
+                      />
+                    )}
                   </div>
                 ))}
                 

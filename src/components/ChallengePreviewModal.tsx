@@ -193,7 +193,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   onClose();
                   navigate(`/challenges/${challenge.id}/edit`);
                 }}
-                className="border-white/20 text-white hover:bg-white/10 ml-4"
+                className="border-white/20 text-white hover:bg-white/10 ml-4 mt-2"
               >
                 <Edit2 className="w-4 h-4 mr-2" />
                 Edit

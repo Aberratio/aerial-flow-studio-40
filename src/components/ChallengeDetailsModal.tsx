@@ -48,9 +48,8 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
   const handleDayClick = (day: ChallengeDay) => {
     onClose();
     // Find the actual training day from the challenge data
-    const trainingDay = challenge.training_days?.find((td: any) => {
-      const dayNum = new Date(td.day_date).getDate() - new Date(challenge.start_date).getDate() + 1;
-      return dayNum === day.day;
+    const trainingDay = challenge.training_days?.find((td: any, index: number) => {
+      return index + 1 === day.day; // Match by position/order
     });
     
     if (trainingDay) {
@@ -62,9 +61,8 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
 
   const handleContinue = () => {
     onClose();
-    const trainingDay = challenge.training_days?.find((td: any) => {
-      const dayNum = new Date(td.day_date).getDate() - new Date(challenge.start_date).getDate() + 1;
-      return dayNum === challenge.currentDay;
+    const trainingDay = challenge.training_days?.find((td: any, index: number) => {
+      return index + 1 === challenge.currentDay; // Match by position/order
     });
     
     if (trainingDay) {
