@@ -82,9 +82,9 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
   }, [user]);
 
   const tabs = [
-    { id: 'posts', label: 'Posts', icon: Grid },
-    { id: 'achievements', label: 'All Achievements', icon: Award },
-    { id: 'saved', label: 'Saved', icon: Bookmark }
+    { id: 'posts', label: 'Posts', mobileLabel: 'Posts', icon: Grid },
+    { id: 'achievements', label: 'All Achievements', mobileLabel: 'Awards', icon: Award },
+    { id: 'saved', label: 'Saved', mobileLabel: 'Saved', icon: Bookmark }
   ];
 
   return (
@@ -104,8 +104,9 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
               }`}
               onClick={() => setActiveTab(tab.id)}
             >
-              <Icon className="w-4 h-4 mr-2" />
-              {tab.label}
+              <Icon className="w-4 h-4 md:mr-2" />
+              <span className="hidden sm:inline md:hidden">{tab.mobileLabel}</span>
+              <span className="hidden md:inline">{tab.label}</span>
             </Button>
           );
         })}
@@ -139,6 +140,16 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
                       alt="User post"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
+                  ) : post.video ? (
+                    <div className="relative w-full h-full">
+                      <video 
+                        src={post.video}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <MessageCircle className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
                   ) : (
                     <div className="w-full h-full bg-white/5 flex items-center justify-center">
                       <MessageCircle className="w-8 h-8 text-muted-foreground" />
@@ -208,6 +219,16 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
                       alt="Saved post"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
+                  ) : post.video_url ? (
+                    <div className="relative w-full h-full">
+                      <video 
+                        src={post.video_url}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <MessageCircle className="w-8 h-8 text-white" />
+                      </div>
+                    </div>
                   ) : (
                     <div className="w-full h-full bg-white/5 flex items-center justify-center">
                       <MessageCircle className="w-8 h-8 text-muted-foreground" />

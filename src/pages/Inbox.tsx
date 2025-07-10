@@ -128,8 +128,8 @@ const Inbox = () => {
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold text-white mb-8">Inbox</h1>
 
-        {/* Filter Tabs */}
-        <div className="flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
+        {/* Filter Tabs - Hidden on mobile, show only "All" */}
+        <div className="hidden md:flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
           {[
             { id: 'all', label: 'All' },
             { id: 'likes', label: 'Likes' },
