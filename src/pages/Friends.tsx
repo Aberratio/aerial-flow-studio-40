@@ -9,6 +9,7 @@ import { NewFriendRequestsModal } from '@/components/NewFriendRequestsModal';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 
 const Friends = () => {
   const { user } = useAuth();
@@ -18,6 +19,8 @@ const Friends = () => {
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+  const [friendToRemove, setFriendToRemove] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFriendsAndRequests = async () => {
@@ -121,8 +124,16 @@ const Friends = () => {
         .eq('following_id', user.id);
 
       setFriends(friends.filter(friend => friend.id !== friendId));
+      setShowRemoveModal(false);
+      setFriendToRemove(null);
     } catch (error) {
       console.error('Error unfriending:', error);
+    }
+  };
+
+  const handleConfirmRemove = () => {
+    if (friendToRemove) {
+      handleUnfriend(friendToRemove);
     }
   };
 
@@ -227,7 +238,10 @@ const Friends = () => {
                         variant="ghost" 
                         size="sm" 
                         className="text-red-400 hover:text-red-300"
-                        onClick={() => handleUnfriend(friend.id)}
+                        onClick={() => {
+                          setFriendToRemove(friend.id);
+                          setShowRemoveModal(true);
+                        }}
                       >
                         <UserX className="w-4 h-4" />
                       </Button>
@@ -250,6 +264,17 @@ const Friends = () => {
         isOpen={showFriendRequests}
         onClose={() => setShowFriendRequests(false)}
         onFriendsUpdated={handleFriendsUpdated}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={showRemoveModal}
+        onClose={() => {
+          setShowRemoveModal(false);
+          setFriendToRemove(null);
+        }}
+        onConfirm={handleConfirmRemove}
+        title="Remove Friend"
+        description="Are you sure you want to remove this friend? You will no longer be able to see their friends-only content and they won't see yours."
       />
     </div>
   );

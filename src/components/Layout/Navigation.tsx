@@ -1,14 +1,62 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { supabase } from '@/integrations/supabase/client';
 
 const Navigation = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Fetch unread notifications count
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!user) return;
+
+      try {
+        // Get activities from the last 24 hours that haven't been "read"
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        const { count } = await supabase
+          .from('user_activities')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id)
+          .gte('created_at', yesterday.toISOString());
+
+        setUnreadCount(count || 0);
+      } catch (error) {
+        console.error('Error fetching unread count:', error);
+      }
+    };
+
+    fetchUnreadCount();
+    
+    // Set up real-time subscription for new activities
+    const channel = supabase
+      .channel('user_activities_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'user_activities',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
 
   // Check if user has premium access
   const hasPremiumAccess = user?.role && ['premium', 'trainer', 'admin'].includes(user.role);
@@ -54,14 +102,26 @@ const Navigation = () => {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group ${
+                className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${
                   isActive(item.path)
                     ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white'
                     : 'text-muted-foreground hover:text-white hover:bg-white/5'
                 }`}
               >
-                <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                <div className="relative">
+                  <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                  {item.path === '/inbox' && unreadCount > 0 && (
+                    <Badge className="absolute -top-2 -right-2 w-5 h-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Badge>
+                  )}
+                </div>
                 <span className="hidden lg:block font-medium">{item.label}</span>
+                {item.path === '/inbox' && unreadCount > 0 && (
+                  <Badge className="hidden lg:block ml-auto bg-red-500 text-white text-xs">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </Badge>
+                )}
               </Link>
             );
           })}

@@ -71,8 +71,8 @@ const FriendProfile = () => {
           status = friendshipData.status === 'accepted' ? 'friends' : 'pending';
         }
 
-        // Get friend's posts
-        const { data: posts, error: postsError } = await supabase
+        // Get friend's posts (public and friends-only if they are friends)
+        let postsQuery = supabase
           .from('posts')
           .select(`
             *,
@@ -82,9 +82,17 @@ const FriendProfile = () => {
             )
           `)
           .eq('user_id', id)
-          .eq('privacy', 'public')
           .order('created_at', { ascending: false })
           .limit(12);
+
+        // If they are friends, include both public and friends-only posts
+        if (status === 'friends') {
+          postsQuery = postsQuery.in('privacy', ['public', 'friends']);
+        } else {
+          postsQuery = postsQuery.eq('privacy', 'public');
+        }
+
+        const { data: posts, error: postsError } = await postsQuery;
 
         if (postsError) throw postsError;
 
@@ -313,14 +321,6 @@ const FriendProfile = () => {
                 {/* Action Buttons */}
                 <div className="flex space-x-3">
                   {renderActionButton()}
-                  <Button 
-                    variant="outline" 
-                    onClick={handleMessage}
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Message
-                  </Button>
                 </div>
               </div>
             </div>
