@@ -190,31 +190,12 @@ const Navigation = () => {
           )}
         </div>
 
-        {/* Footer Links */}
-        <div className="mt-auto mb-4 space-y-2">
-          <Link
-            to="/privacy-policy"
-            className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
-          >
-            Privacy Policy
-          </Link>
-          <Link
-            to="/terms-of-use"
-            className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
-          >
-            Terms of Use
-          </Link>
-          <Link
-            to="/about"
-            className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
-          >
-            About Us
-          </Link>
-        </div>
-
         {/* User Profile */}
         <div className="border-t border-white/10 pt-4">
-          <div className="flex items-center space-x-3 px-3 py-2">
+          <Link 
+            to="/profile" 
+            className="flex items-center space-x-3 px-3 py-2 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
+          >
             <Avatar className="w-8 h-8">
               <AvatarImage src={user?.avatar} />
               <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500">
@@ -225,7 +206,7 @@ const Navigation = () => {
               <p className="text-white font-medium text-sm">{user?.username}</p>
               <p className="text-muted-foreground text-xs">{user?.email}</p>
             </div>
-          </div>
+          </Link>
           <Button
             onClick={logout}
             variant="ghost"
@@ -235,6 +216,28 @@ const Navigation = () => {
             <LogOut className="w-4 h-4 mr-3" />
             <span className="hidden lg:block">Logout</span>
           </Button>
+          
+          {/* Footer Links */}
+          <div className="mt-4 space-y-2 border-t border-white/10 pt-4">
+            <Link
+              to="/privacy-policy"
+              className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/terms-of-use"
+              className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
+            >
+              Terms of Use
+            </Link>
+            <Link
+              to="/about"
+              className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors"
+            >
+              About Us
+            </Link>
+          </div>
         </div>
       </div>
     </nav>

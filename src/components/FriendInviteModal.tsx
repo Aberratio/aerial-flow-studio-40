@@ -32,14 +32,19 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
     try {
       setLoading(true);
       
-      // Get users that the current user is not following and exclude themselves
-      const { data: currentFollows } = await supabase
-        .from('user_follows')
-        .select('following_id')
-        .eq('follower_id', user.id);
+      // Get users that the current user is not friends with and exclude themselves
+      const { data: friendships } = await supabase
+        .from('friendships')
+        .select('requester_id, addressee_id')
+        .eq('status', 'accepted')
+        .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
-      const followingIds = currentFollows?.map(f => f.following_id) || [];
-      const excludeIds = [user.id, ...followingIds];
+      // Get friend IDs (people we're already friends with)
+      const friendIds = friendships?.map(friendship => {
+        return friendship.requester_id === user.id ? friendship.addressee_id : friendship.requester_id;
+      }) || [];
+
+      const excludeIds = [user.id, ...friendIds];
 
       let query = supabase
         .from('profiles')

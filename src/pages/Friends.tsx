@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { UserPlus, Mail, Users, UserCheck, UserX } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FriendInviteModal } from '@/components/FriendInviteModal';
 import { NewFriendRequestsModal } from '@/components/NewFriendRequestsModal';
@@ -197,6 +198,33 @@ const Friends = () => {
           </Card>
         </div>
 
+        {/* Pending Requests Section */}
+        {pendingRequestsCount > 0 && (
+          <Card className="glass-effect border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center justify-between">
+                Pending Friend Requests 
+                <Badge className="bg-primary/20 text-primary">{pendingRequestsCount}</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {/* This will be populated by the friend requests data */}
+                <p className="text-muted-foreground text-sm">
+                  You have {pendingRequestsCount} pending friend request{pendingRequestsCount !== 1 ? 's' : ''}. 
+                  <Button 
+                    variant="link" 
+                    className="p-0 h-auto text-primary hover:text-primary/80"
+                    onClick={() => setShowFriendRequests(true)}
+                  >
+                    View all requests
+                  </Button>
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Friends List or Empty State */}
         <Card className="glass-effect border-white/10">
           <CardHeader>
@@ -219,7 +247,7 @@ const Friends = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {friends.map((friend) => (
-                  <div key={friend.id} className="flex items-center space-x-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                  <div key={friend.id} className="flex items-center space-x-4 p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => window.location.href = `/profile/${friend.id}`}>
                     <div className="relative">
                       <Avatar className="w-12 h-12">
                         <AvatarImage src={friend.avatar} />
@@ -227,25 +255,24 @@ const Friends = () => {
                       </Avatar>
                     </div>
                     <div className="flex-1">
-                      <Link to={`/profile/${friend.id}`} className="cursor-pointer hover:text-primary transition-colors">
-                        <h4 className="font-semibold text-white">{friend.username}</h4>
-                      </Link>
+                      <h4 className="font-semibold text-white">{friend.username}</h4>
                       <p className="text-muted-foreground text-sm">{friend.bio}</p>
                       <p className="text-muted-foreground text-xs">{friend.mutualFriends} mutual friends</p>
                     </div>
-                    <div className="flex space-x-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="text-red-400 hover:text-red-300"
-                        onClick={() => {
-                          setFriendToRemove(friend.id);
-                          setShowRemoveModal(true);
-                        }}
-                      >
-                        <UserX className="w-4 h-4" />
-                      </Button>
-                    </div>
+                     <div className="flex space-x-2">
+                       <Button 
+                         variant="ghost" 
+                         size="sm" 
+                         className="text-red-400 hover:text-red-300"
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           setFriendToRemove(friend.id);
+                           setShowRemoveModal(true);
+                         }}
+                       >
+                         <UserX className="w-4 h-4" />
+                       </Button>
+                     </div>
                   </div>
                 ))}
               </div>
