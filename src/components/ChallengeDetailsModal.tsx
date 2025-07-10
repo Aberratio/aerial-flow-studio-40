@@ -13,6 +13,7 @@ interface ChallengeDay {
   duration: string;
   completed: boolean;
   figures: string[];
+  isRestDay?: boolean;
 }
 
 interface Challenge {
@@ -148,27 +149,30 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
                   }`}
                   onClick={() => handleDayClick(day)}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-white font-medium flex items-center">
-                      {day.completed && <CheckCircle className="w-4 h-4 text-green-400 mr-2" />}
-                      {day.day === challenge.currentDay && !day.completed && <Play className="w-4 h-4 text-purple-400 mr-2" />}
-                      Day {day.day}: {day.title}
-                    </h4>
-                    <div className="flex items-center text-muted-foreground text-sm">
-                      <Clock className="w-3 h-3 mr-1" />
-                      {day.duration}
-                    </div>
-                  </div>
-                  
-                  <p className="text-muted-foreground text-sm mb-2">{day.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    {day.figures.map((figure, index) => (
-                      <Badge key={index} variant="outline" className="text-xs border-white/20 text-white/70">
-                        {figure}
-                      </Badge>
-                    ))}
-                  </div>
+                   <div className="flex items-center justify-between mb-2">
+                     <h4 className="text-white font-medium flex items-center">
+                       {day.completed && <CheckCircle className="w-4 h-4 text-green-400 mr-2" />}
+                       {day.day === challenge.currentDay && !day.completed && <Play className="w-4 h-4 text-purple-400 mr-2" />}
+                       Day {day.day}: {day.title}
+                       {day.isRestDay && <Badge variant="outline" className="ml-2 text-xs border-blue-500/30 text-blue-400">Rest Day</Badge>}
+                     </h4>
+                     <div className="flex items-center text-muted-foreground text-sm">
+                       <Clock className="w-3 h-3 mr-1" />
+                       {day.duration}
+                     </div>
+                   </div>
+                   
+                   <p className="text-muted-foreground text-sm mb-2">{day.description}</p>
+                   
+                   {!day.isRestDay && (
+                     <div className="flex flex-wrap gap-2">
+                       {day.figures.map((figure, index) => (
+                         <Badge key={index} variant="outline" className="text-xs border-white/20 text-white/70">
+                           {figure}
+                         </Badge>
+                       ))}
+                     </div>
+                   )}
                 </div>
               ))}
             </div>

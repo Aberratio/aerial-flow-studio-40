@@ -33,6 +33,7 @@ interface Challenge {
     day_date: string;
     title: string;
     description: string;
+    is_rest_day?: boolean;
     exercises?: Array<{
       id: string;
       figure: {
@@ -193,7 +194,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   onClose();
                   navigate(`/challenges/${challenge.id}/edit`);
                 }}
-                className="border-white/20 text-white hover:bg-white/10 ml-4 mt-2"
+                className="border-white/20 text-white hover:bg-white/10 ml-4 mt-3"
               >
                 <Edit2 className="w-4 h-4 mr-2" />
                 Edit
@@ -334,11 +335,13 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               day: index + 1,
               dayId: day.id, // Add the actual training day ID
               title: day.title || `Day ${index + 1}`,
-              description: day.description || 'Training session',
-              duration: '30-45 mins',
+              description: day.is_rest_day ? 'Rest Day' : (day.description || 'Training session'),
+              duration: day.is_rest_day ? 'Rest' : '30-45 mins',
               completed: false,
-              figures: day.exercises?.map(ex => ex.figure.name) || []
-            }))
+              figures: day.is_rest_day ? [] : (day.exercises?.map(ex => ex.figure.name) || []),
+              isRestDay: day.is_rest_day
+            })),
+            training_days: challenge.training_days
           }}
           isOpen={isDetailsModalOpen}
           onClose={() => setIsDetailsModalOpen(false)}
