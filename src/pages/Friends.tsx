@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { UserPlus, Mail, Users, UserCheck, UserX } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,9 +10,10 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
-
 const Friends = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const [showFriendInvite, setShowFriendInvite] = useState(false);
   const [showFriendRequests, setShowFriendRequests] = useState(false);
   const [friends, setFriends] = useState<any[]>([]);
@@ -22,19 +22,18 @@ const Friends = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [friendToRemove, setFriendToRemove] = useState<string | null>(null);
-
   useEffect(() => {
     const fetchFriendsAndRequests = async () => {
       if (!user) {
         setIsLoading(false);
         return;
       }
-
       try {
         // Fetch friends from friendships table
-        const { data: friendshipData, error: friendshipError } = await supabase
-          .from('friendships')
-          .select(`
+        const {
+          data: friendshipData,
+          error: friendshipError
+        } = await supabase.from('friendships').select(`
             requester_id,
             addressee_id,
             requester:profiles!friendships_requester_id_fkey (
@@ -49,10 +48,7 @@ const Friends = () => {
               avatar_url,
               bio
             )
-          `)
-          .eq('status', 'accepted')
-          .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
-
+          `).eq('status', 'accepted').or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
         if (friendshipError) {
           console.error('Error fetching friends:', friendshipError);
         } else {
@@ -61,7 +57,6 @@ const Friends = () => {
             const isRequester = friendship.requester_id === user.id;
             return isRequester ? friendship.addressee : friendship.requester;
           }).filter(Boolean) || [];
-
           const formattedFriends = friendProfiles.map(friend => ({
             id: friend?.id || '',
             username: friend?.username || '',
@@ -73,57 +68,38 @@ const Friends = () => {
         }
 
         // Fetch pending friend requests (friendships table)
-        const { data: requestsData, error: requestsError } = await supabase
-          .from('friendships')
-          .select('id')
-          .eq('addressee_id', user.id)
-          .eq('status', 'pending');
-
+        const {
+          data: requestsData,
+          error: requestsError
+        } = await supabase.from('friendships').select('id').eq('addressee_id', user.id).eq('status', 'pending');
         if (requestsError) {
           console.error('Error fetching requests:', requestsError);
         } else {
           setPendingRequestsCount(requestsData?.length || 0);
         }
-
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
     fetchFriendsAndRequests();
   }, [user, refreshTrigger]);
-
   const handleUnfriend = async (friendId: string) => {
     if (!user) return;
-
     try {
       // Remove from friendships table
-      const { error: friendshipError } = await supabase
-        .from('friendships')
-        .delete()
-        .or(`and(requester_id.eq.${user.id},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${user.id})`)
-        .eq('status', 'accepted');
-
+      const {
+        error: friendshipError
+      } = await supabase.from('friendships').delete().or(`and(requester_id.eq.${user.id},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${user.id})`).eq('status', 'accepted');
       if (friendshipError) {
         console.error('Error removing friendship:', friendshipError);
         return;
       }
 
       // Also remove from user_follows table (both directions)
-      await supabase
-        .from('user_follows')
-        .delete()
-        .eq('follower_id', user.id)
-        .eq('following_id', friendId);
-
-      await supabase
-        .from('user_follows')
-        .delete()
-        .eq('follower_id', friendId)
-        .eq('following_id', user.id);
-
+      await supabase.from('user_follows').delete().eq('follower_id', user.id).eq('following_id', friendId);
+      await supabase.from('user_follows').delete().eq('follower_id', friendId).eq('following_id', user.id);
       setFriends(friends.filter(friend => friend.id !== friendId));
       setShowRemoveModal(false);
       setFriendToRemove(null);
@@ -131,48 +107,35 @@ const Friends = () => {
       console.error('Error unfriending:', error);
     }
   };
-
   const handleConfirmRemove = () => {
     if (friendToRemove) {
       handleUnfriend(friendToRemove);
     }
   };
-
   const handleFriendsUpdated = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
   // Show loading only if we're actually fetching data
   if (isLoading && user) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
+    return <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen p-6">
+  return <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="mb-8">
               <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Friends</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 my-[32px]">Friends</h1>
               <p className="text-muted-foreground text-sm sm:text-base">Connect with fellow aerial athletes</p>
             </div>
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-              <Button
-                onClick={() => setShowFriendRequests(true)}
-                variant="outline"
-                className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto"
-              >
+              <Button onClick={() => setShowFriendRequests(true)} variant="outline" className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto">
                 <Mail className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 <span className="text-sm sm:text-base">Friend Requests</span>
               </Button>
-              <Button
-                onClick={() => setShowFriendInvite(true)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto"
-              >
+              <Button onClick={() => setShowFriendInvite(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto">
                 <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 <span className="text-sm sm:text-base">Find Friends</span>
               </Button>
@@ -199,8 +162,7 @@ const Friends = () => {
         </div>
 
         {/* Pending Requests Section */}
-        {pendingRequestsCount > 0 && (
-          <Card className="glass-effect border-white/10">
+        {pendingRequestsCount > 0 && <Card className="glass-effect border-white/10">
             <CardHeader>
               <CardTitle className="text-white flex items-center justify-between">
                 Pending Friend Requests 
@@ -212,18 +174,13 @@ const Friends = () => {
                 {/* This will be populated by the friend requests data */}
                 <p className="text-muted-foreground text-sm">
                   You have {pendingRequestsCount} pending friend request{pendingRequestsCount !== 1 ? 's' : ''}. 
-                  <Button 
-                    variant="link" 
-                    className="p-0 h-auto text-primary hover:text-primary/80"
-                    onClick={() => setShowFriendRequests(true)}
-                  >
+                  <Button variant="link" className="p-0 h-auto text-primary hover:text-primary/80" onClick={() => setShowFriendRequests(true)}>
                     View all requests
                   </Button>
                 </p>
               </div>
             </CardContent>
-          </Card>
-        )}
+          </Card>}
 
         {/* Friends List or Empty State */}
         <Card className="glass-effect border-white/10">
@@ -231,23 +188,16 @@ const Friends = () => {
             <CardTitle className="text-white">Your Friends</CardTitle>
           </CardHeader>
           <CardContent>
-            {friends.length === 0 ? (
-              <div className="text-center py-12">
+            {friends.length === 0 ? <div className="text-center py-12">
                 <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold text-white mb-2">No friends yet</h3>
                 <p className="text-muted-foreground mb-6">Start building your aerial community by finding and connecting with other athletes</p>
-                <Button
-                  onClick={() => setShowFriendInvite(true)}
-                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
-                >
+                <Button onClick={() => setShowFriendInvite(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600">
                   <UserPlus className="w-5 h-5 mr-2" />
                   Find Friends
                 </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4">
-                {friends.map((friend) => (
-                  <div key={friend.id} className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => window.location.href = `/profile/${friend.id}`}>
+              </div> : <div className="grid grid-cols-1 gap-4">
+                {friends.map(friend => <div key={friend.id} className="flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer" onClick={() => window.location.href = `/profile/${friend.id}`}>
                     <div className="relative flex-shrink-0">
                       <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                         <AvatarImage src={friend.avatar} />
@@ -260,51 +210,28 @@ const Friends = () => {
                       <p className="text-muted-foreground text-xs">{friend.mutualFriends} mutual friends</p>
                     </div>
                      <div className="flex-shrink-0">
-                       <Button 
-                         variant="ghost" 
-                         size="sm" 
-                         className="text-red-400 hover:text-red-300 h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-3"
-                         onClick={(e) => {
-                           e.stopPropagation();
-                           setFriendToRemove(friend.id);
-                           setShowRemoveModal(true);
-                         }}
-                       >
+                       <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-3" onClick={e => {
+                  e.stopPropagation();
+                  setFriendToRemove(friend.id);
+                  setShowRemoveModal(true);
+                }}>
                          <UserX className="w-4 h-4" />
                        </Button>
                      </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  </div>)}
+              </div>}
           </CardContent>
         </Card>
       </div>
 
-      <FriendInviteModal
-        isOpen={showFriendInvite}
-        onClose={() => setShowFriendInvite(false)}
-        onFriendAdded={handleFriendsUpdated}
-      />
+      <FriendInviteModal isOpen={showFriendInvite} onClose={() => setShowFriendInvite(false)} onFriendAdded={handleFriendsUpdated} />
 
-      <NewFriendRequestsModal
-        isOpen={showFriendRequests}
-        onClose={() => setShowFriendRequests(false)}
-        onFriendsUpdated={handleFriendsUpdated}
-      />
+      <NewFriendRequestsModal isOpen={showFriendRequests} onClose={() => setShowFriendRequests(false)} onFriendsUpdated={handleFriendsUpdated} />
 
-      <ConfirmDeleteModal
-        isOpen={showRemoveModal}
-        onClose={() => {
-          setShowRemoveModal(false);
-          setFriendToRemove(null);
-        }}
-        onConfirm={handleConfirmRemove}
-        title="Remove Friend"
-        description="Are you sure you want to remove this friend? You will no longer be able to see their friends-only content and they won't see yours."
-      />
-    </div>
-  );
+      <ConfirmDeleteModal isOpen={showRemoveModal} onClose={() => {
+      setShowRemoveModal(false);
+      setFriendToRemove(null);
+    }} onConfirm={handleConfirmRemove} title="Remove Friend" description="Are you sure you want to remove this friend? You will no longer be able to see their friends-only content and they won't see yours." />
+    </div>;
 };
-
 export default Friends;
