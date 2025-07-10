@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Languages } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -20,6 +21,7 @@ const Navigation: React.FC<NavigationProps> = ({
     user,
     logout
   } = useAuth();
+  const { t } = useLanguage();
   const [unreadCount, setUnreadCount] = useState(0);
   const isMobile = useIsMobile();
 
@@ -61,34 +63,34 @@ const Navigation: React.FC<NavigationProps> = ({
   const freeNavItems = [{
     path: '/feed',
     icon: Home,
-    label: 'Feed'
+    label: t('nav.feed')
   }, {
     path: '/friends',
     icon: Users,
-    label: 'Friends'
+    label: t('nav.friends')
   }, {
     path: '/profile',
     icon: User,
-    label: 'Profile'
+    label: t('nav.profile')
   }, {
     path: '/inbox',
     icon: Bell,
-    label: 'Inbox'
+    label: t('nav.inbox')
   }];
   const premiumNavItems = [{
     path: '/library',
     icon: BookOpen,
-    label: 'Library',
+    label: t('nav.library'),
     premium: true
   }, {
     path: '/challenges',
     icon: Trophy,
-    label: 'Challenges',
+    label: t('nav.challenges'),
     premium: true
   }, {
     path: '/training',
     icon: Dumbbell,
-    label: 'Training',
+    label: t('nav.training'),
     premium: true
   }];
 
@@ -96,11 +98,11 @@ const Navigation: React.FC<NavigationProps> = ({
   const adminItems = user?.role === 'admin' ? [{
     path: '/admin/achievements',
     icon: Settings,
-    label: 'Achievements'
+    label: t('nav.achievements')
   }, {
     path: '/admin/translations',
     icon: Languages,
-    label: 'Translations'
+    label: t('nav.translations')
   }] : [];
   const isActive = (path: string) => location.pathname === path;
   return <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
@@ -138,10 +140,10 @@ const Navigation: React.FC<NavigationProps> = ({
           <div className="flex items-center space-x-2 px-3 mb-2">
             <Crown className="w-4 h-4 text-yellow-400" />
             <span className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider ${isMobile ? 'block' : 'hidden lg:block'}`}>
-              Premium
+              {t('nav.premium')}
             </span>
             {!hasPremiumAccess && <Badge className={`bg-yellow-500/20 text-yellow-400 text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                Upgrade
+                {t('nav.upgrade')}
               </Badge>}
           </div>
           
@@ -159,7 +161,7 @@ const Navigation: React.FC<NavigationProps> = ({
           {adminItems.length > 0 && <>
               <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
               <div className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2 ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                Admin
+                {t('nav.admin')}
               </div>
               {adminItems.map(item => {
             const Icon = item.icon;
@@ -192,19 +194,19 @@ const Navigation: React.FC<NavigationProps> = ({
           if (isMobile && onClose) onClose();
         }} variant="ghost" size="sm" className="w-full mt-2 text-muted-foreground hover:text-white justify-start">
             <LogOut className="w-4 h-4 mr-3" />
-            <span className={isMobile ? 'block' : 'hidden lg:block'}>Logout</span>
+            <span className={isMobile ? 'block' : 'hidden lg:block'}>{t('nav.logout')}</span>
           </Button>
           
           {/* Footer Links */}
           <div className={`space-y-2 border-t border-white/10 ${isMobile ? 'mt-2 pt-2' : 'mt-4 pt-4'}`}>
             <Link to="/privacy-policy" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              Privacy Policy
+              {t('nav.privacy_policy')}
             </Link>
             <Link to="/terms-of-use" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              Terms of Use
+              {t('nav.terms_of_use')}
             </Link>
             <Link to="/about" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              About Us
+              {t('nav.about_us')}
             </Link>
           </div>
         </div>

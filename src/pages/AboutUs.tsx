@@ -1,123 +1,169 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Heart, Users, Target, Star } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const AboutUs = () => {
-  const values = [
-    {
-      icon: Heart,
-      title: 'Passion for Aerial Arts',
-      description: 'We believe in the transformative power of aerial arts and are dedicated to supporting every athlete on their journey.'
-    },
-    {
-      icon: Users,
-      title: 'Community First',
-      description: 'Building a supportive community where aerial artists can connect, learn, and grow together.'
-    },
-    {
-      icon: Target,
-      title: 'Focused Training',
-      description: 'Providing structured, progressive training programs designed by professional instructors.'
-    },
-    {
-      icon: Star,
-      title: 'Excellence',
-      description: 'Committed to delivering the highest quality training resources and user experience.'
+  const { currentLanguage } = useLanguage();
+  const [content, setContent] = useState<{ title: string; content: string } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchContent = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('static_pages')
+          .select('title, content')
+          .eq('page_key', 'about-us')
+          .eq('language_id', currentLanguage)
+          .maybeSingle();
+
+        if (error) throw error;
+        
+        if (data) {
+          setContent(data);
+        } else {
+          // Fallback to default content if no translation exists
+          setContent({
+            title: 'About Us',
+            content: `# Our Mission
+
+AerialJourney is dedicated to creating a supportive community for aerial athletes of all levels. We believe that aerial arts should be accessible, safe, and inspiring for everyone.
+
+# What We Offer
+
+- Comprehensive figure library with detailed instructions
+- Progress tracking to monitor your aerial journey
+- Social features to connect with fellow aerial athletes
+- Challenges to push your limits and stay motivated
+- Training sessions tailored to your skill level
+
+# Our Community
+
+Join thousands of aerial enthusiasts who are passionate about silk, lyra, straps, and more. Whether you're a beginner taking your first steps into the air or an advanced practitioner perfecting complex sequences, AerialJourney is here to support your growth.
+
+# Safety First
+
+We prioritize safety in all our content and encourage proper training, warm-up routines, and working with qualified instructors. Always practice aerial arts in a safe environment with proper equipment.
+
+# Contact Us
+
+Have questions or feedback? We'd love to hear from you! Reach out to us at hello@aerialjourney.com`
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching about us content:', error);
+        setContent({
+          title: 'About Us',
+          content: 'Unable to load about us content.'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContent();
+  }, [currentLanguage]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!content) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <p className="text-muted-foreground">About us content not available.</p>
+      </div>
+    );
+  }
+
+  // Simple markdown-like rendering for basic formatting
+  const renderContent = (text: string) => {
+    const lines = text.split('\n');
+    const elements: JSX.Element[] = [];
+    let key = 0;
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      
+      if (line.startsWith('# ')) {
+        elements.push(
+          <Card key={key++} className="glass-effect border-white/10 mb-6">
+            <CardHeader>
+              <CardTitle className="text-white">{line.substring(2)}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-muted-foreground space-y-4">
+              {/* Collect content until next heading */}
+              {(() => {
+                const contentLines: string[] = [];
+                let j = i + 1;
+                while (j < lines.length && !lines[j].trim().startsWith('# ')) {
+                  if (lines[j].trim()) {
+                    contentLines.push(lines[j].trim());
+                  }
+                  j++;
+                }
+                i = j - 1; // Update outer loop counter
+                
+                const processedContent: JSX.Element[] = [];
+                let listItems: string[] = [];
+                
+                for (let k = 0; k < contentLines.length; k++) {
+                  const contentLine = contentLines[k];
+                  
+                  if (contentLine.startsWith('- ')) {
+                    listItems.push(contentLine.substring(2));
+                  } else {
+                    // If we have accumulated list items, render them first
+                    if (listItems.length > 0) {
+                      processedContent.push(
+                        <ul key={`list-${k}`} className="list-disc pl-6 space-y-2">
+                          {listItems.map((item, itemIdx) => (
+                            <li key={itemIdx}>{item}</li>
+                          ))}
+                        </ul>
+                      );
+                      listItems = [];
+                    }
+                    
+                    // Render the paragraph
+                    processedContent.push(<p key={k}>{contentLine}</p>);
+                  }
+                }
+                
+                // Handle any remaining list items
+                if (listItems.length > 0) {
+                  processedContent.push(
+                    <ul key={`list-final`} className="list-disc pl-6 space-y-2">
+                      {listItems.map((item, itemIdx) => (
+                        <li key={itemIdx}>{item}</li>
+                      ))}
+                    </ul>
+                  );
+                }
+                
+                return processedContent;
+              })()}
+            </CardContent>
+          </Card>
+        );
+      }
     }
-  ];
+
+    return elements;
+  };
 
   return (
     <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto space-y-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold gradient-text mb-4">About AerialJourney</h1>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Empowering aerial artists worldwide with comprehensive training programs, 
-            community support, and progress tracking tools.
-          </p>
-        </div>
-
-        {/* Mission Statement */}
-        <Card className="glass-effect border-white/10 mb-8">
-          <CardHeader>
-            <CardTitle className="text-white text-center text-2xl">Our Mission</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              To make aerial arts accessible to everyone by providing world-class training programs, 
-              fostering a supportive community, and tracking progress through innovative technology. 
-              We believe that every person has the potential to soar, and we're here to help them reach new heights.
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Our Values */}
-        <div className="grid md:grid-cols-2 gap-6 mb-8">
-          {values.map((value, index) => {
-            const Icon = value.icon;
-            return (
-              <Card key={index} className="glass-effect border-white/10">
-                <CardContent className="p-6">
-                  <div className="flex items-start space-x-4">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-white font-semibold text-lg mb-2">{value.title}</h3>
-                      <p className="text-muted-foreground">{value.description}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Story */}
-        <Card className="glass-effect border-white/10 mb-8">
-          <CardHeader>
-            <CardTitle className="text-white text-center text-2xl">Our Story</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4 text-muted-foreground">
-              <p>
-                AerialJourney was born from a simple observation: aerial arts training was scattered, 
-                inconsistent, and often inaccessible to many who wanted to learn. Our founders, 
-                experienced aerial instructors and technologists, came together with a vision to 
-                democratize aerial arts education.
-              </p>
-              <p>
-                What started as a small project to help local students track their progress has 
-                evolved into a comprehensive platform serving thousands of aerial artists worldwide. 
-                We've partnered with certified instructors, professional performers, and industry 
-                experts to create the most comprehensive aerial arts training platform available.
-              </p>
-              <p>
-                Today, AerialJourney continues to grow, driven by our community's feedback and our 
-                commitment to innovation. We're not just building a platform; we're building a 
-                movement that makes aerial arts accessible, safe, and enjoyable for everyone.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Contact */}
-        <Card className="glass-effect border-white/10">
-          <CardHeader>
-            <CardTitle className="text-white text-center text-2xl">Get in Touch</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-muted-foreground mb-4">
-              Have questions, suggestions, or just want to say hello? We'd love to hear from you!
-            </p>
-            <div className="space-y-2 text-muted-foreground">
-              <p>Email: hello@aerialjourney.com</p>
-              <p>Support: support@aerialjourney.com</p>
-              <p>Partnership: partners@aerialjourney.com</p>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-white mb-8">{content.title}</h1>
+        
+        {renderContent(content.content)}
       </div>
     </div>
   );

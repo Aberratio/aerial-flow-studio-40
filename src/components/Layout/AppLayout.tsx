@@ -4,6 +4,7 @@ import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Navigation from './Navigation';
+import { LanguageSelector } from '@/components/LanguageSelector';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -39,6 +40,11 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
           {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </Button>
       )}
+
+      {/* Language Selector - Top Right */}
+      <div className="fixed top-4 right-4 z-50">
+        <LanguageSelector />
+      </div>
       
       {/* Mobile Overlay */}
       {isMobile && sidebarOpen && (
