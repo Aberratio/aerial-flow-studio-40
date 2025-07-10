@@ -26,7 +26,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
       name: 'Warm-up',
       icon: Zap,
       color: 'text-yellow-500',
-      exercises: session.warmup,
+      exercises: session?.exercises || ['Shoulder Rolls', 'Arm Circles', 'Neck Stretches'],
       duration: 10, // minutes
       media: [
         'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop',
@@ -43,7 +43,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
       name: 'Figures & Combos',
       icon: Target,
       color: 'text-purple-500',
-      exercises: session.figures,
+      exercises: session?.exercises || ['Basic Hold', 'Transition Practice', 'Flow Combination'],
       duration: 25, // minutes
       media: [
         'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=400&fit=crop',
@@ -60,7 +60,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
       name: 'Stretching',
       icon: Heart,
       color: 'text-pink-500',
-      exercises: session.stretching,
+      exercises: session?.exercises || ['Hip Stretches', 'Spinal Twists', 'Relaxation'],
       duration: 10, // minutes
       media: [
         'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=600&h=400&fit=crop',
@@ -86,10 +86,11 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
   }, [isPlaying]);
 
   useEffect(() => {
-    const totalDuration = session.duration * 60; // Convert to seconds
+    const sessionDuration = session?.duration || 45; // Default 45 minutes
+    const totalDuration = sessionDuration * 60; // Convert to seconds
     const currentProgress = (timer / totalDuration) * 100;
     setProgress(Math.min(currentProgress, 100));
-  }, [timer, session.duration]);
+  }, [timer, session]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -98,7 +99,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
   };
 
   const nextExercise = () => {
-    const currentPhaseExercises = phases[currentPhase].exercises;
+    const currentPhaseExercises = phases[currentPhase].exercises || [];
     if (currentExercise < currentPhaseExercises.length - 1) {
       setCurrentExercise(prev => prev + 1);
     } else if (currentPhase < phases.length - 1) {
@@ -117,7 +118,8 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
       setCurrentExercise(prev => prev - 1);
     } else if (currentPhase > 0) {
       setCurrentPhase(prev => prev - 1);
-      setCurrentExercise(phases[currentPhase - 1].exercises.length - 1);
+      const prevPhaseExercises = phases[currentPhase - 1].exercises || [];
+      setCurrentExercise(prevPhaseExercises.length - 1);
     }
   };
 
@@ -140,8 +142,8 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-white mb-2">{session.title}</h1>
-            <p className="text-muted-foreground">with {session.instructor}</p>
+            <h1 className="text-3xl font-bold text-white mb-2">{session?.title || 'Training Session'}</h1>
+            <p className="text-muted-foreground">with {session?.instructor || 'Professional Trainer'}</p>
           </div>
           <Button
             onClick={onClose}
@@ -167,7 +169,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
                   {formatTime(timer)}
                 </div>
                 <Badge variant="outline" className="text-white border-white/20">
-                  {currentExercise + 1} / {phases[currentPhase].exercises.length}
+                  {currentExercise + 1} / {(phases[currentPhase].exercises || []).length}
                 </Badge>
               </div>
             </div>
@@ -183,7 +185,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
               <div className="space-y-4">
                 <img
                   src={currentMedia}
-                  alt={phases[currentPhase].exercises[currentExercise]}
+                  alt={(phases[currentPhase].exercises || [])[currentExercise] || 'Exercise'}
                   className="w-full h-64 object-cover rounded-lg"
                 />
                 <div className="flex items-center justify-between">
@@ -211,7 +213,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
               <div className="flex flex-col justify-center text-center lg:text-left">
                 <CurrentPhaseIcon className={`w-16 h-16 mx-auto lg:mx-0 mb-4 ${phases[currentPhase].color}`} />
                 <h2 className="text-2xl font-bold text-white mb-4">
-                  {phases[currentPhase].exercises[currentExercise]}
+                  {(phases[currentPhase].exercises || [])[currentExercise] || 'Exercise'}
                 </h2>
                 <p className="text-muted-foreground mb-6">
                   {currentInstruction}
@@ -239,7 +241,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
                     variant="outline"
                     className="border-white/20 text-white hover:bg-white/10"
                   >
-                    {currentPhase === phases.length - 1 && currentExercise === phases[currentPhase].exercises.length - 1 ? 'Finish' : 'Next'}
+                    {currentPhase === phases.length - 1 && currentExercise === (phases[currentPhase].exercises || []).length - 1 ? 'Finish' : 'Next'}
                   </Button>
                 </div>
               </div>
@@ -257,7 +259,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
               <CardContent className="p-4 text-center">
                 <phase.icon className={`w-8 h-8 mx-auto mb-2 ${phase.color}`} />
                 <h3 className="font-semibold text-white mb-1">{phase.name}</h3>
-                <p className="text-muted-foreground text-sm">{phase.exercises.length} exercises</p>
+                <p className="text-muted-foreground text-sm">{(phase.exercises || []).length} exercises</p>
                 <div className="mt-2">
                   {index < currentPhase ? (
                     <Check className="w-4 h-4 mx-auto text-green-500" />
@@ -280,7 +282,7 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
                 <Music className="w-6 h-6 text-primary" />
                 <div>
                   <h3 className="font-semibold text-white">Now Playing</h3>
-                  <p className="text-muted-foreground">{session.playlist}</p>
+                  <p className="text-muted-foreground">{session?.playlist || 'Ambient Training Music'}</p>
                 </div>
               </div>
               <Button
@@ -312,14 +314,14 @@ export const TrainingSessionPage: React.FC<TrainingSessionPageProps> = ({ sessio
               </div>
               <h3 className="text-xl font-bold text-white">Training Complete!</h3>
               <p className="text-muted-foreground">
-                You've successfully completed the {session.title} training session. 
+                You've successfully completed the {session?.title || 'training session'}. 
                 Your dedication and hard work are paying off!
               </p>
               <div className="bg-white/5 p-4 rounded-lg">
                 <p className="text-white font-semibold">Session Summary:</p>
                 <div className="text-sm text-muted-foreground mt-2 space-y-1">
                   <p>Duration: {formatTime(timer)}</p>
-                  <p>Exercises Completed: {phases.reduce((total, phase) => total + phase.exercises.length, 0)}</p>
+                  <p>Exercises Completed: {phases.reduce((total, phase) => total + (phase.exercises || []).length, 0)}</p>
                   <p>Phases: {phases.length}</p>
                 </div>
               </div>

@@ -14,10 +14,13 @@ import {
   LogOut,
   Eye,
   MessageCircle,
-  Heart
+  Heart,
+  Crown,
+  CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import PricingPlansModal from '@/components/PricingPlansModal';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -27,6 +30,7 @@ interface SettingsModalProps {
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [notifications, setNotifications] = useState({
     likes: true,
     comments: true,
@@ -189,6 +193,44 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           <Separator className="bg-white/10" />
 
+          {/* Subscription & Billing */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Crown className="w-5 h-5 text-yellow-400" />
+              <h3 className="text-white font-semibold">Subscription & Billing</h3>
+            </div>
+            
+            <div className="space-y-3 pl-7">
+              <div className="bg-white/5 p-4 rounded-lg border border-white/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-white font-medium">Current Plan</span>
+                  <span className="text-gray-400 text-sm">Free</span>
+                </div>
+                <p className="text-muted-foreground text-sm mb-3">
+                  You're currently on the free plan. Upgrade to unlock premium features!
+                </p>
+                <Button
+                  onClick={() => setIsPricingModalOpen(true)}
+                  className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                >
+                  <Crown className="w-4 h-4 mr-2" />
+                  Upgrade to Premium
+                </Button>
+              </div>
+              
+              <Button
+                variant="outline"
+                className="w-full justify-start border-white/20 text-white hover:bg-white/10"
+                onClick={() => setIsPricingModalOpen(true)}
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                View Pricing Plans
+              </Button>
+            </div>
+          </div>
+
+          <Separator className="bg-white/10" />
+
           {/* Data & Account */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -233,6 +275,12 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
             Save Settings
           </Button>
         </div>
+
+        {/* Pricing Plans Modal */}
+        <PricingPlansModal
+          isOpen={isPricingModalOpen}
+          onClose={() => setIsPricingModalOpen(false)}
+        />
       </DialogContent>
     </Dialog>
   );
