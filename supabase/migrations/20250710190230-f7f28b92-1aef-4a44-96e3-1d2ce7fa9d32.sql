@@ -1,0 +1,27 @@
+-- Insert UI strings for English
+INSERT INTO ui_strings (language_id, string_key, value, category) VALUES
+('en', 'nav.feed', 'Feed', 'navigation'),
+('en', 'nav.friends', 'Friends', 'navigation'),
+('en', 'nav.profile', 'Profile', 'navigation'),
+('en', 'nav.inbox', 'Inbox', 'navigation'),
+('en', 'nav.library', 'Library', 'navigation'),
+('en', 'nav.challenges', 'Challenges', 'navigation'),
+('en', 'nav.training', 'Training', 'navigation'),
+('en', 'nav.achievements', 'Achievements', 'navigation'),
+('en', 'nav.translations', 'Translations', 'navigation'),
+('en', 'nav.premium', 'Premium', 'navigation'),
+('en', 'nav.upgrade', 'Upgrade', 'navigation'),
+('en', 'nav.admin', 'Admin', 'navigation'),
+('en', 'nav.logout', 'Logout', 'navigation'),
+('en', 'nav.privacy_policy', 'Privacy Policy', 'navigation'),
+('en', 'nav.terms_of_use', 'Terms of Use', 'navigation'),
+('en', 'nav.about_us', 'About Us', 'navigation'),
+('en', 'feed.title', 'Your Feed', 'feed'),
+('en', 'feed.subtitle', 'See what your fellow aerial athletes are up to', 'feed'),
+('en', 'feed.create_post_placeholder', "What's on your mind?", 'feed'),
+('en', 'feed.no_posts', 'No posts yet. Follow some users or create your first post!', 'feed'),
+('en', 'feed.edit_post', 'Edit Post', 'feed'),
+('en', 'feed.delete_post', 'Delete Post', 'feed'),
+('en', 'feed.loading', 'Loading...', 'feed'),
+('en', 'feed.load_more', 'Load More Posts', 'feed')
+ON CONFLICT (language_id, string_key) DO UPDATE SET value = EXCLUDED.value;
