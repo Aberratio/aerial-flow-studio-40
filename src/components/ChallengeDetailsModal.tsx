@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 interface ChallengeDay {
   day: number;
+  dayId?: string;
   title: string;
   description: string;
   duration: string;
@@ -44,17 +45,23 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
 
   const handleDayClick = (day: ChallengeDay) => {
     onClose();
-    navigate(`/challenge/${challenge.id}/day/${day.day}`);
+    // Use the actual training day ID if available
+    const dayIdentifier = day.dayId || day.day;
+    navigate(`/challenge/${challenge.id}/day/${dayIdentifier}`);
   };
 
   const handleContinue = () => {
     onClose();
-    navigate(`/challenge/${challenge.id}/day/${challenge.currentDay}`);
+    const currentDay = challenge.days.find(d => d.day === challenge.currentDay);
+    const dayIdentifier = currentDay?.dayId || challenge.currentDay;
+    navigate(`/challenge/${challenge.id}/day/${dayIdentifier}`);
   };
 
   const handleStart = () => {
     onClose();
-    navigate(`/challenge/${challenge.id}/day/1`);
+    const firstDay = challenge.days[0];
+    const dayIdentifier = firstDay?.dayId || 1;
+    navigate(`/challenge/${challenge.id}/day/${dayIdentifier}`);
   };
 
   return (

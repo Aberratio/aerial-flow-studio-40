@@ -143,6 +143,7 @@ export type Database = {
           day_date: string
           description: string | null
           id: string
+          is_rest_day: boolean | null
           title: string | null
         }
         Insert: {
@@ -151,6 +152,7 @@ export type Database = {
           day_date: string
           description?: string | null
           id?: string
+          is_rest_day?: boolean | null
           title?: string | null
         }
         Update: {
@@ -159,6 +161,7 @@ export type Database = {
           day_date?: string
           description?: string | null
           id?: string
+          is_rest_day?: boolean | null
           title?: string | null
         }
         Relationships: [
@@ -176,6 +179,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           description: string | null
+          difficulty_level: string | null
           end_date: string
           id: string
           start_date: string
@@ -187,6 +191,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          difficulty_level?: string | null
           end_date: string
           id?: string
           start_date: string
@@ -198,6 +203,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           description?: string | null
+          difficulty_level?: string | null
           end_date?: string
           id?: string
           start_date?: string

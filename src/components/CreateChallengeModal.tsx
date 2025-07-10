@@ -53,12 +53,14 @@ interface TrainingDay {
   date: Date;
   title: string;
   description: string;
+  isRestDay: boolean;
   exercises: Exercise[];
 }
 
 const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateChallengeModalProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [difficultyLevel, setDifficultyLevel] = useState('intermediate');
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
@@ -92,6 +94,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
   const resetForm = () => {
     setTitle('');
     setDescription('');
+    setDifficultyLevel('intermediate');
     setStartDate(undefined);
     setEndDate(undefined);
     setSelectedAchievements([]);
@@ -122,6 +125,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
       const challengeData = {
         title: title.trim(),
         description: description.trim() || null,
+        difficulty_level: difficultyLevel,
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
         created_by: user.id,
@@ -203,16 +207,17 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
 
       // Insert training days one by one to get their IDs
       for (const day of trainingDays) {
-        const { data: trainingDayData, error: dayError } = await supabase
-          .from('challenge_training_days')
-          .insert({
-            challenge_id: challengeIdToUse,
-            day_date: day.date.toISOString().split('T')[0],
-            title: day.title,
-            description: day.description
-          })
-          .select()
-          .single();
+          const { data: trainingDayData, error: dayError } = await supabase
+            .from('challenge_training_days')
+            .insert({
+              challenge_id: challengeIdToUse,
+              day_date: day.date.toISOString().split('T')[0],
+              title: day.title,
+              description: day.description,
+              is_rest_day: day.isRestDay
+            })
+            .select()
+            .single();
 
         if (dayError) throw dayError;
 
@@ -246,6 +251,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
       date: new Date(), 
       title: '', 
       description: '',
+      isRestDay: false,
       exercises: []
     }]);
   };
@@ -345,6 +351,20 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
               rows={4}
               maxLength={500}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="difficulty">Difficulty Level</Label>
+            <select
+              id="difficulty"
+              value={difficultyLevel}
+              onChange={(e) => setDifficultyLevel(e.target.value)}
+              className="w-full p-2 rounded-md border border-input bg-background text-foreground"
+            >
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -511,23 +531,45 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label className="text-xs">Description</Label>
-                    <Textarea
-                      placeholder="Training day description"
-                      value={day.description}
-                      onChange={(e) => updateTrainingDay(index, 'description', e.target.value)}
-                      rows={2}
-                    />
-                  </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Description</Label>
+                      <Textarea
+                        placeholder="Training day description"
+                        value={day.description}
+                        onChange={(e) => updateTrainingDay(index, 'description', e.target.value)}
+                        rows={2}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id={`rest-day-${index}`}
+                        checked={day.isRestDay}
+                        onChange={(e) => updateTrainingDay(index, 'isRestDay', e.target.checked)}
+                        className="rounded border-gray-300"
+                      />
+                      <Label htmlFor={`rest-day-${index}`} className="text-xs">
+                        Rest Day (no exercises)
+                      </Label>
+                    </div>
                   
                   {/* Exercise Management */}
-                  <ExerciseManagement
-                    trainingDayId={`temp-${index}`}
-                    exercises={day.exercises}
-                    onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
-                    canEdit={true}
-                  />
+                  {!day.isRestDay && (
+                    <ExerciseManagement
+                      trainingDayId={`temp-${index}`}
+                      exercises={day.exercises}
+                      onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
+                      canEdit={true}
+                    />
+                  )}
+                  
+                  {day.isRestDay && (
+                    <div className="text-center py-4 text-muted-foreground border-2 border-dashed rounded-lg">
+                      <span className="text-2xl">😴</span>
+                      <p className="mt-2">Rest Day - No exercises scheduled</p>
+                    </div>
+                  )}
                 </div>
               ))}
               

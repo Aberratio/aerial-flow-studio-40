@@ -43,7 +43,9 @@ const Challenges = () => {
         created_by: challenge.created_by,
         duration: calculateDuration(challenge.start_date, challenge.end_date),
         participants: 0, // Will be calculated from challenge_participants table
-        difficulty: 'Intermediate', // Default for now
+        difficulty: challenge.difficulty_level ? 
+          challenge.difficulty_level.charAt(0).toUpperCase() + challenge.difficulty_level.slice(1) : 
+          'Intermediate',
         progress: 0, // Will be calculated based on user participation
         image: 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=400&h=200&fit=crop', // Default image
         category: 'General', // Default for now

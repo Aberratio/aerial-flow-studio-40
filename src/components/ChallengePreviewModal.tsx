@@ -9,11 +9,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { ChallengeDetailsModal } from '@/components/ChallengeDetailsModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useNavigate } from 'react-router-dom';
+import { Edit2 } from 'lucide-react';
 
 interface Challenge {
   id: string;
   title: string;
   description: string;
+  difficulty_level?: string;
   start_date: string;
   end_date: string;
   status: string;
@@ -58,6 +62,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
+  const { canCreateChallenges } = useUserRole();
+  const navigate = useNavigate();
   
   useEffect(() => {
     if (isOpen && initialChallenge) {
@@ -79,7 +85,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             )
           ),
           challenge_training_days (
-            id, day_date, title, description,
+            id, day_date, title, description, is_rest_day,
             training_day_exercises (
               id, sets, reps, hold_time_seconds,
               figure:figures (
@@ -112,6 +118,13 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     }
   };
 
+  const canEditChallenge = () => {
+    return canCreateChallenges && challenge && (
+      user?.id === challenge.created_by || 
+      user?.role === 'admin'
+    );
+  };
+
   if (!challenge) return null;
 
   const calculateDuration = () => {
@@ -122,17 +135,11 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     return `${diffDays} days`;
   };
 
-  const getDifficultyFromTrainingDays = () => {
-    if (!challenge.training_days?.length) return 'Beginner';
-    
-    const difficulties = challenge.training_days
-      .flatMap(day => day.exercises || [])
-      .map(ex => ex.figure?.difficulty_level)
-      .filter(Boolean);
-    
-    if (difficulties.includes('advanced')) return 'Advanced';
-    if (difficulties.includes('intermediate')) return 'Intermediate';
-    return 'Beginner';
+  const getDifficultyFromChallenge = () => {
+    if (challenge.difficulty_level) {
+      return challenge.difficulty_level.charAt(0).toUpperCase() + challenge.difficulty_level.slice(1);
+    }
+    return 'Intermediate';
   };
 
   const getStatusColor = (status: string) => {
@@ -176,7 +183,23 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl glass-effect border-white/10 text-white">
         <DialogHeader>
-          <DialogTitle className="text-2xl gradient-text">{challenge.title}</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl gradient-text">{challenge.title}</DialogTitle>
+            {canEditChallenge() && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onClose();
+                  navigate(`/challenges/${challenge.id}/edit`);
+                }}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                <Edit2 className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -221,8 +244,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               <Card className="glass-effect border-white/10 p-4 text-center">
                 <Trophy className="w-5 h-5 text-purple-400 mx-auto mb-2" />
                 <div className="text-sm text-muted-foreground">Difficulty</div>
-                <Badge className={getDifficultyColor(getDifficultyFromTrainingDays())}>
-                  {getDifficultyFromTrainingDays()}
+                <Badge className={getDifficultyColor(getDifficultyFromChallenge())}>
+                  {getDifficultyFromChallenge()}
                 </Badge>
               </Card>
               
@@ -302,13 +325,14 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             id: parseInt(challenge.id) || 1,
             title: challenge.title,
             description: challenge.description,
-            level: getDifficultyFromTrainingDays(),
+            level: getDifficultyFromChallenge(),
             totalDays: challenge.training_days.length,
             currentDay: 0,
             completedDays: 0,
             image: '',
             days: challenge.training_days.map((day, index) => ({
               day: index + 1,
+              dayId: day.id, // Add the actual training day ID
               title: day.title || `Day ${index + 1}`,
               description: day.description || 'Training session',
               duration: '30-45 mins',
