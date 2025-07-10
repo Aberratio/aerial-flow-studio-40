@@ -8,6 +8,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { CreatePostModal } from '@/components/CreatePostModal';
 import { EditPostModal } from '@/components/EditPostModal';
+import { ConfirmDeletePostModal } from '@/components/ConfirmDeletePostModal';
+import { SharePostModal } from '@/components/SharePostModal';
 import { Link } from 'react-router-dom';
 import { useFeedPosts } from '@/hooks/useFeedPosts';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,7 +19,10 @@ const Feed = () => {
   const [selectedPost, setSelectedPost] = useState(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
-  const { posts, loading, toggleLike, toggleSave, addPost, updatePost } = useFeedPosts();
+  const [deletingPost, setDeletingPost] = useState(null);
+  const [sharingPost, setSharingPost] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const { posts, loading, toggleLike, toggleSave, addPost, updatePost, deletePost } = useFeedPosts();
   const { user } = useAuth();
 
   const handlePostCreated = (newPost: any) => {
@@ -29,10 +34,12 @@ const Feed = () => {
       video_url: newPost.video_url,
       created_at: newPost.created_at,
       user_id: newPost.user_id,
+      privacy: newPost.privacy || 'public',
       user: {
         id: user?.id || '',
         username: user?.username || '',
         avatar_url: user?.avatar_url || null,
+        role: user?.role || 'free',
       },
       likes_count: 0,
       comments_count: 0,
@@ -40,6 +47,22 @@ const Feed = () => {
       is_saved: false,
     };
     addPost(feedPost);
+  };
+
+  const handleDeletePost = async () => {
+    if (!deletingPost) return;
+    
+    setDeleteLoading(true);
+    const success = await deletePost(deletingPost.id);
+    setDeleteLoading(false);
+    
+    if (success) {
+      setDeletingPost(null);
+    }
+  };
+
+  const handleShare = (post: any) => {
+    setSharingPost(post);
   };
 
   if (loading) {
@@ -122,6 +145,13 @@ const Feed = () => {
                             <Edit className="w-4 h-4 mr-2" />
                             Edit Post
                           </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => setDeletingPost(post)}
+                            className="text-red-400 hover:bg-red-400/10 hover:text-red-300"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete Post
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     )}
@@ -186,7 +216,12 @@ const Feed = () => {
                       <MessageCircle className="w-5 h-5 mr-2" />
                       {post.comments_count}
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleShare(post)}
+                      className="text-muted-foreground hover:text-white"
+                    >
                       <Share2 className="w-5 h-5" />
                     </Button>
                   </div>
@@ -229,6 +264,20 @@ const Feed = () => {
           updatePost(updatedPost);
           setEditingPost(null);
         }}
+      />
+
+      <ConfirmDeletePostModal
+        isOpen={!!deletingPost}
+        onClose={() => setDeletingPost(null)}
+        onConfirm={handleDeletePost}
+        loading={deleteLoading}
+      />
+
+      <SharePostModal
+        isOpen={!!sharingPost}
+        onClose={() => setSharingPost(null)}
+        postId={sharingPost?.id || ''}
+        userName={sharingPost?.user?.username || ''}
       />
     </div>
   );

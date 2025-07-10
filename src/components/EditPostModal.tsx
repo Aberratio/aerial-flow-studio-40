@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Image, Video, Loader2 } from 'lucide-react';
+import { X, Image, Video, Loader2, Users, Lock, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -17,6 +18,7 @@ interface EditPostModalProps {
 export const EditPostModal = ({ isOpen, onClose, post, onPostUpdated }: EditPostModalProps) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
+  const [privacy, setPrivacy] = useState('public');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(null);
   const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
@@ -26,6 +28,7 @@ export const EditPostModal = ({ isOpen, onClose, post, onPostUpdated }: EditPost
   useEffect(() => {
     if (post && isOpen) {
       setContent(post.content || '');
+      setPrivacy(post.privacy || 'public');
       setSelectedFilePreview(post.image_url || post.video_url || null);
       setMediaType(post.image_url ? 'image' : 'video');
     }
@@ -90,6 +93,7 @@ export const EditPostModal = ({ isOpen, onClose, post, onPostUpdated }: EditPost
         .from('posts')
         .update({
           content,
+          privacy,
           image_url: mediaType === 'image' ? mediaUrl : null,
           video_url: mediaType === 'video' ? mediaUrl : null,
           updated_at: new Date().toISOString()
@@ -106,6 +110,7 @@ export const EditPostModal = ({ isOpen, onClose, post, onPostUpdated }: EditPost
       onPostUpdated({
         ...post,
         content,
+        privacy,
         image_url: mediaType === 'image' ? mediaUrl : null,
         video_url: mediaType === 'video' ? mediaUrl : null,
       });
@@ -127,14 +132,62 @@ export const EditPostModal = ({ isOpen, onClose, post, onPostUpdated }: EditPost
     }
   };
 
+  const getPrivacyIcon = () => {
+    switch (privacy) {
+      case 'friends':
+        return <Users className="w-4 h-4" />;
+      case 'private':
+        return <Lock className="w-4 h-4" />;
+      default:
+        return <Globe className="w-4 h-4" />;
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] glass-effect border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">Edit Post</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Update your post content and privacy settings.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
+          <div className="flex items-center space-x-3">
+            <div>
+              <label className="text-white text-sm font-medium mb-2 block">Privacy Setting</label>
+              <Select value={privacy} onValueChange={setPrivacy}>
+                <SelectTrigger className="w-40 h-10 bg-white/5 border-white/10 text-white">
+                  <div className="flex items-center space-x-2">
+                    {getPrivacyIcon()}
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="bg-background/95 border-white/10">
+                  <SelectItem value="public">
+                    <div className="flex items-center space-x-2">
+                      <Globe className="w-4 h-4" />
+                      <span>Public</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="friends">
+                    <div className="flex items-center space-x-2">
+                      <Users className="w-4 h-4" />
+                      <span>Friends only</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="private">
+                    <div className="flex items-center space-x-2">
+                      <Lock className="w-4 h-4" />
+                      <span>Only me</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <Textarea
             placeholder="What's on your mind?"
             value={content}

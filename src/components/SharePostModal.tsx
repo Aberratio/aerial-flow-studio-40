@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Copy, Check, X } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -41,13 +41,12 @@ export const SharePostModal = ({ isOpen, onClose, postId, userName }: SharePostM
       <DialogContent className="max-w-md bg-black/95 border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">Share Post</DialogTitle>
+          <DialogDescription className="text-muted-foreground">
+            Share {userName}'s post with others by copying the link below.
+          </DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4">
-          <div className="text-muted-foreground text-sm">
-            Share {userName}'s post with others
-          </div>
-          
           <div className="flex space-x-2">
             <Input
               value={shareUrl}

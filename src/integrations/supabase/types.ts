@@ -320,6 +320,7 @@ export type Database = {
           figure_id: string | null
           id: string
           image_url: string | null
+          privacy: string
           updated_at: string | null
           user_id: string
           video_url: string | null
@@ -330,6 +331,7 @@ export type Database = {
           figure_id?: string | null
           id?: string
           image_url?: string | null
+          privacy?: string
           updated_at?: string | null
           user_id: string
           video_url?: string | null
@@ -340,6 +342,7 @@ export type Database = {
           figure_id?: string | null
           id?: string
           image_url?: string | null
+          privacy?: string
           updated_at?: string | null
           user_id?: string
           video_url?: string | null

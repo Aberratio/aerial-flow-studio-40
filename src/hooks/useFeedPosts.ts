@@ -9,6 +9,7 @@ export interface FeedPost {
   video_url: string | null;
   created_at: string;
   user_id: string;
+  privacy: string;
   user: {
     id: string;
     username: string;
@@ -52,6 +53,7 @@ export const useFeedPosts = () => {
           video_url,
           created_at,
           user_id,
+          privacy,
           profiles!posts_user_id_fkey (
             id,
             username,
@@ -103,6 +105,7 @@ export const useFeedPosts = () => {
               video_url: post.video_url,
               created_at: post.created_at,
               user_id: post.user_id,
+              privacy: post.privacy,
               user: {
                 id: post.profiles?.id || '',
                 username: post.profiles?.username || '',
@@ -218,6 +221,28 @@ export const useFeedPosts = () => {
     }
   };
 
+  // Delete a post
+  const deletePost = async (postId: string) => {
+    if (!user) return false;
+
+    try {
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', user.id); // Ensure user can only delete their own posts
+
+      if (error) throw error;
+
+      // Remove post from local state
+      setPosts(prevPosts => prevPosts.filter(p => p.id !== postId));
+      return true;
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      return false;
+    }
+  };
+
   // Update a post in the feed
   const updatePost = (updatedPost: FeedPost) => {
     setPosts(prevPosts =>
@@ -239,5 +264,6 @@ export const useFeedPosts = () => {
     toggleSave,
     addPost,
     updatePost,
+    deletePost,
   };
 };
