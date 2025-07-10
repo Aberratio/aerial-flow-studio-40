@@ -274,14 +274,6 @@ const FriendProfile = () => {
 
                 <p className="text-muted-foreground mb-6">{friendData.bio || 'Aerial enthusiast'}</p>
 
-                {/* Mutual Friends */}
-                {mutualCount > 0 && <div className="mb-4">
-                    <div className="flex items-center justify-center md:justify-start space-x-2 text-sm text-muted-foreground">
-                      <Users className="w-4 h-4" />
-                      <span>{mutualCount} mutual friend{mutualCount !== 1 ? 's' : ''}</span>
-                    </div>
-                  </div>}
-
                 {/* Stats */}
                 <div className="grid grid-cols-4 gap-4 mb-6">
                   {stats.map((stat, index) => <div key={index} className="text-center">

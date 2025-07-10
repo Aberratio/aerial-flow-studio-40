@@ -1,7 +1,6 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthContext';
-import { useMutualFriends } from '@/hooks/useMutualFriends';
 import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
 import { useProfilePreviewData } from '@/hooks/useProfilePreviewData';
 import { ProfilePreviewHeader } from '@/components/Profile/ProfilePreviewHeader';
@@ -16,7 +15,6 @@ interface ProfilePreviewModalProps {
 
 export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewModalProps) => {
   const { user } = useAuth();
-  const { mutualFriends } = useMutualFriends(user?.id || '', userId);
   const { 
     pendingFriendRequest, 
     loading: friendshipLoading,
@@ -44,7 +42,6 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
             <ProfilePreviewHeader
               profile={profile}
               userId={userId}
-              mutualFriends={mutualFriends}
               pendingFriendRequest={pendingFriendRequest}
               friendshipLoading={friendshipLoading}
               onAcceptFriend={acceptFriendRequest}

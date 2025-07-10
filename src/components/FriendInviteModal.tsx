@@ -60,23 +60,8 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
 
       if (error) throw error;
 
-      // Calculate mutual friends for each profile
-      const profilesWithMutualFriends = await Promise.all((profiles || []).map(async (profile) => {
-        // Get mutual friends count
-        const { data: currentUserFriends } = await supabase
-          .from('user_follows')
-          .select('following_id')
-          .eq('follower_id', user.id);
-
-        const { data: profileFriends } = await supabase
-          .from('user_follows')
-          .select('following_id')
-          .eq('follower_id', profile.id);
-
-        const currentUserFriendIds = new Set(currentUserFriends?.map(f => f.following_id) || []);
-        const profileFriendIds = new Set(profileFriends?.map(f => f.following_id) || []);
-        const mutualFriendsCount = [...currentUserFriendIds].filter(id => profileFriendIds.has(id)).length;
-
+      // Map profiles and check for pending requests
+      const profilesWithData = await Promise.all((profiles || []).map(async (profile) => {
         // Check if there's already a pending friend request
         const { data: existingRequest } = await supabase
           .from('friendships')
@@ -88,13 +73,12 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
 
         return {
           ...profile,
-          mutualFriends: mutualFriendsCount,
           isOnline: Math.random() > 0.5, // Temporary random status
           hasPendingRequest
         };
       }));
 
-      setSuggestedFriends(profilesWithMutualFriends);
+      setSuggestedFriends(profilesWithData);
     } catch (error) {
       console.error('Error fetching suggested friends:', error);
     } finally {
@@ -208,9 +192,6 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
                       <p className="font-medium text-white">{friend.username}</p>
                       <p className="text-sm text-muted-foreground">
                         {friend.bio || 'Aerial enthusiast'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {friend.mutualFriends} mutual friends
                       </p>
                     </div>
                   </div>

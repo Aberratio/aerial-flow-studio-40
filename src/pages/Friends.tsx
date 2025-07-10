@@ -207,7 +207,6 @@ const Friends = () => {
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-white text-sm sm:text-base truncate">{friend.username}</h4>
                       <p className="text-muted-foreground text-xs sm:text-sm truncate">{friend.bio}</p>
-                      <p className="text-muted-foreground text-xs">{friend.mutualFriends} mutual friends</p>
                     </div>
                      <div className="flex-shrink-0">
                        <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-3" onClick={e => {

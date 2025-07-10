@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 interface ProfilePreviewHeaderProps {
   profile: any;
   userId: string;
-  mutualFriends: any[];
   pendingFriendRequest: 'none' | 'sent' | 'received';
   friendshipLoading: boolean;
   onAcceptFriend: () => Promise<boolean>;
@@ -19,7 +18,6 @@ interface ProfilePreviewHeaderProps {
 export const ProfilePreviewHeader = ({
   profile,
   userId,
-  mutualFriends,
   pendingFriendRequest,
   friendshipLoading,
   onAcceptFriend,
@@ -60,12 +58,6 @@ export const ProfilePreviewHeader = ({
           <Badge variant="secondary" className="bg-primary/20 text-primary">
             {profile.role === 'trainer' ? 'Trainer' : 'Member'}
           </Badge>
-          {mutualFriends && mutualFriends.length > 0 && (
-            <div className="flex items-center space-x-1 text-sm text-muted-foreground">
-              <Users className="w-4 h-4" />
-              <span>{mutualFriends.length} mutual friends</span>
-            </div>
-          )}
         </div>
       </div>
       <div className="flex gap-2">
