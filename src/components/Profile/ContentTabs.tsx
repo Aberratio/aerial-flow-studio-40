@@ -55,14 +55,14 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
           return {
             id: post.id,
             content: post.content,
-            image: post.image_url,
-            video: post.video_url,
-            likes: likesCount || 0,
-            comments: commentsCount || 0,
-            timeAgo: post.created_at,
+            image_url: post.image_url,
+            video_url: post.video_url,
+            likes_count: likesCount || 0,
+            comments_count: commentsCount || 0,
+            created_at: post.created_at,
             user: {
               username: post.profiles?.username || user.username,
-              avatar: post.profiles?.avatar_url || user.avatar,
+              avatar_url: post.profiles?.avatar_url || user.avatar,
               verified: true
             }
           };
@@ -134,16 +134,16 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
                 onClick={() => onPostSelect(post)}
               >
                 <div className="aspect-square rounded-lg overflow-hidden">
-                  {post.image ? (
+                  {post.image_url ? (
                     <img 
-                      src={post.image} 
+                      src={post.image_url} 
                       alt="User post"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
-                  ) : post.video ? (
+                  ) : post.video_url ? (
                     <div className="relative w-full h-full">
                       <video 
-                        src={post.video}
+                        src={post.video_url}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
@@ -161,11 +161,11 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
                 <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
                   <div className="flex items-center text-white">
                     <Heart className="w-5 h-5 mr-2" />
-                    {post.likes}
+                    {post.likes_count}
                   </div>
                   <div className="flex items-center text-white">
                     <MessageCircle className="w-5 h-5 mr-2" />
-                    {post.comments}
+                    {post.comments_count}
                   </div>
                 </div>
               </div>
