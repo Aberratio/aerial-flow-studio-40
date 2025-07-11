@@ -131,15 +131,14 @@
   }
 
   .hover-lift {
-    @apply transition-all duration-500;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    @apply transition-all duration-300;
   }
 
   .hover-lift:hover {
-    transform: translateY(-3px) scale(1.01);
+    transform: translateY(-1px);
     box-shadow: 
-      0 8px 20px -6px hsla(271, 91%, 65%, 0.2),
-      0 0 20px hsla(158, 64%, 20%, 0.1);
+      0 4px 12px -3px hsla(271, 91%, 65%, 0.15),
+      0 0 8px hsla(158, 64%, 20%, 0.08);
   }
 
   .floating {
@@ -218,10 +217,10 @@
   }
 
   .card-hover-effect:hover {
-    transform: translateY(-6px) rotateY(2deg);
+    transform: translateY(-2px);
     box-shadow: 
-      0 15px 30px -6px hsla(271, 91%, 65%, 0.25),
-      0 0 30px hsla(158, 64%, 20%, 0.15);
+      0 8px 16px -4px hsla(271, 91%, 65%, 0.15),
+      0 0 12px hsla(158, 64%, 20%, 0.1);
   }
 }
 

@@ -91,7 +91,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md bg-black/95 border-white/10">
+      <DialogContent className="max-w-md bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle className="text-white text-center">Welcome to Aerial</DialogTitle>
         </DialogHeader>
@@ -149,7 +149,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                className="w-full bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 transition-all duration-300"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -235,7 +235,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                className="w-full bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 transition-all duration-300"
                 disabled={isLoading}
               >
                 {isLoading ? (

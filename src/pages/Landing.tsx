@@ -48,7 +48,8 @@ const Landing = () => {
     { value: '95%', label: 'Success Rate' },
   ];
 
-  const openAuth = () => {
+  const openAuth = (mode: 'login' | 'register' = 'login') => {
+    setAuthMode(mode);
     setAuthModalOpen(true);
   };
 
@@ -81,14 +82,14 @@ const Landing = () => {
           <div className="flex items-center space-x-2 sm:space-x-4">
             <Button 
               variant="ghost" 
-              onClick={openAuth}
-              className="text-white hover:text-purple-300 text-sm sm:text-base px-2 sm:px-4 hover-lift glass-effect"
+              onClick={() => openAuth('login')}
+              className="text-white hover:text-purple-300 text-sm sm:text-base px-2 sm:px-4 glass-effect transition-all duration-300"
             >
               Sign In
             </Button>
             <Button 
-              onClick={openAuth}
-              className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-sm sm:text-base px-3 sm:px-4 pulse-glow-tropical hover-lift"
+              onClick={() => openAuth('register')}
+              className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 text-sm sm:text-base px-3 sm:px-4 transition-all duration-300"
             >
               <Sparkles className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Get Started</span>
@@ -118,10 +119,10 @@ const Landing = () => {
               <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0 transition-all duration-1000 animation-delay-600 ${isLoaded ? 'animate-bounce-in' : 'opacity-0 scale-75'}`}>
                 <Button 
                   size="lg"
-                  onClick={openAuth}
-                  className="bg-gradient-to-r from-purple-500 via-violet-500 to-indigo-500 hover:from-purple-600 hover:via-violet-600 hover:to-indigo-600 text-base sm:text-lg px-6 sm:px-8 pulse-glow hover-lift glass-effect-intense"
+                  onClick={() => openAuth('register')}
+                  className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 text-base sm:text-lg px-6 sm:px-8 transition-all duration-300 glass-effect-intense"
                 >
-                  <Star className="mr-2 w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                  <Star className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                   Start Training Free
                   <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
@@ -246,8 +247,8 @@ const Landing = () => {
 
                 <Button 
                   size="lg"
-                  onClick={openAuth}
-                  className="w-full bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                  onClick={() => openAuth('register')}
+                  className="w-full bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 transition-all duration-300"
                 >
                   Get Started Free
                 </Button>
@@ -304,8 +305,8 @@ const Landing = () => {
 
                 <Button 
                   size="lg"
-                  onClick={openAuth}
-                  className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 pulse-glow-tropical"
+                  onClick={() => openAuth('register')}
+                  className="w-full bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 transition-all duration-300"
                 >
                   Start Premium Trial
                 </Button>
@@ -330,10 +331,10 @@ const Landing = () => {
               </p>
               <Button 
                 size="lg"
-                onClick={openAuth}
-                className="bg-gradient-to-r from-purple-500 via-violet-500 to-indigo-500 hover:from-purple-600 hover:via-violet-600 hover:to-indigo-600 text-base sm:text-lg px-8 sm:px-12 pulse-glow hover-lift glass-effect-intense animate-bounce-in animation-delay-400"
+                onClick={() => openAuth('register')}
+                className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 text-base sm:text-lg px-8 sm:px-12 transition-all duration-300 glass-effect-intense animate-bounce-in animation-delay-400"
               >
-                <Sparkles className="mr-2 w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                <Sparkles className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                 Get Started Today
                 <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
