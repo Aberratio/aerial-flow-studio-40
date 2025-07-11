@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Grid, Award } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
 import { useProfilePreviewData } from '@/hooks/useProfilePreviewData';
@@ -15,6 +17,7 @@ interface ProfilePreviewModalProps {
 
 export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewModalProps) => {
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('posts');
   const { 
     pendingFriendRequest, 
     loading: friendshipLoading,
@@ -48,15 +51,53 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
               onRejectFriend={rejectFriendRequest}
             />
 
-            <ProfilePreviewAchievements achievements={achievements} />
-            
-            <ProfilePreviewPosts posts={posts} />
+            {/* Content Tabs */}
+            <div className="flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
+              <Button
+                variant="ghost"
+                className={`flex-1 transition-all ${
+                  activeTab === 'posts' 
+                    ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
+                    : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                } ${activeTab === 'posts' ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''}`}
+                onClick={() => setActiveTab('posts')}
+              >
+                <Grid className="w-4 h-4 mr-2" />
+                Posts
+              </Button>
+              <Button
+                variant="ghost"
+                className={`flex-1 transition-all ${
+                  activeTab === 'achievements' 
+                    ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
+                    : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                } ${activeTab === 'achievements' ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''}`}
+                onClick={() => setActiveTab('achievements')}
+              >
+                <Award className="w-4 h-4 mr-2" />
+                Achievements
+              </Button>
+            </div>
 
-            {/* Empty State */}
-            {posts.length === 0 && achievements.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <p>No public content available</p>
-              </div>
+            {/* Tab Content */}
+            {activeTab === 'posts' && (
+              posts.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No posts yet</p>
+                </div>
+              ) : (
+                <ProfilePreviewPosts posts={posts} />
+              )
+            )}
+
+            {activeTab === 'achievements' && (
+              achievements.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>No achievements yet</p>
+                </div>
+              ) : (
+                <ProfilePreviewAchievements achievements={achievements} />
+              )
             )}
           </div>
         ) : (

@@ -139,7 +139,7 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] glass-effect border-white/10">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">Find Friends</DialogTitle>
         </DialogHeader>
@@ -171,7 +171,7 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
               </div>
             ) : (
               suggestedFriends.map((friend) => (
-                <div key={friend.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                <div key={friend.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 gap-4">
                   <div 
                     className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-white/5 rounded p-2 -m-2"
                     onClick={() => {
@@ -188,32 +188,35 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
                         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
                       )}
                     </div>
-                    <div>
-                      <p className="font-medium text-white">{friend.username}</p>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-white truncate">{friend.username}</p>
+                      <p className="text-sm text-muted-foreground truncate">
                         {friend.bio || 'Aerial enthusiast'}
                       </p>
                     </div>
                   </div>
 
-                  {sentInvites.includes(friend.id) || friend.hasPendingRequest ? (
-                    <div className="flex items-center space-x-2 text-green-400">
-                      <Check className="w-4 h-4" />
-                      <span className="text-sm">Sent</span>
-                    </div>
-                  ) : (
-                    <Button
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleSendInvite(friend.id, friend.username);
-                      }}
-                      className="bg-primary hover:bg-primary/90"
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Add Friend
-                    </Button>
-                  )}
+                  <div className="flex-shrink-0">
+                    {sentInvites.includes(friend.id) || friend.hasPendingRequest ? (
+                      <div className="flex items-center space-x-2 text-green-400">
+                        <Check className="w-4 h-4" />
+                        <span className="text-sm whitespace-nowrap">Sent</span>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSendInvite(friend.id, friend.username);
+                        }}
+                        className="whitespace-nowrap"
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Add Friend
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))
             )}

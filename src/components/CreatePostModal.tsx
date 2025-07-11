@@ -281,15 +281,15 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
               </Button>
               
               {showFigureSearch && (
-                <div className="space-y-2">
+                <div className="space-y-3 p-4 bg-white/5 rounded-lg border border-white/10">
                   <input
                     type="text"
                     placeholder="Search figures..."
                     value={figureSearchTerm}
                     onChange={(e) => setFigureSearchTerm(e.target.value)}
-                    className="w-full p-2 bg-white/5 border border-white/10 rounded text-white placeholder:text-muted-foreground"
+                    className="w-full p-3 bg-white/10 border border-white/20 rounded-md text-white placeholder:text-white/60 focus:border-primary focus:outline-none"
                   />
-                  <div className="max-h-40 overflow-y-auto space-y-1">
+                  <div className="max-h-48 overflow-y-auto space-y-2">
                     {filteredFigures.slice(0, 5).map((figure) => (
                       <div
                         key={figure.id}
@@ -298,21 +298,24 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
                           setShowFigureSearch(false);
                           setFigureSearchTerm('');
                         }}
-                        className="p-2 hover:bg-white/10 rounded cursor-pointer flex items-center space-x-2"
+                        className="p-3 hover:bg-white/10 rounded-md cursor-pointer flex items-center space-x-3 transition-colors"
                       >
                         {figure.image_url && (
                           <img 
                             src={figure.image_url} 
                             alt={figure.name}
-                            className="w-8 h-8 rounded object-cover"
+                            className="w-10 h-10 rounded object-cover flex-shrink-0"
                           />
                         )}
-                        <div>
-                          <p className="text-white text-sm">{figure.name}</p>
-                          <p className="text-muted-foreground text-xs">{figure.difficulty_level}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-white font-medium truncate">{figure.name}</p>
+                          <p className="text-muted-foreground text-sm">{figure.difficulty_level}</p>
                         </div>
                       </div>
                     ))}
+                    {filteredFigures.length === 0 && (
+                      <p className="text-muted-foreground text-center py-4">No figures found</p>
+                    )}
                   </div>
                 </div>
               )}
@@ -407,7 +410,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
             </div>
 
             <div className="flex space-x-2 justify-end">
-              <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-white text-sm">
+              <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-white hover:bg-white/5 text-sm">
                 Cancel
               </Button>
               <Button 

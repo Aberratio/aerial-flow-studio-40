@@ -139,7 +139,7 @@ const Inbox = () => {
         }, {
           id: 'followers',
           label: 'Followers'
-        }].map(tab => <Button key={tab.id} variant="ghost" className={`flex-1 transition-all ${filter === tab.id ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`} onClick={() => setFilter(tab.id)}>
+        }].map(tab => <Button key={tab.id} variant="ghost" className={`flex-1 transition-all ${filter === tab.id ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'} ${filter === tab.id ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''}`} onClick={() => setFilter(tab.id)}>
               {tab.label}
             </Button>)}
         </div>
