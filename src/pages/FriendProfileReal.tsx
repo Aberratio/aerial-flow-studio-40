@@ -62,11 +62,6 @@ const FriendProfile = () => {
         } = await supabase.from('profiles').select('*').eq('id', id).single();
         if (profileError) throw profileError;
 
-        // Get user's score
-        const {
-          data: scoreData
-        } = await supabase.from('user_scores').select('total_points').eq('user_id', id).single();
-
         // Check friendship status using the new friendships table
         const {
           data: friendshipData
@@ -131,7 +126,6 @@ const FriendProfile = () => {
         }));
         setFriendData({
           ...profile,
-          score: scoreData?.total_points || 0,
           isVerified: profile.role === 'trainer' || profile.role === 'admin'
         });
         setFriendPosts(postsWithCounts);
@@ -232,9 +226,6 @@ const FriendProfile = () => {
   }, {
     label: 'Following',
     value: followingCount.toLocaleString()
-  }, {
-    label: 'Score',
-    value: friendData.score.toLocaleString()
   }];
   return <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
@@ -275,7 +266,7 @@ const FriendProfile = () => {
                 <p className="text-muted-foreground mb-6">{friendData.bio || 'Aerial enthusiast'}</p>
 
                 {/* Stats */}
-                <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-4 mb-6">
                   {stats.map((stat, index) => <div key={index} className="text-center">
                       <div className="gradient-text text-2xl font-bold">{stat.value}</div>
                       <div className="text-muted-foreground text-sm">{stat.label}</div>
@@ -296,9 +287,6 @@ const FriendProfile = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-white">Achievements</h2>
-                <div className="text-sm text-muted-foreground">
-                  Total Score: <span className="gradient-text font-bold">{friendData.score.toLocaleString()} pts</span>
-                </div>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {achievements.slice(0, 4).map((achievement, index) => <div key={index} className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
@@ -323,7 +311,7 @@ const FriendProfile = () => {
           icon: Trophy
         }].map(tab => {
           const Icon = tab.icon;
-          return <Button key={tab.id} variant={activeTab === tab.id ? "default" : "ghost"} className={`flex-1 ${activeTab === tab.id ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500' : 'text-muted-foreground hover:text-white'}`} onClick={() => setActiveTab(tab.id)}>
+          return <Button key={tab.id} variant="ghost" className={`flex-1 transition-all ${activeTab === tab.id ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'} ${activeTab === tab.id ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''}`} onClick={() => setActiveTab(tab.id)}>
                 <Icon className="w-4 h-4 mr-2" />
                 {tab.label}
               </Button>;

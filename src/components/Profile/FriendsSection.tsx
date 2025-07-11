@@ -49,24 +49,11 @@ export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }
         return isRequester ? friendship.addressee : friendship.requester;
       }).filter(Boolean) || [];
 
-      // Get scores for all friends
-      const friendIds = friendProfiles.map(friend => friend?.id).filter(Boolean);
-      const { data: scores } = await supabase
-        .from('user_scores')
-        .select('user_id, total_points')
-        .in('user_id', friendIds);
-
-      const scoresMap = scores?.reduce((acc, score) => {
-        acc[score.user_id] = score.total_points;
-        return acc;
-      }, {} as Record<string, number>) || {};
-
       const friendsData = friendProfiles.map(friend => ({
         id: friend?.id || '',
         username: friend?.username || '',
         avatar: friend?.avatar_url || null,
-        level: friend?.role === 'trainer' ? 'Trainer' : 'Member',
-        score: scoresMap[friend?.id || ''] || 0
+        level: friend?.role === 'trainer' ? 'Trainer' : 'Member'
       }));
 
       setFriends(friendsData);
@@ -107,7 +94,6 @@ export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }
                 <div className="flex-1 sm:flex-none min-w-0">
                   <div className="text-white font-semibold text-sm truncate sm:text-center">{friend.username}</div>
                   <div className="text-muted-foreground text-xs sm:text-center">{friend.level}</div>
-                  <div className="text-purple-400 text-xs font-semibold mt-1 sm:text-center">{friend.score.toLocaleString()} pts</div>
                 </div>
               </div>
             ))}

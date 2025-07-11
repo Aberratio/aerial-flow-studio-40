@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { useUserScore } from '@/hooks/useUserScore';
 import { useToast } from '@/hooks/use-toast';
 
 interface ProfileHeaderProps {
@@ -23,7 +22,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
     followers: 0,
     following: 0
   });
-  const { score } = useUserScore();
+  
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -126,8 +125,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
   const displayStats = [
     { label: 'Posts', value: stats.posts.toLocaleString() },
     { label: 'Followers', value: stats.followers.toLocaleString() },
-    { label: 'Following', value: stats.following.toLocaleString() },
-    { label: 'Score', value: score.toLocaleString() }
+    { label: 'Following', value: stats.following.toLocaleString() }
   ];
 
   return (
@@ -191,7 +189,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
             <p className="text-muted-foreground mb-6">{user?.bio}</p>
 
             {/* Stats */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-3 gap-4 mb-6">
               {displayStats.map((stat, index) => (
                 <div key={index} className="text-center">
                   <div className="gradient-text text-2xl font-bold">{stat.value}</div>

@@ -92,11 +92,6 @@ export const useFriendshipStatus = (userId: string) => {
           points_awarded: 2
         });
 
-      // Add points to user score
-      await supabase.rpc('add_points_to_user', {
-        user_id: user.id,
-        points: 2
-      });
 
       // Create notification for the recipient
       await supabase
@@ -140,11 +135,6 @@ export const useFriendshipStatus = (userId: string) => {
           points_awarded: 5
         });
 
-      // Add points to user score
-      await supabase.rpc('add_points_to_user', {
-        user_id: user.id,
-        points: 5
-      });
 
       // Award points to requester for having request accepted
       await supabase
@@ -157,11 +147,6 @@ export const useFriendshipStatus = (userId: string) => {
           points_awarded: 5
         });
 
-      // Add points to requester's score
-      await supabase.rpc('add_points_to_user', {
-        user_id: userId,
-        points: 5
-      });
 
       // Create mutual follow relationships when friendship is accepted
       await supabase

@@ -26,7 +26,6 @@ const FriendProfile = () => {
     followersCount: 1234,
     followingCount: 567,
     level: 'Advanced',
-    score: 3200,
     isVerified: true
   };
 
@@ -103,8 +102,7 @@ const FriendProfile = () => {
   const stats = [
     { label: 'Posts', value: '89' },
     { label: 'Followers', value: friendData.followersCount.toLocaleString() },
-    { label: 'Following', value: friendData.followingCount.toLocaleString() },
-    { label: 'Score', value: friendData.score.toLocaleString() }
+    { label: 'Following', value: friendData.followingCount.toLocaleString() }
   ];
 
   const handleAddFriend = () => {
@@ -206,7 +204,7 @@ const FriendProfile = () => {
                 <p className="text-muted-foreground mb-6">{friendData.bio}</p>
 
                 {/* Stats */}
-                <div className="grid grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-3 gap-4 mb-6">
                   {stats.map((stat, index) => (
                     <div key={index} className="text-center">
                       <div className="gradient-text text-2xl font-bold">{stat.value}</div>
@@ -237,9 +235,6 @@ const FriendProfile = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Achievements</h2>
-              <div className="text-sm text-muted-foreground">
-                Total Score: <span className="gradient-text font-bold">{friendData.score.toLocaleString()} pts</span>
-              </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {achievements.map((achievement, index) => (

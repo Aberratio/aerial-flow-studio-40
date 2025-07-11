@@ -4,16 +4,12 @@ import { useUserAchievements } from '@/hooks/useUserAchievements';
 
 export const AchievementsSection: React.FC = () => {
   const { achievements, loading: achievementsLoading } = useUserAchievements();
-  const totalScore = achievements.reduce((sum, achievement) => sum + achievement.points, 0);
 
   return (
     <Card className="glass-effect border-white/10 mb-6">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-white">Recent Achievements</h2>
-          <div className="text-sm text-muted-foreground">
-            Total Score: <span className="gradient-text font-bold">{totalScore.toLocaleString()} pts</span>
-          </div>
         </div>
         {achievementsLoading ? (
           <div className="text-center py-8 text-muted-foreground">Loading achievements...</div>

@@ -49,7 +49,7 @@ AerialJourney uses a scoring system to reward user engagement and progress. Poin
 - Gain Follower: 5 points - When someone follows you
 - Complete Training Session: 20 points - Finishing a custom training session
 
-Points are automatically calculated and added to your total score. The scoring system is designed to encourage active participation and progress tracking.
+Points are automatically calculated to encourage active participation and progress tracking.
 
 # User Conduct
 
