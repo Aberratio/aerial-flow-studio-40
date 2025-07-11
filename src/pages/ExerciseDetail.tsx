@@ -29,6 +29,7 @@ const ExerciseDetail = () => {
   const [myVersions, setMyVersions] = useState<any[]>([]);
   const [friendsVersions, setFriendsVersions] = useState<any[]>([]);
   const [communityVersions, setCommunityVersions] = useState<any[]>([]);
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -247,27 +248,28 @@ const ExerciseDetail = () => {
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-4 lg:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6">
           <Button
             variant="ghost"
             onClick={() => navigate('/library')}
-            className="text-white hover:bg-white/5"
+            className="text-white hover:bg-white/5 self-start"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Library
           </Button>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 flex-wrap gap-2">
             <Button
               variant="outline"
               onClick={() => setShowShareModal(true)}
-              className="border-white/20 text-white hover:bg-white/10"
+              className="border-white/20 text-white hover:bg-white/10 text-sm"
+              size="sm"
             >
-              <Share className="w-4 h-4 mr-2" />
-              Share
+              <Share className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Share</span>
             </Button>
 
             {canModifyExercise() && (
@@ -275,15 +277,17 @@ const ExerciseDetail = () => {
                 <Button
                   variant="outline"
                   onClick={() => setShowEditModal(true)}
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="border-white/20 text-white hover:bg-white/10 text-sm"
+                  size="sm"
                 >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
+                  <Edit className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Edit</span>
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => setShowDeleteModal(true)}
                   className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                  size="sm"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -300,7 +304,8 @@ const ExerciseDetail = () => {
                 <img
                   src={exercise.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=600&fit=crop'}
                   alt={exercise.name}
-                  className="w-full h-64 sm:h-80 object-cover"
+                  className="w-full h-64 sm:h-80 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                  onClick={() => setShowImagePreview(true)}
                 />
                 {exercise.video_url && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/20 transition-colors cursor-pointer">
@@ -466,27 +471,33 @@ const ExerciseDetail = () => {
         {/* Versions Section */}
         <div className="mt-12">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full mb-6 bg-white/5">
+            <TabsList className="w-full mb-6 bg-muted p-1">
               <TabsTrigger 
                 value="my-versions" 
-                className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20"
+                className="flex-1 text-xs sm:text-sm"
               >
-                <User className="w-4 h-4 mr-2" />
-                My Versions ({myVersions.length})
+                <User className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">My Versions</span>
+                <span className="sm:hidden">My</span>
+                <span className="ml-1">({myVersions.length})</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="friends-versions"
-                className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20"
+                className="flex-1 text-xs sm:text-sm"
               >
-                <Users className="w-4 h-4 mr-2" />
-                Friends ({friendsVersions.length})
+                <Users className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Friends</span>
+                <span className="sm:hidden">Friends</span>
+                <span className="ml-1">({friendsVersions.length})</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="community"
-                className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20"
+                className="flex-1 text-xs sm:text-sm"
               >
-                <Globe className="w-4 h-4 mr-2" />
-                Community ({communityVersions.length})
+                <Globe className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Community</span>
+                <span className="sm:hidden">All</span>
+                <span className="ml-1">({communityVersions.length})</span>
               </TabsTrigger>
             </TabsList>
 
@@ -617,6 +628,29 @@ const ExerciseDetail = () => {
         title="Delete Exercise"
         description={`Are you sure you want to delete "${exercise.name}"? This action cannot be undone.`}
       />
+
+      {/* Image Preview Modal */}
+      {showImagePreview && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowImagePreview(false)}
+        >
+          <div className="relative max-w-4xl max-h-full">
+            <img
+              src={exercise.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=600&fit=crop'}
+              alt={exercise.name}
+              className="max-w-full max-h-full object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={() => setShowImagePreview(false)}
+              className="absolute top-4 right-4 w-8 h-8 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
