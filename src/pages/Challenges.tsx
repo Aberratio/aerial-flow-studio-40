@@ -387,13 +387,13 @@ const Challenges = () => {
                   }}>
                             Preview
                           </Button>
-                          <Button className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600" onClick={e => {
+                          <Button variant="primary" className="flex-1" onClick={e => {
                     e.stopPropagation();
                     handleJoinChallenge(challenge.id);
                   }}>
                             Join Challenge
                           </Button>
-                        </div> : <Button className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600" onClick={e => {
+                        </div> : <Button variant="primary" className="w-full" onClick={e => {
                   e.stopPropagation();
                   openChallengeModal(challenge);
                 }}>

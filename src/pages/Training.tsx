@@ -215,7 +215,7 @@ const Training = () => {
                   </div>
                 </div>
 
-                <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600" onClick={() => handleSessionClick(session)}>
+                <Button variant="primary" className="w-full" onClick={() => handleSessionClick(session)}>
                   <Play className="w-4 h-4 mr-2" />
                   View Details
                 </Button>

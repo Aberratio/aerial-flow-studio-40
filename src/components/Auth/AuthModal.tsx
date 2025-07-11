@@ -149,7 +149,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 transition-all duration-300"
+                variant="primary"
+                className="w-full"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -235,7 +236,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 transition-all duration-300"
+                variant="primary"
+                className="w-full"
                 disabled={isLoading}
               >
                 {isLoading ? (

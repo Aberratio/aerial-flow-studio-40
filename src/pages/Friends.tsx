@@ -135,7 +135,7 @@ const Friends = () => {
                 <Mail className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 <span className="text-sm sm:text-base">Friend Requests</span>
               </Button>
-              <Button onClick={() => setShowFriendInvite(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto">
+              <Button variant="primary" onClick={() => setShowFriendInvite(true)} className="w-full sm:w-auto">
                 <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 <span className="text-sm sm:text-base">Find Friends</span>
               </Button>
@@ -192,7 +192,7 @@ const Friends = () => {
                 <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold text-white mb-2">No friends yet</h3>
                 <p className="text-muted-foreground mb-6">Start building your aerial community by finding and connecting with other athletes</p>
-                <Button onClick={() => setShowFriendInvite(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600">
+                <Button variant="primary" onClick={() => setShowFriendInvite(true)}>
                   <UserPlus className="w-5 h-5 mr-2" />
                   Find Friends
                 </Button>

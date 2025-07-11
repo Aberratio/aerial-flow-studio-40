@@ -88,8 +88,9 @@ const Landing = () => {
               Sign In
             </Button>
             <Button 
+              variant="primary"
               onClick={() => openAuth('register')}
-              className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 text-sm sm:text-base px-3 sm:px-4 transition-all duration-300"
+              className="text-sm sm:text-base px-3 sm:px-4"
             >
               <Sparkles className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Get Started</span>
@@ -118,9 +119,10 @@ const Landing = () => {
               
               <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0 transition-all duration-1000 animation-delay-600 ${isLoaded ? 'animate-bounce-in' : 'opacity-0 scale-75'}`}>
                 <Button 
+                  variant="primary"
                   size="lg"
                   onClick={() => openAuth('register')}
-                  className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 text-base sm:text-lg px-6 sm:px-8 transition-all duration-300 glass-effect-intense"
+                  className="text-base sm:text-lg px-6 sm:px-8"
                 >
                   <Star className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                   Start Training Free
@@ -246,9 +248,10 @@ const Landing = () => {
                 </ul>
 
                 <Button 
+                  variant="primary"
                   size="lg"
                   onClick={() => openAuth('register')}
-                  className="w-full bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 transition-all duration-300"
+                  className="w-full"
                 >
                   Get Started Free
                 </Button>
@@ -304,9 +307,10 @@ const Landing = () => {
                 </ul>
 
                 <Button 
+                  variant="primary"
                   size="lg"
                   onClick={() => openAuth('register')}
-                  className="w-full bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 transition-all duration-300"
+                  className="w-full"
                 >
                   Start Premium Trial
                 </Button>
@@ -330,9 +334,10 @@ const Landing = () => {
                 Join thousands of aerial athletes who are already using IguanaFlow to reach new heights in their practice.
               </p>
               <Button 
+                variant="primary"
                 size="lg"
                 onClick={() => openAuth('register')}
-                className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 text-base sm:text-lg px-8 sm:px-12 transition-all duration-300 glass-effect-intense animate-bounce-in animation-delay-400"
+                className="text-base sm:text-lg px-8 sm:px-12 animate-bounce-in animation-delay-400"
               >
                 <Sparkles className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                 Get Started Today

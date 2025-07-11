@@ -203,8 +203,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
             {/* Action Buttons */}
             <div className="flex space-x-3">
               <Button 
+                variant="primary"
                 onClick={onEditProfile}
-                className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
               >
                 Edit Profile
               </Button>

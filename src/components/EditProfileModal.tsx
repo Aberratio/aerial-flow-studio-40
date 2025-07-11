@@ -109,7 +109,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-black/95 border-white/10">
+      <DialogContent className="max-w-md bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle className="text-white">Edit Profile</DialogTitle>
         </DialogHeader>
@@ -204,9 +204,10 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
           {/* Action Buttons */}
           <div className="flex space-x-3">
             <Button
+              variant="primary"
               onClick={handleSave}
               disabled={isLoading}
-              className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+              className="flex-1"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />

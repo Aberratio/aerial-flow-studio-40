@@ -331,7 +331,7 @@ export const FigurePreviewModal = ({
               <div className="flex-1 p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg font-semibold text-white">Posts about this figure</h3>
-                  <Button onClick={() => setShowCreatePost(true)} size="sm" className="bg-primary hover:bg-primary/90">
+                  <Button variant="primary" onClick={() => setShowCreatePost(true)} size="sm">
                     <Plus className="w-4 h-4 mr-2" />
                     Add My Version
                   </Button>

@@ -190,16 +190,18 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
           <div className="flex space-x-3">
             {isStarted ? (
               <Button 
+                variant="primary"
                 onClick={handleContinue}
-                className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                className="flex-1"
               >
                 <Play className="w-4 h-4 mr-2" />
                 Continue Challenge
               </Button>
             ) : (
               <Button 
+                variant="primary"
                 onClick={handleStart}
-                className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                className="flex-1"
               >
                 <Play className="w-4 h-4 mr-2" />
                 Start Challenge
