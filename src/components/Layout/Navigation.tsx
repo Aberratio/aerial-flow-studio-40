@@ -109,11 +109,11 @@ const Navigation: React.FC<NavigationProps> = ({
       <div className="flex flex-col h-full p-4 overflow-y-auto">
         {/* Logo */}
         <Link to="/feed" onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 group ${isMobile ? 'mb-4 my-4' : 'mb-8 my-[50px]'}`}>
-          <div className="w-10 h-10 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-xl">C</span>
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-xl flex items-center justify-center">
+            <span className="text-white font-bold text-xl">I</span>
           </div>
           <span className={`gradient-text font-bold text-xl ${isMobile ? 'block' : 'hidden lg:block'} group-hover:scale-105 transition-transform`}>
-            CoreFlow
+            IguanaFlow
           </span>
         </Link>
 

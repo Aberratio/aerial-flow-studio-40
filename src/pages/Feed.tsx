@@ -9,12 +9,13 @@ import { CreatePostModal } from '@/components/CreatePostModal';
 import { EditPostModal } from '@/components/EditPostModal';
 import { ConfirmDeletePostModal } from '@/components/ConfirmDeletePostModal';
 import { SharePostModal } from '@/components/SharePostModal';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useFeedPosts } from '@/hooks/useFeedPosts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatDistanceToNow } from 'date-fns';
 const Feed = () => {
+  const navigate = useNavigate();
   const [selectedPost, setSelectedPost] = useState(null);
   const [showCreatePost, setShowCreatePost] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
@@ -171,11 +172,11 @@ const Feed = () => {
                 <p className="text-white mb-4">{post.content}</p>
 
                 {/* Media */}
-                {post.image_url && <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => setSelectedPost(post)}>
+                {post.image_url && <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
                     <img src={post.image_url} alt="Post content" className="w-full h-80 object-cover hover:scale-105 transition-transform duration-300" />
                   </div>}
 
-                {post.video_url && <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => setSelectedPost(post)}>
+                {post.video_url && <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
                     <video src={post.video_url} className="w-full h-80 object-cover" controls />
                   </div>}
 
@@ -186,7 +187,7 @@ const Feed = () => {
                       <Heart className={`w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2 ${post.is_liked ? 'fill-current' : ''}`} />
                       <span className="text-xs sm:text-sm">{post.likes_count}</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white px-2 sm:px-3" onClick={() => setSelectedPost(post)}>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-white px-2 sm:px-3" onClick={() => navigate(`/post/${post.id}`)}>
                       <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
                       <span className="text-xs sm:text-sm">{post.comments_count}</span>
                     </Button>
@@ -221,7 +222,7 @@ const Feed = () => {
 
       <ConfirmDeletePostModal isOpen={!!deletingPost} onClose={() => setDeletingPost(null)} onConfirm={handleDeletePost} loading={deleteLoading} />
 
-      <SharePostModal isOpen={!!sharingPost} onClose={() => setSharingPost(null)} postId={sharingPost?.id || ''} userName={sharingPost?.user?.username || ''} />
+      <SharePostModal isOpen={!!sharingPost} onClose={() => setSharingPost(null)} postId={sharingPost?.id || ''} userName={sharingPost?.user?.username || ''} post={sharingPost} />
     </div>;
 };
 export default Feed;

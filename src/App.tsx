@@ -29,6 +29,7 @@ import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
 import MyJourney from "@/pages/MyJourney";
 import EditChallenge from "@/pages/EditChallenge";
 import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
+import PostDetail from "@/pages/PostDetail";
 import AchievementManagement from "@/pages/AchievementManagement";
 import TranslationManagement from "@/pages/TranslationManagement";
 import PremiumRoute from "@/components/PremiumRoute";
@@ -82,6 +83,11 @@ const AppRoutes = () => {
       <Route path="/feed" element={
         <ProtectedRoute>
           <Feed />
+        </ProtectedRoute>
+      } />
+      <Route path="/post/:postId" element={
+        <ProtectedRoute>
+          <PostDetail />
         </ProtectedRoute>
       } />
       <Route path="/library" element={

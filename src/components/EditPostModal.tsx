@@ -145,7 +145,7 @@ export const EditPostModal = ({ isOpen, onClose, post, onPostUpdated }: EditPost
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] glass-effect border-white/10">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">Edit Post</DialogTitle>
           <DialogDescription className="text-muted-foreground">
