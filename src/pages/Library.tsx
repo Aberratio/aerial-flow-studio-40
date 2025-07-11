@@ -4,28 +4,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { FigurePreviewModal } from '@/components/FigurePreviewModal';
 import { CreateExerciseModal } from '@/components/CreateExerciseModal';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 const Library = () => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedType, setSelectedType] = useState('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedFigure, setSelectedFigure] = useState(null);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [editingFigure, setEditingFigure] = useState(null);
   const [figures, setFigures] = useState([]);
@@ -261,7 +257,7 @@ const Library = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredFigures.length === 0 ? <div className="col-span-full text-center py-12 text-muted-foreground">
               {t('library.no_exercises')}
-            </div> : filteredFigures.map(figure => <Card key={figure.id} className="glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative" onClick={() => setSelectedFigure(figure)}>
+            </div> : filteredFigures.map(figure => <Card key={figure.id} className="glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative" onClick={() => navigate(`/exercise/${figure.id}`)}>
                 {/* Action buttons for owners/admins */}
                 {canModifyFigure(figure) && <div className="absolute top-2 right-2 z-10 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <Button size="sm" variant="outline" className="w-8 h-8 p-0 bg-black/50 border-white/20 hover:bg-black/70" onClick={e => {
@@ -329,7 +325,7 @@ const Library = () => {
                     </div>
                     <Button size="sm" variant="ghost" className="text-purple-400 hover:text-purple-300" onClick={e => {
                 e.stopPropagation();
-                setSelectedFigure(figure);
+                navigate(`/exercise/${figure.id}`);
               }}>
                       {t('library.view_details')}
                     </Button>
@@ -339,7 +335,7 @@ const Library = () => {
         </div>
       </div>
 
-      <FigurePreviewModal figure={selectedFigure} isOpen={!!selectedFigure} onClose={() => setSelectedFigure(null)} />
+      
 
       <CreateExerciseModal isOpen={showCreateExercise} onClose={() => {
       setShowCreateExercise(false);

@@ -2,12 +2,15 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, MessageCircle, Play } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfilePreviewPostsProps {
   posts: any[];
 }
 
 export const ProfilePreviewPosts = ({ posts }: ProfilePreviewPostsProps) => {
+  const navigate = useNavigate();
+  
   if (posts.length === 0) return null;
 
   return (
@@ -15,7 +18,11 @@ export const ProfilePreviewPosts = ({ posts }: ProfilePreviewPostsProps) => {
       <h3 className="text-lg font-semibold text-white mb-3">Recent Posts</h3>
       <div className="grid grid-cols-2 gap-3">
         {posts.map((post) => (
-          <Card key={post.id} className="glass-effect border-white/10">
+          <Card 
+            key={post.id} 
+            className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
+            onClick={() => navigate(`/post/${post.id}`)}
+          >
             <CardContent className="p-3">
               {/* Media Display */}
               {post.image_url && (

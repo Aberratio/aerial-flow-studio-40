@@ -30,6 +30,7 @@ import MyJourney from "@/pages/MyJourney";
 import EditChallenge from "@/pages/EditChallenge";
 import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
 import PostDetail from "@/pages/PostDetail";
+import ExerciseDetail from "@/pages/ExerciseDetail";
 import AchievementManagement from "@/pages/AchievementManagement";
 import TranslationManagement from "@/pages/TranslationManagement";
 import PremiumRoute from "@/components/PremiumRoute";
@@ -94,6 +95,13 @@ const AppRoutes = () => {
         <ProtectedRoute>
           <PremiumRoute>
             <Library />
+          </PremiumRoute>
+        </ProtectedRoute>
+      } />
+      <Route path="/exercise/:exerciseId" element={
+        <ProtectedRoute>
+          <PremiumRoute>
+            <ExerciseDetail />
           </PremiumRoute>
         </ProtectedRoute>
       } />

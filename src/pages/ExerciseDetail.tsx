@@ -1,0 +1,421 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { ShareExerciseModal } from '@/components/ShareExerciseModal';
+import { CreateExerciseModal } from '@/components/CreateExerciseModal';
+import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
+
+const ExerciseDetail = () => {
+  const { exerciseId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
+  
+  const [exercise, setExercise] = useState<any>(null);
+  const [progress, setProgress] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+  // Fetch exercise details
+  const fetchExerciseDetails = async () => {
+    if (!exerciseId) return;
+
+    try {
+      setLoading(true);
+      
+      // Fetch exercise
+      const { data: exerciseData, error: exerciseError } = await supabase
+        .from('figures')
+        .select(`
+          *,
+          profiles!figures_created_by_fkey (
+            username
+          )
+        `)
+        .eq('id', exerciseId)
+        .single();
+
+      if (exerciseError) throw exerciseError;
+      setExercise(exerciseData);
+
+      // Fetch user progress if logged in
+      if (user && exerciseData) {
+        const { data: progressData } = await supabase
+          .from('figure_progress')
+          .select('*')
+          .eq('figure_id', exerciseId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        setProgress(progressData);
+      }
+    } catch (error) {
+      console.error('Error fetching exercise:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load exercise details",
+        variant: "destructive"
+      });
+      navigate('/library');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchExerciseDetails();
+  }, [exerciseId, user]);
+
+  const updateProgress = async (status: string) => {
+    if (!user || !exercise) return;
+
+    try {
+      const { error } = await supabase
+        .from('figure_progress')
+        .upsert({
+          user_id: user.id,
+          figure_id: exercise.id,
+          status: status,
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      setProgress({ status, updated_at: new Date().toISOString() });
+      toast({
+        title: "Progress Updated",
+        description: `Exercise marked as ${status.replace('_', ' ')}`
+      });
+    } catch (error) {
+      console.error('Error updating progress:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update progress",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const deleteExercise = async () => {
+    if (!exercise) return;
+
+    try {
+      const { error } = await supabase
+        .from('figures')
+        .delete()
+        .eq('id', exercise.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Exercise Deleted",
+        description: "Exercise has been deleted successfully"
+      });
+      navigate('/library');
+    } catch (error) {
+      console.error('Error deleting exercise:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete exercise",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const canModifyExercise = () => {
+    if (!user || !exercise) return false;
+    return user.role === 'admin' || user.role === 'trainer' || exercise.created_by === user.id;
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case 'beginner':
+        return 'bg-green-500/20 text-green-400 border-green-500/30';
+      case 'intermediate':
+        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
+      case 'advanced':
+        return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'expert':
+        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed':
+        return <CheckCircle className="w-5 h-5 text-green-400" />;
+      case 'for_later':
+        return <Bookmark className="w-5 h-5 text-blue-400" />;
+      case 'failed':
+        return <AlertCircle className="w-5 h-5 text-red-400" />;
+      default:
+        return null;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (!exercise) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-white text-lg mb-4">Exercise not found</p>
+          <Button onClick={() => navigate('/library')}>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Library
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/library')}
+            className="text-white hover:bg-white/5"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Library
+          </Button>
+
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowShareModal(true)}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              <Share className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+
+            {canModifyExercise() && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEditModal(true)}
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDeleteModal(true)}
+                  className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8">
+          {/* Media Section */}
+          <div className="space-y-4">
+            <Card className="glass-effect border-white/10 overflow-hidden">
+              <div className="relative">
+                <img
+                  src={exercise.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=600&fit=crop'}
+                  alt={exercise.name}
+                  className="w-full h-64 sm:h-80 object-cover"
+                />
+                {exercise.video_url && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/20 transition-colors cursor-pointer">
+                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                      <Play className="w-8 h-8 text-white" />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Progress Status Overlay */}
+                {user && progress?.status && progress.status !== 'not_tried' && (
+                  <div className="absolute top-4 left-4">
+                    <div className="flex items-center space-x-2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-2">
+                      {getStatusIcon(progress.status)}
+                      <span className="text-white text-sm capitalize">{progress.status.replace('_', ' ')}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
+
+            {/* Progress Actions */}
+            {user && (
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <h3 className="text-white font-semibold mb-3">Mark Progress</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant={progress?.status === 'completed' ? 'primary' : 'outline'}
+                      onClick={() => updateProgress('completed')}
+                      className="justify-start"
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Completed
+                    </Button>
+                    <Button
+                      variant={progress?.status === 'for_later' ? 'primary' : 'outline'}
+                      onClick={() => updateProgress('for_later')}
+                      className="justify-start"
+                    >
+                      <Bookmark className="w-4 h-4 mr-2" />
+                      For Later
+                    </Button>
+                    <Button
+                      variant={progress?.status === 'failed' ? 'primary' : 'outline'}
+                      onClick={() => updateProgress('failed')}
+                      className="justify-start"
+                    >
+                      <AlertCircle className="w-4 h-4 mr-2" />
+                      Need Practice
+                    </Button>
+                    <Button
+                      variant={progress?.status === 'not_tried' ? 'primary' : 'outline'}
+                      onClick={() => updateProgress('not_tried')}
+                      className="justify-start"
+                    >
+                      <Target className="w-4 h-4 mr-2" />
+                      Not Tried
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Details Section */}
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-4">{exercise.name}</h1>
+              
+              {/* Metadata */}
+              <div className="flex flex-wrap gap-3 mb-4">
+                {exercise.difficulty_level && (
+                  <Badge className={getDifficultyColor(exercise.difficulty_level)}>
+                    {exercise.difficulty_level}
+                  </Badge>
+                )}
+                {exercise.category && (
+                  <Badge variant="outline" className="border-white/20 text-white">
+                    {exercise.category}
+                  </Badge>
+                )}
+                {exercise.type && (
+                  <Badge variant="outline" className="border-white/20 text-white">
+                    {exercise.type.replace('_', ' ')}
+                  </Badge>
+                )}
+              </div>
+
+              {/* Creator */}
+              {exercise.profiles?.username && (
+                <div className="flex items-center text-muted-foreground mb-4">
+                  <User className="w-4 h-4 mr-2" />
+                  Created by {exercise.profiles.username}
+                </div>
+              )}
+            </div>
+
+            {/* Description */}
+            {exercise.description && (
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <div className="flex items-center mb-3">
+                    <BookOpen className="w-5 h-5 text-purple-400 mr-2" />
+                    <h3 className="text-white font-semibold">Description</h3>
+                  </div>
+                  <p className="text-muted-foreground">{exercise.description}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Instructions */}
+            {exercise.instructions && (
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <div className="flex items-center mb-3">
+                    <Target className="w-5 h-5 text-green-400 mr-2" />
+                    <h3 className="text-white font-semibold">Instructions</h3>
+                  </div>
+                  <div className="text-muted-foreground whitespace-pre-line">
+                    {exercise.instructions}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Tags */}
+            {exercise.tags && exercise.tags.length > 0 && (
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <h3 className="text-white font-semibold mb-3">Tags</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {exercise.tags.map((tag: string, index: number) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="border-white/20 text-white"
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Modals */}
+      <ShareExerciseModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        exerciseId={exercise.id}
+        exerciseName={exercise.name}
+      />
+
+      <CreateExerciseModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onExerciseCreated={() => {
+          setShowEditModal(false);
+          fetchExerciseDetails();
+        }}
+        editingFigure={exercise}
+      />
+
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={deleteExercise}
+        title="Delete Exercise"
+        description={`Are you sure you want to delete "${exercise.name}"? This action cannot be undone.`}
+      />
+    </div>
+  );
+};
+
+export default ExerciseDetail;

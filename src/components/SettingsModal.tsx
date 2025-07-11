@@ -5,15 +5,10 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { 
-  Bell, 
-  Shield, 
   Moon, 
   Globe, 
   Trash2, 
-  Download, 
   LogOut,
-  Eye,
-  Heart,
   Crown,
   CreditCard
 } from 'lucide-react';
@@ -34,17 +29,6 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const { currentLanguage, setCurrentLanguage, languages } = useLanguage();
   const { toast } = useToast();
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
-  const [notifications, setNotifications] = useState({
-    likes: true,
-    comments: true,
-    follows: true,
-    challenges: true,
-    achievements: false,
-  });
-  const [privacy, setPrivacy] = useState({
-    profilePublic: true,
-    showProgress: true,
-  });
   const [darkMode, setDarkMode] = useState(true);
 
   const handleSaveSettings = () => {
@@ -80,84 +64,6 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Notifications */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Bell className="w-5 h-5 text-purple-400" />
-              <h3 className="text-white font-semibold">Notifications</h3>
-            </div>
-            
-            <div className="space-y-3 pl-7">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Heart className="w-4 h-4 text-pink-400" />
-                  <Label className="text-white">Likes</Label>
-                </div>
-                <Switch
-                  checked={notifications.likes}
-                  onCheckedChange={(checked) => setNotifications({...notifications, likes: checked})}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Label className="text-white">New Followers</Label>
-                <Switch
-                  checked={notifications.follows}
-                  onCheckedChange={(checked) => setNotifications({...notifications, follows: checked})}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Label className="text-white">Challenge Updates</Label>
-                <Switch
-                  checked={notifications.challenges}
-                  onCheckedChange={(checked) => setNotifications({...notifications, challenges: checked})}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Label className="text-white">Achievements</Label>
-                <Switch
-                  checked={notifications.achievements}
-                  onCheckedChange={(checked) => setNotifications({...notifications, achievements: checked})}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator className="bg-white/10" />
-
-          {/* Privacy */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Shield className="w-5 h-5 text-green-400" />
-              <h3 className="text-white font-semibold">Privacy</h3>
-            </div>
-            
-            <div className="space-y-3 pl-7">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Eye className="w-4 h-4 text-blue-400" />
-                  <Label className="text-white">Public Profile</Label>
-                </div>
-                <Switch
-                  checked={privacy.profilePublic}
-                  onCheckedChange={(checked) => setPrivacy({...privacy, profilePublic: checked})}
-                />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <Label className="text-white">Show Progress</Label>
-                <Switch
-                  checked={privacy.showProgress}
-                  onCheckedChange={(checked) => setPrivacy({...privacy, showProgress: checked})}
-                />
-              </div>
-            </div>
-          </div>
-
-          <Separator className="bg-white/10" />
-
           {/* Appearance */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
@@ -256,22 +162,9 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           <Separator className="bg-white/10" />
 
-          {/* Data & Account */}
+          {/* Account Actions */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Download className="w-5 h-5 text-blue-400" />
-              <h3 className="text-white font-semibold">Data & Account</h3>
-            </div>
-            
-            <div className="space-y-3 pl-7">
-              <Button
-                variant="outline"
-                className="w-full justify-start border-white/20 text-white hover:bg-white/10"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Download My Data
-              </Button>
-              
+            <div className="space-y-3">
               <Button
                 variant="outline"
                 className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:text-white"
