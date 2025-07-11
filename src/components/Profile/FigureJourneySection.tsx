@@ -3,12 +3,11 @@ import { ArrowRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { useFigureProgress } from '@/hooks/useFigureProgress';
-import { FigurePreviewModal } from '@/components/FigurePreviewModal';
+import { useNavigate } from 'react-router-dom';
 
 export const FigureJourneySection: React.FC = () => {
   const { figureProgress, loading: figureLoading, getFiguresByStatus } = useFigureProgress();
-  const [selectedFigure, setSelectedFigure] = useState(null);
-  const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   const renderFigureGrid = (figures: any[], status: string) => {
     if (figures.length === 0) return null;
@@ -34,8 +33,7 @@ export const FigureJourneySection: React.FC = () => {
               key={figure.id} 
               className="flex-shrink-0 w-32 cursor-pointer hover:transform hover:scale-105 transition-transform"
               onClick={() => {
-                setSelectedFigure(figure);
-                setIsFigureModalOpen(true);
+                navigate(`/exercise/${figure.id}`);
               }}
             >
               <div className={`aspect-square rounded-lg overflow-hidden mb-2 ${status === 'for_later' ? 'opacity-70' : status === 'failed' ? 'grayscale' : ''}`}>
@@ -91,12 +89,6 @@ export const FigureJourneySection: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Figure Preview Modal */}
-      <FigurePreviewModal 
-        figure={selectedFigure} 
-        isOpen={isFigureModalOpen} 
-        onClose={() => setIsFigureModalOpen(false)} 
-      />
     </>
   );
 };

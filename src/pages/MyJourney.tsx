@@ -5,15 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { useFigureProgress } from '@/hooks/useFigureProgress';
-import { FigurePreviewModal } from '@/components/FigurePreviewModal';
+import { useNavigate } from 'react-router-dom';
 const MyJourney = () => {
   const {
     figureProgress,
     loading,
     getFiguresByStatus
   } = useFigureProgress();
-  const [selectedFigure, setSelectedFigure] = useState(null);
-  const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
+  const navigate = useNavigate();
   const [activeStatus, setActiveStatus] = useState('all');
   const statusConfig = {
     completed: {
@@ -65,13 +64,30 @@ const MyJourney = () => {
 
         {/* Status Filter */}
         <div className="flex flex-wrap gap-2 mb-6">
-          <Button variant={activeStatus === 'all' ? 'default' : 'outline'} onClick={() => setActiveStatus('all')} className={activeStatus === 'all' ? 'bg-gradient-to-r from-purple-500 to-pink-500' : ''}>
+          <Button 
+            variant="ghost" 
+            onClick={() => setActiveStatus('all')} 
+            className={`transition-all ${
+              activeStatus === 'all' 
+                ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
+                : 'text-muted-foreground hover:text-white hover:bg-white/5'
+            } ${activeStatus === 'all' ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''} border-white/20`}
+          >
             All ({figureProgress.length})
           </Button>
           {Object.entries(statusConfig).map(([status, config]) => {
           const Icon = config.icon;
           const count = getFiguresByStatus(status).length;
-          return <Button key={status} variant={activeStatus === status ? 'default' : 'outline'} onClick={() => setActiveStatus(status)} className={`${activeStatus === status ? 'bg-gradient-to-r from-purple-500 to-pink-500' : ''} border-white/20`}>
+          return <Button 
+            key={status} 
+            variant="ghost" 
+            onClick={() => setActiveStatus(status)} 
+            className={`transition-all ${
+              activeStatus === status 
+                ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
+                : 'text-muted-foreground hover:text-white hover:bg-white/5'
+            } ${activeStatus === status ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''} border-white/20`}
+          >
                 <Icon className={`w-4 h-4 mr-2 ${config.color}`} />
                 {config.label} ({count})
               </Button>;
@@ -95,8 +111,7 @@ const MyJourney = () => {
           const statusInfo = statusConfig[figure.status as keyof typeof statusConfig];
           const Icon = statusInfo?.icon || Clock;
           return <Card key={figure.id} className="glass-effect border-white/10 cursor-pointer hover:transform hover:scale-105 transition-all duration-300 group" onClick={() => {
-            setSelectedFigure(figure);
-            setIsFigureModalOpen(true);
+            navigate(`/exercise/${figure.id}`);
           }}>
                   <CardContent className="p-0">
                     <div className="relative">
@@ -124,9 +139,6 @@ const MyJourney = () => {
         })}
           </div>}
       </div>
-
-      {/* Figure Preview Modal */}
-      <FigurePreviewModal figure={selectedFigure} isOpen={isFigureModalOpen} onClose={() => setIsFigureModalOpen(false)} />
     </div>;
 };
 export default MyJourney;

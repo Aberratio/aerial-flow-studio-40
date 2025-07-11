@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { PostPreviewModal } from '@/components/PostPreviewModal';
+
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFollowCounts } from '@/hooks/useFollowCounts';
@@ -21,7 +21,7 @@ const FriendProfile = () => {
     user,
     refetchCounts
   } = useAuth();
-  const [selectedPost, setSelectedPost] = useState(null);
+  
   const navigate = useNavigate();
   const {
     toast
@@ -321,7 +321,7 @@ const FriendProfile = () => {
         {activeTab === 'posts' && (friendPosts.length === 0 ? <div className="text-center py-12">
               <div className="text-muted-foreground text-lg">No posts yet</div>
             </div> : <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {friendPosts.map((post: any) => <div key={post.id} className="relative group cursor-pointer" onClick={() => setSelectedPost(post)}>
+              {friendPosts.map((post: any) => <div key={post.id} className="relative group cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
                   <div className="aspect-square rounded-lg overflow-hidden">
                     {post.image ? <img src={post.image} alt="Friend post" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" /> : <div className="w-full h-full bg-white/5 flex items-center justify-center">
                         <MessageCircle className="w-8 h-8 text-muted-foreground" />
@@ -353,8 +353,6 @@ const FriendProfile = () => {
                 </div>)}
             </div>)}
       </div>
-
-      <PostPreviewModal post={selectedPost} isOpen={!!selectedPost} onClose={() => setSelectedPost(null)} />
     </div>;
 };
 export default FriendProfile;

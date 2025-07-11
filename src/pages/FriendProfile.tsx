@@ -7,11 +7,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
-import { PostPreviewModal } from '@/components/PostPreviewModal';
+
 
 const FriendProfile = () => {
   const { id } = useParams();
-  const [selectedPost, setSelectedPost] = useState(null);
+  
   const navigate = useNavigate();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('posts');
@@ -276,7 +276,7 @@ const FriendProfile = () => {
               <div 
                 key={post.id} 
                 className="relative group cursor-pointer"
-                onClick={() => setSelectedPost(post)}
+                onClick={() => navigate(`/post/${post.id}`)}
               >
                 <div className="aspect-square rounded-lg overflow-hidden">
                   <img 
@@ -315,12 +315,6 @@ const FriendProfile = () => {
           </div>
         )}
       </div>
-
-      <PostPreviewModal 
-        post={selectedPost}
-        isOpen={!!selectedPost}
-        onClose={() => setSelectedPost(null)}
-      />
     </div>
   );
 };
