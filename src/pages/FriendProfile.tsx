@@ -264,12 +264,12 @@ const FriendProfile = () => {
             return (
               <Button
                 key={tab.id}
-                variant={activeTab === tab.id ? "default" : "ghost"}
-                className={`flex-1 ${
+                variant="ghost"
+                className={`flex-1 transition-all ${
                   activeTab === tab.id 
-                    ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500' 
-                    : 'text-muted-foreground hover:text-white'
-                }`}
+                    ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
+                    : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                } ${activeTab === tab.id ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''}`}
                 onClick={() => setActiveTab(tab.id)}
               >
                 <Icon className="w-4 h-4 mr-2" />

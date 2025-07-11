@@ -64,55 +64,6 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Appearance */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Moon className="w-5 h-5 text-yellow-400" />
-              <h3 className="text-white font-semibold">Appearance</h3>
-            </div>
-            
-            <div className="flex items-center justify-between pl-7">
-              <Label className="text-white">Dark Mode</Label>
-              <Switch
-                checked={darkMode}
-                onCheckedChange={setDarkMode}
-              />
-            </div>
-          </div>
-
-          <Separator className="bg-white/10" />
-
-          {/* Language */}
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              <Globe className="w-5 h-5 text-blue-400" />
-              <h3 className="text-white font-semibold">Language</h3>
-            </div>
-            
-            <div className="pl-7">
-              <Label className="text-white text-sm">App Language</Label>
-              <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-                <SelectTrigger className="w-full bg-white/5 border-white/10 text-white mt-2">
-                  <SelectValue>
-                    {languages.find(lang => lang.id === currentLanguage)?.native_name}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map(language => (
-                    <SelectItem key={language.id} value={language.id}>
-                      {language.native_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground mt-1">
-                Changes the language of the entire application interface
-              </p>
-            </div>
-          </div>
-
-          <Separator className="bg-white/10" />
-
           {/* Subscription & Billing */}
           <div className="space-y-4">
             <div className="flex items-center space-x-2">
