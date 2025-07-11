@@ -297,14 +297,30 @@ const PostDetail = () => {
             ) : (
               comments.map((comment) => (
                 <div key={comment.id} className="flex space-x-3">
-                  <Avatar className={`w-8 h-8 flex-shrink-0 ${comment.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-1 ring-offset-black' : ''}`}>
+                  <Avatar 
+                    className={`w-8 h-8 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all ${comment.user.role === 'trainer' ? 'ring-2 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-1 ring-offset-black' : ''}`}
+                    onClick={() => {
+                      navigate(`/profile/${comment.user.id}`, { 
+                        state: { openProfilePreview: true } 
+                      });
+                    }}
+                  >
                     <AvatarImage src={comment.user.avatar_url || undefined} />
                     <AvatarFallback>{comment.user.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="bg-white/5 rounded-lg p-3">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-semibold text-white text-sm truncate">{comment.user.username}</span>
+                        <span 
+                          className="font-semibold text-white text-sm truncate cursor-pointer hover:text-primary transition-colors"
+                          onClick={() => {
+                            navigate(`/profile/${comment.user.id}`, { 
+                              state: { openProfilePreview: true } 
+                            });
+                          }}
+                        >
+                          {comment.user.username}
+                        </span>
                         <span className="text-muted-foreground text-xs flex-shrink-0">
                           {comment.created_at && !isNaN(new Date(comment.created_at).getTime()) 
                             ? formatDistanceToNow(new Date(comment.created_at), { addSuffix: true })

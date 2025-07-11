@@ -217,7 +217,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px] glass-effect border-white/10">
+      <DialogContent className="w-[95vw] max-w-[500px] max-h-[85vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">Friend Requests</DialogTitle>
         </DialogHeader>
@@ -241,7 +241,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
               </div>
               
               {receivedRequests.map((request) => (
-                  <div key={request.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                  <div key={request.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
                     <div 
                       className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-white/5 rounded p-2 -m-2"
                       onClick={() => {
@@ -253,25 +253,25 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
                         <AvatarImage src={request.user.avatar_url || undefined} />
                         <AvatarFallback>{request.user.username[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
-                      <div>
-                        <p className="font-medium text-white">{request.user.username}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-white truncate">{request.user.username}</p>
                         <p className="text-sm text-muted-foreground">
                           {request.user.bio || 'Aerial enthusiast'} • {request.timestamp}
                         </p>
                       </div>
                     </div>
 
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-2 sm:flex-shrink-0">
                     <Button
                       size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAccept(request.id, request.user.username);
                       }}
-                      className="bg-green-600 hover:bg-green-700 text-white"
+                      className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
                     >
-                      <Check className="w-4 h-4 mr-1" />
-                      Accept
+                      <Check className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Accept</span>
                     </Button>
                     <Button
                       size="sm"
@@ -280,10 +280,10 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
                         e.stopPropagation();
                         handleReject(request.id, request.user.username);
                       }}
-                      className="text-muted-foreground hover:text-white hover:bg-red-600/20"
+                      className="text-muted-foreground hover:text-white hover:bg-red-600/20 flex-1 sm:flex-none"
                     >
-                      <X className="w-4 h-4 mr-1" />
-                      Decline
+                      <X className="w-4 h-4 sm:mr-1" />
+                      <span className="hidden sm:inline">Decline</span>
                     </Button>
                   </div>
                 </div>
@@ -302,7 +302,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
               </div>
               
               {sentRequests.map((request) => (
-                  <div key={request.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
+                  <div key={request.id} className="flex flex-col sm:flex-row sm:items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
                     <div 
                       className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-white/5 rounded p-2 -m-2"
                       onClick={() => {
@@ -314,15 +314,15 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
                         <AvatarImage src={request.user.avatar_url || undefined} />
                         <AvatarFallback>{request.user.username[0].toUpperCase()}</AvatarFallback>
                       </Avatar>
-                      <div>
-                        <p className="font-medium text-white">{request.user.username}</p>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-white truncate">{request.user.username}</p>
                         <p className="text-sm text-muted-foreground">
                           Sent {request.timestamp}
                         </p>
                       </div>
                     </div>
 
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 sm:flex-shrink-0">
                     <div className="flex items-center space-x-1 text-yellow-400">
                       <Clock className="w-4 h-4" />
                       <span className="text-sm">Pending</span>

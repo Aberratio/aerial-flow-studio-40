@@ -197,6 +197,12 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
             </Avatar>
             <div>
               <p className="font-semibold text-white">{user?.username}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3">
+            <div className="w-10"></div> {/* Spacer to align with avatar */}
+            <div>
               <Select value={privacy} onValueChange={setPrivacy}>
                 <SelectTrigger className="w-40 h-8 bg-white/5 border-white/10 text-white">
                   <SelectValue>
