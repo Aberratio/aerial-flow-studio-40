@@ -254,9 +254,6 @@ const FriendProfile = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
                   <h1 className="text-3xl font-bold text-white">{friendData.username}</h1>
                   <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
-                    {friendData.isVerified && <Badge className="bg-gradient-to-r from-purple-500 to-pink-500">
-                        Verified Athlete
-                      </Badge>}
                     <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500">
                       {friendData.role === 'trainer' ? 'Trainer' : 'Member'}
                     </Badge>
@@ -274,9 +271,11 @@ const FriendProfile = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex space-x-3">
-                  {renderActionButton()}
-                </div>
+                {user?.id !== id && (
+                  <div className="flex space-x-3">
+                    {renderActionButton()}
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>

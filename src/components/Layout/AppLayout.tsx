@@ -59,7 +59,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       )}
       
       <Navigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <main className={`${isMobile ? 'ml-0 pt-20' : 'ml-20 lg:ml-64'} min-h-screen transition-all duration-300`}>
+      <main className={`${isMobile ? 'ml-0 pt-14' : 'ml-20 lg:ml-64'} min-h-screen transition-all duration-300`}>
         {children}
       </main>
     </div>
