@@ -72,7 +72,7 @@ const Landing = () => {
       <header className="relative z-10 px-4 sm:px-6 py-4">
         <nav className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-1000 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0'}`}>
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 via-pink-500 to-emerald-500 rounded-xl flex items-center justify-center pulse-glow floating">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 via-violet-500 to-indigo-500 rounded-xl flex items-center justify-center pulse-glow floating">
               <span className="text-white font-bold text-lg sm:text-xl">I</span>
             </div>
             <span className="gradient-text-mega font-bold text-xl sm:text-2xl">IguanaFlow</span>
@@ -88,7 +88,7 @@ const Landing = () => {
             </Button>
             <Button 
               onClick={openAuth}
-              className="bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 hover:from-purple-600 hover:via-emerald-600 hover:to-teal-600 text-sm sm:text-base px-3 sm:px-4 pulse-glow-tropical hover-lift"
+              className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 text-sm sm:text-base px-3 sm:px-4 pulse-glow-tropical hover-lift"
             >
               <Sparkles className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Get Started</span>
@@ -119,7 +119,7 @@ const Landing = () => {
                 <Button 
                   size="lg"
                   onClick={openAuth}
-                  className="bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 hover:from-purple-600 hover:via-emerald-600 hover:to-teal-600 text-base sm:text-lg px-6 sm:px-8 pulse-glow-tropical hover-lift glass-effect-intense"
+                  className="bg-gradient-to-r from-purple-500 via-violet-500 to-indigo-500 hover:from-purple-600 hover:via-violet-600 hover:to-indigo-600 text-base sm:text-lg px-6 sm:px-8 pulse-glow hover-lift glass-effect-intense"
                 >
                   <Star className="mr-2 w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   Start Training Free
@@ -145,12 +145,12 @@ const Landing = () => {
                   className="rounded-2xl shadow-2xl hover-lift mx-auto max-w-xs sm:max-w-md lg:max-w-none glass-effect-intense pulse-glow"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-emerald-500/20 to-teal-500/25 rounded-2xl blur-3xl floating-delayed"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
               
               {/* Floating decorative elements */}
-              <div className="absolute -top-6 -right-6 w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur-lg animate-pulse pulse-glow-tropical"></div>
+              <div className="absolute -top-6 -right-6 w-12 h-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full blur-lg animate-pulse pulse-glow-tropical"></div>
               <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-gradient-to-r from-purple-500 to-violet-500 rounded-full blur-md animate-pulse animation-delay-400"></div>
-              <div className="absolute top-1/3 -left-8 w-6 h-6 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full blur-sm animate-pulse animation-delay-800"></div>
+              <div className="absolute top-1/3 -left-8 w-6 h-6 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full blur-sm animate-pulse animation-delay-800"></div>
             </div>
           </div>
         </div>
@@ -173,7 +173,7 @@ const Landing = () => {
             {features.map((feature, index) => {
               const Icon = feature.icon;
               const isEven = index % 2 === 0;
-              const accentColor = feature.accent === 'tropical' ? 'from-emerald-500 via-teal-500 to-cyan-500' : 'from-purple-500 via-violet-500 to-indigo-500';
+              const accentColor = feature.accent === 'tropical' ? 'from-emerald-600 via-teal-600 to-cyan-600' : 'from-purple-500 via-violet-500 to-indigo-500';
               const glowClass = feature.accent === 'tropical' ? 'pulse-glow-tropical' : 'pulse-glow';
               
               return (
@@ -257,7 +257,7 @@ const Landing = () => {
             {/* Premium Plan */}
             <Card className="glass-effect-intense border-white/20 p-6 sm:p-8 relative card-hover-effect animate-fade-in-up animation-delay-600 pulse-glow">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <div className="bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold pulse-glow-tropical floating">
+                <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold pulse-glow-tropical floating">
                   <Heart className="inline-block w-3 h-3 mr-1" />
                   Most Popular
                 </div>
@@ -305,7 +305,7 @@ const Landing = () => {
                 <Button 
                   size="lg"
                   onClick={openAuth}
-                  className="w-full bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 hover:from-purple-600 hover:via-emerald-600 hover:to-teal-600 pulse-glow-tropical"
+                  className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 hover:from-emerald-700 hover:via-teal-700 hover:to-cyan-700 pulse-glow-tropical"
                 >
                   Start Premium Trial
                 </Button>
@@ -331,7 +331,7 @@ const Landing = () => {
               <Button 
                 size="lg"
                 onClick={openAuth}
-                className="bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 hover:from-purple-600 hover:via-emerald-600 hover:to-teal-600 text-base sm:text-lg px-8 sm:px-12 pulse-glow-tropical hover-lift glass-effect-intense animate-bounce-in animation-delay-400"
+                className="bg-gradient-to-r from-purple-500 via-violet-500 to-indigo-500 hover:from-purple-600 hover:via-violet-600 hover:to-indigo-600 text-base sm:text-lg px-8 sm:px-12 pulse-glow hover-lift glass-effect-intense animate-bounce-in animation-delay-400"
               >
                 <Sparkles className="mr-2 w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 Get Started Today
