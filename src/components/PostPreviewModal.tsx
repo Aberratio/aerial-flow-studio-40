@@ -200,9 +200,10 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
                   onKeyPress={(e) => e.key === 'Enter' && handleSubmitComment()}
                 />
                 <Button 
+                  variant="primary"
                   size="sm" 
                   onClick={handleSubmitComment}
-                  className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 flex-shrink-0"
+                  className="flex-shrink-0"
                 >
                   <Send className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>

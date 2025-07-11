@@ -54,9 +54,10 @@ export const SharePostModal = ({ isOpen, onClose, postId, userName }: SharePostM
               className="bg-white/5 border-white/10 text-white"
             />
             <Button
+              variant="primary"
               onClick={handleCopy}
               size="sm"
-              className="shrink-0 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500"
+              className="shrink-0"
             >
               {copied ? (
                 <Check className="w-4 h-4" />

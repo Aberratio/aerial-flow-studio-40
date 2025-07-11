@@ -184,7 +184,7 @@ const Navigation: React.FC<NavigationProps> = ({
           <Button onClick={() => {
           logout();
           if (isMobile && onClose) onClose();
-        }} variant="ghost" size="sm" className="w-full mt-2 text-muted-foreground hover:text-white justify-start">
+        }} variant="ghost" size="sm" className="w-full mt-2 text-muted-foreground hover:text-white hover:bg-white/10 justify-start">
             <LogOut className="w-4 h-4 mr-3" />
             <span className={isMobile ? 'block' : 'hidden lg:block'}>{t('nav.logout')}</span>
           </Button>

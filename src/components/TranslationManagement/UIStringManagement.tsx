@@ -181,9 +181,10 @@ export function UIStringManagement({
 
             <div className="flex space-x-2">
               <Button 
+                variant="primary"
                 onClick={saveUIString} 
                 disabled={isLoading}
-                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500"
+                className="flex-1"
               >
                 <Save className="w-4 h-4 mr-2" />
                 {editingStringId ? 'Update' : 'Save'} Translation

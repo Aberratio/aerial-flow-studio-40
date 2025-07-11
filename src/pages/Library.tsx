@@ -202,7 +202,7 @@ const Library = () => {
             <div>
               <p className="text-white text-sm font-medium mb-2">{t('library.category')}</p>
               <div className="flex flex-wrap gap-2">
-                {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => setSelectedCategory(category)} className={selectedCategory === category ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
+                {categories.map(category => <Button key={category} variant={selectedCategory === category ? "default" : "outline"} size="sm" onClick={() => setSelectedCategory(category)} className={selectedCategory === category ? "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-700 text-white border-none relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-emerald-600/20 before:via-teal-500/20 before:to-emerald-500/20 before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 before:ease-out" : "border-white/20 text-white hover:bg-white/10 hover:text-white hover:bg-gradient-to-r hover:from-emerald-800/20 hover:via-teal-800/20 hover:to-emerald-900/20"}>
                     {t(`exercises.category.${category}`)}
                   </Button>)}
               </div>
@@ -212,7 +212,7 @@ const Library = () => {
             <div>
               <p className="text-white text-sm font-medium mb-2">{t('library.level')}</p>
               <div className="flex flex-wrap gap-2">
-                {levels.map(level => <Button key={level} variant={selectedLevel === level ? "default" : "outline"} size="sm" onClick={() => setSelectedLevel(level)} className={selectedLevel === level ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
+                {levels.map(level => <Button key={level} variant={selectedLevel === level ? "default" : "outline"} size="sm" onClick={() => setSelectedLevel(level)} className={selectedLevel === level ? "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-700 text-white border-none relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-emerald-600/20 before:via-teal-500/20 before:to-emerald-500/20 before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 before:ease-out" : "border-white/20 text-white hover:bg-white/10 hover:text-white hover:bg-gradient-to-r hover:from-emerald-800/20 hover:via-teal-800/20 hover:to-emerald-900/20"}>
                     {t(`exercises.difficulty.${level}`)}
                   </Button>)}
               </div>
@@ -222,7 +222,7 @@ const Library = () => {
             <div>
               <p className="text-white text-sm font-medium mb-2">{t('library.type')}</p>
               <div className="flex flex-wrap gap-2">
-                {types.map(type => <Button key={type} variant={selectedType === type ? "default" : "outline"} size="sm" onClick={() => setSelectedType(type)} className={selectedType === type ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
+                {types.map(type => <Button key={type} variant={selectedType === type ? "default" : "outline"} size="sm" onClick={() => setSelectedType(type)} className={selectedType === type ? "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-700 text-white border-none relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-emerald-600/20 before:via-teal-500/20 before:to-emerald-500/20 before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 before:ease-out" : "border-white/20 text-white hover:bg-white/10 hover:text-white hover:bg-gradient-to-r hover:from-emerald-800/20 hover:via-teal-800/20 hover:to-emerald-900/20"}>
                     {t(`exercises.type.${type}`)}
                   </Button>)}
               </div>
@@ -238,7 +238,7 @@ const Library = () => {
                 } else {
                   setSelectedTags([...selectedTags, tag]);
                 }
-              }} className={selectedTags.includes(tag) ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
+              }} className={selectedTags.includes(tag) ? "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-700 text-white border-none relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-emerald-600/20 before:via-teal-500/20 before:to-emerald-500/20 before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 before:ease-out" : "border-white/20 text-white hover:bg-white/10 hover:text-white hover:bg-gradient-to-r hover:from-emerald-800/20 hover:via-teal-800/20 hover:to-emerald-900/20"}>
                       {tag}
                       {selectedTags.includes(tag) && <X className="w-3 h-3 ml-1" />}
                     </Button>)}
@@ -249,7 +249,7 @@ const Library = () => {
             {user && <div>
                 <p className="text-white text-sm font-medium mb-2">{t('library.progress_status')}</p>
                 <div className="flex flex-wrap gap-2">
-                  {statuses.map(status => <Button key={status} variant={selectedStatus === status ? "default" : "outline"} size="sm" onClick={() => setSelectedStatus(status)} className={selectedStatus === status ? "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500" : "border-white/20 text-white hover:bg-white/10"}>
+                  {statuses.map(status => <Button key={status} variant={selectedStatus === status ? "default" : "outline"} size="sm" onClick={() => setSelectedStatus(status)} className={selectedStatus === status ? "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:via-teal-600 hover:to-emerald-700 text-white border-none relative overflow-hidden before:absolute before:inset-0 before:bg-gradient-to-r before:from-emerald-600/20 before:via-teal-500/20 before:to-emerald-500/20 before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-700 before:ease-out" : "border-white/20 text-white hover:bg-white/10 hover:text-white hover:bg-gradient-to-r hover:from-emerald-800/20 hover:via-teal-800/20 hover:to-emerald-900/20"}>
                       {t(`exercises.status.${status}`)}
                     </Button>)}
                 </div>

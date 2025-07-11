@@ -191,9 +191,10 @@ export function StaticPageManagement({
             </div>
 
             <Button 
+              variant="primary"
               onClick={saveStaticPage}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+              className="w-full"
             >
               <Save className="w-4 h-4 mr-2" />
               {editingPageId ? 'Update' : 'Save'} Page

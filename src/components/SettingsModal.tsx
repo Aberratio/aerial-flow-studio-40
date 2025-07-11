@@ -224,6 +224,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   You're currently on the free plan. Upgrade to unlock premium features!
                 </p>
                 <Button
+                  variant="primary"
                   onClick={async () => {
                     try {
                       const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -235,7 +236,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                       console.error('Checkout error:', error);
                     }
                   }}
-                  className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                  className="w-full"
                 >
                   <Crown className="w-4 h-4 mr-2" />
                   Upgrade to Premium
@@ -273,7 +274,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               
               <Button
                 variant="outline"
-                className="w-full justify-start border-white/20 text-white hover:bg-white/10"
+                className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:text-white"
                 onClick={handleLogout}
               >
                 <LogOut className="w-4 h-4 mr-2" />
@@ -293,8 +294,9 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
           {/* Save Button */}
           <Button
+            variant="primary"
             onClick={handleSaveSettings}
-            className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+            className="w-full"
           >
             Save Settings
           </Button>
