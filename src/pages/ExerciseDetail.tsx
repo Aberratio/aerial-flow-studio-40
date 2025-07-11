@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share } from 'lucide-react';
+import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share, Users, Globe } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -23,6 +25,10 @@ const ExerciseDetail = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('my-versions');
+  const [myVersions, setMyVersions] = useState<any[]>([]);
+  const [friendsVersions, setFriendsVersions] = useState<any[]>([]);
+  const [communityVersions, setCommunityVersions] = useState<any[]>([]);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -56,6 +62,61 @@ const ExerciseDetail = () => {
           .maybeSingle();
 
         setProgress(progressData);
+      }
+
+      // Fetch community versions (posts related to this exercise)
+      if (exerciseData) {
+        const { data: communityData } = await supabase
+          .from('posts')
+          .select(`
+            *,
+            profiles:user_id (
+              username,
+              avatar_url
+            )
+          `)
+          .eq('figure_id', exerciseId)
+          .eq('privacy', 'public')
+          .order('created_at', { ascending: false })
+          .limit(10);
+
+        setCommunityVersions(communityData || []);
+
+        // Fetch friends versions if user is logged in
+        if (user) {
+          const { data: friendsData } = await supabase
+            .from('posts')
+            .select(`
+              *,
+              profiles:user_id (
+                username,
+                avatar_url
+              )
+            `)
+            .eq('figure_id', exerciseId)
+            .eq('privacy', 'public')
+            .in('user_id', []) // TODO: Add actual friends list
+            .order('created_at', { ascending: false })
+            .limit(10);
+
+          setFriendsVersions(friendsData || []);
+
+          // Fetch user's own versions
+          const { data: myData } = await supabase
+            .from('posts')
+            .select(`
+              *,
+              profiles:user_id (
+                username,
+                avatar_url
+              )
+            `)
+            .eq('figure_id', exerciseId)
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
+
+          setMyVersions(myData || []);
+        }
       }
     } catch (error) {
       console.error('Error fetching exercise:', error);
@@ -261,40 +322,54 @@ const ExerciseDetail = () => {
               </div>
             </Card>
 
-            {/* Progress Actions */}
+            {/* Exercise Status */}
             {user && (
               <Card className="glass-effect border-white/10">
                 <CardContent className="p-4">
-                  <h3 className="text-white font-semibold mb-3">Mark Progress</h3>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-white font-semibold">Your Progress</h3>
+                    {progress?.status && progress.status !== 'not_tried' && (
+                      <div className="flex items-center space-x-2">
+                        {getStatusIcon(progress.status)}
+                        <span className="text-sm text-muted-foreground capitalize">
+                          {progress.status.replace('_', ' ')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
                     <Button
+                      size="sm"
                       variant={progress?.status === 'completed' ? 'primary' : 'outline'}
                       onClick={() => updateProgress('completed')}
-                      className="justify-start"
+                      className="flex-1 min-w-[120px]"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
                       Completed
                     </Button>
                     <Button
+                      size="sm"
                       variant={progress?.status === 'for_later' ? 'primary' : 'outline'}
                       onClick={() => updateProgress('for_later')}
-                      className="justify-start"
+                      className="flex-1 min-w-[120px]"
                     >
                       <Bookmark className="w-4 h-4 mr-2" />
                       For Later
                     </Button>
                     <Button
+                      size="sm"
                       variant={progress?.status === 'failed' ? 'primary' : 'outline'}
                       onClick={() => updateProgress('failed')}
-                      className="justify-start"
+                      className="flex-1 min-w-[120px]"
                     >
                       <AlertCircle className="w-4 h-4 mr-2" />
                       Need Practice
                     </Button>
                     <Button
+                      size="sm"
                       variant={progress?.status === 'not_tried' ? 'primary' : 'outline'}
                       onClick={() => updateProgress('not_tried')}
-                      className="justify-start"
+                      className="flex-1 min-w-[120px]"
                     >
                       <Target className="w-4 h-4 mr-2" />
                       Not Tried
@@ -386,6 +461,134 @@ const ExerciseDetail = () => {
               </Card>
             )}
           </div>
+        </div>
+
+        {/* Versions Section */}
+        <div className="mt-12">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full mb-6 bg-white/5">
+              <TabsTrigger 
+                value="my-versions" 
+                className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20"
+              >
+                <User className="w-4 h-4 mr-2" />
+                My Versions ({myVersions.length})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="friends-versions"
+                className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20"
+              >
+                <Users className="w-4 h-4 mr-2" />
+                Friends ({friendsVersions.length})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="community"
+                className="flex-1 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20"
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                Community ({communityVersions.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="my-versions">
+              {myVersions.length === 0 ? (
+                <Card className="glass-effect border-white/10">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-muted-foreground">No versions yet. Share your practice!</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {myVersions.map((post) => (
+                    <Card key={post.id} className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors" onClick={() => navigate(`/post/${post.id}`)}>
+                      <CardContent className="p-4">
+                        {post.image_url && (
+                          <img src={post.image_url} alt="Version" className="w-full h-32 object-cover rounded mb-3" />
+                        )}
+                        <p className="text-white text-sm line-clamp-2 mb-2">{post.content}</p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center space-x-1">
+                            <Avatar className="w-4 h-4">
+                              <AvatarImage src={post.profiles?.avatar_url} />
+                              <AvatarFallback>{post.profiles?.username?.[0]}</AvatarFallback>
+                            </Avatar>
+                            <span>{post.profiles?.username}</span>
+                          </div>
+                          <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="friends-versions">
+              {friendsVersions.length === 0 ? (
+                <Card className="glass-effect border-white/10">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-muted-foreground">No friends' versions yet.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {friendsVersions.map((post) => (
+                    <Card key={post.id} className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors" onClick={() => navigate(`/post/${post.id}`)}>
+                      <CardContent className="p-4">
+                        {post.image_url && (
+                          <img src={post.image_url} alt="Version" className="w-full h-32 object-cover rounded mb-3" />
+                        )}
+                        <p className="text-white text-sm line-clamp-2 mb-2">{post.content}</p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center space-x-1">
+                            <Avatar className="w-4 h-4">
+                              <AvatarImage src={post.profiles?.avatar_url} />
+                              <AvatarFallback>{post.profiles?.username?.[0]}</AvatarFallback>
+                            </Avatar>
+                            <span>{post.profiles?.username}</span>
+                          </div>
+                          <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="community">
+              {communityVersions.length === 0 ? (
+                <Card className="glass-effect border-white/10">
+                  <CardContent className="p-8 text-center">
+                    <p className="text-muted-foreground">No community versions yet.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {communityVersions.map((post) => (
+                    <Card key={post.id} className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors" onClick={() => navigate(`/post/${post.id}`)}>
+                      <CardContent className="p-4">
+                        {post.image_url && (
+                          <img src={post.image_url} alt="Version" className="w-full h-32 object-cover rounded mb-3" />
+                        )}
+                        <p className="text-white text-sm line-clamp-2 mb-2">{post.content}</p>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <div className="flex items-center space-x-1">
+                            <Avatar className="w-4 h-4">
+                              <AvatarImage src={post.profiles?.avatar_url} />
+                              <AvatarFallback>{post.profiles?.username?.[0]}</AvatarFallback>
+                            </Avatar>
+                            <span>{post.profiles?.username}</span>
+                          </div>
+                          <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 
