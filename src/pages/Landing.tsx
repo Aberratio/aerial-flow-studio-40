@@ -19,21 +19,25 @@ const Landing = () => {
       icon: Users,
       title: 'Connect & Share',
       description: 'Follow other aerial athletes, share your progress, and get inspired by the community.',
+      accent: 'tropical'
     },
     {
       icon: BookOpen,
       title: 'Comprehensive Library',
       description: 'Access hundreds of aerial figures with detailed instructions and progressions.',
+      accent: 'primary'
     },
     {
       icon: Trophy,
       title: 'Take on Challenges',
       description: 'Join structured training programs and track your improvement over time.',
+      accent: 'tropical'
     },
     {
       icon: Zap,
       title: 'Track Progress',
       description: 'Log your training sessions and see your aerial journey unfold.',
+      accent: 'primary'
     },
   ];
 
@@ -53,17 +57,22 @@ const Landing = () => {
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="hero-particle"></div>
+        <div className="hero-particle-tropical"></div>
         <div className="hero-particle"></div>
-        <div className="hero-particle"></div>
+        <div className="hero-particle-tropical"></div>
       </div>
       
       {/* Dynamic Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 animate-fade-in"></div>
+      
+      {/* Additional tropical accent gradients */}
+      <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 rounded-full blur-3xl animate-pulse animation-delay-1000"></div>
+      <div className="absolute bottom-20 left-10 w-80 h-80 bg-gradient-to-tr from-purple-500/15 to-violet-500/8 rounded-full blur-2xl animate-pulse animation-delay-600"></div>
       {/* Header */}
       <header className="relative z-10 px-4 sm:px-6 py-4">
         <nav className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-1000 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0'}`}>
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-xl flex items-center justify-center pulse-glow floating">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 via-pink-500 to-emerald-500 rounded-xl flex items-center justify-center pulse-glow floating">
               <span className="text-white font-bold text-lg sm:text-xl">I</span>
             </div>
             <span className="gradient-text-mega font-bold text-xl sm:text-2xl">IguanaFlow</span>
@@ -79,7 +88,7 @@ const Landing = () => {
             </Button>
             <Button 
               onClick={openAuth}
-              className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-sm sm:text-base px-3 sm:px-4 pulse-glow hover-lift"
+              className="bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 hover:from-purple-600 hover:via-emerald-600 hover:to-teal-600 text-sm sm:text-base px-3 sm:px-4 pulse-glow-tropical hover-lift"
             >
               <Sparkles className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Get Started</span>
@@ -110,7 +119,7 @@ const Landing = () => {
                 <Button 
                   size="lg"
                   onClick={openAuth}
-                  className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-base sm:text-lg px-6 sm:px-8 pulse-glow hover-lift glass-effect-intense"
+                  className="bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 hover:from-purple-600 hover:via-emerald-600 hover:to-teal-600 text-base sm:text-lg px-6 sm:px-8 pulse-glow-tropical hover-lift glass-effect-intense"
                 >
                   <Star className="mr-2 w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   Start Training Free
@@ -136,11 +145,12 @@ const Landing = () => {
                   className="rounded-2xl shadow-2xl hover-lift mx-auto max-w-xs sm:max-w-md lg:max-w-none glass-effect-intense pulse-glow"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-blue-500/30 rounded-2xl blur-3xl floating-delayed"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-emerald-500/20 to-teal-500/25 rounded-2xl blur-3xl floating-delayed"></div>
               
               {/* Floating decorative elements */}
-              <div className="absolute -top-6 -right-6 w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-lg animate-pulse"></div>
-              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-md animate-pulse animation-delay-400"></div>
+              <div className="absolute -top-6 -right-6 w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur-lg animate-pulse pulse-glow-tropical"></div>
+              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-gradient-to-r from-purple-500 to-violet-500 rounded-full blur-md animate-pulse animation-delay-400"></div>
+              <div className="absolute top-1/3 -left-8 w-6 h-6 bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full blur-sm animate-pulse animation-delay-800"></div>
             </div>
           </div>
         </div>
@@ -162,16 +172,20 @@ const Landing = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon;
+              const isEven = index % 2 === 0;
+              const accentColor = feature.accent === 'tropical' ? 'from-emerald-500 via-teal-500 to-cyan-500' : 'from-purple-500 via-violet-500 to-indigo-500';
+              const glowClass = feature.accent === 'tropical' ? 'pulse-glow-tropical' : 'pulse-glow';
+              
               return (
                 <Card 
                   key={index} 
                   className={`glass-effect-intense border-white/20 card-hover-effect group animate-fade-in-up animation-delay-${(index + 1) * 200}`}
                 >
                   <CardContent className="p-6 sm:p-8 text-center">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-all duration-500 pulse-glow floating">
+                    <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${accentColor} rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-all duration-500 ${glowClass} floating`}>
                       <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-white gradient-text">
+                    <h3 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-white ${feature.accent === 'tropical' ? 'gradient-text-tropical' : 'gradient-text'}`}>
                       {feature.title}
                     </h3>
                     <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
@@ -243,7 +257,7 @@ const Landing = () => {
             {/* Premium Plan */}
             <Card className="glass-effect-intense border-white/20 p-6 sm:p-8 relative card-hover-effect animate-fade-in-up animation-delay-600 pulse-glow">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <div className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold pulse-glow floating">
+                <div className="bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold pulse-glow-tropical floating">
                   <Heart className="inline-block w-3 h-3 mr-1" />
                   Most Popular
                 </div>
@@ -291,7 +305,7 @@ const Landing = () => {
                 <Button 
                   size="lg"
                   onClick={openAuth}
-                  className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                  className="w-full bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 hover:from-purple-600 hover:via-emerald-600 hover:to-teal-600 pulse-glow-tropical"
                 >
                   Start Premium Trial
                 </Button>
@@ -317,7 +331,7 @@ const Landing = () => {
               <Button 
                 size="lg"
                 onClick={openAuth}
-                className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-base sm:text-lg px-8 sm:px-12 pulse-glow hover-lift glass-effect-intense animate-bounce-in animation-delay-400"
+                className="bg-gradient-to-r from-purple-500 via-emerald-500 to-teal-500 hover:from-purple-600 hover:via-emerald-600 hover:to-teal-600 text-base sm:text-lg px-8 sm:px-12 pulse-glow-tropical hover-lift glass-effect-intense animate-bounce-in animation-delay-400"
               >
                 <Sparkles className="mr-2 w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                 Get Started Today
