@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Grid, Award, Bookmark, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserAchievements } from '@/hooks/useUserAchievements';
 import { useSavedPosts } from '@/hooks/useSavedPosts';
 import { supabase } from '@/integrations/supabase/client';
 
 interface ContentTabsProps {
-  onPostSelect: (post: any) => void;
+  onPostSelect?: (post: any) => void; // Make it optional since we're not using it anymore
 }
 
 export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { achievements, loading: achievementsLoading } = useUserAchievements();
   const { savedPosts, loading: savedPostsLoading } = useSavedPosts();
@@ -131,7 +132,7 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
               <div 
                 key={post.id} 
                 className="relative group cursor-pointer"
-                onClick={() => onPostSelect(post)}
+                onClick={() => navigate(`/post/${post.id}`)}
               >
                 <div className="aspect-square rounded-lg overflow-hidden">
                   {post.image_url ? (
@@ -210,7 +211,7 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
               <div 
                 key={post.id} 
                 className="relative group cursor-pointer"
-                onClick={() => onPostSelect(post)}
+                onClick={() => navigate(`/post/${post.id}`)}
               >
                 <div className="aspect-square rounded-lg overflow-hidden">
                   {post.image_url ? (
