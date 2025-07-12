@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
@@ -148,10 +150,42 @@ If you have any questions about this Privacy Policy, please contact us at privac
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
-        {renderMarkdown(content.content)}
+    <div className="min-h-screen">
+      {/* Back Button */}
+      <div className="p-6 pb-0">
+        <Link to="/">
+          <Button variant="ghost" className="text-white hover:bg-white/10 mb-4">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </Link>
       </div>
+      
+      <div className="p-6 pt-0">
+        <div className="max-w-4xl mx-auto">
+          {renderMarkdown(content.content)}
+        </div>
+      </div>
+      
+      {/* Footer */}
+      <footer className="border-t border-white/10 py-8 px-6 mt-12">
+        <div className="max-w-4xl mx-auto text-center">
+          <p className="text-sm text-muted-foreground">
+            © 2025 IguanaFlow. All rights reserved.
+          </p>
+          <div className="flex justify-center space-x-6 mt-4">
+            <Link to="/privacy-policy" className="text-sm text-muted-foreground hover:text-purple-400 transition-colors">
+              Privacy Policy
+            </Link>
+            <Link to="/terms-of-use" className="text-sm text-muted-foreground hover:text-purple-400 transition-colors">
+              Terms of Use
+            </Link>
+            <Link to="/about-us" className="text-sm text-muted-foreground hover:text-purple-400 transition-colors">
+              About Us
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
