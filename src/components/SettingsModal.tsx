@@ -15,6 +15,7 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import PricingPlansModal from '@/components/PricingPlansModal';
@@ -28,6 +29,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const { user } = useAuth();
   const { currentLanguage, setCurrentLanguage, languages } = useLanguage();
   const { toast } = useToast();
+  const { hasPremiumAccess, subscribed, subscription_tier, subscription_end, isLoading } = useSubscriptionStatus();
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
 
@@ -73,31 +75,69 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
             
             <div className="space-y-3 pl-7">
               <div className="bg-white/5 p-4 rounded-lg border border-white/10">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-white font-medium">Current Plan</span>
-                  <span className="text-gray-400 text-sm">Free</span>
-                </div>
-                <p className="text-muted-foreground text-sm mb-3">
-                  You're currently on the free plan. Upgrade to unlock premium features!
-                </p>
-                <Button
-                  variant="primary"
-                  onClick={async () => {
-                    try {
-                      const { data, error } = await supabase.functions.invoke('create-checkout', {
-                        body: { paymentType: 'subscription' }
-                      });
-                      if (error) throw error;
-                      if (data.url) window.open(data.url, '_blank');
-                    } catch (error) {
-                      console.error('Checkout error:', error);
-                    }
-                  }}
-                  className="w-full"
-                >
-                  <Crown className="w-4 h-4 mr-2" />
-                  Upgrade to Premium
-                </Button>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full"></div>
+                  </div>
+                ) : hasPremiumAccess ? (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-medium">Current Plan</span>
+                      <span className="text-green-400 text-sm font-medium">
+                        {subscription_tier || user?.role || 'Premium'}
+                      </span>
+                    </div>
+                    {subscription_end && (
+                      <p className="text-muted-foreground text-sm mb-3">
+                        Subscription active until {new Date(subscription_end).toLocaleDateString()}
+                      </p>
+                    )}
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        try {
+                          const { data, error } = await supabase.functions.invoke('customer-portal');
+                          if (error) throw error;
+                          if (data.url) window.open(data.url, '_blank');
+                        } catch (error) {
+                          console.error('Portal error:', error);
+                        }
+                      }}
+                      className="w-full border-white/20 text-white hover:bg-white/10"
+                    >
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      Manage Subscription
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-white font-medium">Current Plan</span>
+                      <span className="text-gray-400 text-sm">Free</span>
+                    </div>
+                    <p className="text-muted-foreground text-sm mb-3">
+                      You're currently on the free plan. Upgrade to unlock premium features!
+                    </p>
+                    <Button
+                      variant="primary"
+                      onClick={async () => {
+                        try {
+                          const { data, error } = await supabase.functions.invoke('create-checkout', {
+                            body: { paymentType: 'subscription' }
+                          });
+                          if (error) throw error;
+                          if (data.url) window.open(data.url, '_blank');
+                        } catch (error) {
+                          console.error('Checkout error:', error);
+                        }
+                      }}
+                      className="w-full"
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      Upgrade to Premium
+                    </Button>
+                  </>
+                )}
               </div>
               
               <Button

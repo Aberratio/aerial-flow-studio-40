@@ -140,18 +140,22 @@ const ExerciseDetail = () => {
     if (!user || !exercise) return;
 
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('figure_progress')
         .upsert({
           user_id: user.id,
           figure_id: exercise.id,
           status: status,
           updated_at: new Date().toISOString()
-        });
+        }, {
+          onConflict: 'user_id,figure_id'
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
-      setProgress({ status, updated_at: new Date().toISOString() });
+      setProgress(data);
       toast({
         title: "Progress Updated",
         description: `Exercise marked as ${status.replace('_', ' ')}`

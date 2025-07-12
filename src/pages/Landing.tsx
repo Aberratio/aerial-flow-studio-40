@@ -283,7 +283,7 @@ const Landing = () => {
                 <img
                   src={heroImage || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"}
                   alt="Aerial athlete performing on silks"
-                  className="rounded-2xl shadow-2xl hover-lift mx-auto max-w-xs sm:max-w-md lg:max-w-none glass-effect-intense pulse-glow"
+                  className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense pulse-glow"
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
