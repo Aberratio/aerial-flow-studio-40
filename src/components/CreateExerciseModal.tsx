@@ -133,6 +133,16 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !formData.name.trim()) return;
+    
+    // Check if image is required (for new exercises or if no existing image)
+    if (!editingFigure && !imageFile && !formData.image_url) {
+      toast({
+        title: "Image Required",
+        description: "Please upload an image for the exercise.",
+        variant: "destructive"
+      });
+      return;
+    }
 
     setIsLoading(true);
 
@@ -531,7 +541,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-white">Image Upload (Optional)</Label>
+                <Label className="text-white">Image Upload {!editingFigure ? '*' : '(Optional)'}</Label>
                 <div className="mt-2">
                   <input
                     type="file"

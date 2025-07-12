@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Users, UserPlus, Check, X, UserMinus, Share2, LogIn, UserPlus2 } from 'lucide-react';
+import { Heart, MessageCircle, Users, UserPlus, Check, X, UserMinus, Share2, LogIn, UserPlus2, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ShareProfileModal } from '@/components/ShareProfileModal';
@@ -27,6 +28,7 @@ const FriendProfile = () => {
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState<any>(null);
   const [publicPosts, setPublicPosts] = useState<any[]>([]);
+  const [privacyFilter, setPrivacyFilter] = useState('all');
 
   const { followersCount, followingCount } = useFollowCounts(id || '');
   const { mutualCount } = useMutualFriends(user?.id || '', id || '');
@@ -355,6 +357,26 @@ const FriendProfile = () => {
                     <div className="text-muted-foreground text-sm">Following</div>
                   </div>
                 </div>
+
+                {/* Privacy Selector for Own Profile */}
+                {user?.id === id && (
+                  <div className="mb-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Eye className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">View as:</span>
+                    </div>
+                    <Select value={privacyFilter} onValueChange={setPrivacyFilter}>
+                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-800 border-white/20">
+                        <SelectItem value="all" className="text-white hover:bg-white/10">All Content (Private View)</SelectItem>
+                        <SelectItem value="public" className="text-white hover:bg-white/10">Public Only</SelectItem>
+                        <SelectItem value="friends" className="text-white hover:bg-white/10">Friends Only</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {/* Action Buttons */}
                 <div className="flex space-x-2">

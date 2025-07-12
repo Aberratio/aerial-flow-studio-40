@@ -279,6 +279,7 @@ const Library = () => {
                   </div>}
 
                 <div className="relative">
+                  {/* Always show image if available, or fallback */}
                   <img src={figure.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop'} alt={figure.name} className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                   
