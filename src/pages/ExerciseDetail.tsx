@@ -65,9 +65,9 @@ const ExerciseDetail = () => {
         setProgress(progressData);
       }
 
-      // Fetch community versions (posts related to this exercise)
+      // Fetch community versions (posts related to this exercise, excluding own and friends)
       if (exerciseData) {
-        const { data: communityData } = await supabase
+        let communityQuery = supabase
           .from('posts')
           .select(`
             *,
@@ -77,7 +77,14 @@ const ExerciseDetail = () => {
             )
           `)
           .eq('figure_id', exerciseId)
-          .eq('privacy', 'public')
+          .eq('privacy', 'public');
+
+        // Exclude current user's posts
+        if (user) {
+          communityQuery = communityQuery.neq('user_id', user.id);
+        }
+
+        const { data: communityData } = await communityQuery
           .order('created_at', { ascending: false })
           .limit(10);
 
@@ -324,7 +331,7 @@ const ExerciseDetail = () => {
                   <div className="absolute top-4 left-4">
                     <div className="flex items-center space-x-2 bg-black/50 backdrop-blur-sm rounded-full px-3 py-2">
                       {getStatusIcon(progress.status)}
-                      <span className="text-white text-sm capitalize">{progress.status.replace('_', ' ')}</span>
+                      <span className="text-white text-sm capitalize">{progress.status === 'failed' ? 'Practice' : progress.status.replace('_', ' ')}</span>
                     </div>
                   </div>
                 )}
@@ -341,7 +348,7 @@ const ExerciseDetail = () => {
                       <div className="flex items-center space-x-2">
                         {getStatusIcon(progress.status)}
                         <span className="text-sm text-muted-foreground capitalize">
-                          {progress.status.replace('_', ' ')}
+                          {progress.status === 'failed' ? 'Practice' : progress.status.replace('_', ' ')}
                         </span>
                       </div>
                     )}
@@ -372,7 +379,7 @@ const ExerciseDetail = () => {
                       className="flex-1 min-w-[120px]"
                     >
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      Need Practice
+                      Practice
                     </Button>
                     <Button
                       size="sm"

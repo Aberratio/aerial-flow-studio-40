@@ -295,14 +295,17 @@ const FriendProfile = () => {
         <div className="flex space-x-2">
           <Button 
             onClick={handleAcceptFriend}
+            size="sm"
             className="bg-green-600 hover:bg-green-700"
           >
             <Check className="w-4 h-4 mr-2" />
             Accept
           </Button>
           <Button 
-            variant="destructive" 
+            variant="outline" 
+            size="sm"
             onClick={handleRejectFriend}
+            className="bg-black border-red-500 text-red-400 hover:bg-red-500/10"
           >
             <X className="w-4 h-4 mr-2" />
             Reject
