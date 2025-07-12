@@ -91,10 +91,10 @@ serve(async (req) => {
         cancel_url: `${origin}/payment-cancelled`,
       };
 
-      // Add payment method types for PLN currency to enable BLIK
+      // Add payment method types for PLN currency (P24 only for subscriptions, BLIK not supported)
       if (currency === 'pln') {
-        sessionConfig.payment_method_types = ['card', 'blik', 'p24'];
-        logStep("PLN currency detected, adding BLIK and P24 payment methods");
+        sessionConfig.payment_method_types = ['card', 'p24'];
+        logStep("PLN currency detected for subscription, adding P24 payment method (BLIK not supported for subscriptions)");
       }
 
       logStep("Creating subscription session", { currency, amount, paymentMethods: sessionConfig.payment_method_types });
