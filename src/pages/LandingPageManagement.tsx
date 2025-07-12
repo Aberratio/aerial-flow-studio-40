@@ -53,7 +53,16 @@ const LandingPageManagement = () => {
   const [saving, setSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
 
-  // Redirect if not admin
+  // Fetch data
+  useEffect(() => {
+    if (userRole === 'admin') {
+      fetchData();
+    } else {
+      setIsLoading(false);
+    }
+  }, [userRole]);
+
+  // Render access denied if not admin
   if (userRole !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -66,11 +75,6 @@ const LandingPageManagement = () => {
       </div>
     );
   }
-
-  // Fetch data
-  useEffect(() => {
-    fetchData();
-  }, []);
 
   const fetchData = async () => {
     setIsLoading(true);
