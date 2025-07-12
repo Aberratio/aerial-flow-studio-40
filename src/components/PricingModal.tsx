@@ -69,7 +69,8 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-black/95 border-white/10 mx-4">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-black/95 border-white/10 mx-4 sm:mx-auto"
+        style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
         <DialogHeader>
           <DialogTitle className="text-white text-center text-xl sm:text-2xl">
             Choose Your Plan
@@ -90,7 +91,7 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-8 mt-6">
           {/* Free Plan */}
           <Card className="bg-white/5 border-white/10 relative">
             <CardHeader className="text-center p-4 sm:p-6">

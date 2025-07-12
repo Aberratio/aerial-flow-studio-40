@@ -105,7 +105,8 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white mx-4">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white mx-4 sm:mx-auto"
+        style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl gradient-text text-center">Choose Your Plan</DialogTitle>
           <p className="text-muted-foreground text-center text-sm sm:text-base">
@@ -124,7 +125,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-8 mt-6">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = plan.current;

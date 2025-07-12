@@ -19,8 +19,7 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    { auth: { persistSession: false } }
+    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
   );
 
   try {
@@ -96,8 +95,15 @@ serve(async (req) => {
 
       session = await stripe.checkout.sessions.create(sessionConfig);
 
+      // Create Supabase service client for order recording
+      const supabaseService = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+
       // Record order
-      await supabaseClient.from("orders").insert({
+      await supabaseService.from("orders").insert({
         user_id: user.id,
         stripe_session_id: session.id,
         amount: amount,
@@ -133,8 +139,15 @@ serve(async (req) => {
 
       session = await stripe.checkout.sessions.create(sessionConfig);
 
+      // Create Supabase service client for order recording
+      const supabaseService = createClient(
+        Deno.env.get("SUPABASE_URL") ?? "",
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+        { auth: { persistSession: false } }
+      );
+
       // Record order
-      await supabaseClient.from("orders").insert({
+      await supabaseService.from("orders").insert({
         user_id: user.id,
         stripe_session_id: session.id,
         amount: amount,
