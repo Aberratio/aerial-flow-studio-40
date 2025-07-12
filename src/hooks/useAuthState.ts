@@ -13,71 +13,69 @@ export const useAuthState = () => {
   // Get follow counts for the current user
   const { followersCount, followingCount, refetchCounts } = useFollowCounts(session?.user?.id || '');
 
+  const fetchProfile = async (userId: string) => {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (profile) {
+      const userWithCompat = {
+        ...profile,
+        avatar: profile.avatar_url,
+        followersCount,
+        followingCount,
+      };
+      setUser(userWithCompat);
+
+      // Check if user is new and hasn't seen pricing modal yet
+      const createdAt = new Date(profile.created_at);
+      const now = new Date();
+      const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 3600);
+      if (hoursDiff < 1 && profile.role === 'free' && !localStorage.getItem(`pricing_shown_${profile.id}`)) {
+        setIsFirstLogin(true);
+      }
+    } else {
+      const basicUser = {
+        id: userId,
+        email: session?.user?.email || '',
+        username: session?.user?.email?.split('@')[0] || 'user',
+        avatar_url: null,
+        bio: null,
+        role: 'free' as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        avatar: null,
+        followersCount,
+        followingCount,
+      };
+      setUser(basicUser);
+    }
+  };
+
   useEffect(() => {
     console.log('AuthContext: Setting up auth state listener');
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      (async () => {
-        try {
-          console.log('AuthContext: Auth state change', _event, session?.user?.id);
-          setSession(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      try {
+        console.log('AuthContext: Auth state change', _event, session?.user?.id);
+        setSession(session);
 
-          if (session?.user) {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            console.log('AuthContext: Profile fetch result', { profile, error });
-
-            if (error) throw error;
-
-            if (profile) {
-              const userWithCompat = {
-                ...profile,
-                avatar: profile.avatar_url,
-                followersCount,
-                followingCount,
-              };
-              setUser(userWithCompat);
-              console.log('AuthContext: User set', userWithCompat);
-
-              // Check if user is new and hasn't seen pricing modal yet
-              const createdAt = new Date(profile.created_at);
-              const now = new Date();
-              const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 3600);
-              // Only show for truly new users who are free and haven't been shown before
-              if (hoursDiff < 1 && profile.role === 'free' && !localStorage.getItem(`pricing_shown_${profile.id}`)) {
-                setIsFirstLogin(true);
-              }
-            } else {
-              console.log('AuthContext: No profile found, creating default');
-              const basicUser = {
-                id: session.user.id,
-                email: session.user.email || '',
-                username: session.user.email?.split('@')[0] || 'user',
-                avatar_url: null,
-                bio: null,
-                role: 'free' as const,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                avatar: null,
-                followersCount,
-                followingCount,
-              };
-              setUser(basicUser);
-            }
-          } else {
-            console.log('AuthContext: No session, clearing user');
-            setUser(null);
-          }
-        } catch (err) {
-          console.error('AuthContext: onAuthStateChange error:', err);
-        } finally {
-          setIsLoading(false);
+        if (session?.user) {
+          await fetchProfile(session.user.id);
+          console.log('AuthContext: Profile fetch result');
+        } else {
+          console.log('AuthContext: No session, clearing user');
+          setUser(null);
         }
-      })();
+      } catch (err) {
+        console.error('AuthContext: onAuthStateChange error:', err);
+      } finally {
+        setIsLoading(false);
+      }
     });
 
     (async () => {
@@ -88,40 +86,8 @@ export const useAuthState = () => {
         setSession(session);
 
         if (session?.user) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          console.log('AuthContext: Initial profile fetch result', { profile, error });
-
-          if (error) throw error;
-
-          if (profile) {
-            const userWithCompat = {
-              ...profile,
-              avatar: profile.avatar_url,
-              followersCount,
-              followingCount,
-            };
-            setUser(userWithCompat);
-          } else {
-            const basicUser = {
-              id: session.user.id,
-              email: session.user.email || '',
-              username: session.user.email?.split('@')[0] || 'user',
-              avatar_url: null,
-              bio: null,
-              role: 'free' as const,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              avatar: null,
-              followersCount,
-              followingCount,
-            };
-            setUser(basicUser);
-          }
+          await fetchProfile(session.user.id);
+          console.log('AuthContext: Initial profile fetch result');
         } else {
           setUser(null);
         }
@@ -140,16 +106,16 @@ export const useAuthState = () => {
     setSession(null);
   };
 
-  // Update user counts when follow counts change
+  // Update user counts when follow counts change (debounced)
   useEffect(() => {
-    if (user && session?.user?.id) {
+    if (user && session?.user?.id && (user.followersCount !== followersCount || user.followingCount !== followingCount)) {
       setUser(prev => prev ? {
         ...prev,
         followersCount,
         followingCount,
       } : null);
     }
-  }, [followersCount, followingCount, session?.user?.id]);
+  }, [followersCount, followingCount, session?.user?.id, user?.followersCount, user?.followingCount]);
 
   const refreshUser = async () => {
     if (session?.user) {

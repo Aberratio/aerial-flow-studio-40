@@ -124,7 +124,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6 px-2 sm:px-0">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = plan.current;
@@ -143,7 +143,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                   </div>
                 )}
                 
-                <CardHeader className="text-center p-4 sm:p-6">
+                <CardHeader className="text-center p-5 sm:p-6">
                   <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full ${plan.bgColor} flex items-center justify-center`}>
                     <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${plan.color}`} />
                   </div>
@@ -159,7 +159,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-4 p-4 sm:p-6">
+                <CardContent className="space-y-4 p-5 sm:p-6">
                   <ul className="space-y-3">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center gap-3">
