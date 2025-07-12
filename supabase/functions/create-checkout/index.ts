@@ -97,8 +97,7 @@ serve(async (req) => {
 
       // Add payment method types for PLN currency (Revolut Pay for subscriptions, BLIK not supported)
       if (currency === 'pln') {
-        sessionConfig.payment_method_types = ['card', 'revolut_pay'];
-        logStep("PLN currency detected for subscription, adding Revolut Pay payment method");
+        sessionConfig.payment_method_types = ['card'];
       }
 
       logStep("Creating subscription session", { currency, amount, paymentMethods: sessionConfig.payment_method_types });
@@ -149,7 +148,7 @@ serve(async (req) => {
 
       // Add payment method types for PLN currency to enable BLIK and Revolut Pay
       if (currency === 'pln') {
-        sessionConfig.payment_method_types = ['card', 'blik', 'revolut_pay'];
+        sessionConfig.payment_method_types = ['card', 'blik'];
         logStep("PLN currency detected for challenge payment, adding BLIK and Revolut Pay payment methods");
       }
 
