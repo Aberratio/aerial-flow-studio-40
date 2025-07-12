@@ -306,11 +306,8 @@ const Landing = () => {
             {languages.length > 0 && (
               <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
                 <SelectTrigger className="w-[50px] h-[40px] sm:w-[120px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
-                  <span className="block sm:hidden font-semibold">
-                    {currentLanguage.toUpperCase()}
-                  </span>
-                  <span className="hidden sm:flex items-center">
-                    <Globe className="w-4 h-4 mr-1" />
+                  <Globe className="w-4 h-4" />
+                  <span className="hidden sm:flex items-center ml-1">
                     <SelectValue />
                   </span>
                 </SelectTrigger>
