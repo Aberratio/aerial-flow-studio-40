@@ -33,6 +33,7 @@ import PostDetail from "@/pages/PostDetail";
 import ExerciseDetail from "@/pages/ExerciseDetail";
 import AchievementManagement from "@/pages/AchievementManagement";
 import TranslationManagement from "@/pages/TranslationManagement";
+import LandingPageManagement from "@/pages/LandingPageManagement";
 import PremiumRoute from "@/components/PremiumRoute";
 
 const queryClient = new QueryClient();
@@ -204,6 +205,11 @@ const AppRoutes = () => {
       <Route path="/admin/translations" element={
         <ProtectedRoute>
           <TranslationManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/landing-page" element={
+        <ProtectedRoute>
+          <LandingPageManagement />
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />

@@ -417,6 +417,84 @@ export type Database = {
           },
         ]
       }
+      landing_page_content: {
+        Row: {
+          content_key: string
+          content_value: string
+          created_at: string
+          id: string
+          language_id: string
+          section_id: string
+          updated_at: string
+        }
+        Insert: {
+          content_key: string
+          content_value: string
+          created_at?: string
+          id?: string
+          language_id: string
+          section_id: string
+          updated_at?: string
+        }
+        Update: {
+          content_key?: string
+          content_value?: string
+          created_at?: string
+          id?: string
+          language_id?: string
+          section_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "landing_page_content_language_id_fkey"
+            columns: ["language_id"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "landing_page_content_section_id_fkey"
+            columns: ["section_id"]
+            isOneToOne: false
+            referencedRelation: "landing_page_sections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      landing_page_sections: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          image_url: string | null
+          is_active: boolean
+          section_key: string
+          section_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          section_key: string
+          section_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          section_key?: string
+          section_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       languages: {
         Row: {
           created_at: string
