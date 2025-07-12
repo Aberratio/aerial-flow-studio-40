@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthModal from '@/components/Auth/AuthModal';
+import CookiesBanner from '@/components/CookiesBanner';
 import { supabase } from '@/integrations/supabase/client';
 import IguanaLogo from '@/assets/iguana-logo.svg';
 interface LandingPageContent {
@@ -264,9 +265,11 @@ const Landing = () => {
           
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             {languages.length > 0 && <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-                <SelectTrigger className="w-[50px] h-[40px] sm:w-[120px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
+                <SelectTrigger className="w-[50px] h-[40px] sm:w-[140px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
                   <Globe className="w-4 h-4" />
-                  
+                  <span className="hidden sm:inline ml-2">
+                    {currentLanguage === 'pl' ? 'Polski' : 'English'}
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {languages.map(lang => <SelectItem key={lang.id} value={lang.id}>
@@ -461,6 +464,9 @@ const Landing = () => {
       </section>
 
       <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} mode={authMode} onModeChange={setAuthMode} />
+      
+      {/* Cookies Banner */}
+      <CookiesBanner />
     </div>;
 };
 export default Landing;
