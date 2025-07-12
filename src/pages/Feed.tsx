@@ -80,7 +80,7 @@ const Feed = () => {
 
   const handleExerciseClick = (figureId: string) => {
     if (hasPremiumAccess) {
-      navigate(`/library/${figureId}`);
+      navigate(`/exercise/${figureId}`);
     } else {
       setShowPricingModal(true);
     }

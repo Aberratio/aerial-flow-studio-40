@@ -485,6 +485,19 @@ const LandingPageManagement = () => {
             { key: 'premium_plan_price', label: 'Premium Plan Price', type: 'input' },
             { key: 'premium_plan_description', label: 'Premium Plan Description', type: 'textarea' },
           ];
+        case 'auth_modals':
+          return [
+            { key: 'login_title', label: 'Login Modal Title', type: 'input' },
+            { key: 'login_subtitle', label: 'Login Modal Subtitle', type: 'textarea' },
+            { key: 'login_button', label: 'Login Button Text', type: 'input' },
+            { key: 'signup_title', label: 'Sign Up Modal Title', type: 'input' },
+            { key: 'signup_subtitle', label: 'Sign Up Modal Subtitle', type: 'textarea' },
+            { key: 'signup_button', label: 'Sign Up Button Text', type: 'input' },
+            { key: 'google_login_text', label: 'Google Login Text', type: 'input' },
+            { key: 'forgot_password_text', label: 'Forgot Password Link Text', type: 'input' },
+            { key: 'switch_to_signup_text', label: 'Switch to Sign Up Text', type: 'input' },
+            { key: 'switch_to_login_text', label: 'Switch to Login Text', type: 'input' },
+          ];
         case 'cta':
           return [
             { key: 'title', label: 'CTA Title', type: 'input' },
