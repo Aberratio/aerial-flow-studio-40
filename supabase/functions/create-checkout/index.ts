@@ -67,7 +67,7 @@ serve(async (req) => {
 
     if (paymentType === "subscription") {
       // Create subscription checkout with 7-day free trial
-      session = await stripe.checkout.sessions.create({
+      const sessionConfig: any = {
         customer: customerId,
         customer_email: customerId ? undefined : user.email,
         line_items: [
@@ -87,7 +87,14 @@ serve(async (req) => {
         },
         success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/payment-cancelled`,
-      });
+      };
+
+      // Add payment method types for PLN currency to enable BLIK
+      if (currency === 'pln') {
+        sessionConfig.payment_method_types = ['card', 'blik'];
+      }
+
+      session = await stripe.checkout.sessions.create(sessionConfig);
 
       // Record order
       await supabaseClient.from("orders").insert({
@@ -101,7 +108,7 @@ serve(async (req) => {
 
     } else if (paymentType === "challenge") {
       // Create one-time payment for premium challenge
-      session = await stripe.checkout.sessions.create({
+      const sessionConfig: any = {
         customer: customerId,
         customer_email: customerId ? undefined : user.email,
         line_items: [
@@ -117,7 +124,14 @@ serve(async (req) => {
         mode: "payment",
         success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/payment-cancelled`,
-      });
+      };
+
+      // Add payment method types for PLN currency to enable BLIK
+      if (currency === 'pln') {
+        sessionConfig.payment_method_types = ['card', 'blik'];
+      }
+
+      session = await stripe.checkout.sessions.create(sessionConfig);
 
       // Record order
       await supabaseClient.from("orders").insert({
