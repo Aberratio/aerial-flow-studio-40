@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Zap, Users, Trophy, BookOpen, ArrowRight, Sparkles, Star, Heart, Globe } from 'lucide-react';
+import { ChevronRight, Zap, Users, Trophy, BookOpen, ArrowRight, Sparkles, Star, Heart, Globe, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -305,16 +305,15 @@ const Landing = () => {
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             {languages.length > 0 && (
               <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-                <SelectTrigger className="w-[50px] h-[40px] sm:w-[120px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
+                <SelectTrigger className="w-[60px] h-[40px] sm:w-[90px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
                   <Globe className="w-4 h-4" />
-                  <span className="hidden sm:flex items-center ml-1">
-                    <SelectValue />
-                  </span>
+                  <ChevronDown className="w-3 h-3 ml-1" />
                 </SelectTrigger>
                 <SelectContent>
                   {languages.map((lang) => (
                     <SelectItem key={lang.id} value={lang.id}>
-                      {lang.native_name}
+                      <span className="font-medium">{lang.id === 'pl' ? 'PL' : 'EN'}</span>
+                      <span className="text-muted-foreground ml-2">({lang.native_name})</span>
                     </SelectItem>
                   ))}
                 </SelectContent>

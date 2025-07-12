@@ -145,9 +145,7 @@ const AppRoutes = () => {
       } />
       <Route path="/challenges" element={
         <ProtectedRoute>
-          <PremiumRoute>
-            <Challenges />
-          </PremiumRoute>
+          <Challenges />
         </ProtectedRoute>
       } />
       <Route path="/profile" element={
@@ -168,9 +166,7 @@ const AppRoutes = () => {
       } />
       <Route path="/training" element={
         <ProtectedRoute>
-          <PremiumRoute>
-            <Training />
-          </PremiumRoute>
+          <Training />
         </ProtectedRoute>
       } />
       <Route path="/challenge/:challengeId/day/:dayId" element={

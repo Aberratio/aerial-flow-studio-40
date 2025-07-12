@@ -59,8 +59,9 @@ const Navigation: React.FC<NavigationProps> = ({
     };
   }, [user]);
 
-  // Check if user has premium access
+  // Check if user has premium access or admin override
   const hasPremiumAccess = user?.role && ['premium', 'trainer', 'admin'].includes(user.role);
+  const isAdmin = user?.role === 'admin';
   const freeNavItems = [{
     path: '/feed',
     icon: Home,
@@ -148,7 +149,7 @@ const Navigation: React.FC<NavigationProps> = ({
           
           {premiumNavItems.map(item => {
           const Icon = item.icon;
-          const isDisabled = !hasPremiumAccess;
+          const isDisabled = !hasPremiumAccess && !isAdmin;
           return <Link key={item.path} to={isDisabled ? '/pricing' : item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) && !isDisabled ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : isDisabled ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                 <Icon className={`w-5 h-5 flex-shrink-0 ${!isDisabled ? 'group-hover:scale-110' : ''} transition-transform`} />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
