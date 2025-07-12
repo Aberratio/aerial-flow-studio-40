@@ -134,7 +134,8 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
               <label htmlFor="avatar-upload">
                 <Button
                   size="sm"
-                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                  variant="primary"
+                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full"
                   asChild
                 >
                   <span className="cursor-pointer">

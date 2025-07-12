@@ -114,109 +114,109 @@ const Training = () => {
       setSelectedSession(null);
     }} />;
   }
-  return <div className="min-h-screen p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+  return <div className="min-h-screen p-4 sm:p-6">
+      <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2 my-[32px]">Training Sessions</h1>
-              <p className="text-muted-foreground">Join or create aerial training sessions</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Training Sessions</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">Join or create aerial training sessions</p>
             </div>
-            {user?.role === 'trainer' || user?.role === 'admin' ? <Button onClick={() => setShowCreateSession(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600">
-                <Plus className="w-5 h-5 mr-2" />
+            {user?.role === 'trainer' || user?.role === 'admin' ? <Button onClick={() => setShowCreateSession(true)} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto">
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 Create Session
               </Button> : null}
           </div>
         </div>
 
         {/* Training Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card className="glass-effect border-white/10">
-            <CardContent className="p-6 text-center">
-              <Target className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <h3 className="text-2xl font-bold text-white">{sessions.length}</h3>
-              <p className="text-muted-foreground">Available Sessions</p>
+            <CardContent className="p-3 sm:p-6 text-center">
+              <Target className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-primary" />
+              <h3 className="text-lg sm:text-2xl font-bold text-white">{sessions.length}</h3>
+              <p className="text-muted-foreground text-xs sm:text-sm">Available Sessions</p>
             </CardContent>
           </Card>
           <Card className="glass-effect border-white/10">
-            <CardContent className="p-6 text-center">
-              <Users className="w-8 h-8 mx-auto mb-2 text-green-500" />
-              <h3 className="text-2xl font-bold text-white">35</h3>
-              <p className="text-muted-foreground">Total Participants</p>
+            <CardContent className="p-3 sm:p-6 text-center">
+              <Users className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-green-500" />
+              <h3 className="text-lg sm:text-2xl font-bold text-white">35</h3>
+              <p className="text-muted-foreground text-xs sm:text-sm">Total Participants</p>
             </CardContent>
           </Card>
           <Card className="glass-effect border-white/10">
-            <CardContent className="p-6 text-center">
-              <Clock className="w-8 h-8 mx-auto mb-2 text-blue-500" />
-              <h3 className="text-2xl font-bold text-white">45</h3>
-              <p className="text-muted-foreground">Avg Duration (min)</p>
+            <CardContent className="p-3 sm:p-6 text-center">
+              <Clock className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-blue-500" />
+              <h3 className="text-lg sm:text-2xl font-bold text-white">45</h3>
+              <p className="text-muted-foreground text-xs sm:text-sm">Avg Duration (min)</p>
             </CardContent>
           </Card>
           <Card className="glass-effect border-white/10">
-            <CardContent className="p-6 text-center">
-              <Heart className="w-8 h-8 mx-auto mb-2 text-pink-500" />
-              <h3 className="text-2xl font-bold text-white">12</h3>
-              <p className="text-muted-foreground">Completed</p>
+            <CardContent className="p-3 sm:p-6 text-center">
+              <Heart className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-pink-500" />
+              <h3 className="text-lg sm:text-2xl font-bold text-white">12</h3>
+              <p className="text-muted-foreground text-xs sm:text-sm">Completed</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {sessions.map(session => <Card key={session.id} className="glass-effect border-white/10 hover:border-white/20 transition-all group">
               <div className="relative">
-                <img src={session.thumbnail} alt={session.title} className="w-full h-48 object-cover rounded-t-lg cursor-pointer" onClick={() => handleSessionClick(session)} />
-                <Badge className={`absolute top-2 right-2 ${getDifficultyColor(session.difficulty)} text-white`}>
+                <img src={session.thumbnail} alt={session.title} className="w-full h-32 sm:h-48 object-cover rounded-t-lg cursor-pointer" onClick={() => handleSessionClick(session)} />
+                <Badge className={`absolute top-2 right-2 ${getDifficultyColor(session.difficulty)} text-white text-xs`}>
                   {session.difficulty}
                 </Badge>
                 
                 {/* Trainer Actions */}
-                {(user?.role === 'trainer' || user?.role === 'admin') && <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-2">
-                    <Button size="sm" variant="outline" onClick={() => handleEditSession(session)} className="bg-black/50 border-white/20 text-white hover:bg-white/10">
-                      <Edit className="w-4 h-4" />
+                {(user?.role === 'trainer' || user?.role === 'admin') && <div className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1 sm:space-x-2">
+                    <Button size="sm" variant="outline" onClick={() => handleEditSession(session)} className="bg-black/50 border-white/20 text-white hover:bg-white/10 w-8 h-8 p-0">
+                      <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => handleDeleteSession(session.id)} className="bg-black/50 border-red-500/50 text-red-400 hover:bg-red-500/10">
-                      <Trash2 className="w-4 h-4" />
+                    <Button size="sm" variant="outline" onClick={() => handleDeleteSession(session.id)} className="bg-black/50 border-red-500/50 text-red-400 hover:bg-red-500/10 w-8 h-8 p-0">
+                      <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
                   </div>}
               </div>
-              <CardContent className="p-6">
-                <h3 className="text-xl font-bold text-white mb-2 cursor-pointer hover:text-primary transition-colors" onClick={() => handleSessionClick(session)}>
+              <CardContent className="p-4 sm:p-6">
+                <h3 className="text-lg sm:text-xl font-bold text-white mb-2 cursor-pointer hover:text-primary transition-colors" onClick={() => handleSessionClick(session)}>
                   {session.title}
                 </h3>
-                <p className="text-muted-foreground mb-4">by {session.instructor}</p>
+                <p className="text-muted-foreground mb-3 sm:mb-4 text-sm">by {session.instructor}</p>
                 
-                <div className="space-y-3 mb-4">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="w-4 h-4 mr-2" />
+                <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
+                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                    <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     {session.duration} minutes
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Users className="w-4 h-4 mr-2" />
+                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                    <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     {session.participants} participants
                   </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Music className="w-4 h-4 mr-2" />
+                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                    <Music className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                     {session.playlist}
                   </div>
                 </div>
 
-                <div className="space-y-2 mb-4">
+                <div className="space-y-2 mb-3 sm:mb-4">
                   <div>
-                    <h4 className="text-sm font-semibold text-white mb-1">Warm-up</h4>
-                    <p className="text-xs text-muted-foreground">{session.warmup.join(', ')}</p>
+                    <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">Warm-up</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{session.warmup.join(', ')}</p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-white mb-1">Figures</h4>
-                    <p className="text-xs text-muted-foreground">{session.figures.join(', ')}</p>
+                    <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">Figures</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{session.figures.join(', ')}</p>
                   </div>
                   <div>
-                    <h4 className="text-sm font-semibold text-white mb-1">Stretching</h4>
-                    <p className="text-xs text-muted-foreground">{session.stretching.join(', ')}</p>
+                    <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">Stretching</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-2">{session.stretching.join(', ')}</p>
                   </div>
                 </div>
 
-                <Button variant="primary" className="w-full" onClick={() => handleSessionClick(session)}>
-                  <Play className="w-4 h-4 mr-2" />
+                <Button variant="primary" className="w-full text-sm" onClick={() => handleSessionClick(session)}>
+                  <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                   View Details
                 </Button>
               </CardContent>

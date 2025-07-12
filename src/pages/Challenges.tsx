@@ -257,15 +257,15 @@ const Challenges = () => {
         return 'View';
     }
   };
-  return <div className="min-h-screen p-6">
+  return <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2 my-[32px]">Challenges</h1>
-              <p className="text-muted-foreground">Push your limits with structured training programs</p>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Challenges</h1>
+              <p className="text-muted-foreground text-sm sm:text-base">Push your limits with structured training programs</p>
             </div>
-            {canCreateChallenges && <Button onClick={() => setIsCreateModalOpen(true)} className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600">
+            {canCreateChallenges && <Button onClick={() => setIsCreateModalOpen(true)} className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 w-full sm:w-auto">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Challenge
               </Button>}
@@ -273,7 +273,7 @@ const Challenges = () => {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
           {[{
           label: 'Active Challenges',
           value: stats.activeChallenges.toString(),
@@ -293,27 +293,28 @@ const Challenges = () => {
         }].map((stat, index) => {
           const Icon = stat.icon;
           return <Card key={index} className="glass-effect border-white/10">
-                <CardContent className="p-6 text-center">
-                  <Icon className="w-8 h-8 text-purple-400 mx-auto mb-3" />
-                  <div className="gradient-text text-2xl font-bold">{stat.value}</div>
-                  <div className="text-muted-foreground text-sm">{stat.label}</div>
+                <CardContent className="p-3 sm:p-6 text-center">
+                  <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 mx-auto mb-2 sm:mb-3" />
+                  <div className="gradient-text text-lg sm:text-2xl font-bold">{stat.value}</div>
+                  <div className="text-muted-foreground text-xs sm:text-sm">{stat.label}</div>
                 </CardContent>
               </Card>;
         })}
         </div>
 
         {/* Challenge Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="not-started">Not Started</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4 sm:mb-6">
+          <TabsList className="grid w-full grid-cols-4 text-xs sm:text-sm">
+            <TabsTrigger value="all" className="px-2 sm:px-4">All</TabsTrigger>
+            <TabsTrigger value="active" className="px-2 sm:px-4">Active</TabsTrigger>
+            <TabsTrigger value="not-started" className="px-2 sm:px-4 hidden sm:inline-flex">Not Started</TabsTrigger>
+            <TabsTrigger value="not-started" className="px-2 sm:px-4 sm:hidden">New</TabsTrigger>
+            <TabsTrigger value="completed" className="px-2 sm:px-4">Done</TabsTrigger>
           </TabsList>
           
-          <TabsContent value={activeTab} className="mt-6">
+          <TabsContent value={activeTab} className="mt-4 sm:mt-6">
             {/* Challenges Grid */}
-            <div className="grid lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {isLoading ? Array.from({
               length: 4
             }).map((_, index) => <Card key={index} className="glass-effect border-white/10 animate-pulse">
@@ -380,7 +381,7 @@ const Challenges = () => {
                       </div>
 
                       {/* Action Buttons */}
-                      {challenge.status === 'not-started' ? <div className="flex gap-2">
+                      {challenge.status === 'not-started' ? <div className="flex flex-col sm:flex-row gap-2">
                           <Button variant="outline" className="flex-1 border-white/20 text-white hover:bg-white/10" onClick={e => {
                     e.stopPropagation();
                     openChallengeModal(challenge);

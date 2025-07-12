@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Zap, Users, Trophy, BookOpen, ArrowRight, Sparkles, Star, Heart, Globe } from 'lucide-react';
+import { ChevronRight, Zap, Users, Trophy, BookOpen, ArrowRight, Sparkles, Star, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthModal from '@/components/Auth/AuthModal';
 import CookiesBanner from '@/components/CookiesBanner';
 import { supabase } from '@/integrations/supabase/client';
@@ -264,19 +263,20 @@ const Landing = () => {
           </div>
           
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
-            {languages.length > 0 && <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-                <SelectTrigger className="w-[50px] h-[40px] sm:w-[140px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
-                  <Globe className="w-4 h-4" />
-                  <span className="hidden sm:inline ml-2">
-                    {currentLanguage === 'pl' ? 'Polski' : 'English'}
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map(lang => <SelectItem key={lang.id} value={lang.id}>
-                      {lang.native_name}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>}
+            {languages.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentLanguage(currentLanguage === 'pl' ? 'en' : 'pl')}
+                className="w-[40px] h-[40px] p-2 bg-white/10 border border-white/20 text-white hover:bg-white/20 rounded-lg"
+              >
+                {currentLanguage === 'pl' ? (
+                  <span className="text-sm font-bold">🇵🇱</span>
+                ) : (
+                  <span className="text-sm font-bold">🇬🇧</span>
+                )}
+              </Button>
+            )}
             <Button variant="ghost" onClick={() => openAuth('login')} className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-2 sm:px-4 glass-effect transition-all duration-300">
               <span className="hidden sm:inline">{getContent('nav_sign_in', 'Sign In')}</span>
               <span className="sm:hidden">Log In</span>
