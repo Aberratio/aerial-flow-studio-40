@@ -52,6 +52,7 @@ const LandingPageManagement = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Fetch data
   useEffect(() => {
@@ -175,49 +176,15 @@ const LandingPageManagement = () => {
     }
   };
 
-  const handleContentUpdate = async (sectionId: string, languageId: string, contentKey: string, value: string) => {
-    try {
-      const existingContent = content[sectionId]?.[languageId]?.[contentKey];
+  const handleContentUpdate = (sectionId: string, languageId: string, contentKey: string, value: string) => {
+    setHasUnsavedChanges(true);
+    
+    // Update local state immediately for better UX
+    setContent(prev => {
+      const existingContent = prev[sectionId]?.[languageId]?.[contentKey];
       
       if (existingContent) {
-        // Update existing content
-        const { error } = await supabase
-          .from('landing_page_content')
-          .update({ content_value: value })
-          .eq('id', existingContent.id);
-
-        if (error) throw error;
-      } else {
-        // Create new content
-        const { data, error } = await supabase
-          .from('landing_page_content')
-          .insert({
-            section_id: sectionId,
-            language_id: languageId,
-            content_key: contentKey,
-            content_value: value
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Update local state with new content
-        setContent(prev => ({
-          ...prev,
-          [sectionId]: {
-            ...prev[sectionId],
-            [languageId]: {
-              ...prev[sectionId]?.[languageId],
-              [contentKey]: data
-            }
-          }
-        }));
-      }
-
-      // Update local state for existing content
-      if (existingContent) {
-        setContent(prev => ({
+        return {
           ...prev,
           [sectionId]: {
             ...prev[sectionId],
@@ -229,15 +196,105 @@ const LandingPageManagement = () => {
               }
             }
           }
-        }));
+        };
+      } else {
+        // Create temporary content entry
+        return {
+          ...prev,
+          [sectionId]: {
+            ...prev[sectionId] || {},
+            [languageId]: {
+              ...prev[sectionId]?.[languageId] || {},
+              [contentKey]: {
+                id: `temp-${Date.now()}`,
+                section_id: sectionId,
+                language_id: languageId,
+                content_key: contentKey,
+                content_value: value
+              } as LandingPageContent
+            }
+          }
+        };
       }
+    });
+  };
+
+  const saveAllChanges = async () => {
+    setSaving(true);
+    try {
+      const updates = [];
+      const inserts = [];
+
+      // Iterate through all content to find changes
+      Object.entries(content).forEach(([sectionId, sectionContent]) => {
+        Object.entries(sectionContent).forEach(([languageId, languageContent]) => {
+          Object.entries(languageContent).forEach(([contentKey, contentItem]) => {
+            if (contentItem.id.startsWith('temp-')) {
+              // New content to insert
+              inserts.push({
+                section_id: sectionId,
+                language_id: languageId,
+                content_key: contentKey,
+                content_value: contentItem.content_value
+              });
+            } else {
+              // Existing content to update
+              updates.push(contentItem);
+            }
+          });
+        });
+      });
+
+      // Insert new content
+      if (inserts.length > 0) {
+        const { data: insertedData, error: insertError } = await supabase
+          .from('landing_page_content')
+          .insert(inserts)
+          .select();
+
+        if (insertError) throw insertError;
+
+        // Update local state with real IDs
+        insertedData?.forEach((item) => {
+          setContent(prev => ({
+            ...prev,
+            [item.section_id]: {
+              ...prev[item.section_id],
+              [item.language_id]: {
+                ...prev[item.section_id][item.language_id],
+                [item.content_key]: item
+              }
+            }
+          }));
+        });
+      }
+
+      // Update existing content
+      if (updates.length > 0) {
+        for (const update of updates) {
+          const { error } = await supabase
+            .from('landing_page_content')
+            .update({ content_value: update.content_value })
+            .eq('id', update.id);
+
+          if (error) throw error;
+        }
+      }
+
+      setHasUnsavedChanges(false);
+      toast({
+        title: "Success",
+        description: "All changes saved successfully!"
+      });
 
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to update content",
+        description: error.message || "Failed to save changes",
         variant: "destructive"
       });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -304,13 +361,26 @@ const LandingPageManagement = () => {
             <div className="space-y-4">
               <Label className="text-white">Hero Image</Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  {section.image_url && (
-                    <img
-                      src={section.image_url}
-                      alt="Hero"
-                      className="w-full h-48 object-cover rounded-lg"
-                    />
+                <div className="space-y-2">
+                  {section.image_url ? (
+                    <div className="relative">
+                      <img
+                        src={section.image_url}
+                        alt="Hero preview"
+                        className="w-full h-64 object-cover rounded-lg shadow-lg"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent rounded-lg"></div>
+                      <div className="absolute bottom-2 left-2 text-white text-sm bg-black/50 px-2 py-1 rounded">
+                        Current Hero Image
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-64 bg-white/5 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center">
+                      <div className="text-center">
+                        <Camera className="w-8 h-8 text-white/40 mx-auto mb-2" />
+                        <p className="text-white/40 text-sm">No image uploaded</p>
+                      </div>
+                    </div>
                   )}
                 </div>
                 <div className="space-y-2">
@@ -319,7 +389,10 @@ const LandingPageManagement = () => {
                     accept="image/*"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
-                      if (file) handleImageUpload(section.id, file);
+                      if (file) {
+                        setHasUnsavedChanges(true);
+                        handleImageUpload(section.id, file);
+                      }
                     }}
                     className="hidden"
                     id={`image-upload-${section.id}`}
@@ -327,16 +400,19 @@ const LandingPageManagement = () => {
                   <label htmlFor={`image-upload-${section.id}`}>
                     <Button
                       variant="outline"
-                      className="w-full border-white/20 text-white"
+                      className="w-full border-white/20 text-white hover:bg-white/10"
                       disabled={imageUploading}
                       asChild
                     >
                       <span>
                         <Camera className="w-4 h-4 mr-2" />
-                        {imageUploading ? 'Uploading...' : 'Upload Image'}
+                        {imageUploading ? 'Uploading...' : 'Upload New Image'}
                       </span>
                     </Button>
                   </label>
+                  <p className="text-white/60 text-xs">
+                    Recommended: 1200x800px, JPG or PNG
+                  </p>
                 </div>
               </div>
             </div>
@@ -431,14 +507,14 @@ const LandingPageManagement = () => {
               <Input
                 value={getContentValue(section.id, languageId, field.key)}
                 onChange={(e) => handleContentUpdate(section.id, languageId, field.key, e.target.value)}
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-white/5 border-white/10 text-white focus:ring-2 focus:ring-purple-500"
                 placeholder={`Enter ${field.label.toLowerCase()}`}
               />
             ) : (
               <Textarea
                 value={getContentValue(section.id, languageId, field.key)}
                 onChange={(e) => handleContentUpdate(section.id, languageId, field.key, e.target.value)}
-                className="bg-white/5 border-white/10 text-white"
+                className="bg-white/5 border-white/10 text-white focus:ring-2 focus:ring-purple-500"
                 placeholder={`Enter ${field.label.toLowerCase()}`}
                 rows={3}
               />
@@ -474,6 +550,15 @@ const LandingPageManagement = () => {
             <Settings className="w-4 h-4 mr-2" />
             {sections.filter(s => s.is_active).length} Active Sections
           </Badge>
+          <Button
+            variant={hasUnsavedChanges ? "primary" : "outline"}
+            onClick={saveAllChanges}
+            disabled={saving || !hasUnsavedChanges}
+            className={hasUnsavedChanges ? "animate-pulse" : ""}
+          >
+            <Save className="w-4 h-4 mr-2" />
+            {saving ? 'Saving...' : hasUnsavedChanges ? 'Save Changes' : 'All Saved'}
+          </Button>
         </div>
       </div>
 

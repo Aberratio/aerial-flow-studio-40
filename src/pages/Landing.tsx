@@ -1,18 +1,95 @@
 
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Zap, Users, Trophy, BookOpen, ArrowRight, Sparkles, Star, Heart } from 'lucide-react';
+import { ChevronRight, Zap, Users, Trophy, BookOpen, ArrowRight, Sparkles, Star, Heart, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthModal from '@/components/Auth/AuthModal';
+import { supabase } from '@/integrations/supabase/client';
+
+interface LandingPageContent {
+  [key: string]: string;
+}
+
+interface Language {
+  id: string;
+  name: string;
+  native_name: string;
+  is_default: boolean;
+}
 
 const Landing = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [content, setContent] = useState<LandingPageContent>({});
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
+
+  // Detect browser language
+  useEffect(() => {
+    const browserLang = navigator.language.toLowerCase();
+    const detectedLanguage = browserLang.startsWith('pl') ? 'pl' : 'en';
+    setCurrentLanguage(detectedLanguage);
+  }, []);
+
+  // Load languages and content
+  useEffect(() => {
+    loadLanguagesAndContent();
+  }, []);
+
+  // Load content when language changes
+  useEffect(() => {
+    if (languages.length > 0 && currentLanguage) {
+      loadContent(currentLanguage);
+    }
+  }, [currentLanguage, languages]);
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  const loadLanguagesAndContent = async () => {
+    try {
+      const { data: languagesData } = await supabase
+        .from('languages')
+        .select('*')
+        .order('is_default', { ascending: false });
+
+      if (languagesData) {
+        setLanguages(languagesData);
+      }
+    } catch (error) {
+      console.error('Error loading languages:', error);
+    }
+  };
+
+  const loadContent = async (languageId: string) => {
+    try {
+      const { data: contentData } = await supabase
+        .from('landing_page_content')
+        .select('content_key, content_value')
+        .eq('language_id', languageId);
+
+      if (contentData) {
+        const contentMap: LandingPageContent = {};
+        contentData.forEach(item => {
+          contentMap[item.content_key] = item.content_value;
+        });
+        setContent(contentMap);
+        setIsContentLoaded(true);
+      }
+    } catch (error) {
+      console.error('Error loading content:', error);
+      setIsContentLoaded(true); // Still show fallback content
+    }
+  };
+
+  // Fallback content for when database content is not available
+  const getContent = (key: string, fallback: string) => {
+    return content[key] || fallback;
+  };
 
   const features = [
     {
@@ -80,12 +157,27 @@ const Landing = () => {
           </div>
           
           <div className="flex items-center space-x-2 sm:space-x-4">
+            {languages.length > 0 && (
+              <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
+                <SelectTrigger className="w-[120px] bg-white/10 border-white/20 text-white">
+                  <Globe className="w-4 h-4 mr-1" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {languages.map((lang) => (
+                    <SelectItem key={lang.id} value={lang.id}>
+                      {lang.native_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button 
               variant="ghost" 
               onClick={() => openAuth('login')}
               className="text-white hover:text-purple-300 text-sm sm:text-base px-2 sm:px-4 glass-effect transition-all duration-300"
             >
-              Sign In
+              {getContent('nav_sign_in', 'Sign In')}
             </Button>
             <Button 
               variant="primary"
@@ -93,8 +185,8 @@ const Landing = () => {
               className="text-sm sm:text-base px-3 sm:px-4"
             >
               <Sparkles className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Get Started</span>
-              <span className="sm:hidden">Start</span>
+              <span className="hidden sm:inline">{getContent('nav_get_started', 'Get Started')}</span>
+              <span className="sm:hidden">{getContent('nav_start', 'Start')}</span>
               <ChevronRight className="ml-1 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
@@ -108,12 +200,12 @@ const Landing = () => {
             <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
               <div className="space-y-4 sm:space-y-6">
                 <h1 className={`text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight transition-all duration-1000 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0 translate-y-10'}`}>
-                  Master Your{' '}
-                  <span className="gradient-text-mega floating">Aerial</span>{' '}
-                  Journey
+                  {getContent('title', 'Master Your')} {' '}
+                  <span className="gradient-text-mega floating">{getContent('title_highlight', 'Aerial')}</span>{' '}
+                  {getContent('title_end', 'Journey')}
                 </h1>
                 <p className={`text-base sm:text-xl text-muted-foreground leading-relaxed transition-all duration-1000 animation-delay-400 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0 translate-y-10'}`}>
-                  Connect with aerial athletes worldwide, track your progress, and push your limits with structured challenges and a comprehensive pose library.
+                  {getContent('subtitle', 'Connect with aerial athletes worldwide, track your progress, and push your limits with structured challenges and a comprehensive pose library.')}
                 </p>
               </div>
               
@@ -125,18 +217,28 @@ const Landing = () => {
                   className="text-base sm:text-lg px-6 sm:px-8"
                 >
                   <Star className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
-                  Start Training Free
+                  {getContent('button_text', 'Start Training Free')}
                   <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </div>
 
               <div className={`grid grid-cols-2 sm:flex sm:items-center sm:space-x-8 gap-4 sm:gap-0 pt-6 sm:pt-8 max-w-sm mx-auto lg:mx-0 transition-all duration-1000 animation-delay-800 ${isLoaded ? 'animate-scale-in' : 'opacity-0 scale-90'}`}>
-                {stats.map((stat, index) => (
-                  <div key={index} className="text-center card-hover-effect">
-                    <div className="gradient-text-mega text-2xl sm:text-3xl font-bold">{stat.value}</div>
-                    <div className="text-muted-foreground text-xs sm:text-sm">{stat.label}</div>
-                  </div>
-                ))}
+                <div className="text-center card-hover-effect">
+                  <div className="gradient-text-mega text-2xl sm:text-3xl font-bold">{getContent('stat_1_value', '10K+')}</div>
+                  <div className="text-muted-foreground text-xs sm:text-sm">{getContent('stat_1_label', 'Active Athletes')}</div>
+                </div>
+                <div className="text-center card-hover-effect">
+                  <div className="gradient-text-mega text-2xl sm:text-3xl font-bold">{getContent('stat_2_value', '500+')}</div>
+                  <div className="text-muted-foreground text-xs sm:text-sm">{getContent('stat_2_label', 'Aerial Figures')}</div>
+                </div>
+                <div className="text-center card-hover-effect">
+                  <div className="gradient-text-mega text-2xl sm:text-3xl font-bold">{getContent('stat_3_value', '50+')}</div>
+                  <div className="text-muted-foreground text-xs sm:text-sm">{getContent('stat_3_label', 'Challenges')}</div>
+                </div>
+                <div className="text-center card-hover-effect">
+                  <div className="gradient-text-mega text-2xl sm:text-3xl font-bold">{getContent('stat_4_value', '95%')}</div>
+                  <div className="text-muted-foreground text-xs sm:text-sm">{getContent('stat_4_label', 'Success Rate')}</div>
+                </div>
               </div>
             </div>
 
