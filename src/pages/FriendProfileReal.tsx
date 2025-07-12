@@ -77,7 +77,8 @@ const FriendProfile = () => {
           if (privacyFilter === 'public') {
             postsQuery = postsQuery.eq('privacy', 'public');
           } else if (privacyFilter === 'friends') {
-            postsQuery = postsQuery.eq('privacy', 'friends');
+            // Friends view should show both public and friends content
+            postsQuery = postsQuery.in('privacy', ['public', 'friends']);
           }
           // 'all' shows everything for own profile
         } else if (!user) {
@@ -419,31 +420,36 @@ const FriendProfile = () => {
 
                 {/* Action Buttons */}
                 <div className="flex space-x-2">
-                  <Button 
-                    onClick={handleSendFriendRequest}
-                    variant="primary"
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Add Friend
-                  </Button>
-                  {isFollowing ? (
-                    <Button 
-                      variant="outline" 
-                      onClick={handleUnfollow}
-                      className="border-white/20 text-white hover:bg-white/10"
-                    >
-                      <UserMinus className="w-4 h-4 mr-2" />
-                      Unfollow
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      onClick={handleFollow}
-                      className="border-white/20 text-white hover:bg-white/10"
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Follow
-                    </Button>
+                  {/* Only show Add Friend and Follow buttons if NOT viewing own profile */}
+                  {user?.id !== id && (
+                    <>
+                      <Button 
+                        onClick={handleSendFriendRequest}
+                        variant="primary"
+                      >
+                        <UserPlus className="w-4 h-4 mr-2" />
+                        Add Friend
+                      </Button>
+                      {isFollowing ? (
+                        <Button 
+                          variant="outline" 
+                          onClick={handleUnfollow}
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          <UserMinus className="w-4 h-4 mr-2" />
+                          Unfollow
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          onClick={handleFollow}
+                          className="border-white/20 text-white hover:bg-white/10"
+                        >
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Follow
+                        </Button>
+                      )}
+                    </>
                   )}
 
                   {/* Share Button */}
