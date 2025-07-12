@@ -227,6 +227,55 @@ export type Database = {
           },
         ]
       }
+      figure_experts: {
+        Row: {
+          added_by: string
+          created_at: string
+          expert_user_id: string
+          figure_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          added_by: string
+          created_at?: string
+          expert_user_id: string
+          figure_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          added_by?: string
+          created_at?: string
+          expert_user_id?: string
+          figure_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "figure_experts_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figure_experts_expert_user_id_fkey"
+            columns: ["expert_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figure_experts_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       figure_progress: {
         Row: {
           created_at: string

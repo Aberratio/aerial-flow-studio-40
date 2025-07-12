@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share, Users, Globe } from 'lucide-react';
+import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share, Users, Globe, Plus, X, UserCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +31,10 @@ const ExerciseDetail = () => {
   const [communityVersions, setCommunityVersions] = useState<any[]>([]);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [showVideoPlayer, setShowVideoPlayer] = useState(false);
+  const [experts, setExperts] = useState<any[]>([]);
+  const [showAddExpert, setShowAddExpert] = useState(false);
+  const [searchUser, setSearchUser] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -42,17 +46,29 @@ const ExerciseDetail = () => {
       // Fetch exercise
       const { data: exerciseData, error: exerciseError } = await supabase
         .from('figures')
-        .select(`
-          *,
-          profiles!figures_created_by_fkey (
-            username
-          )
-        `)
+        .select('*')
         .eq('id', exerciseId)
         .single();
 
       if (exerciseError) throw exerciseError;
       setExercise(exerciseData);
+
+      // Fetch experts for this figure
+      if (exerciseData) {
+        const { data: expertsData } = await supabase
+          .from('figure_experts')
+          .select(`
+            *,
+            profiles:expert_user_id (
+              id,
+              username,
+              avatar_url
+            )
+          `)
+          .eq('figure_id', exerciseId);
+        
+        setExperts(expertsData || []);
+      }
 
       // Fetch user progress if logged in
       if (user && exerciseData) {
@@ -207,6 +223,90 @@ const ExerciseDetail = () => {
   const canModifyExercise = () => {
     if (!user || !exercise) return false;
     return user.role === 'admin' || user.role === 'trainer' || exercise.created_by === user.id;
+  };
+
+  const canManageExperts = () => {
+    if (!user || !exercise) return false;
+    return user.role === 'admin' || exercise.created_by === user.id;
+  };
+
+  const searchUsers = async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, username, avatar_url')
+        .ilike('username', `%${query}%`)
+        .limit(5);
+      
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error('Error searching users:', error);
+    }
+  };
+
+  const addExpert = async (userId: string) => {
+    if (!user || !exercise) return;
+
+    try {
+      const { error } = await supabase
+        .from('figure_experts')
+        .insert({
+          figure_id: exercise.id,
+          expert_user_id: userId,
+          added_by: user.id
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Expert Added",
+        description: "Expert has been added successfully"
+      });
+
+      // Refresh experts list
+      fetchExerciseDetails();
+      setShowAddExpert(false);
+      setSearchUser('');
+      setSearchResults([]);
+    } catch (error) {
+      console.error('Error adding expert:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add expert",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const removeExpert = async (expertId: string) => {
+    try {
+      const { error } = await supabase
+        .from('figure_experts')
+        .delete()
+        .eq('id', expertId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Expert Removed",
+        description: "Expert has been removed successfully"
+      });
+
+      // Refresh experts list
+      fetchExerciseDetails();
+    } catch (error) {
+      console.error('Error removing expert:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove expert",
+        variant: "destructive"
+      });
+    }
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -453,12 +553,115 @@ const ExerciseDetail = () => {
                 )}
               </div>
 
-              {/* Creator */}
-              {exercise.profiles?.username && (
-                <div className="flex items-center text-muted-foreground mb-4">
-                  <User className="w-4 h-4 mr-2" />
-                  Created by {exercise.profiles.username}
-                </div>
+              {/* Experts */}
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center">
+                      <UserCheck className="w-5 h-5 text-purple-400 mr-2" />
+                      <h3 className="text-white font-semibold">Experts</h3>
+                    </div>
+                    {canManageExperts() && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowAddExpert(true)}
+                        className="border-white/20 text-white hover:bg-white/10"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Add Expert
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {experts.length === 0 ? (
+                    <p className="text-muted-foreground text-sm">No experts assigned yet</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {experts.map((expert) => (
+                        <div key={expert.id} className="flex items-center justify-between">
+                          <div 
+                            className="flex items-center cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors"
+                            onClick={() => navigate(`/profile/${expert.profiles.id}`)}
+                          >
+                            <Avatar className="w-8 h-8 mr-3">
+                              <AvatarImage src={expert.profiles.avatar_url} />
+                              <AvatarFallback>{expert.profiles.username?.[0]?.toUpperCase()}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-white text-sm">{expert.profiles.username}</span>
+                          </div>
+                          {canManageExperts() && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeExpert(expert.id)}
+                              className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Add Expert Modal */}
+              {showAddExpert && (
+                <Card className="glass-effect border-white/10">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="text-white font-semibold">Add Expert</h3>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setShowAddExpert(false);
+                          setSearchUser('');
+                          setSearchResults([]);
+                        }}
+                        className="text-white hover:bg-white/10"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        placeholder="Search for users..."
+                        value={searchUser}
+                        onChange={(e) => {
+                          setSearchUser(e.target.value);
+                          searchUsers(e.target.value);
+                        }}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder:text-white/60"
+                      />
+                      
+                      {searchResults.length > 0 && (
+                        <div className="space-y-1">
+                          {searchResults.map((user) => (
+                            <div
+                              key={user.id}
+                              className="flex items-center justify-between p-2 hover:bg-white/5 rounded-lg cursor-pointer"
+                              onClick={() => addExpert(user.id)}
+                            >
+                              <div className="flex items-center">
+                                <Avatar className="w-8 h-8 mr-3">
+                                  <AvatarImage src={user.avatar_url} />
+                                  <AvatarFallback>{user.username?.[0]?.toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <span className="text-white text-sm">{user.username}</span>
+                              </div>
+                              <Plus className="w-4 h-4 text-purple-400" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               )}
             </div>
 
