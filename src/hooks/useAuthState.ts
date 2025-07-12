@@ -15,15 +15,22 @@ export const useAuthState = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
+      console.log('AuthContext: Starting profile fetch for', userId);
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
         .maybeSingle();
 
-      if (error) throw error;
+      console.log('AuthContext: Profile query result', { profile, error });
+
+      if (error) {
+        console.error('AuthContext: Profile fetch error:', error);
+        throw error;
+      }
 
       if (profile) {
+        console.log('AuthContext: Profile found, setting user');
         const userWithCompat = {
           ...profile,
           avatar: profile.avatar_url,
@@ -40,6 +47,7 @@ export const useAuthState = () => {
           setIsFirstLogin(true);
         }
       } else {
+        console.log('AuthContext: No profile found, creating basic user');
         const basicUser = {
           id: userId,
           email: session?.user?.email || '',
@@ -55,8 +63,24 @@ export const useAuthState = () => {
         };
         setUser(basicUser);
       }
+      console.log('AuthContext: Profile fetch completed successfully');
     } catch (err) {
-      console.error('Error fetching profile:', err);
+      console.error('AuthContext: Profile fetch failed:', err);
+      // Set a basic user even if profile fetch fails to prevent infinite loading
+      const basicUser = {
+        id: userId,
+        email: session?.user?.email || '',
+        username: session?.user?.email?.split('@')[0] || 'user',
+        avatar_url: null,
+        bio: null,
+        role: 'free' as const,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        avatar: null,
+        followersCount: 0,
+        followingCount: 0,
+      };
+      setUser(basicUser);
     }
   };
 
