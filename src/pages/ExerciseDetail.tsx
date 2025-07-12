@@ -30,6 +30,7 @@ const ExerciseDetail = () => {
   const [friendsVersions, setFriendsVersions] = useState<any[]>([]);
   const [communityVersions, setCommunityVersions] = useState<any[]>([]);
   const [showImagePreview, setShowImagePreview] = useState(false);
+  const [showVideoPlayer, setShowVideoPlayer] = useState(false);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -312,17 +313,49 @@ const ExerciseDetail = () => {
           <div className="space-y-4">
             <Card className="glass-effect border-white/10 overflow-hidden">
               <div className="relative">
-                <img
-                  src={exercise.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=600&fit=crop'}
-                  alt={exercise.name}
-                  className="w-full h-64 sm:h-80 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
-                  onClick={() => setShowImagePreview(true)}
-                />
-                {exercise.video_url && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/20 transition-colors cursor-pointer">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
-                      <Play className="w-8 h-8 text-white" />
-                    </div>
+                {!showVideoPlayer ? (
+                  <>
+                    <img
+                      src={exercise.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=600&fit=crop'}
+                      alt={exercise.name}
+                      className="w-full h-64 sm:h-80 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                      onClick={() => exercise.video_url ? setShowVideoPlayer(true) : setShowImagePreview(true)}
+                    />
+                    {exercise.video_url && (
+                      <div 
+                        className="absolute inset-0 flex items-center justify-center bg-black/30 hover:bg-black/20 transition-colors cursor-pointer"
+                        onClick={() => setShowVideoPlayer(true)}
+                      >
+                        <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                          <Play className="w-8 h-8 text-white" />
+                        </div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="relative">
+                    <video
+                      src={exercise.video_url}
+                      controls
+                      autoPlay
+                      className="w-full h-64 sm:h-80 object-cover"
+                      onError={() => {
+                        toast({
+                          title: "Video Error",
+                          description: "Unable to load video. Please try again.",
+                          variant: "destructive"
+                        });
+                        setShowVideoPlayer(false);
+                      }}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute top-2 right-2 text-white bg-black/50 hover:bg-black/70"
+                      onClick={() => setShowVideoPlayer(false)}
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </Button>
                   </div>
                 )}
                 

@@ -31,8 +31,6 @@ const Profile = () => {
           onSettings={() => setIsSettingsModalOpen(true)}
           onShare={() => setIsShareModalOpen(true)}
           isOwnProfile={true}
-          onPrivacyChange={setPrivacyFilter}
-          privacyFilter={privacyFilter}
         />
 
         {/* Achievements */}
@@ -48,7 +46,7 @@ const Profile = () => {
         <FriendsSection refreshTrigger={friendsRefreshTrigger} />
 
         {/* Content Tabs */}
-        <ContentTabs privacyFilter={privacyFilter} isOwnProfile={true} />
+        <ContentTabs isOwnProfile={true} />
       </div>
 
       {/* Modals */}
