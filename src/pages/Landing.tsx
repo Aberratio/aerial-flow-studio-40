@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthModal from '@/components/Auth/AuthModal';
 import { supabase } from '@/integrations/supabase/client';
+import IguanaLogo from '@/assets/iguana-logo.svg';
 
 interface LandingPageContent {
   [key: string]: string;
@@ -187,17 +188,18 @@ const Landing = () => {
       {/* Header */}
       <header className="relative z-10 px-4 sm:px-6 py-4">
         <nav className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-1000 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0'}`}>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-6 h-6 sm:w-8 sm:h-8" />
             <span className="font-bold text-xl sm:text-2xl">
               <span className="text-white">Iguana</span><span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">Flow</span>
             </span>
           </div>
           
-          <div className="flex items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             {languages.length > 0 && (
               <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-                <SelectTrigger className="w-[120px] bg-white/10 border-white/20 text-white">
-                  <Globe className="w-4 h-4 mr-1" />
+                <SelectTrigger className="w-[100px] sm:w-[120px] bg-white/10 border-white/20 text-white text-xs sm:text-sm">
+                  <Globe className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -212,19 +214,21 @@ const Landing = () => {
             <Button 
               variant="ghost" 
               onClick={() => openAuth('login')}
-              className="text-white hover:text-purple-300 text-sm sm:text-base px-2 sm:px-4 glass-effect transition-all duration-300"
+              className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-1 sm:px-2 md:px-4 glass-effect transition-all duration-300"
             >
-              {getContent('nav_sign_in', 'Sign In')}
+              <span className="hidden sm:inline">{getContent('nav_sign_in', 'Sign In')}</span>
+              <span className="sm:hidden">In</span>
             </Button>
             <Button 
               variant="primary"
               onClick={() => openAuth('register')}
-              className="text-sm sm:text-base px-3 sm:px-4"
+              className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4"
             >
-              <Sparkles className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">{getContent('nav_get_started', 'Get Started')}</span>
-              <span className="sm:hidden">{getContent('nav_start', 'Start')}</span>
-              <ChevronRight className="ml-1 sm:ml-2 w-3 h-3 sm:w-4 sm:h-4" />
+              <Sparkles className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden md:inline">{getContent('nav_get_started', 'Get Started')}</span>
+              <span className="hidden sm:inline md:hidden">{getContent('nav_start', 'Start')}</span>
+              <span className="sm:hidden">Go</span>
+              <ChevronRight className="ml-1 w-3 h-3 sm:w-4 sm:h-4" />
             </Button>
           </div>
         </nav>
