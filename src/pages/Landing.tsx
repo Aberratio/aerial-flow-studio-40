@@ -265,8 +265,10 @@ const Landing = () => {
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             {languages.length > 0 && <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
                 <SelectTrigger className="w-[50px] h-[40px] sm:w-[120px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
-                  <Globe className="w-4 h-4" />
-                  
+                  <div className="flex items-center space-x-1">
+                    <Globe className="w-4 h-4" />
+                    <span className="hidden sm:inline">{languages.find(lang => lang.id === currentLanguage)?.native_name?.slice(0, 2).toUpperCase()}</span>
+                  </div>
                 </SelectTrigger>
                 <SelectContent>
                   {languages.map(lang => <SelectItem key={lang.id} value={lang.id}>
