@@ -309,19 +309,28 @@ const FriendProfile = () => {
       );
     }
 
-    // Not friends - show follow/unfollow button
+    // Not friends - show add friend and follow/unfollow buttons
     return (
-      <Button 
-        onClick={isFollowing ? handleUnfollow : handleFollow}
-        variant={isFollowing ? "outline" : "default"}
-        className={isFollowing 
-          ? "border-blue-500/30 text-blue-400 hover:bg-blue-500/10" 
-          : "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
-        }
-      >
-        <UserPlus className="w-4 h-4 mr-2" />
-        {isFollowing ? 'Following' : 'Follow'}
-      </Button>
+      <div className="flex space-x-2">
+        <Button 
+          onClick={handleAddFriend}
+          className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Add Friend
+        </Button>
+        <Button 
+          onClick={isFollowing ? handleUnfollow : handleFollow}
+          variant="outline"
+          className={isFollowing 
+            ? "border-blue-500/30 text-blue-400 hover:bg-blue-500/10" 
+            : "border-white/20 text-white hover:bg-white/10"
+          }
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          {isFollowing ? 'Unfollow' : 'Follow'}
+        </Button>
+      </div>
     );
   };
   if (loading || !friendData) {
@@ -372,7 +381,7 @@ const FriendProfile = () => {
                   </div>
                 </div>
 
-                <p className="text-muted-foreground mb-6">{friendData.bio || 'Aerial enthusiast'}</p>
+                <p className="text-muted-foreground mb-6">{friendData.bio || 'No bio available'}</p>
 
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6">

@@ -53,7 +53,7 @@ export const ProfilePreviewHeader = ({
       </Avatar>
       <div className="flex-1">
         <h2 className="text-2xl font-bold text-white">{profile.username}</h2>
-        <p className="text-muted-foreground">{profile.bio || 'Aerial enthusiast'}</p>
+        <p className="text-muted-foreground">{profile.bio || 'No bio available'}</p>
         <div className="flex items-center space-x-4 mt-2">
           <Badge variant="secondary" className="bg-primary/20 text-primary">
             {profile.role === 'trainer' ? 'Trainer' : 'Member'}
@@ -74,13 +74,13 @@ export const ProfilePreviewHeader = ({
             </Button>
             <Button
               size="sm"
-              variant="ghost"
+              variant="outline"
               onClick={handleReject}
-              className="text-muted-foreground hover:text-white hover:bg-red-600/20"
+              className="border-red-500/30 text-red-400 hover:bg-red-500/10"
               disabled={friendshipLoading}
             >
               <X className="w-4 h-4 mr-1" />
-              Decline
+              Reject
             </Button>
           </>
         )}
