@@ -10,6 +10,10 @@ export interface FeedPost {
   created_at: string;
   user_id: string;
   privacy: string;
+  figure?: {
+    id: string;
+    name: string;
+  } | null;
   user: {
     id: string;
     username: string;
@@ -106,6 +110,11 @@ export const useFeedPosts = () => {
           created_at,
           user_id,
           privacy,
+          figure_id,
+          figures (
+            id,
+            name
+          ),
           profiles!posts_user_id_fkey (
             id,
             username,
@@ -159,6 +168,10 @@ export const useFeedPosts = () => {
               created_at: post.created_at,
               user_id: post.user_id,
               privacy: post.privacy,
+              figure: post.figures ? {
+                id: post.figures.id,
+                name: post.figures.name
+              } : null,
               user: {
                 id: post.profiles?.id || '',
                 username: post.profiles?.username || '',

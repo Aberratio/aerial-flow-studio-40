@@ -106,10 +106,11 @@ export const FigurePreviewModal = ({
           };
         }));
 
-        // Separate posts into different categories
-        const community = postsWithCounts.filter(post => post.user_id !== user.id && !friendIdList.includes(post.user_id));
-        const friends = postsWithCounts.filter(post => friendIdList.includes(post.user_id));
-        const mine = postsWithCounts.filter(post => post.user_id === user.id);
+        // Separate posts into different categories (only posts with media)
+        const postsWithMedia = postsWithCounts.filter(post => post.image_url || post.video_url);
+        const community = postsWithMedia.filter(post => post.user_id !== user.id && !friendIdList.includes(post.user_id));
+        const friends = postsWithMedia.filter(post => friendIdList.includes(post.user_id));
+        const mine = postsWithMedia.filter(post => post.user_id === user.id);
         setCommunityPosts(community);
         setFriendsPosts(friends);
         setMyPosts(mine);
@@ -379,11 +380,11 @@ export const FigurePreviewModal = ({
                                     <span>{post.comments_count} comments</span>
                                   </div>
                                 </div>
-                                {(post.image_url || post.video_url) && <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
-                                    {post.video_url ? <div className="w-full h-full bg-black/50 flex items-center justify-center">
-                                        <Play className="w-4 h-4 text-white" />
-                                      </div> : <img src={post.image_url} alt="Post content" className="w-full h-full object-cover" />}
-                                  </div>}
+                                 {(post.image_url || post.video_url) && <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0">
+                                     {post.video_url ? <div className="w-full h-full bg-black/50 flex items-center justify-center">
+                                         <Play className="w-4 h-4 text-white" />
+                                       </div> : <img src={post.image_url} alt="Post content" className="w-full h-full object-cover" />}
+                                   </div>}
                               </div>
                             </CardContent>
                           </Card>)}

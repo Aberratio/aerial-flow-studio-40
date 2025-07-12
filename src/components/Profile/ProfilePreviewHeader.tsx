@@ -53,7 +53,7 @@ export const ProfilePreviewHeader = ({
       </Avatar>
       <div className="flex-1">
         <h2 className="text-2xl font-bold text-white">{profile.username}</h2>
-        <p className="text-muted-foreground">{profile.bio || 'No bio available'}</p>
+        {profile.bio && <p className="text-muted-foreground">{profile.bio}</p>}
         <div className="flex items-center space-x-4 mt-2">
           <Badge variant="secondary" className="bg-primary/20 text-primary">
             {profile.role === 'trainer' ? 'Trainer' : 'Member'}

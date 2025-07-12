@@ -314,7 +314,7 @@ const FriendProfile = () => {
       <div className="flex space-x-2">
         <Button 
           onClick={handleAddFriend}
-          className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+          variant="default"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Add Friend
@@ -381,7 +381,7 @@ const FriendProfile = () => {
                   </div>
                 </div>
 
-                <p className="text-muted-foreground mb-6">{friendData.bio || 'No bio available'}</p>
+                {friendData.bio && <p className="text-muted-foreground mb-6">{friendData.bio}</p>}
 
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6">

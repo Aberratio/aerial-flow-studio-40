@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, Plus, Loader2, MoreHorizontal, Edit, Trash2, Globe, Users, Lock } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Plus, Loader2, MoreHorizontal, Edit, Trash2, Globe, Users, Lock, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -170,6 +170,17 @@ const Feed = () => {
 
                 {/* Content */}
                 <p className="text-white mb-4">{post.content}</p>
+
+                {/* Figure Info */}
+                {post.figure && (
+                  <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg">
+                    <div className="flex items-center space-x-2">
+                      <Target className="w-4 h-4 text-purple-400" />
+                      <span className="text-sm text-purple-400 font-medium">Exercise:</span>
+                      <span className="text-sm text-white">{post.figure.name}</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Media */}
                 {post.image_url && <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>

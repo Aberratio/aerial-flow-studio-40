@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Heart, MessageCircle, Share2, Bookmark, Send, Loader2 } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Send, Loader2, Target } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -111,6 +111,17 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
             {/* Content */}
             <div className="p-3 sm:p-4 border-b border-white/10 flex-shrink-0">
               <p className="text-white text-sm sm:text-base">{post.content}</p>
+              
+              {/* Figure Info */}
+              {post.figure && (
+                <div className="mt-3 p-3 bg-white/5 border border-white/10 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-purple-400" />
+                    <span className="text-sm text-purple-400 font-medium">Exercise:</span>
+                    <span className="text-sm text-white">{post.figure.name}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Actions */}
