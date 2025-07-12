@@ -120,7 +120,7 @@ const Inbox = () => {
   });
   return <div className="min-h-screen p-6">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-8 my-[32px]">Inbox</h1>
+        <h1 className="text-3xl font-bold text-white mb-6 sm:mb-8">Inbox</h1>
 
         {/* Filter Tabs - Hidden on mobile, show only "All" */}
         <div className="hidden md:flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">

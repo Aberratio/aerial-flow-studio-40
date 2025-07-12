@@ -231,7 +231,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             )}
 
             {/* Action Buttons */}
-            <div className="flex space-x-3">
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
               {isOwnProfile ? (
                 <>
                   <Button 
@@ -241,14 +241,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   >
                     Edit Profile
                   </Button>
-                  <Button 
-                    variant="primary"
-                    onClick={onEditProfile}
-                    size="icon"
-                    className="sm:hidden"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
+                  <div className="flex flex-col items-center sm:hidden">
+                    <Button 
+                      variant="primary"
+                      onClick={onEditProfile}
+                      size="icon"
+                      className="w-12 h-12"
+                    >
+                      <Edit className="w-5 h-5" />
+                    </Button>
+                    <span className="text-xs text-white/80 mt-1">Edit</span>
+                  </div>
                   <Button 
                     variant="outline" 
                     onClick={onSettings}
@@ -257,14 +260,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={onSettings}
-                    size="icon"
-                    className="border-white/20 text-white hover:bg-white/10 sm:hidden"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
+                  <div className="flex flex-col items-center sm:hidden">
+                    <Button 
+                      variant="outline" 
+                      onClick={onSettings}
+                      size="icon"
+                      className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
+                    >
+                      <Settings className="w-5 h-5" />
+                    </Button>
+                    <span className="text-xs text-white/80 mt-1">Settings</span>
+                  </div>
                 </>
               ) : null}
               
@@ -278,14 +284,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     <Share2 className="w-4 h-4 mr-2" />
                     Share
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    onClick={onShare}
-                    size="icon"
-                    className="border-white/20 text-white hover:bg-white/10 sm:hidden"
-                  >
-                    <Share2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex flex-col items-center sm:hidden">
+                    <Button 
+                      variant="outline" 
+                      onClick={onShare}
+                      size="icon"
+                      className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </Button>
+                    <span className="text-xs text-white/80 mt-1">Share</span>
+                  </div>
                 </>
               )}
             </div>

@@ -125,10 +125,10 @@ const Friends = () => {
   }
   return <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto space-y-6">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
               <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2 my-[32px]">Friends</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Friends</h1>
               <p className="text-muted-foreground text-sm sm:text-base">Connect with fellow aerial athletes</p>
             </div>
             <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 w-full sm:w-auto">

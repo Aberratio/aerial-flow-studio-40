@@ -209,16 +209,51 @@ const FriendProfile = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex space-x-3">
-                  {renderActionButton()}
-                  <Button 
-                    variant="outline" 
-                    onClick={handleMessage}
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Message
-                  </Button>
+                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                  <div className="hidden sm:flex space-x-3">
+                    {renderActionButton()}
+                    <Button 
+                      variant="outline" 
+                      onClick={handleMessage}
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Message
+                    </Button>
+                  </div>
+                  <div className="flex space-x-4 sm:hidden">
+                    <div className="flex flex-col items-center">
+                      <Button 
+                        onClick={friendshipStatus === 'not_friends' ? handleAddFriend : undefined}
+                        disabled={friendshipStatus === 'pending'}
+                        size="icon"
+                        className={`w-12 h-12 ${
+                          friendshipStatus === 'not_friends' 
+                            ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500' 
+                            : friendshipStatus === 'pending'
+                            ? 'border-yellow-500/30 text-yellow-400'
+                            : 'border-green-500/30 text-green-400'
+                        }`}
+                        variant={friendshipStatus === 'not_friends' ? 'default' : 'outline'}
+                      >
+                        <UserPlus className="w-5 h-5" />
+                      </Button>
+                      <span className="text-xs text-white/80 mt-1">
+                        {friendshipStatus === 'not_friends' ? 'Add' : friendshipStatus === 'pending' ? 'Pending' : 'Friends'}
+                      </span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <Button 
+                        variant="outline" 
+                        onClick={handleMessage}
+                        size="icon"
+                        className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
+                      >
+                        <MessageCircle className="w-5 h-5" />
+                      </Button>
+                      <span className="text-xs text-white/80 mt-1">Message</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
