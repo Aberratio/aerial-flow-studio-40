@@ -124,7 +124,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-8">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = plan.current;
