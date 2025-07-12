@@ -561,22 +561,14 @@ const LandingPageManagement = () => {
   }
 
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen relative overflow-hidden parallax-bg p-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Landing Page Management</h1>
-          <p className="text-white/60">Manage your landing page content and translations</p>
+          <p className="text-muted-foreground">Manage your landing page content and pricing across different languages</p>
         </div>
         <div className="flex items-center space-x-4">
-          <Badge variant="outline" className="text-emerald-400 border-emerald-400">
-            <Languages className="w-4 h-4 mr-2" />
-            {languages.length} Languages
-          </Badge>
-          <Badge variant="outline" className="text-purple-400 border-purple-400">
-            <Settings className="w-4 h-4 mr-2" />
-            {sections.filter(s => s.is_active).length} Active Sections
-          </Badge>
           <Button
             variant={hasUnsavedChanges ? "primary" : "outline"}
             onClick={saveAllChanges}
@@ -588,38 +580,79 @@ const LandingPageManagement = () => {
           </Button>
         </div>
       </div>
+      
+      {/* Main Content Tabs */}
+      <Tabs defaultValue="content" className="space-y-6">
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
+          <TabsTrigger value="content" className="flex items-center space-x-2">
+            <Globe className="w-4 h-4" />
+            <span>Page Content</span>
+          </TabsTrigger>
+          <TabsTrigger value="pricing" className="flex items-center space-x-2">
+            <Settings className="w-4 h-4" />
+            <span>Pricing Plans</span>
+          </TabsTrigger>
+        </TabsList>
 
-      <Separator className="bg-white/10" />
+        <TabsContent value="content" className="space-y-6">
+          <Separator className="bg-white/10" />
 
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {sections.map(section => (
-          <Card key={section.id} className="glass-effect border-white/10 hover:border-white/20 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white font-medium capitalize">{section.section_key}</h3>
-                {section.is_active ? (
-                  <Eye className="w-4 h-4 text-emerald-400" />
-                ) : (
-                  <EyeOff className="w-4 h-4 text-red-400" />
-                )}
-              </div>
-              <p className="text-white/60 text-sm mb-3">Order: {section.display_order}</p>
-              <div className="text-xs text-white/40">
-                Updated: {new Date(section.updated_at).toLocaleDateString()}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+          {/* Overview Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {sections.map(section => (
+              <Card key={section.id} className="glass-effect border-white/10 hover:border-white/20 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-white font-medium capitalize">{section.section_key}</h3>
+                    {section.is_active ? (
+                      <Eye className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <EyeOff className="w-4 h-4 text-red-400" />
+                    )}
+                  </div>
+                  <p className="text-white/60 text-sm mb-3">Order: {section.display_order}</p>
+                  <div className="text-xs text-white/40">
+                    Updated: {new Date(section.updated_at).toLocaleDateString()}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-      {/* Section Editors */}
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold text-white">Section Editors</h2>
-        {sections
-          .sort((a, b) => a.display_order - b.display_order)
-          .map(section => renderSectionEditor(section))}
-      </div>
+          {/* Section Editors */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-white">Section Editors</h2>
+            {sections
+              .sort((a, b) => a.display_order - b.display_order)
+              .map(section => renderSectionEditor(section))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="pricing" className="space-y-6">
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-white">Pricing Plans Management</h2>
+            <p className="text-muted-foreground">Manage pricing plans, features, and translations for your landing page.</p>
+            
+            <Card className="glass-effect border-white/10">
+              <CardContent className="p-6">
+                <div className="text-center py-12">
+                  <Settings className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-xl font-semibold text-white mb-2">Pricing Management</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Coming soon! This section will allow you to manage pricing plans, features, and their translations directly from the admin panel.
+                  </p>
+                  <div className="text-sm text-muted-foreground space-y-2">
+                    <p>• Create and edit pricing plans</p>
+                    <p>• Manage plan features and availability</p>
+                    <p>• Handle multi-language pricing content</p>
+                    <p>• Set plan popularity and ordering</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

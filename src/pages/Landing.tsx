@@ -259,7 +259,7 @@ const Landing = () => {
             <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-8 h-8 animate-pulse" />
             <span className="font-bold text-2xl">
               <span className="text-white">Iguana</span>
-              <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">Polski</span>
+              <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">Flow</span>
             </span>
           </div>
           <p className="text-muted-foreground animate-pulse">Loading your aerial journey...</p>
