@@ -187,11 +187,10 @@ const Landing = () => {
       {/* Header */}
       <header className="relative z-10 px-4 sm:px-6 py-4">
         <nav className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-1000 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0'}`}>
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 via-violet-500 to-indigo-500 rounded-xl flex items-center justify-center pulse-glow floating">
-              <span className="text-white font-bold text-lg sm:text-xl">I</span>
-            </div>
-            <span className="gradient-text-mega font-bold text-xl sm:text-2xl">IguanaFlow</span>
+          <div className="flex items-center">
+            <span className="font-bold text-xl sm:text-2xl">
+              <span className="text-white">Iguana</span><span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">Flow</span>
+            </span>
           </div>
           
           <div className="flex items-center space-x-2 sm:space-x-4">

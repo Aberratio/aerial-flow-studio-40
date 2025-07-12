@@ -116,12 +116,9 @@ const Navigation: React.FC<NavigationProps> = ({
   return <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
       <div className="flex flex-col h-full p-4 overflow-y-auto">
         {/* Logo */}
-        <Link to="/feed" onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 group ${isMobile ? 'mb-4 my-4' : 'mb-8 my-[50px]'}`}>
-          <div className="w-10 h-10 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-xl">I</span>
-          </div>
-          <span className={`gradient-text font-bold text-xl ${isMobile ? 'block' : 'hidden lg:block'} group-hover:scale-105 transition-transform`}>
-            IguanaFlow
+        <Link to="/feed" onClick={isMobile ? onClose : undefined} className={`flex items-center group ${isMobile ? 'mb-4 my-4' : 'mb-8 my-[50px]'}`}>
+          <span className={`font-bold text-xl ${isMobile ? 'block' : 'hidden lg:block'} group-hover:scale-105 transition-transform`}>
+            <span className="text-white">Iguana</span><span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">Flow</span>
           </span>
         </Link>
 
