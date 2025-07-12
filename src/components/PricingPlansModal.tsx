@@ -105,11 +105,11 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white mx-4 sm:mx-auto"
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm text-white mx-4 sm:mx-auto"
         style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl gradient-text text-center">Choose Your Plan</DialogTitle>
-          <p className="text-muted-foreground text-center text-sm sm:text-base">
+          <DialogTitle className="text-xl sm:text-2xl text-white text-center">Choose Your Plan</DialogTitle>
+          <p className="text-white/70 text-center text-sm sm:text-base">
             Upgrade your training experience with premium features
           </p>
           <div className="flex justify-center mt-4">
@@ -134,9 +134,9 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
             return (
               <Card 
                 key={plan.id} 
-                className={`glass-effect transition-all duration-200 relative ${
+                className={`bg-slate-800/50 border-white/20 backdrop-blur-sm transition-all duration-200 relative ${
                   plan.popular ? 'ring-2 ring-purple-500 scale-105' : ''
-                } ${isSelected ? 'ring-2 ring-blue-500' : 'border-white/10'}`}
+                } ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -165,7 +165,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center gap-3">
                         <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
+                        <span className="text-xs sm:text-sm text-white/80">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -175,7 +175,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                     disabled={isCurrentPlan || isLoading}
                     variant={plan.popular ? "primary" : "outline"}
                     className={`w-full text-sm sm:text-base py-2 sm:py-3 ${
-                      !plan.popular ? 'border-white/20 text-white hover:bg-white/20' : ''
+                      !plan.popular ? 'border-white/20 text-white hover:bg-white/10' : ''
                     }`}
                   >
                     {isLoading && isSelected ? (
@@ -193,10 +193,10 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
         </div>
 
         <div className="mt-6 text-center space-y-2">
-          <p className="text-muted-foreground text-sm">
+          <p className="text-white/70 text-sm">
             All plans include a 7-day free trial. Cancel anytime.
           </p>
-          <p className="text-muted-foreground text-xs">
+          <p className="text-white/60 text-xs">
             Payments are processed securely through Stripe. Your data is protected.
           </p>
         </div>
