@@ -64,22 +64,24 @@ export const useAuthState = () => {
     console.log('AuthContext: Setting up auth state listener');
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      try {
-        console.log('AuthContext: Auth state change', _event, session?.user?.id);
-        setSession(session);
+      console.log('AuthContext: Auth state change', _event, session?.user?.id);
+      
+      setSession(session);
 
-        if (session?.user) {
+      if (session?.user) {
+        try {
           await fetchProfile(session.user.id);
           console.log('AuthContext: Profile fetch complete');
-        } else {
-          console.log('AuthContext: No session, clearing user');
-          setUser(null);
+        } catch (err) {
+          console.error('AuthContext: Profile fetch error:', err);
         }
-      } catch (err) {
-        console.error('AuthContext: onAuthStateChange error:', err);
-      } finally {
-        setIsLoading(false);
+      } else {
+        console.log('AuthContext: No session, clearing user');
+        setUser(null);
       }
+      
+      console.log('AuthContext: Setting isLoading to false');
+      setIsLoading(false);
     });
 
     (async () => {
@@ -87,17 +89,23 @@ export const useAuthState = () => {
         console.log('AuthContext: Getting initial session');
         const { data: { session } } = await supabase.auth.getSession();
         console.log('AuthContext: Initial session result', session?.user?.id);
+        
         setSession(session);
 
         if (session?.user) {
-          await fetchProfile(session.user.id);
-          console.log('AuthContext: Initial profile fetch complete');
+          try {
+            await fetchProfile(session.user.id);
+            console.log('AuthContext: Initial profile fetch complete');
+          } catch (err) {
+            console.error('AuthContext: Initial profile fetch error:', err);
+          }
         } else {
           setUser(null);
         }
       } catch (err) {
         console.error('AuthContext: Initial session fetch failed:', err);
       } finally {
+        console.log('AuthContext: Initial loading complete, setting isLoading to false');
         setIsLoading(false);
       }
     })();
