@@ -9,9 +9,11 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ContentTabsProps {
   onPostSelect?: (post: any) => void; // Make it optional since we're not using it anymore
+  privacyFilter?: string;
+  isOwnProfile?: boolean;
 }
 
-export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
+export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyFilter = 'all', isOwnProfile = true }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { achievements, loading: achievementsLoading } = useUserAchievements();
@@ -25,7 +27,7 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('posts')
         .select(`
           *,
@@ -37,6 +39,15 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(20);
+
+      // Apply privacy filter if not viewing all content
+      if (privacyFilter === 'public') {
+        query = query.eq('privacy', 'public');
+      } else if (privacyFilter === 'friends') {
+        query = query.eq('privacy', 'friends');
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -80,7 +91,7 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
 
   useEffect(() => {
     fetchUserPosts();
-  }, [user]);
+  }, [user, privacyFilter]);
 
   const tabs = [
     { id: 'posts', label: 'Posts', mobileLabel: 'Posts', icon: Grid },

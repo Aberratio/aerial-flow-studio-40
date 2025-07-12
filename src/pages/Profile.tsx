@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { SettingsModal } from '@/components/SettingsModal';
 import { ProfileHeader } from '@/components/Profile/ProfileHeader';
@@ -7,11 +8,15 @@ import { FigureJourneySection } from '@/components/Profile/FigureJourneySection'
 import { FriendsSection } from '@/components/Profile/FriendsSection';
 import { NewPendingRequestsSection } from '@/components/NewPendingRequestsSection';
 import { ContentTabs } from '@/components/Profile/ContentTabs';
+import { ShareProfileModal } from '@/components/ShareProfileModal';
 
 const Profile = () => {
+  const { user } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [friendsRefreshTrigger, setFriendsRefreshTrigger] = useState(0);
+  const [privacyFilter, setPrivacyFilter] = useState('all');
 
   const handleFriendsUpdated = () => {
     setFriendsRefreshTrigger(prev => prev + 1);
@@ -24,6 +29,10 @@ const Profile = () => {
         <ProfileHeader 
           onEditProfile={() => setIsEditModalOpen(true)}
           onSettings={() => setIsSettingsModalOpen(true)}
+          onShare={() => setIsShareModalOpen(true)}
+          isOwnProfile={true}
+          onPrivacyChange={setPrivacyFilter}
+          privacyFilter={privacyFilter}
         />
 
         {/* Achievements */}
@@ -39,7 +48,7 @@ const Profile = () => {
         <FriendsSection refreshTrigger={friendsRefreshTrigger} />
 
         {/* Content Tabs */}
-        <ContentTabs />
+        <ContentTabs privacyFilter={privacyFilter} isOwnProfile={true} />
       </div>
 
       {/* Modals */}
@@ -50,6 +59,12 @@ const Profile = () => {
       <SettingsModal 
         isOpen={isSettingsModalOpen} 
         onClose={() => setIsSettingsModalOpen(false)} 
+      />
+      <ShareProfileModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        profileId={user?.id || ''}
+        profileName={user?.username || ''}
       />
     </div>
   );

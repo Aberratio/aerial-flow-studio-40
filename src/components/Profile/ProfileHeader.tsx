@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Settings } from 'lucide-react';
+import { Camera, Settings, Share2, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,9 +12,20 @@ import { useToast } from '@/hooks/use-toast';
 interface ProfileHeaderProps {
   onEditProfile: () => void;
   onSettings: () => void;
+  onShare?: () => void;
+  isOwnProfile?: boolean;
+  onPrivacyChange?: (privacy: string) => void;
+  privacyFilter?: string;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onSettings }) => {
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
+  onEditProfile, 
+  onSettings, 
+  onShare, 
+  isOwnProfile = true,
+  onPrivacyChange,
+  privacyFilter = 'all'
+}) => {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
@@ -198,22 +210,57 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ onEditProfile, onS
               ))}
             </div>
 
+            {/* Privacy Selector for Own Profile */}
+            {isOwnProfile && onPrivacyChange && (
+              <div className="mb-4">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Eye className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground">View as:</span>
+                </div>
+                <Select value={privacyFilter} onValueChange={onPrivacyChange}>
+                  <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-white/20">
+                    <SelectItem value="all" className="text-white hover:bg-white/10">All Content (Private View)</SelectItem>
+                    <SelectItem value="public" className="text-white hover:bg-white/10">Public Only</SelectItem>
+                    <SelectItem value="friends" className="text-white hover:bg-white/10">Friends Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex space-x-3">
-              <Button 
-                variant="primary"
-                onClick={onEditProfile}
-              >
-                Edit Profile
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={onSettings}
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
+              {isOwnProfile ? (
+                <>
+                  <Button 
+                    variant="primary"
+                    onClick={onEditProfile}
+                  >
+                    Edit Profile
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={onSettings}
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Settings
+                  </Button>
+                </>
+              ) : null}
+              
+              {onShare && (
+                <Button 
+                  variant="outline" 
+                  onClick={onShare}
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share
+                </Button>
+              )}
             </div>
           </div>
         </div>
