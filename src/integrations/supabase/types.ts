@@ -690,6 +690,157 @@ export type Database = {
           },
         ]
       }
+      pricing_feature_translations: {
+        Row: {
+          created_at: string
+          feature_key: string
+          feature_text: string
+          id: string
+          language_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          feature_key: string
+          feature_text: string
+          id?: string
+          language_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          feature_key?: string
+          feature_text?: string
+          id?: string
+          language_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_feature_translations_language_id_fkey"
+            columns: ["language_id"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_plan_features: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          feature_key: string
+          id: string
+          is_included: boolean | null
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          feature_key: string
+          id?: string
+          is_included?: boolean | null
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          feature_key?: string
+          id?: string
+          is_included?: boolean | null
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_plan_features_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_plan_translations: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          language_id: string
+          name: string
+          plan_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          language_id: string
+          name: string
+          plan_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          language_id?: string
+          name?: string
+          plan_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_plan_translations_language_id_fkey"
+            columns: ["language_id"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pricing_plan_translations_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_plans: {
+        Row: {
+          created_at: string
+          description: string | null
+          display_order: number | null
+          id: string
+          is_popular: boolean | null
+          name: string
+          plan_key: string
+          price: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_popular?: boolean | null
+          name: string
+          plan_key: string
+          price: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_popular?: boolean | null
+          name?: string
+          plan_key?: string
+          price?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

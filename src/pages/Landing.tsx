@@ -19,6 +19,22 @@ interface Language {
   is_default: boolean;
 }
 
+interface PricingPlan {
+  id: string;
+  plan_key: string;
+  name: string;
+  price: string;
+  description: string;
+  is_popular: boolean;
+  features: PricingFeature[];
+}
+
+interface PricingFeature {
+  feature_key: string;
+  is_included: boolean;
+  feature_text: string;
+}
+
 const Landing = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -28,6 +44,7 @@ const Landing = () => {
   const [content, setContent] = useState<LandingPageContent>({});
   const [isContentLoaded, setIsContentLoaded] = useState(false);
   const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
 
   // Detect browser language
   useEffect(() => {
@@ -40,12 +57,14 @@ const Landing = () => {
   useEffect(() => {
     loadLanguagesAndContent();
     loadHeroImage();
+    loadPricingPlans();
   }, []);
 
   // Load content when language changes
   useEffect(() => {
     if (languages.length > 0 && currentLanguage) {
       loadContent(currentLanguage);
+      loadPricingPlans();
     }
   }, [currentLanguage, languages]);
 
@@ -102,6 +121,64 @@ const Landing = () => {
     } catch (error) {
       console.error('Error loading content:', error);
       setIsContentLoaded(true); // Still show fallback content
+    }
+  };
+
+  const loadPricingPlans = async () => {
+    try {
+      const { data: plansData } = await supabase
+        .from('pricing_plans')
+        .select(`
+          *,
+          pricing_plan_features (
+            feature_key,
+            is_included,
+            display_order
+          )
+        `)
+        .order('display_order');
+
+      if (plansData) {
+        const plansWithFeatures = await Promise.all(
+          plansData.map(async (plan) => {
+            // Get plan translation
+            const { data: planTranslation } = await supabase
+              .from('pricing_plan_translations')
+              .select('name, description')
+              .eq('plan_id', plan.id)
+              .eq('language_id', currentLanguage)
+              .single();
+
+            // Get feature translations
+            const featuresWithTranslations = await Promise.all(
+              plan.pricing_plan_features.map(async (feature: any) => {
+                const { data: featureTranslation } = await supabase
+                  .from('pricing_feature_translations')
+                  .select('feature_text')
+                  .eq('feature_key', feature.feature_key)
+                  .eq('language_id', currentLanguage)
+                  .single();
+
+                return {
+                  ...feature,
+                  feature_text: featureTranslation?.feature_text || feature.feature_key
+                };
+              })
+            );
+
+            return {
+              ...plan,
+              name: planTranslation?.name || plan.name,
+              description: planTranslation?.description || plan.description,
+              features: featuresWithTranslations.sort((a, b) => a.display_order - b.display_order)
+            };
+          })
+        );
+
+        setPricingPlans(plansWithFeatures);
+      }
+    } catch (error) {
+      console.error('Error loading pricing plans:', error);
     }
   };
 
@@ -198,9 +275,11 @@ const Landing = () => {
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             {languages.length > 0 && (
               <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-                <SelectTrigger className="w-[100px] sm:w-[120px] bg-white/10 border-white/20 text-white text-xs sm:text-sm">
-                  <Globe className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                  <SelectValue />
+                <SelectTrigger className="w-[32px] sm:w-[120px] bg-white/10 border-white/20 text-white text-xs sm:text-sm">
+                  <Globe className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                  <span className="hidden sm:inline">
+                    <SelectValue />
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {languages.map((lang) => (
@@ -224,11 +303,15 @@ const Landing = () => {
               onClick={() => openAuth('register')}
               className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4"
             >
-              <Sparkles className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">
+                <Sparkles className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
+              </span>
               <span className="hidden md:inline">{getContent('nav_get_started', 'Get Started')}</span>
               <span className="hidden sm:inline md:hidden">{getContent('nav_start', 'Start')}</span>
-              <span className="sm:hidden">Go</span>
-              <ChevronRight className="ml-1 w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="sm:hidden">Start</span>
+              <span className="hidden sm:inline">
+                <ChevronRight className="ml-1 w-3 h-3 sm:w-4 sm:h-4" />
+              </span>
             </Button>
           </div>
         </nav>
@@ -355,117 +438,56 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
-            {/* Free Plan */}
-            <Card className="glass-effect-intense border-white/20 p-6 sm:p-8 relative card-hover-effect animate-fade-in-up animation-delay-400">
-              <CardContent className="space-y-4 sm:space-y-6">
-                <div className="text-center">
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 gradient-text">
-                    {getContent('free_plan_title', 'Free')}
-                  </h3>
-                  <div className="text-3xl sm:text-4xl font-bold gradient-text-mega mb-3 sm:mb-4">
-                    {getContent('free_plan_price', '$0')}
+            {pricingPlans.map((plan, index) => (
+              <Card 
+                key={plan.id} 
+                className={`glass-effect-intense border-white/20 p-6 sm:p-8 relative card-hover-effect animate-fade-in-up animation-delay-${(index + 1) * 200} ${plan.is_popular ? 'pulse-glow' : ''}`}
+              >
+                {plan.is_popular && (
+                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold pulse-glow-tropical floating">
+                      <Heart className="inline-block w-3 h-3 mr-1" />
+                      Most Popular
+                    </div>
                   </div>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {getContent('free_plan_description', 'Perfect for getting started')}
-                  </p>
-                </div>
-                
-                <ul className="space-y-3">
-                  <li className="flex items-center text-white">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-xs">✓</span>
+                )}
+                <CardContent className="space-y-4 sm:space-y-6">
+                  <div className="text-center">
+                    <h3 className={`text-xl sm:text-2xl font-bold text-white mb-2 ${plan.is_popular ? 'gradient-text-mega' : 'gradient-text'}`}>
+                      {plan.name}
+                    </h3>
+                    <div className="text-3xl sm:text-4xl font-bold gradient-text-mega mb-3 sm:mb-4">
+                      {plan.price}
                     </div>
-                    Post training updates
-                  </li>
-                  <li className="flex items-center text-white">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-xs">✓</span>
-                    </div>
-                    Invite and connect with friends
-                  </li>
-                  <li className="flex items-center text-white">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-xs">✓</span>
-                    </div>
-                    View community feed
-                  </li>
-                </ul>
-
-                <Button 
-                  variant="primary"
-                  size="lg"
-                  onClick={() => openAuth('register')}
-                  className="w-full"
-                >
-                  {getContent('free_plan_button', 'Get Started Free')}
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Premium Plan */}
-            <Card className="glass-effect-intense border-white/20 p-6 sm:p-8 relative card-hover-effect animate-fade-in-up animation-delay-600 pulse-glow">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold pulse-glow-tropical floating">
-                  <Heart className="inline-block w-3 h-3 mr-1" />
-                  Most Popular
-                </div>
-              </div>
-              <CardContent className="space-y-4 sm:space-y-6">
-                <div className="text-center">
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 gradient-text-mega">
-                    {getContent('premium_plan_title', 'Premium')}
-                  </h3>
-                  <div className="text-3xl sm:text-4xl font-bold gradient-text-mega mb-3 sm:mb-4">
-                    {getContent('premium_plan_price', '$10')}<span className="text-base sm:text-lg text-muted-foreground">/month</span>
+                    <p className="text-sm sm:text-base text-muted-foreground">
+                      {plan.description}
+                    </p>
                   </div>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {getContent('premium_plan_description', 'For serious aerial athletes')}
-                  </p>
-                </div>
-                
-                <ul className="space-y-3">
-                  <li className="flex items-center text-white">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-xs">✓</span>
-                    </div>
-                    Everything in Free plan
-                  </li>
-                  <li className="flex items-center text-white">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-xs">✓</span>
-                    </div>
-                    Complete figure library access
-                  </li>
-                  <li className="flex items-center text-white">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-xs">✓</span>
-                    </div>
-                    Join challenges & competitions
-                  </li>
-                  <li className="flex items-center text-white">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-xs">✓</span>
-                    </div>
-                    Create custom training sessions
-                  </li>
-                  <li className="flex items-center text-white">
-                    <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mr-3">
-                      <span className="text-xs">✓</span>
-                    </div>
-                    Track progress & analytics
-                  </li>
-                </ul>
+                  
+                  <ul className="space-y-3">
+                    {plan.features.map((feature, featureIndex) => (
+                      <li key={feature.feature_key} className="flex items-center text-white">
+                        <div className={`w-5 h-5 ${feature.is_included ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-500'} rounded-full flex items-center justify-center mr-3`}>
+                          <span className="text-xs">{feature.is_included ? '✓' : '✕'}</span>
+                        </div>
+                        <span className={feature.is_included ? 'text-white' : 'text-gray-400'}>
+                          {feature.feature_text}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
 
-                <Button 
-                  variant="primary"
-                  size="lg"
-                  onClick={() => openAuth('register')}
-                  className="w-full"
-                >
-                  {getContent('premium_plan_button', 'Start Premium Trial')}
-                </Button>
-              </CardContent>
-            </Card>
+                  <Button 
+                    variant="primary"
+                    size="lg"
+                    onClick={() => openAuth('register')}
+                    className="w-full"
+                  >
+                    {plan.plan_key === 'free' ? 'Get Started Free' : 'Start Premium Trial'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
