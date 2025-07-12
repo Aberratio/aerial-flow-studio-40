@@ -387,6 +387,15 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4 mt-6">
+              <div className="mb-4 p-3 bg-white/5 rounded-lg border border-white/10">
+                <p className="text-sm text-white/80">
+                  <span className="font-medium">Primary Language:</span> English (Default)
+                </p>
+                <p className="text-xs text-white/60 mt-1">
+                  Add translations in the Translations tab to make your exercise available in other languages.
+                </p>
+              </div>
+              
             <div>
               <Label htmlFor="name" className="text-white">Exercise Name *</Label>
               <Input
@@ -401,7 +410,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="difficulty" className="text-white">Difficulty Level</Label>
+                <Label htmlFor="difficulty" className="text-white">Difficulty Level (Optional)</Label>
                 <Select 
                   value={formData.difficulty_level} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}
@@ -419,7 +428,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
               </div>
 
               <div>
-                <Label htmlFor="category" className="text-white">Category</Label>
+                <Label htmlFor="category" className="text-white">Category (Optional)</Label>
                 <Select 
                   value={formData.category} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
@@ -437,7 +446,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
               </div>
 
               <div>
-                <Label htmlFor="type" className="text-white">Type</Label>
+                <Label htmlFor="type" className="text-white">Type (Optional)</Label>
                 <Select 
                   value={formData.type} 
                   onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
@@ -454,7 +463,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             </div>
 
             <div>
-              <Label htmlFor="description" className="text-white">Description</Label>
+              <Label htmlFor="description" className="text-white">Description (Optional)</Label>
               <Textarea
                 id="description"
                 value={formData.description}
@@ -466,7 +475,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             </div>
 
             <div>
-              <Label htmlFor="instructions" className="text-white">Instructions</Label>
+              <Label htmlFor="instructions" className="text-white">Instructions (Optional)</Label>
               <Textarea
                 id="instructions"
                 value={formData.instructions}
@@ -478,7 +487,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             </div>
 
             <div>
-              <Label className="text-white">Tags</Label>
+              <Label className="text-white">Tags (Optional)</Label>
               <div className="mt-2 space-y-2">
                 <div className="flex space-x-2">
                   <Input
@@ -488,14 +497,14 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                     className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
                     placeholder="Add a tag (press Enter)"
                   />
-                  <Button
-                    type="button"
-                    onClick={addTag}
-                    disabled={!tagInput.trim()}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500"
-                  >
-                    Add
-                  </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          onClick={addTag}
+                          disabled={!tagInput.trim()}
+                        >
+                          Add
+                        </Button>
                 </div>
                 {formData.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2">
@@ -522,7 +531,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label className="text-white">Image Upload</Label>
+                <Label className="text-white">Image Upload (Optional)</Label>
                 <div className="mt-2">
                   <input
                     type="file"
@@ -548,7 +557,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
               </div>
 
               <div>
-                <Label className="text-white">Video Upload</Label>
+                <Label className="text-white">Video Upload (Optional)</Label>
                 <div className="mt-2">
                   <input
                     type="file"
@@ -580,7 +589,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="image_url" className="text-white">Image URL</Label>
+                <Label htmlFor="image_url" className="text-white">Image URL (Optional)</Label>
                 <Input
                   id="image_url"
                   value={formData.image_url}
@@ -592,7 +601,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
               </div>
 
               <div>
-                <Label htmlFor="video_url" className="text-white">Video URL</Label>
+                <Label htmlFor="video_url" className="text-white">Video URL (Optional)</Label>
                 <Input
                   id="video_url"
                   value={formData.video_url}
@@ -617,12 +626,17 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <Label className="text-white">Exercise Name</Label>
+                      <Label className="text-white">Exercise Name (Optional)</Label>
                       <Input
                         value={translations[language.id]?.name || ''}
                         onChange={(e) => setTranslations(prev => ({
                           ...prev,
-                          [language.id]: { ...prev[language.id], name: e.target.value }
+                          [language.id]: { 
+                            name: e.target.value, 
+                            description: prev[language.id]?.description || '',
+                            instructions: prev[language.id]?.instructions || '',
+                            tags: prev[language.id]?.tags || []
+                          }
                         }))}
                         className="bg-white/5 border-white/10 text-white"
                         placeholder={`Exercise name in ${language.native_name}`}
@@ -630,12 +644,17 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                     </div>
 
                     <div>
-                      <Label className="text-white">Description</Label>
+                      <Label className="text-white">Description (Optional)</Label>
                       <Textarea
                         value={translations[language.id]?.description || ''}
                         onChange={(e) => setTranslations(prev => ({
                           ...prev,
-                          [language.id]: { ...prev[language.id], description: e.target.value }
+                          [language.id]: { 
+                            name: prev[language.id]?.name || '',
+                            description: e.target.value,
+                            instructions: prev[language.id]?.instructions || '',
+                            tags: prev[language.id]?.tags || []
+                          }
                         }))}
                         className="bg-white/5 border-white/10 text-white"
                         rows={3}
@@ -644,12 +663,17 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                     </div>
 
                     <div>
-                      <Label className="text-white">Instructions</Label>
+                      <Label className="text-white">Instructions (Optional)</Label>
                       <Textarea
                         value={translations[language.id]?.instructions || ''}
                         onChange={(e) => setTranslations(prev => ({
                           ...prev,
-                          [language.id]: { ...prev[language.id], instructions: e.target.value }
+                          [language.id]: { 
+                            name: prev[language.id]?.name || '',
+                            description: prev[language.id]?.description || '',
+                            instructions: e.target.value,
+                            tags: prev[language.id]?.tags || []
+                          }
                         }))}
                         className="bg-white/5 border-white/10 text-white"
                         rows={4}
@@ -658,7 +682,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                     </div>
 
                     <div>
-                      <Label className="text-white">Tags</Label>
+                      <Label className="text-white">Tags (Optional)</Label>
                       <div className="flex space-x-2 mt-2">
                         <Input
                           value={translationTagInputs[language.id] || ''}
@@ -669,9 +693,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                         />
                         <Button
                           type="button"
+                          variant="primary"
                           onClick={() => addTranslationTag(language.id)}
                           disabled={!translationTagInputs[language.id]?.trim()}
-                          className="bg-gradient-to-r from-purple-500 to-pink-500"
                         >
                           Add
                         </Button>
@@ -715,7 +739,8 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             </Button>
             <Button
               type="submit"
-              className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+              variant="primary"
+              className="flex-1"
               disabled={isLoading}
             >
               {isLoading ? (
