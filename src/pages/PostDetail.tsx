@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Share2, Bookmark, Send, Loader2, ArrowLeft } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Bookmark, Send, Loader2, ArrowLeft, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { usePostComments } from '@/hooks/usePostComments';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { formatDistanceToNow } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { SharePostModal } from '@/components/SharePostModal';
+import { PricingModal } from '@/components/PricingModal';
 
 const PostDetail = () => {
   const { postId } = useParams();
@@ -21,7 +23,9 @@ const PostDetail = () => {
   const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const { comments, loading: commentsLoading, addComment } = usePostComments(postId || null);
+  const { hasPremiumAccess } = useSubscriptionStatus();
 
   useEffect(() => {
     if (postId) {
@@ -41,6 +45,10 @@ const PostDetail = () => {
             username,
             avatar_url,
             role
+          ),
+          figure:figures (
+            id,
+            name
           )
         `)
         .eq('id', postId)
@@ -154,6 +162,14 @@ const PostDetail = () => {
     }
   };
 
+  const handleExerciseClick = (figureId: string) => {
+    if (hasPremiumAccess) {
+      navigate(`/library/${figureId}`);
+    } else {
+      setShowPricingModal(true);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
@@ -219,6 +235,18 @@ const PostDetail = () => {
           {/* Content */}
           <div className="p-4">
             <p className="text-white mb-4">{post.content}</p>
+            
+            {/* Figure Info */}
+            {post.figure && (
+              <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
+                   onClick={() => handleExerciseClick(post.figure.id)}>
+                <div className="flex items-center space-x-2">
+                  <Target className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm text-purple-400 font-medium">Exercise:</span>
+                  <span className="text-sm text-white underline hover:text-purple-300">{post.figure.name}</span>
+                </div>
+              </div>
+            )}
             
             {/* Media */}
             {post.image_url && (
@@ -366,6 +394,8 @@ const PostDetail = () => {
         userName={post?.user?.username || ''}
         post={post}
       />
+
+      <PricingModal isOpen={showPricingModal} onClose={() => setShowPricingModal(false)} onUpgrade={() => {}} />
     </div>
   );
 };

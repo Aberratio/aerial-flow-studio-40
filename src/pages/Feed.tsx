@@ -13,7 +13,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useFeedPosts } from '@/hooks/useFeedPosts';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { formatDistanceToNow } from 'date-fns';
+import { PricingModal } from '@/components/PricingModal';
 const Feed = () => {
   const navigate = useNavigate();
   const [selectedPost, setSelectedPost] = useState(null);
@@ -22,6 +24,7 @@ const Feed = () => {
   const [deletingPost, setDeletingPost] = useState(null);
   const [sharingPost, setSharingPost] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const {
     posts,
     loading,
@@ -38,6 +41,7 @@ const Feed = () => {
     user
   } = useAuth();
   const { t } = useLanguage();
+  const { hasPremiumAccess } = useSubscriptionStatus();
   const handlePostCreated = (newPost: any) => {
     // Convert the new post to match our FeedPost interface
     const feedPost = {
@@ -72,6 +76,14 @@ const Feed = () => {
   };
   const handleShare = (post: any) => {
     setSharingPost(post);
+  };
+
+  const handleExerciseClick = (figureId: string) => {
+    if (hasPremiumAccess) {
+      navigate(`/library/${figureId}`);
+    } else {
+      setShowPricingModal(true);
+    }
   };
 
   const getPrivacyIcon = (privacy: string) => {
@@ -173,11 +185,12 @@ const Feed = () => {
 
                 {/* Figure Info */}
                 {post.figure && (
-                  <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg">
+                  <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg cursor-pointer hover:bg-white/10 transition-colors"
+                       onClick={() => handleExerciseClick(post.figure.id)}>
                     <div className="flex items-center space-x-2">
                       <Target className="w-4 h-4 text-purple-400" />
                       <span className="text-sm text-purple-400 font-medium">Exercise:</span>
-                      <span className="text-sm text-white">{post.figure.name}</span>
+                      <span className="text-sm text-white underline hover:text-purple-300">{post.figure.name}</span>
                     </div>
                   </div>
                 )}
@@ -234,6 +247,8 @@ const Feed = () => {
       <ConfirmDeletePostModal isOpen={!!deletingPost} onClose={() => setDeletingPost(null)} onConfirm={handleDeletePost} loading={deleteLoading} />
 
       <SharePostModal isOpen={!!sharingPost} onClose={() => setSharingPost(null)} postId={sharingPost?.id || ''} userName={sharingPost?.user?.username || ''} post={sharingPost} />
+
+      <PricingModal isOpen={showPricingModal} onClose={() => setShowPricingModal(false)} onUpgrade={() => {}} />
     </div>;
 };
 export default Feed;

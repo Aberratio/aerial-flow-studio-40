@@ -152,8 +152,11 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                      <MessageCircle className="w-8 h-8 text-muted-foreground" />
+                    <div className="w-full h-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-white/10 flex flex-col items-center justify-center p-4">
+                      <MessageCircle className="w-8 h-8 text-purple-400 mb-2" />
+                      <p className="text-xs text-center text-white/70 leading-tight">
+                        {post.content.length > 60 ? `${post.content.substring(0, 60)}...` : post.content}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -231,8 +234,11 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect }) => {
                       </div>
                     </div>
                   ) : (
-                    <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                      <MessageCircle className="w-8 h-8 text-muted-foreground" />
+                    <div className="w-full h-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-white/10 flex flex-col items-center justify-center p-4">
+                      <MessageCircle className="w-8 h-8 text-purple-400 mb-2" />
+                      <p className="text-xs text-center text-white/70 leading-tight">
+                        {post.content.length > 60 ? `${post.content.substring(0, 60)}...` : post.content}
+                      </p>
                     </div>
                   )}
                 </div>
