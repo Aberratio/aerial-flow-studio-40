@@ -504,20 +504,34 @@ const LandingPageManagement = () => {
           <div key={field.key} className="space-y-2">
             <Label className="text-white">{field.label}</Label>
             {field.type === 'input' ? (
-              <Input
-                value={getContentValue(section.id, languageId, field.key)}
-                onChange={(e) => handleContentUpdate(section.id, languageId, field.key, e.target.value)}
-                className="bg-white/5 border-white/10 text-white focus:ring-2 focus:ring-purple-500"
-                placeholder={`Enter ${field.label.toLowerCase()}`}
-              />
+              <div className="space-y-1">
+                <Input
+                  value={getContentValue(section.id, languageId, field.key)}
+                  onChange={(e) => handleContentUpdate(section.id, languageId, field.key, e.target.value)}
+                  className="bg-white/5 border-white/10 text-white focus:ring-2 focus:ring-purple-500"
+                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                />
+                {field.key.includes('title') && (
+                  <p className="text-white/40 text-xs">
+                    💡 Tip: Use [gradient]text[/gradient] to add gradient styling to specific words
+                  </p>
+                )}
+              </div>
             ) : (
-              <Textarea
-                value={getContentValue(section.id, languageId, field.key)}
-                onChange={(e) => handleContentUpdate(section.id, languageId, field.key, e.target.value)}
-                className="bg-white/5 border-white/10 text-white focus:ring-2 focus:ring-purple-500"
-                placeholder={`Enter ${field.label.toLowerCase()}`}
-                rows={3}
-              />
+              <div className="space-y-1">
+                <Textarea
+                  value={getContentValue(section.id, languageId, field.key)}
+                  onChange={(e) => handleContentUpdate(section.id, languageId, field.key, e.target.value)}
+                  className="bg-white/5 border-white/10 text-white focus:ring-2 focus:ring-purple-500"
+                  placeholder={`Enter ${field.label.toLowerCase()}`}
+                  rows={3}
+                />
+                {field.key.includes('title') && (
+                  <p className="text-white/40 text-xs">
+                    💡 Tip: Use [gradient]text[/gradient] to add gradient styling to specific words
+                  </p>
+                )}
+              </div>
             )}
           </div>
         ))}

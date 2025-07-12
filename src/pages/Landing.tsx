@@ -26,6 +26,7 @@ const Landing = () => {
   const [languages, setLanguages] = useState<Language[]>([]);
   const [content, setContent] = useState<LandingPageContent>({});
   const [isContentLoaded, setIsContentLoaded] = useState(false);
+  const [heroImage, setHeroImage] = useState<string | null>(null);
 
   // Detect browser language
   useEffect(() => {
@@ -37,6 +38,7 @@ const Landing = () => {
   // Load languages and content
   useEffect(() => {
     loadLanguagesAndContent();
+    loadHeroImage();
   }, []);
 
   // Load content when language changes
@@ -65,6 +67,22 @@ const Landing = () => {
     }
   };
 
+  const loadHeroImage = async () => {
+    try {
+      const { data: heroSection } = await supabase
+        .from('landing_page_sections')
+        .select('image_url')
+        .eq('section_key', 'hero')
+        .single();
+
+      if (heroSection?.image_url) {
+        setHeroImage(heroSection.image_url);
+      }
+    } catch (error) {
+      console.error('Error loading hero image:', error);
+    }
+  };
+
   const loadContent = async (languageId: string) => {
     try {
       const { data: contentData } = await supabase
@@ -89,6 +107,26 @@ const Landing = () => {
   // Fallback content for when database content is not available
   const getContent = (key: string, fallback: string) => {
     return content[key] || fallback;
+  };
+
+  // Helper function to render text with gradient spans
+  const renderTextWithGradient = (text: string) => {
+    if (!text) return text;
+    
+    // Look for text wrapped in [gradient]...[/gradient] tags
+    const parts = text.split(/(\[gradient\].*?\[\/gradient\])/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('[gradient]') && part.endsWith('[/gradient]')) {
+        const gradientText = part.replace(/\[gradient\]|\[\/gradient\]/g, '');
+        return (
+          <span key={index} className="gradient-text-mega">
+            {gradientText}
+          </span>
+        );
+      }
+      return part;
+    });
   };
 
   const features = [
@@ -200,9 +238,7 @@ const Landing = () => {
             <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
               <div className="space-y-4 sm:space-y-6">
                 <h1 className={`text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight transition-all duration-1000 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0 translate-y-10'}`}>
-                  {getContent('title', 'Master Your')} {' '}
-                  <span className="gradient-text-mega floating">{getContent('title_highlight', 'Aerial')}</span>{' '}
-                  {getContent('title_end', 'Journey')}
+                  {renderTextWithGradient(getContent('title', 'Master Your [gradient]Aerial[/gradient] Journey'))}
                 </h1>
                 <p className={`text-base sm:text-xl text-muted-foreground leading-relaxed transition-all duration-1000 animation-delay-400 ${isLoaded ? 'animate-fade-in-up' : 'opacity-0 translate-y-10'}`}>
                   {getContent('subtitle', 'Connect with aerial athletes worldwide, track your progress, and push your limits with structured challenges and a comprehensive pose library.')}
@@ -245,7 +281,7 @@ const Landing = () => {
             <div className={`relative order-first lg:order-last transition-all duration-1000 animation-delay-1000 ${isLoaded ? 'animate-scale-in floating' : 'opacity-0 scale-75'}`}>
               <div className="relative z-10">
                 <img
-                  src="https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"
+                  src={heroImage || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"}
                   alt="Aerial athlete performing on silks"
                   className="rounded-2xl shadow-2xl hover-lift mx-auto max-w-xs sm:max-w-md lg:max-w-none glass-effect-intense pulse-glow"
                 />
@@ -266,11 +302,10 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 animate-fade-in-up">
-              Everything You Need to{' '}
-              <span className="gradient-text-mega">Excel</span>
+              {renderTextWithGradient(getContent('features_title', 'Everything You Need to [gradient]Excel[/gradient]'))}
             </h2>
             <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto px-4 animate-fade-in-up animation-delay-200">
-              From beginner-friendly tutorials to advanced challenge programs, we've got you covered at every stage of your aerial journey.
+              {getContent('features_subtitle', 'From beginner-friendly tutorials to advanced challenge programs, we\'ve got you covered at every stage of your aerial journey.')}
             </p>
           </div>
 
@@ -291,10 +326,10 @@ const Landing = () => {
                       <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                     </div>
                     <h3 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 text-white ${feature.accent === 'tropical' ? 'gradient-text-tropical' : 'gradient-text'}`}>
-                      {feature.title}
+                      {getContent(`feature_${index + 1}_title`, feature.title)}
                     </h3>
                     <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                      {feature.description}
+                      {getContent(`feature_${index + 1}_description`, feature.description)}
                     </p>
                   </CardContent>
                 </Card>
@@ -309,12 +344,10 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 animate-fade-in-up">
-              Choose Your{' '}
-              <span className="gradient-text-mega floating">Training</span>{' '}
-              Plan
+              {renderTextWithGradient(getContent('pricing_title', 'Choose Your [gradient]Training[/gradient] Plan'))}
             </h2>
             <p className="text-base sm:text-xl text-muted-foreground max-w-3xl mx-auto px-4 animate-fade-in-up animation-delay-200">
-              Start free or unlock the full potential of your aerial journey with our premium features.
+              {getContent('pricing_subtitle', 'Start free or unlock the full potential of your aerial journey with our premium features.')}
             </p>
           </div>
 
@@ -323,9 +356,15 @@ const Landing = () => {
             <Card className="glass-effect-intense border-white/20 p-6 sm:p-8 relative card-hover-effect animate-fade-in-up animation-delay-400">
               <CardContent className="space-y-4 sm:space-y-6">
                 <div className="text-center">
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 gradient-text">Free</h3>
-                  <div className="text-3xl sm:text-4xl font-bold gradient-text-mega mb-3 sm:mb-4">$0</div>
-                  <p className="text-sm sm:text-base text-muted-foreground">Perfect for getting started</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 gradient-text">
+                    {getContent('free_plan_title', 'Free')}
+                  </h3>
+                  <div className="text-3xl sm:text-4xl font-bold gradient-text-mega mb-3 sm:mb-4">
+                    {getContent('free_plan_price', '$0')}
+                  </div>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    {getContent('free_plan_description', 'Perfect for getting started')}
+                  </p>
                 </div>
                 
                 <ul className="space-y-3">
@@ -355,7 +394,7 @@ const Landing = () => {
                   onClick={() => openAuth('register')}
                   className="w-full"
                 >
-                  Get Started Free
+                  {getContent('free_plan_button', 'Get Started Free')}
                 </Button>
               </CardContent>
             </Card>
@@ -370,9 +409,15 @@ const Landing = () => {
               </div>
               <CardContent className="space-y-4 sm:space-y-6">
                 <div className="text-center">
-                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 gradient-text-mega">Premium</h3>
-                  <div className="text-3xl sm:text-4xl font-bold gradient-text-mega mb-3 sm:mb-4">$10<span className="text-base sm:text-lg text-muted-foreground">/month</span></div>
-                  <p className="text-sm sm:text-base text-muted-foreground">For serious aerial athletes</p>
+                  <h3 className="text-xl sm:text-2xl font-bold text-white mb-2 gradient-text-mega">
+                    {getContent('premium_plan_title', 'Premium')}
+                  </h3>
+                  <div className="text-3xl sm:text-4xl font-bold gradient-text-mega mb-3 sm:mb-4">
+                    {getContent('premium_plan_price', '$10')}<span className="text-base sm:text-lg text-muted-foreground">/month</span>
+                  </div>
+                  <p className="text-sm sm:text-base text-muted-foreground">
+                    {getContent('premium_plan_description', 'For serious aerial athletes')}
+                  </p>
                 </div>
                 
                 <ul className="space-y-3">
@@ -414,7 +459,7 @@ const Landing = () => {
                   onClick={() => openAuth('register')}
                   className="w-full"
                 >
-                  Start Premium Trial
+                  {getContent('premium_plan_button', 'Start Premium Trial')}
                 </Button>
               </CardContent>
             </Card>
@@ -428,12 +473,10 @@ const Landing = () => {
           <Card className="glass-effect-intense border-white/20 p-8 sm:p-12 card-hover-effect animate-fade-in-up pulse-glow">
             <CardContent className="space-y-6 sm:space-y-8">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold floating">
-                Ready to{' '}
-                <span className="gradient-text-mega">Transform</span>{' '}
-                Your Training?
+                {renderTextWithGradient(getContent('cta_title', 'Ready to [gradient]Transform[/gradient] Your Training?'))}
               </h2>
               <p className="text-base sm:text-xl text-muted-foreground px-4 animate-fade-in-up animation-delay-200">
-                Join thousands of aerial athletes who are already using IguanaFlow to reach new heights in their practice.
+                {getContent('cta_subtitle', 'Join thousands of aerial athletes who are already using IguanaFlow to reach new heights in their practice.')}
               </p>
               <Button 
                 variant="primary"
@@ -442,7 +485,7 @@ const Landing = () => {
                 className="text-base sm:text-lg px-8 sm:px-12 animate-bounce-in animation-delay-400"
               >
                 <Sparkles className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
-                Get Started Today
+                {getContent('cta_button', 'Get Started Today')}
                 <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
               </Button>
             </CardContent>
