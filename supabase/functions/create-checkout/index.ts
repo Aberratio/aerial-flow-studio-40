@@ -93,9 +93,11 @@ serve(async (req) => {
 
       // Add payment method types for PLN currency to enable BLIK
       if (currency === 'pln') {
-        sessionConfig.payment_method_types = ['card', 'blik'];
+        sessionConfig.payment_method_types = ['card', 'blik', 'p24'];
+        logStep("PLN currency detected, adding BLIK and P24 payment methods");
       }
 
+      logStep("Creating subscription session", { currency, amount, paymentMethods: sessionConfig.payment_method_types });
       session = await stripe.checkout.sessions.create(sessionConfig);
 
       // Create Supabase service client for order recording
@@ -137,9 +139,11 @@ serve(async (req) => {
 
       // Add payment method types for PLN currency to enable BLIK
       if (currency === 'pln') {
-        sessionConfig.payment_method_types = ['card', 'blik'];
+        sessionConfig.payment_method_types = ['card', 'blik', 'p24'];
+        logStep("PLN currency detected for challenge payment, adding BLIK and P24 payment methods");
       }
 
+      logStep("Creating challenge payment session", { currency, amount, paymentMethods: sessionConfig.payment_method_types });
       session = await stripe.checkout.sessions.create(sessionConfig);
 
       // Create Supabase service client for order recording
@@ -171,7 +175,13 @@ serve(async (req) => {
     });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR in create-checkout", { message: errorMessage });
+    logStep("ERROR in create-checkout", { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
+    
+    // Check if it's a Stripe-specific error
+    if (error && typeof error === 'object' && 'type' in error) {
+      logStep("Stripe error details", { type: error.type, code: error.code, decline_code: error.decline_code });
+    }
+    
     return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
