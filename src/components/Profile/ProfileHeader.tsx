@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Settings, Share2, Eye } from 'lucide-react';
+import { Camera, Settings, Share2, Eye, Edit } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -237,29 +237,56 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   <Button 
                     variant="primary"
                     onClick={onEditProfile}
+                    className="hidden sm:flex"
                   >
                     Edit Profile
                   </Button>
                   <Button 
+                    variant="primary"
+                    onClick={onEditProfile}
+                    size="icon"
+                    className="sm:hidden"
+                  >
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                  <Button 
                     variant="outline" 
                     onClick={onSettings}
-                    className="border-white/20 text-white hover:bg-white/10"
+                    className="border-white/20 text-white hover:bg-white/10 hidden sm:flex"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Settings
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={onSettings}
+                    size="icon"
+                    className="border-white/20 text-white hover:bg-white/10 sm:hidden"
+                  >
+                    <Settings className="w-4 h-4" />
                   </Button>
                 </>
               ) : null}
               
               {onShare && (
-                <Button 
-                  variant="outline" 
-                  onClick={onShare}
-                  className="border-white/20 text-white hover:bg-white/10"
-                >
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share
-                </Button>
+                <>
+                  <Button 
+                    variant="outline" 
+                    onClick={onShare}
+                    className="border-white/20 text-white hover:bg-white/10 hidden sm:flex"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={onShare}
+                    size="icon"
+                    className="border-white/20 text-white hover:bg-white/10 sm:hidden"
+                  >
+                    <Share2 className="w-4 h-4" />
+                  </Button>
+                </>
               )}
             </div>
           </div>

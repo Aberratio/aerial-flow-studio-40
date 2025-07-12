@@ -103,10 +103,10 @@ const Feed = () => {
   }
   return <div className="min-h-screen p-6">
       <div className="max-w-2xl mx-auto space-y-6">
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2 my-[32px]">{t('feed.title')}</h1>
+              <h1 className="text-3xl font-bold text-white mb-2">{t('feed.title')}</h1>
               <p className="text-muted-foreground">{t('feed.subtitle')}</p>
             </div>
           </div>
