@@ -10,49 +10,53 @@ export const useAuthState = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
   
-  // Get follow counts for the current user
-  const { followersCount, followingCount, refetchCounts } = useFollowCounts(session?.user?.id || '');
+  // Get follow counts for the current user - but only fetch after auth is established
+  const { followersCount, followingCount, refetchCounts } = useFollowCounts(user?.id || '');
 
   const fetchProfile = async (userId: string) => {
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .maybeSingle();
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (error) throw error;
+      if (error) throw error;
 
-    if (profile) {
-      const userWithCompat = {
-        ...profile,
-        avatar: profile.avatar_url,
-        followersCount,
-        followingCount,
-      };
-      setUser(userWithCompat);
+      if (profile) {
+        const userWithCompat = {
+          ...profile,
+          avatar: profile.avatar_url,
+          followersCount: 0, // Will be updated separately
+          followingCount: 0, // Will be updated separately
+        };
+        setUser(userWithCompat);
 
-      // Check if user is new and hasn't seen pricing modal yet
-      const createdAt = new Date(profile.created_at);
-      const now = new Date();
-      const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 3600);
-      if (hoursDiff < 1 && profile.role === 'free' && !localStorage.getItem(`pricing_shown_${profile.id}`)) {
-        setIsFirstLogin(true);
+        // Check if user is new and hasn't seen pricing modal yet
+        const createdAt = new Date(profile.created_at);
+        const now = new Date();
+        const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 3600);
+        if (hoursDiff < 1 && profile.role === 'free' && !localStorage.getItem(`pricing_shown_${profile.id}`)) {
+          setIsFirstLogin(true);
+        }
+      } else {
+        const basicUser = {
+          id: userId,
+          email: session?.user?.email || '',
+          username: session?.user?.email?.split('@')[0] || 'user',
+          avatar_url: null,
+          bio: null,
+          role: 'free' as const,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          avatar: null,
+          followersCount: 0,
+          followingCount: 0,
+        };
+        setUser(basicUser);
       }
-    } else {
-      const basicUser = {
-        id: userId,
-        email: session?.user?.email || '',
-        username: session?.user?.email?.split('@')[0] || 'user',
-        avatar_url: null,
-        bio: null,
-        role: 'free' as const,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        avatar: null,
-        followersCount,
-        followingCount,
-      };
-      setUser(basicUser);
+    } catch (err) {
+      console.error('Error fetching profile:', err);
     }
   };
 
@@ -66,7 +70,7 @@ export const useAuthState = () => {
 
         if (session?.user) {
           await fetchProfile(session.user.id);
-          console.log('AuthContext: Profile fetch result');
+          console.log('AuthContext: Profile fetch complete');
         } else {
           console.log('AuthContext: No session, clearing user');
           setUser(null);
@@ -87,7 +91,7 @@ export const useAuthState = () => {
 
         if (session?.user) {
           await fetchProfile(session.user.id);
-          console.log('AuthContext: Initial profile fetch result');
+          console.log('AuthContext: Initial profile fetch complete');
         } else {
           setUser(null);
         }
@@ -106,34 +110,38 @@ export const useAuthState = () => {
     setSession(null);
   };
 
-  // Update user counts when follow counts change (debounced)
+  // Update user counts when follow counts change (separated to avoid circular deps)
   useEffect(() => {
-    if (user && session?.user?.id && (user.followersCount !== followersCount || user.followingCount !== followingCount)) {
+    if (user && followersCount !== undefined && followingCount !== undefined) {
       setUser(prev => prev ? {
         ...prev,
         followersCount,
         followingCount,
       } : null);
     }
-  }, [followersCount, followingCount, session?.user?.id, user?.followersCount, user?.followingCount]);
+  }, [followersCount, followingCount, user?.id]); // Only depend on user.id, not the full user object
 
   const refreshUser = async () => {
     if (session?.user) {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .maybeSingle();
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .maybeSingle();
 
-      if (!error && profile) {
-        const userWithCompat = {
-          ...profile,
-          avatar: profile.avatar_url,
-          followersCount,
-          followingCount,
-        };
-        setUser(userWithCompat);
-        console.log('AuthContext: User refreshed', userWithCompat);
+        if (!error && profile) {
+          const userWithCompat = {
+            ...profile,
+            avatar: profile.avatar_url,
+            followersCount,
+            followingCount,
+          };
+          setUser(userWithCompat);
+          console.log('AuthContext: User refreshed');
+        }
+      } catch (err) {
+        console.error('Error refreshing user:', err);
       }
     }
   };
