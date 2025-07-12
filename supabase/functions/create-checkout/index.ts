@@ -40,8 +40,8 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { paymentType, challengeId } = await req.json();
-    logStep("Payment request", { paymentType, challengeId });
+    const { paymentType, challengeId, currency = 'usd' } = await req.json();
+    logStep("Payment request", { paymentType, challengeId, currency });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
@@ -53,6 +53,16 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
+    
+    // Currency and amount mapping
+    const currencyAmounts: Record<string, number> = {
+      'usd': 1000, // $10.00
+      'pln': 4000  // 40.00 PLN
+    };
+    
+    const amount = currencyAmounts[currency] || 1000;
+    logStep("Currency and amount", { currency, amount });
+    
     let session;
 
     if (paymentType === "subscription") {
@@ -63,9 +73,9 @@ serve(async (req) => {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: currency,
               product_data: { name: "Premium Subscription" },
-              unit_amount: 1000, // $10.00
+              unit_amount: amount,
               recurring: { interval: "month" },
             },
             quantity: 1,
@@ -83,7 +93,8 @@ serve(async (req) => {
       await supabaseClient.from("orders").insert({
         user_id: user.id,
         stripe_session_id: session.id,
-        amount: 1000,
+        amount: amount,
+        currency: currency,
         order_type: "subscription",
         status: "pending",
       });
@@ -96,9 +107,9 @@ serve(async (req) => {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: currency,
               product_data: { name: "Premium Challenge Access" },
-              unit_amount: 1000, // $10.00
+              unit_amount: amount,
             },
             quantity: 1,
           },
@@ -112,7 +123,8 @@ serve(async (req) => {
       await supabaseClient.from("orders").insert({
         user_id: user.id,
         stripe_session_id: session.id,
-        amount: 1000,
+        amount: amount,
+        currency: currency,
         order_type: "challenge",
         item_id: challengeId,
         status: "pending",

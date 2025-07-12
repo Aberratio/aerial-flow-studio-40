@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check, Crown, Users, BookOpen, Target, BarChart3, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +16,7 @@ interface PricingModalProps {
 
 export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [currency, setCurrency] = useState<'USD' | 'PLN'>('USD');
   const { toast } = useToast();
   const freeFeatures = [
     'Post updates to your feed',
@@ -33,11 +35,17 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
     'Priority support'
   ];
 
+  const getCurrencySymbol = () => currency === 'USD' ? '$' : 'zł';
+  const getPremiumPrice = () => currency === 'USD' ? '10' : '40';
+  
   const handleUpgradeClick = async () => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { paymentType: 'subscription' }
+        body: { 
+          paymentType: 'subscription',
+          currency: currency.toLowerCase()
+        }
       });
       
       if (error) throw error;
@@ -69,6 +77,17 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
           <p className="text-white/70 text-center text-sm sm:text-base">
             Start your aerial journey with the perfect plan for you
           </p>
+          <div className="flex justify-center mt-4">
+            <Select value={currency} onValueChange={(value: 'USD' | 'PLN') => setCurrency(value)}>
+              <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">USD ($)</SelectItem>
+                <SelectItem value="PLN">PLN (zł)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6">
@@ -83,7 +102,7 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
                 Perfect for getting started
               </CardDescription>
               <div className="mt-4">
-                <span className="text-2xl sm:text-3xl font-bold text-white">$0</span>
+                <span className="text-2xl sm:text-3xl font-bold text-white">{getCurrencySymbol()}0</span>
                 <span className="text-white/70 text-sm sm:text-base">/month</span>
               </div>
             </CardHeader>
@@ -120,7 +139,7 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
                 Unlock your full potential
               </CardDescription>
               <div className="mt-4">
-                <span className="text-2xl sm:text-3xl font-bold text-white">$10</span>
+                <span className="text-2xl sm:text-3xl font-bold text-white">{getCurrencySymbol()}{getPremiumPrice()}</span>
                 <span className="text-white/70 text-sm sm:text-base">/month</span>
               </div>
             </CardHeader>

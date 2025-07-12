@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Check, Crown, Star, Zap } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,13 +16,17 @@ interface PricingPlansModalProps {
 const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }) => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [currency, setCurrency] = useState<'USD' | 'PLN'>('USD');
   const { toast } = useToast();
+
+  const getCurrencySymbol = () => currency === 'USD' ? '$' : 'zł';
+  const getPremiumPrice = () => currency === 'USD' ? '10' : '40';
 
   const plans = [
     {
       id: 'free',
       name: 'Free',
-      price: '$0',
+      price: `${getCurrencySymbol()}0`,
       period: 'forever',
       description: 'Perfect for getting started with basic training',
       features: [
@@ -39,7 +44,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
     {
       id: 'premium',
       name: 'Premium',
-      price: '$10',
+      price: `${getCurrencySymbol()}${getPremiumPrice()}`,
       period: 'per month',
       description: 'Unlock advanced features and unlimited access',
       features: [
@@ -73,7 +78,10 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
 
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { paymentType: 'subscription' }
+        body: { 
+          paymentType: 'subscription',
+          currency: currency.toLowerCase()
+        }
       });
       
       if (error) throw error;
@@ -103,6 +111,17 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
           <p className="text-muted-foreground text-center text-sm sm:text-base">
             Upgrade your training experience with premium features
           </p>
+          <div className="flex justify-center mt-4">
+            <Select value={currency} onValueChange={(value: 'USD' | 'PLN') => setCurrency(value)}>
+              <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USD">USD ($)</SelectItem>
+                <SelectItem value="PLN">PLN (zł)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6">
