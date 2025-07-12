@@ -16,6 +16,7 @@ import { useMutualFriends } from '@/hooks/useMutualFriends';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfilePreviewModal } from '@/components/ProfilePreviewModal';
 import { FriendInviteModal } from '@/components/FriendInviteModal';
+import AppLayout from '@/components/Layout/AppLayout';
 
 const FriendProfile = () => {
   const { user } = useAuth();
@@ -350,7 +351,8 @@ const FriendProfile = () => {
     );
   }
 
-  return (
+  // Logged-in user content wrapped in AppLayout
+  const loggedInContent = (
     <div className="min-h-screen p-3 sm:p-6">
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
         {/* Profile Header */}
@@ -551,6 +553,12 @@ const FriendProfile = () => {
         profileName={profileData?.username || ''}
       />
     </div>
+  );
+
+  return (
+    <AppLayout>
+      {loggedInContent}
+    </AppLayout>
   );
 };
 
