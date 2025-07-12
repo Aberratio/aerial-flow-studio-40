@@ -61,37 +61,37 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl bg-black/95 border-white/10">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-black/95 border-white/10 mx-4">
         <DialogHeader>
-          <DialogTitle className="text-white text-center text-2xl">
+          <DialogTitle className="text-white text-center text-xl sm:text-2xl">
             Choose Your Plan
           </DialogTitle>
-          <p className="text-white/70 text-center">
+          <p className="text-white/70 text-center text-sm sm:text-base">
             Start your aerial journey with the perfect plan for you
           </p>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
           {/* Free Plan */}
           <Card className="bg-white/5 border-white/10 relative">
-            <CardHeader className="text-center">
+            <CardHeader className="text-center p-4 sm:p-6">
               <div className="flex items-center justify-center mb-2">
-                <Users className="w-8 h-8 text-purple-400" />
+                <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
               </div>
-              <CardTitle className="text-white text-2xl">Free</CardTitle>
-              <CardDescription className="text-white/70">
+              <CardTitle className="text-white text-xl sm:text-2xl">Free</CardTitle>
+              <CardDescription className="text-white/70 text-sm sm:text-base">
                 Perfect for getting started
               </CardDescription>
               <div className="mt-4">
-                <span className="text-3xl font-bold text-white">$0</span>
-                <span className="text-white/70">/month</span>
+                <span className="text-2xl sm:text-3xl font-bold text-white">$0</span>
+                <span className="text-white/70 text-sm sm:text-base">/month</span>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 sm:p-6">
               <ul className="space-y-3">
                 {freeFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-center text-white/80">
-                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                  <li key={index} className="flex items-center text-white/80 text-sm sm:text-base">
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
@@ -99,7 +99,7 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
               <Button
                 onClick={onClose}
                 variant="outline"
-                className="w-full border-white/20 text-white hover:bg-white/10"
+                className="w-full border-white/20 text-white hover:bg-white/10 text-sm sm:text-base py-2 sm:py-3"
               >
                 Continue with Free
               </Button>
@@ -108,27 +108,27 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
 
           {/* Premium Plan */}
           <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/50 relative">
-            <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+            <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
               RECOMMENDED
             </Badge>
-            <CardHeader className="text-center">
+            <CardHeader className="text-center p-4 sm:p-6">
               <div className="flex items-center justify-center mb-2">
-                <Crown className="w-8 h-8 text-yellow-400" />
+                <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
               </div>
-              <CardTitle className="text-white text-2xl">Premium</CardTitle>
-              <CardDescription className="text-white/70">
+              <CardTitle className="text-white text-xl sm:text-2xl">Premium</CardTitle>
+              <CardDescription className="text-white/70 text-sm sm:text-base">
                 Unlock your full potential
               </CardDescription>
               <div className="mt-4">
-                <span className="text-3xl font-bold text-white">$10</span>
-                <span className="text-white/70">/month</span>
+                <span className="text-2xl sm:text-3xl font-bold text-white">$10</span>
+                <span className="text-white/70 text-sm sm:text-base">/month</span>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 sm:p-6">
               <ul className="space-y-3">
                 {premiumFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-center text-white/80">
-                    <Check className="w-5 h-5 text-green-400 mr-3 flex-shrink-0" />
+                  <li key={index} className="flex items-center text-white/80 text-sm sm:text-base">
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
@@ -136,7 +136,7 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
               <Button
                 onClick={handleUpgradeClick}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-sm sm:text-base py-2 sm:py-3"
               >
                 {isLoading ? 'Processing...' : 'Upgrade to Premium'}
               </Button>

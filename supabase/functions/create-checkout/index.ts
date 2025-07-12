@@ -95,7 +95,7 @@ serve(async (req) => {
             price_data: {
               currency: "usd",
               product_data: { name: "Premium Challenge Access" },
-              unit_amount: 999, // $9.99
+              unit_amount: 1000, // $10.00
             },
             quantity: 1,
           },
@@ -109,7 +109,7 @@ serve(async (req) => {
       await supabaseClient.from("orders").insert({
         user_id: user.id,
         stripe_session_id: session.id,
-        amount: 999,
+        amount: 1000,
         order_type: "challenge",
         item_id: challengeId,
         status: "pending",

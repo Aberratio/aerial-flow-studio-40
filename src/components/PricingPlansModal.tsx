@@ -97,15 +97,15 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl glass-effect border-white/10 text-white">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white mx-4">
         <DialogHeader>
-          <DialogTitle className="text-2xl gradient-text text-center">Choose Your Plan</DialogTitle>
-          <p className="text-muted-foreground text-center">
+          <DialogTitle className="text-xl sm:text-2xl gradient-text text-center">Choose Your Plan</DialogTitle>
+          <p className="text-muted-foreground text-center text-sm sm:text-base">
             Upgrade your training experience with premium features
           </p>
         </DialogHeader>
 
-        <div className="grid md:grid-cols-2 gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = plan.current;
@@ -124,28 +124,28 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                   </div>
                 )}
                 
-                <CardHeader className="text-center">
-                  <div className={`w-16 h-16 mx-auto mb-4 rounded-full ${plan.bgColor} flex items-center justify-center`}>
-                    <Icon className={`w-8 h-8 ${plan.color}`} />
+                <CardHeader className="text-center p-4 sm:p-6">
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full ${plan.bgColor} flex items-center justify-center`}>
+                    <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${plan.color}`} />
                   </div>
-                  <CardTitle className="text-white">{plan.name}</CardTitle>
+                  <CardTitle className="text-white text-lg sm:text-xl">{plan.name}</CardTitle>
                   <div className="space-y-1">
-                    <div className="text-3xl font-bold text-white">
+                    <div className="text-2xl sm:text-3xl font-bold text-white">
                       {plan.price}
-                      <span className="text-lg font-normal text-muted-foreground">
+                      <span className="text-sm sm:text-lg font-normal text-muted-foreground">
                         /{plan.period}
                       </span>
                     </div>
-                    <p className="text-muted-foreground text-sm">{plan.description}</p>
+                    <p className="text-muted-foreground text-xs sm:text-sm">{plan.description}</p>
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 p-4 sm:p-6">
                   <ul className="space-y-3">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center gap-3">
-                        <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <span className="text-sm text-muted-foreground">{feature}</span>
+                        <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm text-muted-foreground">{feature}</span>
                       </li>
                     ))}
                   </ul>
@@ -153,7 +153,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                   <Button
                     onClick={() => handlePlanSelect(plan.id)}
                     disabled={isCurrentPlan || isLoading}
-                    className={`w-full ${
+                    className={`w-full text-sm sm:text-base py-2 sm:py-3 ${
                       plan.popular 
                         ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600' 
                         : 'bg-white/10 hover:bg-white/20 border border-white/20'
