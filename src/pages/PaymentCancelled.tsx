@@ -35,7 +35,8 @@ const PaymentCancelled = () => {
             
             <Button
               onClick={() => navigate('/pricing')}
-              className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+              variant="primary"
+              className="w-full"
             >
               View Pricing Again
             </Button>

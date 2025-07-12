@@ -105,7 +105,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
           </p>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = plan.current;
@@ -153,10 +153,9 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                   <Button
                     onClick={() => handlePlanSelect(plan.id)}
                     disabled={isCurrentPlan || isLoading}
+                    variant={plan.popular ? "primary" : "outline"}
                     className={`w-full text-sm sm:text-base py-2 sm:py-3 ${
-                      plan.popular 
-                        ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600' 
-                        : 'bg-white/10 hover:bg-white/20 border border-white/20'
+                      !plan.popular ? 'border-white/20 text-white hover:bg-white/20' : ''
                     }`}
                   >
                     {isLoading && isSelected ? (

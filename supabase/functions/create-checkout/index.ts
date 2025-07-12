@@ -56,7 +56,7 @@ serve(async (req) => {
     let session;
 
     if (paymentType === "subscription") {
-      // Create subscription checkout
+      // Create subscription checkout with 7-day free trial
       session = await stripe.checkout.sessions.create({
         customer: customerId,
         customer_email: customerId ? undefined : user.email,
@@ -72,6 +72,9 @@ serve(async (req) => {
           },
         ],
         mode: "subscription",
+        subscription_data: {
+          trial_period_days: 7,
+        },
         success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${origin}/payment-cancelled`,
       });

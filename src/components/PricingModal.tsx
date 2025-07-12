@@ -71,7 +71,7 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
           </p>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-6">
           {/* Free Plan */}
           <Card className="bg-white/5 border-white/10 relative">
             <CardHeader className="text-center p-4 sm:p-6">
@@ -136,7 +136,8 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
               <Button
                 onClick={handleUpgradeClick}
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-sm sm:text-base py-2 sm:py-3"
+                variant="primary"
+                className="w-full text-sm sm:text-base py-2 sm:py-3"
               >
                 {isLoading ? 'Processing...' : 'Upgrade to Premium'}
               </Button>
