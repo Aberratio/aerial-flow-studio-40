@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Users, UserPlus, Check, X, UserMinus, Share2, LogIn, UserPlus2, Eye } from 'lucide-react';
+import { Heart, MessageCircle, Users, UserPlus, Check, X, UserMinus, Share2, LogIn, UserPlus2, Eye, ArrowLeft, Menu } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ShareProfileModal } from '@/components/ShareProfileModal';
+import Navigation from '@/components/Layout/Navigation';
 import { useProfilePreviewData } from '@/hooks/useProfilePreviewData';
 import { useFollowCounts } from '@/hooks/useFollowCounts';
 import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
@@ -27,8 +29,9 @@ const FriendProfile = () => {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState<any>(null);
-  const [publicPosts, setPublicPosts] = useState<any[]>([]);
+  const [allPosts, setAllPosts] = useState<any[]>([]);
   const [privacyFilter, setPrivacyFilter] = useState('all');
+  const [isNavigationOpen, setIsNavigationOpen] = useState(false);
 
   const { followersCount, followingCount } = useFollowCounts(id || '');
   const { mutualCount } = useMutualFriends(user?.id || '', id || '');
@@ -57,8 +60,8 @@ const FriendProfile = () => {
         if (profileError) throw profileError;
         setProfileData(profile);
 
-        // Fetch public posts
-        const { data: posts, error: postsError } = await supabase
+        // Fetch posts based on privacy filter and user relationship
+        let postsQuery = supabase
           .from('posts')
           .select(`
             *,
@@ -68,9 +71,34 @@ const FriendProfile = () => {
             )
           `)
           .eq('user_id', id)
-          .eq('privacy', 'public')
           .order('created_at', { ascending: false })
           .limit(20);
+
+        // Apply privacy filter for own profile or public access
+        if (user?.id === id) {
+          // Own profile - apply privacy filter
+          if (privacyFilter === 'public') {
+            postsQuery = postsQuery.eq('privacy', 'public');
+          } else if (privacyFilter === 'friends') {
+            postsQuery = postsQuery.eq('privacy', 'friends');
+          }
+          // 'all' shows everything for own profile
+        } else if (!user) {
+          // Not logged in - only show public
+          postsQuery = postsQuery.eq('privacy', 'public');
+        } else {
+          // Other user's profile - check friendship status
+          const areFriends = await checkFriendshipStatus(user.id, id);
+          if (areFriends) {
+            // Friends can see public and friends posts
+            postsQuery = postsQuery.in('privacy', ['public', 'friends']);
+          } else {
+            // Non-friends can only see public posts
+            postsQuery = postsQuery.eq('privacy', 'public');
+          }
+        }
+
+        const { data: posts, error: postsError } = await postsQuery;
 
         if (postsError) throw postsError;
 
@@ -104,7 +132,7 @@ const FriendProfile = () => {
           })
         );
 
-        setPublicPosts(postsWithCounts);
+        setAllPosts(postsWithCounts);
       } catch (error) {
         console.error('Error fetching profile data:', error);
         toast({
@@ -117,8 +145,22 @@ const FriendProfile = () => {
       }
     };
 
+    // Helper function to check friendship status
+    const checkFriendshipStatus = async (userId1: string, userId2: string) => {
+      try {
+        const { data } = await supabase.rpc('are_users_friends', {
+          user1_id: userId1,
+          user2_id: userId2
+        });
+        return data || false;
+      } catch (error) {
+        console.error('Error checking friendship status:', error);
+        return false;
+      }
+    };
+
     fetchProfileData();
-  }, [id]);
+  }, [id, user, privacyFilter, toast]);
 
   const handleSendFriendRequest = async () => {
     const success = await sendFriendRequest();
@@ -207,7 +249,7 @@ const FriendProfile = () => {
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="text-center">
-                      <div className="gradient-text text-2xl font-bold">{publicPosts.length}</div>
+                      <div className="gradient-text text-2xl font-bold">{allPosts.length}</div>
                       <div className="text-muted-foreground text-sm">Posts</div>
                     </div>
                     <div className="text-center">
@@ -251,12 +293,12 @@ const FriendProfile = () => {
           </Card>
 
           {/* Public Posts */}
-          {publicPosts.length > 0 && (
+          {allPosts.length > 0 && (
             <Card className="glass-effect border-white/10">
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold text-white mb-6">Public Posts</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {publicPosts.slice(0, 6).map((post) => (
+                  {allPosts.slice(0, 6).map((post) => (
                     <div key={post.id} className="relative group">
                       <div className="aspect-square rounded-lg overflow-hidden">
                         {post.image_url ? (
@@ -287,7 +329,7 @@ const FriendProfile = () => {
                     </div>
                   ))}
                 </div>
-                {publicPosts.length > 6 && (
+                {allPosts.length > 6 && (
                   <div className="text-center mt-6">
                     <p className="text-muted-foreground">
                       Sign up to see more posts from {profileData?.username}
@@ -312,6 +354,29 @@ const FriendProfile = () => {
 
   return (
     <div className="min-h-screen p-3 sm:p-6">
+      {/* Header with Back Button and Menu */}
+      <div className="flex items-center justify-between mb-6">
+        <Button
+          variant="ghost"
+          onClick={() => navigate(-1)}
+          className="text-white hover:bg-white/10"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+        
+        <Sheet open={isNavigationOpen} onOpenChange={setIsNavigationOpen}>
+          <SheetTrigger asChild>
+            <Button variant="ghost" className="text-white hover:bg-white/10">
+              <Menu className="w-5 h-5" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="right" className="w-80 p-0">
+            <Navigation isOpen={isNavigationOpen} onClose={() => setIsNavigationOpen(false)} />
+          </SheetContent>
+        </Sheet>
+      </div>
+
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
         {/* Profile Header */}
         <Card className="glass-effect border-white/10">
@@ -345,7 +410,7 @@ const FriendProfile = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="text-center">
-                    <div className="gradient-text text-2xl font-bold">{publicPosts.length}</div>
+                    <div className="gradient-text text-2xl font-bold">{allPosts.length}</div>
                     <div className="text-muted-foreground text-sm">Posts</div>
                   </div>
                   <div className="text-center">
@@ -423,12 +488,19 @@ const FriendProfile = () => {
         </Card>
 
         {/* Posts */}
-        {publicPosts.length > 0 && (
+        {allPosts.length > 0 && (
           <Card className="glass-effect border-white/10">
             <CardContent className="p-6">
-              <h3 className="text-xl font-semibold text-white mb-6">Posts</h3>
+              <h3 className="text-xl font-semibold text-white mb-6">
+                Posts 
+                {user?.id === id && privacyFilter !== 'all' && (
+                  <span className="text-sm text-muted-foreground ml-2">
+                    ({privacyFilter === 'public' ? 'Public Only' : 'Friends Only'})
+                  </span>
+                )}
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {publicPosts.map((post) => (
+                {allPosts.map((post) => (
                   <div 
                     key={post.id} 
                     className="relative group cursor-pointer"
@@ -475,6 +547,17 @@ const FriendProfile = () => {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* No posts message for filtered views */}
+        {allPosts.length === 0 && user?.id === id && privacyFilter !== 'all' && (
+          <Card className="glass-effect border-white/10">
+            <CardContent className="p-6 text-center">
+              <p className="text-muted-foreground">
+                No {privacyFilter === 'public' ? 'public' : 'friends-only'} posts to show.
+              </p>
             </CardContent>
           </Card>
         )}
