@@ -421,48 +421,91 @@ const FriendProfile = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex space-x-2">
+                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
                   {/* Only show Add Friend and Follow buttons if NOT viewing own profile */}
                   {user?.id !== id && (
                     <>
-                      <Button 
-                        onClick={handleSendFriendRequest}
-                        variant="primary"
-                      >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        Add Friend
-                      </Button>
-                      {isFollowing ? (
+                      <div className="hidden sm:flex space-x-2">
                         <Button 
-                          variant="outline" 
-                          onClick={handleUnfollow}
-                          className="border-white/20 text-white hover:bg-white/10"
-                        >
-                          <UserMinus className="w-4 h-4 mr-2" />
-                          Unfollow
-                        </Button>
-                      ) : (
-                        <Button 
-                          variant="outline" 
-                          onClick={handleFollow}
-                          className="border-white/20 text-white hover:bg-white/10"
+                          onClick={handleSendFriendRequest}
+                          variant="primary"
                         >
                           <UserPlus className="w-4 h-4 mr-2" />
-                          Follow
+                          Add Friend
                         </Button>
-                      )}
+                        {isFollowing ? (
+                          <Button 
+                            variant="outline" 
+                            onClick={handleUnfollow}
+                            className="border-white/20 text-white hover:bg-white/10"
+                          >
+                            <UserMinus className="w-4 h-4 mr-2" />
+                            Unfollow
+                          </Button>
+                        ) : (
+                          <Button 
+                            variant="outline" 
+                            onClick={handleFollow}
+                            className="border-white/20 text-white hover:bg-white/10"
+                          >
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Follow
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {/* Mobile buttons */}
+                      <div className="flex space-x-4 sm:hidden">
+                        <div className="flex flex-col items-center">
+                          <Button 
+                            onClick={handleSendFriendRequest}
+                            variant="primary"
+                            size="icon"
+                            className="w-12 h-12"
+                          >
+                            <UserPlus className="w-5 h-5" />
+                          </Button>
+                          <span className="text-xs text-white/80 mt-1">Add</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                          <Button 
+                            variant="outline" 
+                            onClick={isFollowing ? handleUnfollow : handleFollow}
+                            size="icon"
+                            className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
+                          >
+                            {isFollowing ? <UserMinus className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
+                          </Button>
+                          <span className="text-xs text-white/80 mt-1">
+                            {isFollowing ? 'Unfollow' : 'Follow'}
+                          </span>
+                        </div>
+                      </div>
                     </>
                   )}
 
                   {/* Share Button */}
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setIsShareModalOpen(true)}
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                  </Button>
+                  <div className="hidden sm:flex">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsShareModalOpen(true)}
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share
+                    </Button>
+                  </div>
+                  <div className="flex flex-col items-center sm:hidden">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setIsShareModalOpen(true)}
+                      size="icon"
+                      className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
+                    >
+                      <Share2 className="w-5 h-5" />
+                    </Button>
+                    <span className="text-xs text-white/80 mt-1">Share</span>
+                  </div>
                 </div>
               </div>
             </div>
