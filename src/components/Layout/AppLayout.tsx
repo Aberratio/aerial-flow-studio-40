@@ -36,7 +36,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {isMobile && (
         <Button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="fixed top-4 left-4 z-[60] bg-black/50 backdrop-blur-sm border border-white/10 text-white hover:bg-black/70"
+          className="fixed top-4 left-4 z-[70] bg-black/50 backdrop-blur-sm border border-white/10 text-white hover:bg-black/70"
           size="sm"
         >
           {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}

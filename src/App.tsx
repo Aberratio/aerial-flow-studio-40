@@ -34,6 +34,7 @@ import ExerciseDetail from "@/pages/ExerciseDetail";
 import AchievementManagement from "@/pages/AchievementManagement";
 import TranslationManagement from "@/pages/TranslationManagement";
 import LandingPageManagement from "@/pages/LandingPageManagement";
+import SiteSettings from "@/pages/SiteSettings";
 import PremiumRoute from "@/components/PremiumRoute";
 
 const queryClient = new QueryClient();
@@ -206,6 +207,11 @@ const AppRoutes = () => {
       <Route path="/admin/landing-page" element={
         <ProtectedRoute>
           <LandingPageManagement />
+        </ProtectedRoute>
+      } />
+      <Route path="/admin/site-settings" element={
+        <ProtectedRoute>
+          <SiteSettings />
         </ProtectedRoute>
       } />
       <Route path="*" element={<NotFound />} />

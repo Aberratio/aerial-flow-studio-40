@@ -107,6 +107,10 @@ const Navigation: React.FC<NavigationProps> = ({
     path: '/admin/landing-page',
     icon: Globe,
     label: t('nav.landing_page')
+  }, {
+    path: '/admin/site-settings',
+    icon: Settings,
+    label: 'Site Settings'
   }] : [];
   const isActive = (path: string) => location.pathname === path;
   return <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
