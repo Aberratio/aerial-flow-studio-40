@@ -48,10 +48,14 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
     // Check if customer exists
+    logStep("Checking for existing customer", { email: user.email });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
+      logStep("Found existing customer", { customerId });
+    } else {
+      logStep("No existing customer found, will create during checkout");
     }
 
     const origin = req.headers.get("origin") || "http://localhost:3000";
@@ -98,7 +102,13 @@ serve(async (req) => {
       }
 
       logStep("Creating subscription session", { currency, amount, paymentMethods: sessionConfig.payment_method_types });
-      session = await stripe.checkout.sessions.create(sessionConfig);
+      try {
+        session = await stripe.checkout.sessions.create(sessionConfig);
+        logStep("Subscription session created successfully", { sessionId: session.id });
+      } catch (stripeError) {
+        logStep("Failed to create subscription session", { error: stripeError.message, code: stripeError.code });
+        throw stripeError;
+      }
 
       // Create Supabase service client for order recording
       const supabaseService = createClient(
@@ -144,7 +154,13 @@ serve(async (req) => {
       }
 
       logStep("Creating challenge payment session", { currency, amount, paymentMethods: sessionConfig.payment_method_types });
-      session = await stripe.checkout.sessions.create(sessionConfig);
+      try {
+        session = await stripe.checkout.sessions.create(sessionConfig);
+        logStep("Challenge payment session created successfully", { sessionId: session.id });
+      } catch (stripeError) {
+        logStep("Failed to create challenge payment session", { error: stripeError.message, code: stripeError.code });
+        throw stripeError;
+      }
 
       // Create Supabase service client for order recording
       const supabaseService = createClient(
