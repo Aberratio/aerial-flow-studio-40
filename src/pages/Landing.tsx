@@ -1,24 +1,20 @@
-
 import React, { useState, useEffect } from 'react';
-import { ChevronRight, Zap, Users, Trophy, BookOpen, ArrowRight, Sparkles, Star, Heart, Globe, ChevronDown } from 'lucide-react';
+import { ChevronRight, Zap, Users, Trophy, BookOpen, ArrowRight, Sparkles, Star, Heart, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import AuthModal from '@/components/Auth/AuthModal';
 import { supabase } from '@/integrations/supabase/client';
 import IguanaLogo from '@/assets/iguana-logo.svg';
-
 interface LandingPageContent {
   [key: string]: string;
 }
-
 interface Language {
   id: string;
   name: string;
   native_name: string;
   is_default: boolean;
 }
-
 interface PricingPlan {
   id: string;
   plan_key: string;
@@ -28,13 +24,11 @@ interface PricingPlan {
   is_popular: boolean;
   features: PricingFeature[];
 }
-
 interface PricingFeature {
   feature_key: string;
   is_included: boolean;
   feature_text: string;
 }
-
 const Landing = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -68,7 +62,6 @@ const Landing = () => {
       loadPricingPlans();
     }
   }, [currentLanguage, languages]);
-
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
@@ -80,14 +73,13 @@ const Landing = () => {
       setAllDataLoaded(true);
     }
   }, [isContentLoaded, heroImage, pricingPlans, languages]);
-
   const loadLanguagesAndContent = async () => {
     try {
-      const { data: languagesData } = await supabase
-        .from('languages')
-        .select('*')
-        .order('is_default', { ascending: false });
-
+      const {
+        data: languagesData
+      } = await supabase.from('languages').select('*').order('is_default', {
+        ascending: false
+      });
       if (languagesData) {
         setLanguages(languagesData);
       }
@@ -95,15 +87,11 @@ const Landing = () => {
       console.error('Error loading languages:', error);
     }
   };
-
   const loadHeroImage = async () => {
     try {
-      const { data: heroSection } = await supabase
-        .from('landing_page_sections')
-        .select('image_url')
-        .eq('section_key', 'hero')
-        .single();
-
+      const {
+        data: heroSection
+      } = await supabase.from('landing_page_sections').select('image_url').eq('section_key', 'hero').single();
       if (heroSection?.image_url) {
         setHeroImage(heroSection.image_url);
       }
@@ -111,14 +99,11 @@ const Landing = () => {
       console.error('Error loading hero image:', error);
     }
   };
-
   const loadContent = async (languageId: string) => {
     try {
-      const { data: contentData } = await supabase
-        .from('landing_page_content')
-        .select('content_key, content_value')
-        .eq('language_id', languageId);
-
+      const {
+        data: contentData
+      } = await supabase.from('landing_page_content').select('content_key, content_value').eq('language_id', languageId);
       if (contentData) {
         const contentMap: LandingPageContent = {};
         contentData.forEach(item => {
@@ -132,58 +117,42 @@ const Landing = () => {
       setIsContentLoaded(true); // Still show fallback content
     }
   };
-
   const loadPricingPlans = async () => {
     try {
-      const { data: plansData } = await supabase
-        .from('pricing_plans')
-        .select(`
+      const {
+        data: plansData
+      } = await supabase.from('pricing_plans').select(`
           *,
           pricing_plan_features (
             feature_key,
             is_included,
             display_order
           )
-        `)
-        .order('display_order');
-
+        `).order('display_order');
       if (plansData) {
-        const plansWithFeatures = await Promise.all(
-          plansData.map(async (plan) => {
-            // Get plan translation
-            const { data: planTranslation } = await supabase
-              .from('pricing_plan_translations')
-              .select('name, description')
-              .eq('plan_id', plan.id)
-              .eq('language_id', currentLanguage)
-              .single();
+        const plansWithFeatures = await Promise.all(plansData.map(async plan => {
+          // Get plan translation
+          const {
+            data: planTranslation
+          } = await supabase.from('pricing_plan_translations').select('name, description').eq('plan_id', plan.id).eq('language_id', currentLanguage).single();
 
-            // Get feature translations
-            const featuresWithTranslations = await Promise.all(
-              plan.pricing_plan_features.map(async (feature: any) => {
-                const { data: featureTranslation } = await supabase
-                  .from('pricing_feature_translations')
-                  .select('feature_text')
-                  .eq('feature_key', feature.feature_key)
-                  .eq('language_id', currentLanguage)
-                  .single();
-
-                return {
-                  ...feature,
-                  feature_text: featureTranslation?.feature_text || feature.feature_key
-                };
-              })
-            );
-
+          // Get feature translations
+          const featuresWithTranslations = await Promise.all(plan.pricing_plan_features.map(async (feature: any) => {
+            const {
+              data: featureTranslation
+            } = await supabase.from('pricing_feature_translations').select('feature_text').eq('feature_key', feature.feature_key).eq('language_id', currentLanguage).single();
             return {
-              ...plan,
-              name: planTranslation?.name || plan.name,
-              description: planTranslation?.description || plan.description,
-              features: featuresWithTranslations.sort((a, b) => a.display_order - b.display_order)
+              ...feature,
+              feature_text: featureTranslation?.feature_text || feature.feature_key
             };
-          })
-        );
-
+          }));
+          return {
+            ...plan,
+            name: planTranslation?.name || plan.name,
+            description: planTranslation?.description || plan.description,
+            features: featuresWithTranslations.sort((a, b) => a.display_order - b.display_order)
+          };
+        }));
         setPricingPlans(plansWithFeatures);
       }
     } catch (error) {
@@ -199,65 +168,59 @@ const Landing = () => {
   // Helper function to render text with gradient spans
   const renderTextWithGradient = (text: string) => {
     if (!text) return text;
-    
+
     // Look for text wrapped in [gradient]...[/gradient] tags
     const parts = text.split(/(\[gradient\].*?\[\/gradient\])/g);
-    
     return parts.map((part, index) => {
       if (part.startsWith('[gradient]') && part.endsWith('[/gradient]')) {
         const gradientText = part.replace(/\[gradient\]|\[\/gradient\]/g, '');
-        return (
-          <span key={index} className="gradient-text-mega">
+        return <span key={index} className="gradient-text-mega">
             {gradientText}
-          </span>
-        );
+          </span>;
       }
       return part;
     });
   };
-
-  const features = [
-    {
-      icon: Users,
-      title: 'Connect & Share',
-      description: 'Follow other aerial athletes, share your progress, and get inspired by the community.',
-      accent: 'tropical'
-    },
-    {
-      icon: BookOpen,
-      title: 'Comprehensive Library',
-      description: 'Access hundreds of aerial figures with detailed instructions and progressions.',
-      accent: 'primary'
-    },
-    {
-      icon: Trophy,
-      title: 'Take on Challenges',
-      description: 'Join structured training programs and track your improvement over time.',
-      accent: 'tropical'
-    },
-    {
-      icon: Zap,
-      title: 'Track Progress',
-      description: 'Log your training sessions and see your aerial journey unfold.',
-      accent: 'primary'
-    },
-  ];
-
-  const stats = [
-    { value: '10K+', label: 'Active Athletes' },
-    { value: '500+', label: 'Aerial Figures' },
-    { value: '50+', label: 'Challenges' },
-    { value: '95%', label: 'Success Rate' },
-  ];
-
+  const features = [{
+    icon: Users,
+    title: 'Connect & Share',
+    description: 'Follow other aerial athletes, share your progress, and get inspired by the community.',
+    accent: 'tropical'
+  }, {
+    icon: BookOpen,
+    title: 'Comprehensive Library',
+    description: 'Access hundreds of aerial figures with detailed instructions and progressions.',
+    accent: 'primary'
+  }, {
+    icon: Trophy,
+    title: 'Take on Challenges',
+    description: 'Join structured training programs and track your improvement over time.',
+    accent: 'tropical'
+  }, {
+    icon: Zap,
+    title: 'Track Progress',
+    description: 'Log your training sessions and see your aerial journey unfold.',
+    accent: 'primary'
+  }];
+  const stats = [{
+    value: '10K+',
+    label: 'Active Athletes'
+  }, {
+    value: '500+',
+    label: 'Aerial Figures'
+  }, {
+    value: '50+',
+    label: 'Challenges'
+  }, {
+    value: '95%',
+    label: 'Success Rate'
+  }];
   const openAuth = (mode: 'login' | 'register' = 'login') => {
     setAuthMode(mode);
     setAuthModalOpen(true);
   };
-
   if (!allDataLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
+    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
         <div className="text-center space-y-6">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
@@ -272,12 +235,9 @@ const Landing = () => {
           </div>
           <p className="text-muted-foreground animate-pulse">Loading your aerial journey...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen relative overflow-hidden parallax-bg">
+  return <div className="min-h-screen relative overflow-hidden parallax-bg">
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="hero-particle"></div>
@@ -303,35 +263,22 @@ const Landing = () => {
           </div>
           
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
-            {languages.length > 0 && (
-              <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-                <SelectTrigger className="w-[60px] h-[40px] sm:w-[90px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
+            {languages.length > 0 && <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
+                <SelectTrigger className="w-[50px] h-[40px] sm:w-[120px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-2 sm:p-3">
                   <Globe className="w-4 h-4" />
-                  <ChevronDown className="w-3 h-3 ml-1" />
+                  
                 </SelectTrigger>
                 <SelectContent>
-                  {languages.map((lang) => (
-                    <SelectItem key={lang.id} value={lang.id}>
-                      <span className="font-medium">{lang.id === 'pl' ? 'PL' : 'EN'}</span>
-                      <span className="text-muted-foreground ml-2">({lang.native_name})</span>
-                    </SelectItem>
-                  ))}
+                  {languages.map(lang => <SelectItem key={lang.id} value={lang.id}>
+                      {lang.native_name}
+                    </SelectItem>)}
                 </SelectContent>
-              </Select>
-            )}
-            <Button 
-              variant="ghost" 
-              onClick={() => openAuth('login')}
-              className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-2 sm:px-4 glass-effect transition-all duration-300"
-            >
+              </Select>}
+            <Button variant="ghost" onClick={() => openAuth('login')} className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-2 sm:px-4 glass-effect transition-all duration-300">
               <span className="hidden sm:inline">{getContent('nav_sign_in', 'Sign In')}</span>
               <span className="sm:hidden">Log In</span>
             </Button>
-            <Button 
-              variant="primary"
-              onClick={() => openAuth('register')}
-              className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4"
-            >
+            <Button variant="primary" onClick={() => openAuth('register')} className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4">
               <span className="hidden sm:inline">
                 <Sparkles className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
               </span>
@@ -361,12 +308,7 @@ const Landing = () => {
               </div>
               
               <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0 transition-all duration-1000 animation-delay-600 ${isLoaded ? 'animate-bounce-in' : 'opacity-0 scale-75'}`}>
-                <Button 
-                  variant="primary"
-                  size="lg"
-                  onClick={() => openAuth('register')}
-                  className="text-base sm:text-lg px-6 sm:px-8"
-                >
+                <Button variant="primary" size="lg" onClick={() => openAuth('register')} className="text-base sm:text-lg px-6 sm:px-8">
                   <Star className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                   {getContent('button_text', 'Start Training Free')}
                   <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
@@ -395,11 +337,7 @@ const Landing = () => {
 
             <div className={`relative order-first lg:order-last transition-all duration-1000 animation-delay-1000 ${isLoaded ? 'animate-scale-in floating' : 'opacity-0 scale-75'}`}>
               <div className="relative z-10">
-                <img
-                  src={heroImage || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"}
-                  alt="Aerial athlete performing on silks"
-                  className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense pulse-glow"
-                />
+                <img src={heroImage || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"} alt="Aerial athlete performing on silks" className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense pulse-glow" />
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
               
@@ -426,16 +364,11 @@ const Landing = () => {
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {features.map((feature, index) => {
-              const Icon = feature.icon;
-              const isEven = index % 2 === 0;
-              const accentColor = feature.accent === 'tropical' ? 'from-emerald-600 via-teal-600 to-cyan-600' : 'from-purple-500 via-violet-500 to-indigo-500';
-              const glowClass = feature.accent === 'tropical' ? 'pulse-glow-tropical' : 'pulse-glow';
-              
-              return (
-                <Card 
-                  key={index} 
-                  className={`glass-effect-intense border-white/20 card-hover-effect group animate-fade-in-up animation-delay-${(index + 1) * 200}`}
-                >
+            const Icon = feature.icon;
+            const isEven = index % 2 === 0;
+            const accentColor = feature.accent === 'tropical' ? 'from-emerald-600 via-teal-600 to-cyan-600' : 'from-purple-500 via-violet-500 to-indigo-500';
+            const glowClass = feature.accent === 'tropical' ? 'pulse-glow-tropical' : 'pulse-glow';
+            return <Card key={index} className={`glass-effect-intense border-white/20 card-hover-effect group animate-fade-in-up animation-delay-${(index + 1) * 200}`}>
                   <CardContent className="p-6 sm:p-8 text-center">
                     <div className={`w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r ${accentColor} rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6 group-hover:scale-110 transition-all duration-500 ${glowClass} floating`}>
                       <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
@@ -447,9 +380,8 @@ const Landing = () => {
                       {getContent(`feature_${index + 1}_description`, feature.description)}
                     </p>
                   </CardContent>
-                </Card>
-              );
-            })}
+                </Card>;
+          })}
           </div>
         </div>
       </section>
@@ -467,19 +399,13 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
-            {pricingPlans.map((plan, index) => (
-              <Card 
-                key={plan.id} 
-                className={`glass-effect-intense border-white/20 p-6 sm:p-8 relative card-hover-effect animate-fade-in-up animation-delay-${(index + 1) * 200} ${plan.is_popular ? 'pulse-glow' : ''}`}
-              >
-                {plan.is_popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
+            {pricingPlans.map((plan, index) => <Card key={plan.id} className={`glass-effect-intense border-white/20 p-6 sm:p-8 relative card-hover-effect animate-fade-in-up animation-delay-${(index + 1) * 200} ${plan.is_popular ? 'pulse-glow' : ''}`}>
+                {plan.is_popular && <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                     <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 px-3 sm:px-4 py-1 rounded-full text-xs sm:text-sm font-semibold pulse-glow-tropical floating">
                       <Heart className="inline-block w-3 h-3 mr-1" />
                       Most Popular
                     </div>
-                  </div>
-                )}
+                  </div>}
                 <CardContent className="space-y-4 sm:space-y-6">
                   <div className="text-center">
                     <h3 className={`text-xl sm:text-2xl font-bold text-white mb-2 ${plan.is_popular ? 'gradient-text-mega' : 'gradient-text'}`}>
@@ -494,29 +420,21 @@ const Landing = () => {
                   </div>
                   
                   <ul className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={feature.feature_key} className="flex items-center text-white">
+                    {plan.features.map((feature, featureIndex) => <li key={feature.feature_key} className="flex items-center text-white">
                         <div className={`w-5 h-5 ${feature.is_included ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-500'} rounded-full flex items-center justify-center mr-3`}>
                           <span className="text-xs">{feature.is_included ? '✓' : '✕'}</span>
                         </div>
                         <span className={feature.is_included ? 'text-white' : 'text-gray-400'}>
                           {feature.feature_text}
                         </span>
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
 
-                  <Button 
-                    variant="primary"
-                    size="lg"
-                    onClick={() => openAuth('register')}
-                    className="w-full"
-                  >
+                  <Button variant="primary" size="lg" onClick={() => openAuth('register')} className="w-full">
                     {plan.plan_key === 'free' ? 'Get Started Free' : 'Start Premium Trial'}
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -532,12 +450,7 @@ const Landing = () => {
               <p className="text-base sm:text-xl text-muted-foreground px-4 animate-fade-in-up animation-delay-200">
                 {getContent('cta_subtitle', 'Join thousands of aerial athletes who are already using IguanaFlow to reach new heights in their practice.')}
               </p>
-              <Button 
-                variant="primary"
-                size="lg"
-                onClick={() => openAuth('register')}
-                className="text-base sm:text-lg px-8 sm:px-12 animate-bounce-in animation-delay-400 w-full sm:w-auto mx-auto"
-              >
+              <Button variant="primary" size="lg" onClick={() => openAuth('register')} className="text-base sm:text-lg px-8 sm:px-12 animate-bounce-in animation-delay-400 w-full sm:w-auto mx-auto">
                 <Sparkles className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                 {getContent('cta_button', 'Get Started Today')}
                 <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
@@ -547,14 +460,7 @@ const Landing = () => {
         </div>
       </section>
 
-      <AuthModal 
-        open={authModalOpen}
-        onOpenChange={setAuthModalOpen}
-        mode={authMode}
-        onModeChange={setAuthMode}
-      />
-    </div>
-  );
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} mode={authMode} onModeChange={setAuthMode} />
+    </div>;
 };
-
 export default Landing;
