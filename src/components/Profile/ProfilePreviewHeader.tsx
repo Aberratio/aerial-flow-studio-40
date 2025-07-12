@@ -55,9 +55,11 @@ export const ProfilePreviewHeader = ({
         <h2 className="text-2xl font-bold text-white">{profile.username}</h2>
         {profile.bio && <p className="text-muted-foreground">{profile.bio}</p>}
         <div className="flex items-center space-x-4 mt-2">
-          <Badge variant="secondary" className="bg-primary/20 text-primary">
-            {profile.role === 'trainer' ? 'Trainer' : 'Member'}
-          </Badge>
+          {profile.role === 'trainer' && (
+            <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black">
+              Trainer
+            </Badge>
+          )}
         </div>
       </div>
       <div className="flex gap-2">

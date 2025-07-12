@@ -53,7 +53,7 @@ export const FriendsSection: React.FC<FriendsSectionProps> = ({ refreshTrigger }
         id: friend?.id || '',
         username: friend?.username || '',
         avatar: friend?.avatar_url || null,
-        level: friend?.role === 'trainer' ? 'Trainer' : 'Member'
+        level: friend?.role === 'trainer' ? 'Trainer' : ''
       }));
 
       setFriends(friendsData);

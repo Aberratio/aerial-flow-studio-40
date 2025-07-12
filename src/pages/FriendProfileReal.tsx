@@ -267,14 +267,26 @@ const FriendProfile = () => {
 
     if (isFriend) {
       return (
-        <Button 
-          variant="outline" 
-          className="border-green-500/30 text-green-400 hover:bg-green-500/10"
-          onClick={() => setShowRemoveFriendModal(true)}
-        >
-          <Users className="w-4 h-4 mr-2" />
-          Friends
-        </Button>
+        <div className="flex space-x-2">
+          <Button 
+            variant="outline" 
+            className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+            onClick={() => setShowRemoveFriendModal(true)}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Friends
+          </Button>
+          {isFollowing && (
+            <Button 
+              onClick={handleUnfollow}
+              variant="outline"
+              className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Unfollow
+            </Button>
+          )}
+        </div>
       );
     }
 
@@ -289,23 +301,62 @@ const FriendProfile = () => {
             Accept
           </Button>
           <Button 
-            variant="outline" 
+            variant="destructive" 
             onClick={handleRejectFriend}
-            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
           >
             <X className="w-4 h-4 mr-2" />
             Reject
           </Button>
+          {isFollowing ? (
+            <Button 
+              onClick={handleUnfollow}
+              variant="outline"
+              className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Unfollow
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleFollow}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Follow
+            </Button>
+          )}
         </div>
       );
     }
 
     if (pendingFriendRequest === 'sent') {
       return (
-        <Button disabled variant="outline" className="border-yellow-500/30 text-yellow-400">
-          <Clock className="w-4 h-4 mr-2" />
-          Request Sent
-        </Button>
+        <div className="flex space-x-2">
+          <Button disabled variant="outline" className="border-yellow-500/30 text-yellow-400">
+            <Clock className="w-4 h-4 mr-2" />
+            Request Sent
+          </Button>
+          {isFollowing ? (
+            <Button 
+              onClick={handleUnfollow}
+              variant="outline"
+              className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Unfollow
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleFollow}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              <UserPlus className="w-4 h-4 mr-2" />
+              Follow
+            </Button>
+          )}
+        </div>
       );
     }
 
@@ -373,12 +424,14 @@ const FriendProfile = () => {
               {/* Profile Info */}
               <div className="flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
-                  <h1 className="text-3xl font-bold text-white">{friendData.username}</h1>
-                  <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
-                    <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500">
-                      {friendData.role === 'trainer' ? 'Trainer' : 'Member'}
-                    </Badge>
-                  </div>
+                   <h1 className="text-3xl font-bold text-white">{friendData.username}</h1>
+                   {friendData.role === 'trainer' && (
+                     <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
+                       <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black">
+                         Trainer
+                       </Badge>
+                     </div>
+                   )}
                 </div>
 
                 {friendData.bio && <p className="text-muted-foreground mb-6">{friendData.bio}</p>}
@@ -444,9 +497,24 @@ const FriendProfile = () => {
             </div> : <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               {friendPosts.map((post: any) => <div key={post.id} className="relative group cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
                   <div className="aspect-square rounded-lg overflow-hidden">
-                    {post.image ? <img src={post.image} alt="Friend post" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" /> : <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                        <MessageCircle className="w-8 h-8 text-muted-foreground" />
-                      </div>}
+                    {post.image ? <img src={post.image} alt="Friend post" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" /> : post.video ? (
+                      <div className="relative w-full h-full">
+                        <video 
+                          src={post.video}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                          <MessageCircle className="w-8 h-8 text-white" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-white/10 flex flex-col items-center justify-center p-4">
+                        <MessageCircle className="w-8 h-8 text-purple-400 mb-2" />
+                        <p className="text-xs text-center text-white/70 leading-tight">
+                          {post.content.length > 60 ? `${post.content.substring(0, 60)}...` : post.content}
+                        </p>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Hover Overlay */}

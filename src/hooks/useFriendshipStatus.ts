@@ -29,8 +29,9 @@ export const useFriendshipStatus = (userId: string) => {
         // Check friendship status
         const { data: friendshipData } = await supabase
           .from('friendships')
-          .select('status, requester_id')
+          .select('status, requester_id, rejected_at')
           .or(`and(requester_id.eq.${user.id},addressee_id.eq.${userId}),and(requester_id.eq.${userId},addressee_id.eq.${user.id})`)
+          .is('rejected_at', null) // Only get non-rejected friendships
           .maybeSingle();
 
         // Check following status
@@ -168,9 +169,13 @@ export const useFriendshipStatus = (userId: string) => {
     if (!user || !userId) return false;
 
     try {
+      // Mark as rejected instead of deleting
       const { error } = await supabase
         .from('friendships')
-        .delete()
+        .update({ 
+          status: 'rejected',
+          rejected_at: new Date().toISOString()
+        })
         .eq('requester_id', userId)
         .eq('addressee_id', user.id);
 

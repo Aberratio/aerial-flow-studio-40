@@ -380,6 +380,7 @@ export type Database = {
           addressee_id: string
           created_at: string
           id: string
+          rejected_at: string | null
           requester_id: string
           status: string
           updated_at: string
@@ -388,6 +389,7 @@ export type Database = {
           addressee_id: string
           created_at?: string
           id?: string
+          rejected_at?: string | null
           requester_id: string
           status?: string
           updated_at?: string
@@ -396,6 +398,7 @@ export type Database = {
           addressee_id?: string
           created_at?: string
           id?: string
+          rejected_at?: string | null
           requester_id?: string
           status?: string
           updated_at?: string
