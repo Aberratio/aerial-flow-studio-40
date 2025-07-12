@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AuthModalProps {
   open: boolean;
@@ -19,6 +20,7 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeChange }) => {
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -42,14 +44,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
     try {
       await signIn(formData.email, formData.password);
       toast({
-        title: "Welcome back!",
-        description: "You have been successfully signed in.",
+        title: t('auth_welcome_back') || "Welcome back!",
+        description: t('auth_signin_success') || "You have been successfully signed in.",
       });
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: "Sign in failed",
-        description: error.message || "Please check your credentials and try again.",
+        title: t('auth_signin_failed') || "Sign in failed",
+        description: error.message || t('auth_check_credentials') || "Please check your credentials and try again.",
         variant: "destructive",
       });
     } finally {
@@ -62,8 +64,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
     
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Password mismatch",
-        description: "Passwords do not match. Please try again.",
+        title: t('auth_password_mismatch') || "Password mismatch",
+        description: t('auth_passwords_no_match') || "Passwords do not match. Please try again.",
         variant: "destructive",
       });
       return;
@@ -74,14 +76,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
     try {
       await signUp(formData.email, formData.password, formData.username);
       toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
+        title: t('auth_account_created') || "Account created!",
+        description: t('auth_verify_email') || "Please check your email to verify your account.",
       });
       onOpenChange(false);
     } catch (error: any) {
       toast({
-        title: "Sign up failed",
-        description: error.message || "Please try again.",
+        title: t('auth_signup_failed') || "Sign up failed",
+        description: error.message || t('auth_try_again') || "Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -93,23 +95,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm">
         <DialogHeader>
-          <DialogTitle className="text-white text-center">Welcome to Aerial</DialogTitle>
+          <DialogTitle className="text-white text-center">{t('auth_welcome') || 'Welcome to IguanaFlow'}</DialogTitle>
         </DialogHeader>
 
         <Tabs value={mode} onValueChange={onModeChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-white/5">
             <TabsTrigger value="login" className="text-white data-[state=active]:bg-white/10">
-              Sign In
+              {t('auth_signin') || 'Sign In'}
             </TabsTrigger>
             <TabsTrigger value="register" className="text-white data-[state=active]:bg-white/10">
-              Sign Up
+              {t('auth_signup') || 'Sign Up'}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="login" className="space-y-4">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
-                <Label htmlFor="email" className="text-white">Email</Label>
+                <Label htmlFor="email" className="text-white">{t('auth_email') || 'Email'}</Label>
                 <Input
                   id="email"
                   name="email"
@@ -117,13 +119,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                   value={formData.email}
                   onChange={handleInputChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Enter your email"
+                  placeholder={t('auth_enter_email') || 'Enter your email'}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="password" className="text-white">Password</Label>
+                <Label htmlFor="password" className="text-white">{t('auth_password') || 'Password'}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -132,7 +134,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                     value={formData.password}
                     onChange={handleInputChange}
                     className="bg-white/5 border-white/10 text-white placeholder:text-white/60 pr-10"
-                    placeholder="Enter your password"
+                    placeholder={t('auth_enter_password') || 'Enter your password'}
                     required
                   />
                   <Button
@@ -156,10 +158,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Signing in...
+                    {t('auth_signing_in') || 'Signing in...'}
                   </>
                 ) : (
-                  'Sign In'
+                  t('auth_signin') || 'Sign In'
                 )}
               </Button>
             </form>
@@ -168,7 +170,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
           <TabsContent value="register" className="space-y-4">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div>
-                <Label htmlFor="signup-email" className="text-white">Email</Label>
+                <Label htmlFor="signup-email" className="text-white">{t('auth_email') || 'Email'}</Label>
                 <Input
                   id="signup-email"
                   name="email"
@@ -176,13 +178,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                   value={formData.email}
                   onChange={handleInputChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Enter your email"
+                  placeholder={t('auth_enter_email') || 'Enter your email'}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="username" className="text-white">Username</Label>
+                <Label htmlFor="username" className="text-white">{t('auth_username') || 'Username'}</Label>
                 <Input
                   id="username"
                   name="username"
@@ -190,13 +192,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                   value={formData.username}
                   onChange={handleInputChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Choose a username"
+                  placeholder={t('auth_choose_username') || 'Choose a username'}
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="signup-password" className="text-white">Password</Label>
+                <Label htmlFor="signup-password" className="text-white">{t('auth_password') || 'Password'}</Label>
                 <div className="relative">
                   <Input
                     id="signup-password"
@@ -205,7 +207,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                     value={formData.password}
                     onChange={handleInputChange}
                     className="bg-white/5 border-white/10 text-white placeholder:text-white/60 pr-10"
-                    placeholder="Create a password"
+                    placeholder={t('auth_create_password') || 'Create a password'}
                     required
                   />
                   <Button
@@ -221,7 +223,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-white">{t('auth_confirm_password') || 'Confirm Password'}</Label>
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -229,7 +231,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Confirm your password"
+                  placeholder={t('auth_confirm_password_placeholder') || 'Confirm your password'}
                   required
                 />
               </div>
@@ -243,10 +245,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating account...
+                    {t('auth_creating_account') || 'Creating account...'}
                   </>
                 ) : (
-                  'Create Account'
+                  t('auth_create_account') || 'Create Account'
                 )}
               </Button>
             </form>
