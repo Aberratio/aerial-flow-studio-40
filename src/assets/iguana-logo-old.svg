@@ -1,0 +1,24 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Iguana body -->
+  <path d="M8 20C8 20 12 16 16 16C20 16 24 20 24 20C24 20 22 24 16 24C10 24 8 20 8 20Z" fill="url(#purpleGradient)" />
+  
+  <!-- Iguana head -->
+  <circle cx="16" cy="12" r="6" fill="url(#purpleGradient)" />
+  
+  <!-- Iguana tail -->
+  <path d="M24 20C24 20 28 18 30 16C28 20 26 22 24 20Z" fill="url(#purpleGradient)" />
+  
+  <!-- Iguana spikes -->
+  <path d="M12 8L14 4L16 8L18 4L20 8" stroke="url(#purpleGradient)" stroke-width="2" fill="none" />
+  
+  <!-- Eye -->
+  <circle cx="18" cy="10" r="1.5" fill="white" />
+</svg>
