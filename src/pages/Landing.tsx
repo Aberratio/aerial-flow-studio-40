@@ -453,8 +453,8 @@ const Landing = () => {
                   
                   <ul className="space-y-3">
                     {plan.features.map((feature, featureIndex) => <li key={feature.feature_key} className="flex items-center text-white">
-                        <div className={`w-5 h-5 ${feature.is_included ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-500'} rounded-full flex items-center justify-center mr-3`}>
-                          <span className="text-xs">{feature.is_included ? '✓' : '✕'}</span>
+                        <div className={`w-5 h-5 min-w-[1.25rem] min-h-[1.25rem] ${feature.is_included ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-gray-500'} rounded-full flex items-center justify-center mr-3`}>
+                          <span className="text-xs font-bold">{feature.is_included ? '✓' : '✕'}</span>
                         </div>
                         <span className={feature.is_included ? 'text-white' : 'text-gray-400'}>
                           {feature.feature_text}

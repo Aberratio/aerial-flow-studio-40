@@ -105,8 +105,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm text-white mx-4 sm:mx-auto"
-        style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+      <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white">
         <DialogHeader>
           <DialogTitle className="text-xl sm:text-2xl text-white text-center">Choose Your Plan</DialogTitle>
           <p className="text-white/70 text-center text-sm sm:text-base">
@@ -125,7 +124,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-8 mt-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-6">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = plan.current;
@@ -164,7 +163,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                   <ul className="space-y-3">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center gap-3">
-                        <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />
+                        <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
                         <span className="text-xs sm:text-sm text-white/80">{feature}</span>
                       </li>
                     ))}
