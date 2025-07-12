@@ -95,10 +95,10 @@ serve(async (req) => {
         cancel_url: `${origin}/payment-cancelled`,
       };
 
-      // Add payment method types for PLN currency (Google Pay instead of P24 for subscriptions, BLIK not supported)
+      // Add payment method types for PLN currency (Revolut Pay for subscriptions, BLIK not supported)
       if (currency === 'pln') {
-        sessionConfig.payment_method_types = ['card', 'google_pay'];
-        logStep("PLN currency detected for subscription, adding Google Pay payment method");
+        sessionConfig.payment_method_types = ['card', 'revolut_pay'];
+        logStep("PLN currency detected for subscription, adding Revolut Pay payment method");
       }
 
       logStep("Creating subscription session", { currency, amount, paymentMethods: sessionConfig.payment_method_types });
@@ -147,10 +147,10 @@ serve(async (req) => {
         cancel_url: `${origin}/payment-cancelled`,
       };
 
-      // Add payment method types for PLN currency to enable BLIK and Google Pay
+      // Add payment method types for PLN currency to enable BLIK and Revolut Pay
       if (currency === 'pln') {
-        sessionConfig.payment_method_types = ['card', 'blik', 'google_pay'];
-        logStep("PLN currency detected for challenge payment, adding BLIK and Google Pay payment methods");
+        sessionConfig.payment_method_types = ['card', 'blik', 'revolut_pay'];
+        logStep("PLN currency detected for challenge payment, adding BLIK and Revolut Pay payment methods");
       }
 
       logStep("Creating challenge payment session", { currency, amount, paymentMethods: sessionConfig.payment_method_types });
