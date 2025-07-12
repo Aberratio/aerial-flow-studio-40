@@ -159,7 +159,11 @@ const AppRoutes = () => {
           <MyJourney />
         </ProtectedRoute>
       } />
-      <Route path="/profile/:id" element={<FriendProfile />} />
+      <Route path="/profile/:id" element={
+        <ProtectedRoute>
+          <FriendProfile />
+        </ProtectedRoute>
+      } />
       <Route path="/friends" element={
         <ProtectedRoute>
           <Friends />

@@ -1,16 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Users, UserPlus, Check, X, UserMinus, Share2, LogIn, UserPlus2, Eye, ArrowLeft, Menu } from 'lucide-react';
+import { Heart, MessageCircle, Users, UserPlus, Check, X, UserMinus, Share2, LogIn, UserPlus2, Eye } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { ShareProfileModal } from '@/components/ShareProfileModal';
-import Navigation from '@/components/Layout/Navigation';
 import { useProfilePreviewData } from '@/hooks/useProfilePreviewData';
 import { useFollowCounts } from '@/hooks/useFollowCounts';
 import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
@@ -31,7 +29,6 @@ const FriendProfile = () => {
   const [profileData, setProfileData] = useState<any>(null);
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [privacyFilter, setPrivacyFilter] = useState('all');
-  const [isNavigationOpen, setIsNavigationOpen] = useState(false);
 
   const { followersCount, followingCount } = useFollowCounts(id || '');
   const { mutualCount } = useMutualFriends(user?.id || '', id || '');
@@ -354,29 +351,6 @@ const FriendProfile = () => {
 
   return (
     <div className="min-h-screen p-3 sm:p-6">
-      {/* Header with Back Button and Menu */}
-      <div className="flex items-center justify-between mb-6">
-        <Button
-          variant="ghost"
-          onClick={() => navigate(-1)}
-          className="text-white hover:bg-white/10"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        
-        <Sheet open={isNavigationOpen} onOpenChange={setIsNavigationOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" className="text-white hover:bg-white/10">
-              <Menu className="w-5 h-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-80 p-0">
-            <Navigation isOpen={isNavigationOpen} onClose={() => setIsNavigationOpen(false)} />
-          </SheetContent>
-        </Sheet>
-      </div>
-
       <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
         {/* Profile Header */}
         <Card className="glass-effect border-white/10">
