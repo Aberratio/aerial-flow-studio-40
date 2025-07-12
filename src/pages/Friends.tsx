@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { FriendInviteModal } from '@/components/FriendInviteModal';
 import { NewFriendRequestsModal } from '@/components/NewFriendRequestsModal';
+import { NewPendingRequestsSection } from '@/components/NewPendingRequestsSection';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -162,25 +163,7 @@ const Friends = () => {
         </div>
 
         {/* Pending Requests Section */}
-        {pendingRequestsCount > 0 && <Card className="glass-effect border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center justify-between">
-                Pending Friend Requests 
-                <Badge className="bg-primary/20 text-primary">{pendingRequestsCount}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* This will be populated by the friend requests data */}
-                <p className="text-muted-foreground text-sm">
-                  You have {pendingRequestsCount} pending friend request{pendingRequestsCount !== 1 ? 's' : ''}. 
-                  <Button variant="link" className="p-0 h-auto text-primary hover:text-primary/80" onClick={() => setShowFriendRequests(true)}>
-                    View all requests
-                  </Button>
-                </p>
-              </div>
-            </CardContent>
-          </Card>}
+        <NewPendingRequestsSection onFriendsUpdated={handleFriendsUpdated} />
 
         {/* Friends List or Empty State */}
         <Card className="glass-effect border-white/10">
@@ -206,7 +189,7 @@ const Friends = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-white text-sm sm:text-base truncate">{friend.username}</h4>
-                      <p className="text-muted-foreground text-xs sm:text-sm truncate">{friend.bio}</p>
+                      <p className="text-muted-foreground text-xs sm:text-sm truncate">{friend.bio || 'Aerial enthusiast'}</p>
                     </div>
                      <div className="flex-shrink-0">
                        <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-3" onClick={e => {

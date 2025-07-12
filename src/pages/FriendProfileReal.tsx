@@ -13,6 +13,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useFollowCounts } from '@/hooks/useFollowCounts';
 import { useMutualFriends } from '@/hooks/useMutualFriends';
 import { useUserAchievements } from '@/hooks/useUserAchievements';
+import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
+import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 const FriendProfile = () => {
   const {
     id
@@ -27,10 +29,10 @@ const FriendProfile = () => {
     toast
   } = useToast();
   const [activeTab, setActiveTab] = useState('posts');
-  const [friendshipStatus, setFriendshipStatus] = useState('loading');
   const [friendData, setFriendData] = useState<any>(null);
   const [friendPosts, setFriendPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showRemoveFriendModal, setShowRemoveFriendModal] = useState(false);
 
   // Get friend's follow counts
   const {
@@ -48,6 +50,20 @@ const FriendProfile = () => {
     achievements
   } = useUserAchievements();
 
+  // Get friendship status and actions
+  const {
+    isFriend,
+    isFollowing,
+    pendingFriendRequest,
+    loading: friendshipLoading,
+    sendFriendRequest,
+    acceptFriendRequest,
+    rejectFriendRequest,
+    removeFriend,
+    followUser,
+    unfollowUser
+  } = useFriendshipStatus(id || '');
+
   // Fetch friend's profile data
   useEffect(() => {
     const fetchFriendData = async () => {
@@ -62,14 +78,8 @@ const FriendProfile = () => {
         } = await supabase.from('profiles').select('*').eq('id', id).single();
         if (profileError) throw profileError;
 
-        // Check friendship status using the new friendships table
-        const {
-          data: friendshipData
-        } = await supabase.from('friendships').select('status').or(`and(requester_id.eq.${user.id},addressee_id.eq.${id}),and(requester_id.eq.${id},addressee_id.eq.${user.id})`).maybeSingle();
-        let status = 'not_friends';
-        if (friendshipData) {
-          status = friendshipData.status === 'accepted' ? 'friends' : 'pending';
-        }
+        // Check if they are friends to determine which posts to show
+        const isFriendsWithUser = isFriend;
 
         // Get friend's posts (public and friends-only if they are friends)
         let postsQuery = supabase.from('posts').select(`
@@ -83,7 +93,7 @@ const FriendProfile = () => {
         }).limit(12);
 
         // If they are friends, include both public and friends-only posts
-        if (status === 'friends') {
+        if (isFriendsWithUser) {
           postsQuery = postsQuery.in('privacy', ['public', 'friends']);
         } else {
           postsQuery = postsQuery.eq('privacy', 'public');
@@ -129,7 +139,6 @@ const FriendProfile = () => {
           isVerified: profile.role === 'trainer' || profile.role === 'admin'
         });
         setFriendPosts(postsWithCounts);
-        setFriendshipStatus(status);
       } catch (error) {
         console.error('Error fetching friend data:', error);
         toast({
@@ -142,45 +151,100 @@ const FriendProfile = () => {
       }
     };
     fetchFriendData();
-  }, [id, user]);
-  const handleAddFriend = async () => {
-    if (!user || !id) return;
-    try {
-      const {
-        error
-      } = await supabase.from('friendships').insert({
-        requester_id: user.id,
-        addressee_id: id,
-        status: 'pending'
-      });
-      if (error) throw error;
+  }, [id, user, isFriend]);
 
-      // Create activity notification for the recipient
-      const {
-        error: activityError
-      } = await supabase.from('user_activities').insert({
-        user_id: id,
-        activity_type: 'friend_request',
-        activity_data: {
-          requester_id: user.id,
-          requester_username: user.username
-        },
-        target_user_id: user.id,
-        points_awarded: 0
-      });
-      if (activityError) {
-        console.error('Error creating friend request activity:', activityError);
-      }
-      setFriendshipStatus('pending');
+  const handleAddFriend = async () => {
+    const success = await sendFriendRequest();
+    if (success) {
       toast({
         title: "Friend Request Sent",
         description: `Your friend request has been sent to ${friendData?.username}`
       });
-    } catch (error) {
-      console.error('Error sending friend request:', error);
+    } else {
       toast({
         title: "Error",
         description: "Failed to send friend request.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleAcceptFriend = async () => {
+    const success = await acceptFriendRequest();
+    if (success) {
+      toast({
+        title: "Friend Request Accepted",
+        description: `You and ${friendData?.username} are now friends!`
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to accept friend request.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRejectFriend = async () => {
+    const success = await rejectFriendRequest();
+    if (success) {
+      toast({
+        title: "Friend Request Rejected",
+        description: `You rejected ${friendData?.username}'s friend request.`
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to reject friend request.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleRemoveFriend = async () => {
+    const success = await removeFriend();
+    if (success) {
+      setShowRemoveFriendModal(false);
+      toast({
+        title: "Friend Removed",
+        description: `You are no longer friends with ${friendData?.username}.`
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to remove friend.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleFollow = async () => {
+    const success = await followUser();
+    if (success) {
+      toast({
+        title: "Now Following",
+        description: `You are now following ${friendData?.username}.`
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to follow user.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleUnfollow = async () => {
+    const success = await unfollowUser();
+    if (success) {
+      toast({
+        title: "Unfollowed",
+        description: `You are no longer following ${friendData?.username}.`
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to unfollow user.",
         variant: "destructive"
       });
     }
@@ -191,26 +255,74 @@ const FriendProfile = () => {
       description: "Direct messaging will be available soon!"
     });
   };
-  const renderActionButton = () => {
-    switch (friendshipStatus) {
-      case 'not_friends':
-        return <Button onClick={handleAddFriend} className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Add Friend
-          </Button>;
-      case 'pending':
-        return <Button disabled variant="outline" className="border-yellow-500/30 text-yellow-400">
-            <Clock className="w-4 h-4 mr-2" />
-            Request Sent
-          </Button>;
-      case 'friends':
-        return <Button variant="outline" className="border-green-500/30 text-green-400">
-            <Check className="w-4 h-4 mr-2" />
-            Friends
-          </Button>;
-      default:
-        return null;
+  const renderActionButtons = () => {
+    if (friendshipLoading) {
+      return (
+        <Button disabled variant="outline">
+          <div className="w-4 h-4 animate-spin border border-white border-t-transparent rounded-full mr-2" />
+          Loading...
+        </Button>
+      );
     }
+
+    if (isFriend) {
+      return (
+        <Button 
+          variant="outline" 
+          className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+          onClick={() => setShowRemoveFriendModal(true)}
+        >
+          <Users className="w-4 h-4 mr-2" />
+          Friends
+        </Button>
+      );
+    }
+
+    if (pendingFriendRequest === 'received') {
+      return (
+        <div className="flex space-x-2">
+          <Button 
+            onClick={handleAcceptFriend}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            <Check className="w-4 h-4 mr-2" />
+            Accept
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleRejectFriend}
+            className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+          >
+            <X className="w-4 h-4 mr-2" />
+            Reject
+          </Button>
+        </div>
+      );
+    }
+
+    if (pendingFriendRequest === 'sent') {
+      return (
+        <Button disabled variant="outline" className="border-yellow-500/30 text-yellow-400">
+          <Clock className="w-4 h-4 mr-2" />
+          Request Sent
+        </Button>
+      );
+    }
+
+    // Not friends - show follow/unfollow button
+    return (
+      <Button 
+        onClick={isFollowing ? handleUnfollow : handleFollow}
+        variant={isFollowing ? "outline" : "default"}
+        className={isFollowing 
+          ? "border-blue-500/30 text-blue-400 hover:bg-blue-500/10" 
+          : "bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+        }
+      >
+        <UserPlus className="w-4 h-4 mr-2" />
+        {isFollowing ? 'Following' : 'Follow'}
+      </Button>
+    );
   };
   if (loading || !friendData) {
     return <div className="min-h-screen p-6 flex items-center justify-center">
@@ -273,7 +385,7 @@ const FriendProfile = () => {
                 {/* Action Buttons */}
                 {user?.id !== id && (
                   <div className="flex space-x-3">
-                    {renderActionButton()}
+                    {renderActionButtons()}
                   </div>
                 )}
               </div>
@@ -351,8 +463,17 @@ const FriendProfile = () => {
                   <div className="text-muted-foreground text-sm mb-3">{achievement.description}</div>
                   <div className="text-purple-400 font-bold text-lg">+{achievement.points} pts</div>
                 </div>)}
-            </div>)}
+             </div>)}
       </div>
+
+      {/* Remove Friend Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={showRemoveFriendModal}
+        onClose={() => setShowRemoveFriendModal(false)}
+        onConfirm={handleRemoveFriend}
+        title="Remove Friend"
+        description={`Are you sure you want to remove ${friendData?.username} from your friends? You will no longer be able to see their friends-only content and they won't see yours.`}
+      />
     </div>;
 };
 export default FriendProfile;

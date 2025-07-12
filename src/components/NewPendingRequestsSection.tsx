@@ -232,14 +232,18 @@ export const NewPendingRequestsSection: React.FC<NewPendingRequestsSectionProps>
             <h3 className="text-sm font-medium text-white">Received Requests</h3>
             {receivedRequests.map((request) => (
               <div key={request.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
-                <div className="flex items-center space-x-3">
+                <div 
+                  className="flex items-center space-x-3 cursor-pointer flex-1"
+                  onClick={() => window.location.href = `/profile/${request.user.id}`}
+                >
                   <Avatar>
                     <AvatarImage src={request.user.avatar_url || undefined} />
                     <AvatarFallback>{request.user.username[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium text-white">{request.user.username}</p>
-                    <p className="text-sm text-muted-foreground">{request.timestamp}</p>
+                    <p className="text-sm text-muted-foreground">{request.user.bio || 'Aerial enthusiast'}</p>
+                    <p className="text-xs text-muted-foreground">{request.timestamp}</p>
                   </div>
                 </div>
                 <div className="flex space-x-2">
@@ -270,14 +274,18 @@ export const NewPendingRequestsSection: React.FC<NewPendingRequestsSectionProps>
             <h3 className="text-sm font-medium text-white">Sent Requests</h3>
             {sentRequests.map((request) => (
               <div key={request.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/10">
-                <div className="flex items-center space-x-3">
+                <div 
+                  className="flex items-center space-x-3 cursor-pointer flex-1"
+                  onClick={() => window.location.href = `/profile/${request.user.id}`}
+                >
                   <Avatar>
                     <AvatarImage src={request.user.avatar_url || undefined} />
                     <AvatarFallback>{request.user.username[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
                   <div>
                     <p className="font-medium text-white">{request.user.username}</p>
-                    <p className="text-sm text-muted-foreground">Sent {request.timestamp}</p>
+                    <p className="text-sm text-muted-foreground">{request.user.bio || 'Aerial enthusiast'}</p>
+                    <p className="text-xs text-muted-foreground">Sent {request.timestamp}</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
