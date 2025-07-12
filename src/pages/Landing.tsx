@@ -45,6 +45,7 @@ const Landing = () => {
   const [isContentLoaded, setIsContentLoaded] = useState(false);
   const [heroImage, setHeroImage] = useState<string | null>(null);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
+  const [allDataLoaded, setAllDataLoaded] = useState(false);
 
   // Detect browser language
   useEffect(() => {
@@ -69,8 +70,16 @@ const Landing = () => {
   }, [currentLanguage, languages]);
 
   useEffect(() => {
-    setIsLoaded(true);
+    const timer = setTimeout(() => setIsLoaded(true), 100);
+    return () => clearTimeout(timer);
   }, []);
+
+  // Check if all data is loaded
+  useEffect(() => {
+    if (isContentLoaded && heroImage !== null && pricingPlans.length > 0 && languages.length > 0) {
+      setAllDataLoaded(true);
+    }
+  }, [isContentLoaded, heroImage, pricingPlans, languages]);
 
   const loadLanguagesAndContent = async () => {
     try {
@@ -246,6 +255,27 @@ const Landing = () => {
     setAuthModalOpen(true);
   };
 
+  if (!allDataLoaded) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
+        <div className="text-center space-y-6">
+          <div className="relative">
+            <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
+            <div className="absolute inset-0 w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin animation-delay-200 mx-auto"></div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-8 h-8 animate-pulse" />
+            <span className="font-bold text-2xl">
+              <span className="text-white">Iguana</span>
+              <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">Flow</span>
+            </span>
+          </div>
+          <p className="text-muted-foreground animate-pulse">Loading your aerial journey...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen relative overflow-hidden parallax-bg">
       {/* Animated Background Particles */}
@@ -275,8 +305,8 @@ const Landing = () => {
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             {languages.length > 0 && (
               <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-                <SelectTrigger className="w-[32px] sm:w-[120px] bg-white/10 border-white/20 text-white text-xs sm:text-sm">
-                  <Globe className="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+                <SelectTrigger className="w-[40px] h-[40px] sm:w-[120px] sm:h-auto bg-white/10 border-white/20 text-white text-xs sm:text-sm p-0 sm:p-3">
+                  <Globe className="w-4 h-4 sm:mr-1" />
                   <span className="hidden sm:inline">
                     <SelectValue />
                   </span>
@@ -293,10 +323,10 @@ const Landing = () => {
             <Button 
               variant="ghost" 
               onClick={() => openAuth('login')}
-              className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-1 sm:px-2 md:px-4 glass-effect transition-all duration-300"
+              className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-2 sm:px-4 glass-effect transition-all duration-300"
             >
               <span className="hidden sm:inline">{getContent('nav_sign_in', 'Sign In')}</span>
-              <span className="sm:hidden">In</span>
+              <span className="sm:hidden">Log In</span>
             </Button>
             <Button 
               variant="primary"
@@ -507,7 +537,7 @@ const Landing = () => {
                 variant="primary"
                 size="lg"
                 onClick={() => openAuth('register')}
-                className="text-base sm:text-lg px-8 sm:px-12 animate-bounce-in animation-delay-400"
+                className="text-base sm:text-lg px-8 sm:px-12 animate-bounce-in animation-delay-400 w-full sm:w-auto mx-auto"
               >
                 <Sparkles className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
                 {getContent('cta_button', 'Get Started Today')}
