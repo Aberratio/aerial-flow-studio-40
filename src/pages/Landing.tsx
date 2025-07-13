@@ -293,7 +293,7 @@ const Landing = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative px-4 sm:px-6 pt-12 sm:pt-20 pb-16 sm:pb-32 z-10">
+      <section className="relative px-4 sm:px-6 pt-5 sm:pt-20 pb-16 sm:pb-32 z-10">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
@@ -492,7 +492,7 @@ const Landing = () => {
                     </span>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4 p-4 sm:p-6">
+                <CardContent className="space-y-4 p-6 mx-auto w-fit">
                   <ul className="space-y-3">
                     {freeFeatures.map((feature, index) => (
                       <li
@@ -512,7 +512,7 @@ const Landing = () => {
                 <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-purple-600/50 to-teal-700/50 text-white text-xs">
                   Most Popular
                 </Badge>
-                <CardHeader className="text-center p-4 sm:p-6">
+                <CardHeader className="text-center p-6">
                   <div className="flex items-center justify-center mb-2">
                     <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
                   </div>
@@ -531,7 +531,7 @@ const Landing = () => {
                     </span>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4 p-4 sm:p-6">
+                <CardContent className="space-y-4 p-6 mx-auto w-fit">
                   <ul className="space-y-3">
                     {premiumFeatures.map((feature, index) => (
                       <li

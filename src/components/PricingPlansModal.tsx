@@ -172,7 +172,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({
                   </Badge>
                 )}
 
-                <CardHeader className="text-center p-4 sm:p-6">
+                <CardHeader className="text-center p-6">
                   <div className="flex items-center justify-center mb-2">
                     {plan.popular ? (
                       <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
@@ -197,7 +197,7 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({
                   </div>
                 </CardHeader>
 
-                <CardContent className="space-y-4 p-4 sm:p-6">
+                <CardContent className="space-y-4 p-6 mx-auto w-fit">
                   <ul className="space-y-3">
                     {plan.features.map((feature, index) => (
                       <li
