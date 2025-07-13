@@ -15,6 +15,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { formatDistanceToNow } from 'date-fns';
 import { PricingModal } from '@/components/PricingModal';
+import { MediaContainer } from '@/components/MediaContainer';
 const Feed = () => {
   const navigate = useNavigate();
   const [selectedPost, setSelectedPost] = useState(null);
@@ -194,9 +195,7 @@ const Feed = () => {
                 )}
 
                 {/* Media */}
-                {post.image_url && <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
-                    <img src={post.image_url} alt="Post content" className="w-full h-80 object-cover hover:scale-105 transition-transform duration-300" />
-                  </div>}
+                {post.image_url && <MediaContainer imageUrl={post.image_url} onClick={() => navigate(`/post/${post.id}`)} />}
 
                 {post.video_url && <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
                     <video src={post.video_url} className="w-full h-80 object-cover" controls />

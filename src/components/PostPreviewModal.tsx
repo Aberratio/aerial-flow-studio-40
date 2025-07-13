@@ -11,6 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 import type { FeedPost } from '@/hooks/useFeedPosts';
 import { SharePostModal } from '@/components/SharePostModal';
+import { PostPreviewImage } from '@/components/PostPreviewImage';
 
 interface PostPreviewModalProps {
   post: FeedPost | null;
@@ -63,13 +64,7 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
         <div className="flex flex-col sm:flex-row h-full min-h-0">
           {/* Media Section */}
           <div className="flex-1 bg-black min-h-0 h-[50vh] sm:h-full flex items-center justify-center">
-            {post.image_url && (
-              <img 
-                src={post.image_url} 
-                alt="Post content"
-                className="max-w-full max-h-full object-contain cursor-zoom-in w-full"
-              />
-            )}
+            {post.image_url && <PostPreviewImage imageUrl={post.image_url} />}
             {post.video_url && (
               <video 
                 src={post.video_url} 
