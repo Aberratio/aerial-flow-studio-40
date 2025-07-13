@@ -309,7 +309,8 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
+          <div className="flex justify-center">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl">
             {pricingPlans.map((plan, index) => (
               <Card key={plan.id} className={`glass-effect border-white/10 hover-lift relative transition-all duration-500 animation-delay-${(index + 1) * 200} animate-scale-in ${plan.is_popular ? 'ring-2 ring-purple-500/50 scale-105' : ''}`}>
                 {plan.is_popular && (
@@ -353,6 +354,7 @@ const Landing = () => {
                 </CardContent>
               </Card>
             ))}
+            </div>
           </div>
         </div>
       </section>

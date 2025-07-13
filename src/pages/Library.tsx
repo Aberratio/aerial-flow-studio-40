@@ -164,7 +164,7 @@ const Library = () => {
               <p className="text-muted-foreground text-sm sm:text-base">Discover and master aerial exercises</p>
             </div>
             {(user?.role === 'trainer' || user?.role === 'admin') && (
-              <Button onClick={() => setShowCreateExercise(true)} variant="primary" className="w-full sm:w-auto">
+              <Button onClick={() => setShowCreateExercise(true)} variant="default" className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground">
                 <Plus className="w-4 h-4 mr-2" />
                 Add Exercise
               </Button>
@@ -185,7 +185,7 @@ const Library = () => {
             />
           </div>
 
-          <div className="space-y-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger className="bg-white/5 border-white/10 text-white">
                 <SelectValue placeholder="Filter by category" />
@@ -210,6 +210,30 @@ const Library = () => {
                 <SelectItem value="expert">Expert</SelectItem>
               </SelectContent>
             </Select>
+
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="Filter by type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="single_figure">Single Figure</SelectItem>
+                <SelectItem value="combo">Combo</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="for_later">For Later</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+                <SelectItem value="not_tried">Not Tried</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -223,13 +247,13 @@ const Library = () => {
           ) : (
             filteredFigures.map((figure) => (
               <Card key={figure.id} className="glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative" onClick={() => navigate(`/exercise/${figure.id}`)}>
-                <div className="relative">
+                <div className="relative overflow-hidden">
                   <img
                     src={figure.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop'}
                     alt={figure.name}
                     className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:scale-110 transition-transform duration-300" />
                 </div>
                 
                 <CardContent className="p-4">
