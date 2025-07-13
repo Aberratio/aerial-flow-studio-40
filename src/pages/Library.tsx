@@ -30,11 +30,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Library = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
@@ -212,10 +214,61 @@ const Library = () => {
     }
   };
 
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
+
+  // Show work in progress page for non-admin users
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="glass-effect p-8 rounded-xl border border-white/10">
+            <div className="mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-primary-foreground rounded-full flex items-center justify-center">
+                <AlertCircle className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+                Work in Progress
+              </h1>
+              <p className="text-muted-foreground text-lg mb-6">
+                The Exercise Library is currently under development and only accessible to administrators.
+              </p>
+              <div className="space-y-3 text-left">
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Enhanced exercise management system</span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Advanced filtering and search capabilities</span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Progress tracking and achievements</span>
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate("/training")}
+              variant="primary"
+              className="mr-4"
+            >
+              Go to Training
+            </Button>
+            <Button
+              onClick={() => navigate("/challenges")}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              View Challenges
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
