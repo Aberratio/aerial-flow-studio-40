@@ -177,11 +177,11 @@ const Landing = () => {
     // },
     {
       value: "99+",
-      label: "signups waiting to fly",
+      label: "signups ready to fly",
     },
     {
       value: "∞",
-      label: "possibilities",
+      label: "possibilities to explore",
     },
     {
       value: "100%",
