@@ -91,14 +91,18 @@ const Landing = () => {
   };
   const getFeatureText = (featureKey: string) => {
     const featureTexts: Record<string, string> = {
-      basic_features: "Basic features",
-      figure_library: "Access to figure library",
-      progress_tracking: "Progress tracking",
-      social_features: "Social features",
-      premium_challenges: "Premium challenges",
-      advanced_analytics: "Advanced analytics",
+      basic_progress_tracking: "Basic progress tracking",
+      advanced_progress_tracking: "Advanced progress tracking",
+      library_access: "Library access",
+      full_library_access: "Full library access",
+      community_access: "Community access",
+      posts_sharing: "Posts sharing",
+      challenges_access: "Challenges access",
+      unlimited_challenges: "Unlimited challenges",
+      training_sessions: "Training sessions",
+      custom_training_sessions: "Custom training sessions",
+      exclusive_content: "Exclusive content",
       priority_support: "Priority support",
-      custom_training: "Custom training plans",
     };
     return featureTexts[featureKey] || featureKey;
   };
@@ -347,7 +351,7 @@ const Landing = () => {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className={`border-white/10 hover-lift card-hover-effect transition-all duration-500 animation-delay-${
+                className={`glass-effect border-white/10 hover-lift card-hover-effect transition-all duration-500 animation-delay-${
                   (index + 1) * 200
                 } animate-scale-in`}
               >
@@ -393,7 +397,7 @@ const Landing = () => {
           </div>
 
           <div className="flex justify-center">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl mx-auto">
               {pricingPlans.map((plan, index) => (
                 <Card
                   key={plan.id}
