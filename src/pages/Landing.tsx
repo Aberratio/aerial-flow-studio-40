@@ -360,46 +360,26 @@ const Landing = () => {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className={`relative group glass-effect border-white/10 hover-lift card-hover-effect transition-all duration-500 animation-delay-${
+                className={`glass-effect border-white/10 transition-all duration-300 animation-delay-${
                   (index + 1) * 200
-                } animate-scale-in overflow-hidden`}
+                } animate-scale-in`}
               >
-                {/* Dynamic background gradient that appears on hover */}
-                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
-                  feature.accent === "tropical"
-                    ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/5"
-                    : "bg-gradient-to-br from-purple-500/10 to-violet-500/5"
-                }`}></div>
-                
-                {/* Animated border effect */}
-                <div className={`absolute inset-0 rounded-lg bg-gradient-to-r ${
-                  feature.accent === "tropical"
-                    ? "from-emerald-500/20 via-teal-500/20 to-emerald-500/20"
-                    : "from-purple-500/20 via-violet-500/20 to-purple-500/20"
-                } opacity-0 group-hover:opacity-100 transition-opacity duration-500 -m-[1px] -z-10`}></div>
-                
-                <CardContent className="p-6 flex flex-col items-center justify-center relative z-10">
+                <CardContent className="p-6 flex flex-col items-center justify-center">
                   <div
-                    className={`relative w-16 h-16 rounded-2xl bg-gradient-to-r ${
+                    className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${
                       feature.accent === "tropical"
                         ? "from-emerald-500 to-teal-500"
                         : "from-purple-500 to-violet-500"
                     } flex items-center justify-center mb-6 pulse-glow${
                       feature.accent === "tropical" ? "-tropical" : ""
-                    } group-hover:scale-110 transition-transform duration-300`}
+                    }`}
                   >
-                    {/* Icon background glow */}
-                    <div className={`absolute inset-0 rounded-2xl ${
-                      feature.accent === "tropical"
-                        ? "bg-gradient-to-r from-emerald-400/30 to-teal-400/30"
-                        : "bg-gradient-to-r from-purple-400/30 to-violet-400/30"
-                    } blur-lg group-hover:blur-xl transition-all duration-300`}></div>
-                    <feature.icon className="w-7 h-7 text-white relative z-10" />
+                    <feature.icon className="w-7 h-7 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-200 group-hover:bg-clip-text transition-all duration-300">
+                  <h3 className="text-xl font-bold text-white mb-3">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-400 text-base leading-relaxed text-center group-hover:text-gray-300 transition-colors duration-300">
+                  <p className="text-gray-400 text-base leading-relaxed text-center">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -432,10 +412,10 @@ const Landing = () => {
             <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto relative z-10">
               {/* Left Decorative Card */}
               <Card className="relative overflow-hidden lg:row-span-1">
-                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-600 to-purple-800"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-purple-600/30 to-transparent"></div>
                 <CardContent className="relative z-10 p-8 h-full flex flex-col justify-center items-center text-center">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 leading-tight">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-6 leading-tight">
                     Choose what's right for you
                   </h3>
                   <div className="w-24 h-24 mx-auto mb-4">
@@ -443,7 +423,7 @@ const Landing = () => {
                       <Trophy className="w-12 h-12 text-white" />
                     </div>
                   </div>
-                  <p className="text-gray-800 font-medium">
+                  <p className="text-white font-medium">
                     Find the perfect plan for your aerial journey
                   </p>
                 </CardContent>
@@ -470,7 +450,7 @@ const Landing = () => {
                   {plan.is_popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
                       <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                        All Features Unlimited
+                        Recommended
                       </span>
                     </div>
                   )}
@@ -545,7 +525,7 @@ const Landing = () => {
                       }`}
                       onClick={() => openAuth("register")}
                     >
-                      {plan.plan_key === "free" ? "GET STARTED" : "JOIN WAITLIST"}
+                      GET STARTED
                     </Button>
                   </CardContent>
                 </Card>
