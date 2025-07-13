@@ -38,6 +38,8 @@
     --gradient-tropical: linear-gradient(135deg, hsl(158 64% 20%), hsl(171 77% 30%));
     --gradient-cosmic: linear-gradient(135deg, hsl(250 24% 5%), hsl(271 35% 15%));
     --gradient-aurora: linear-gradient(135deg, hsl(271 91% 65%), hsl(285 85% 70%), hsl(295 70% 75%));
+    --gradient-purple-mega: linear-gradient(135deg, hsl(271 91% 65%), hsl(285 85% 70%), hsl(295 70% 75%), hsl(280 80% 80%));
+    --gradient-green-deep: linear-gradient(135deg, hsl(158 64% 20%), hsl(171 77% 30%), hsl(165 70% 25%), hsl(158 60% 15%));
 
     --radius: 0.75rem;
   }
@@ -81,7 +83,7 @@
   }
 
   .gradient-text-mega {
-    background: linear-gradient(45deg, hsl(271 91% 65%), hsl(285 85% 70%), hsl(295 70% 75%));
+    background: var(--gradient-purple-mega);
     background-size: 400% 400%;
     @apply bg-clip-text text-transparent;
     animation: mega-gradient 4s ease-in-out infinite;

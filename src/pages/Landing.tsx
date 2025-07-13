@@ -183,15 +183,9 @@ const Landing = () => {
               <span className="sm:hidden">Sign In</span>
             </Button>
             <Button variant="primary" onClick={() => openAuth('register')} className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4">
-              <span className="hidden sm:inline">
-                <Sparkles className="mr-1 w-3 h-3 sm:w-4 sm:h-4" />
-              </span>
               <span className="hidden md:inline">Get Started</span>
               <span className="hidden sm:inline md:hidden">Start</span>
               <span className="sm:hidden">Sign up</span>
-              <span className="hidden sm:inline">
-                <ChevronRight className="ml-1 w-3 h-3 sm:w-4 sm:h-4" />
-              </span>
             </Button>
           </div>
         </nav>
@@ -281,7 +275,7 @@ const Landing = () => {
           </div>
 
           <div className="flex justify-center">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             {pricingPlans.map((plan, index) => <Card key={plan.id} className={`glass-effect border-white/10 hover-lift relative transition-all duration-500 animation-delay-${(index + 1) * 200} animate-scale-in ${plan.is_popular ? 'ring-2 ring-purple-500/50 scale-105' : ''}`}>
                 {plan.is_popular && <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <span className="bg-gradient-to-r from-purple-500 to-violet-500 text-white px-4 py-1 rounded-full text-sm font-medium pulse-glow">
@@ -301,7 +295,7 @@ const Landing = () => {
                           {feature.is_included ? <Heart className="w-3 h-3 text-white" /> : <span className="w-1 h-1 bg-gray-400 rounded-full"></span>}
                         </div>
                         <span className={`text-sm ${feature.is_included ? 'text-white' : 'text-gray-400'}`}>
-                          {feature.feature_text}
+                          {getFeatureText(feature.feature_key)}
                         </span>
                       </div>)}
                   </div>
@@ -331,9 +325,7 @@ const Landing = () => {
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                   <Button variant="primary" size="lg" onClick={() => openAuth('register')} className="text-lg px-8 animate-bounce-in">
-                    <Sparkles className="mr-2 w-5 h-5" />
                     Start Free Today
-                    <ArrowRight className="ml-2 w-5 h-5" />
                   </Button>
                   <Button variant="ghost" onClick={() => openAuth('login')} className="text-white hover:text-purple-300 text-lg px-8">
                     Sign In
