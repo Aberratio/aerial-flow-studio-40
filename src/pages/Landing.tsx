@@ -180,7 +180,7 @@ const Landing = () => {
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
             <Button variant="ghost" onClick={() => openAuth('login')} className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-2 sm:px-4 transition-all duration-300 border-0">
               <span className="hidden sm:inline">Sign In</span>
-              <span className="sm:hidden">Log In</span>
+              <span className="sm:hidden">Sign In</span>
             </Button>
             <Button variant="primary" onClick={() => openAuth('register')} className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4">
               <span className="hidden sm:inline">
