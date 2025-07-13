@@ -198,10 +198,19 @@ const Landing = () => {
 
       {/* Dynamic Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 animate-fade-in"></div>
-
-      {/* Additional tropical accent gradients */}
-      <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 rounded-full blur-3xl animate-pulse animation-delay-1000"></div>
-      <div className="absolute bottom-20 left-10 w-80 h-80 bg-gradient-to-tr from-purple-500/15 to-violet-500/8 rounded-full blur-2xl animate-pulse animation-delay-600"></div>
+      
+      {/* Additional dynamic background effects */}
+      <div className="absolute inset-0">
+        <div className="absolute top-0 left-1/4 w-72 h-72 bg-gradient-to-br from-purple-600/20 to-pink-600/15 rounded-full blur-3xl animate-pulse animation-delay-0"></div>
+        <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-gradient-to-bl from-emerald-500/15 to-teal-500/10 rounded-full blur-3xl animate-pulse animation-delay-1000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-gradient-to-tr from-violet-500/20 to-purple-500/15 rounded-full blur-2xl animate-pulse animation-delay-600"></div>
+        <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-gradient-to-tl from-pink-500/15 to-purple-600/10 rounded-full blur-3xl animate-pulse animation-delay-800"></div>
+        
+        {/* Floating geometric shapes */}
+        <div className="absolute top-1/4 left-1/6 w-3 h-3 bg-purple-400/60 rounded-full animate-pulse animation-delay-200"></div>
+        <div className="absolute top-3/4 right-1/5 w-2 h-2 bg-pink-400/70 rounded-full animate-pulse animation-delay-400"></div>
+        <div className="absolute bottom-1/3 left-1/2 w-4 h-4 bg-emerald-400/50 rounded-full animate-pulse animation-delay-1200"></div>
+      </div>
 
       {/* Header */}
       <header className="relative z-10 px-4 sm:px-6 py-4">
@@ -351,26 +360,46 @@ const Landing = () => {
             {features.map((feature, index) => (
               <Card
                 key={index}
-                className={`glass-effect border-white/10 hover-lift card-hover-effect transition-all duration-500 animation-delay-${
+                className={`relative group glass-effect border-white/10 hover-lift card-hover-effect transition-all duration-500 animation-delay-${
                   (index + 1) * 200
-                } animate-scale-in`}
+                } animate-scale-in overflow-hidden`}
               >
-                <CardContent className="p-6 flex flex-col items-center justify-center">
+                {/* Dynamic background gradient that appears on hover */}
+                <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${
+                  feature.accent === "tropical"
+                    ? "bg-gradient-to-br from-emerald-500/10 to-teal-500/5"
+                    : "bg-gradient-to-br from-purple-500/10 to-violet-500/5"
+                }`}></div>
+                
+                {/* Animated border effect */}
+                <div className={`absolute inset-0 rounded-lg bg-gradient-to-r ${
+                  feature.accent === "tropical"
+                    ? "from-emerald-500/20 via-teal-500/20 to-emerald-500/20"
+                    : "from-purple-500/20 via-violet-500/20 to-purple-500/20"
+                } opacity-0 group-hover:opacity-100 transition-opacity duration-500 -m-[1px] -z-10`}></div>
+                
+                <CardContent className="p-6 flex flex-col items-center justify-center relative z-10">
                   <div
-                    className={`w-12 h-12 rounded-xl bg-gradient-to-r ${
+                    className={`relative w-16 h-16 rounded-2xl bg-gradient-to-r ${
                       feature.accent === "tropical"
                         ? "from-emerald-500 to-teal-500"
                         : "from-purple-500 to-violet-500"
-                    } flex items-center justify-center mb-4 pulse-glow${
+                    } flex items-center justify-center mb-6 pulse-glow${
                       feature.accent === "tropical" ? "-tropical" : ""
-                    }`}
+                    } group-hover:scale-110 transition-transform duration-300`}
                   >
-                    <feature.icon className="w-6 h-6 text-white" />
+                    {/* Icon background glow */}
+                    <div className={`absolute inset-0 rounded-2xl ${
+                      feature.accent === "tropical"
+                        ? "bg-gradient-to-r from-emerald-400/30 to-teal-400/30"
+                        : "bg-gradient-to-r from-purple-400/30 to-violet-400/30"
+                    } blur-lg group-hover:blur-xl transition-all duration-300`}></div>
+                    <feature.icon className="w-7 h-7 text-white relative z-10" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">
+                  <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-200 group-hover:bg-clip-text transition-all duration-300">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed text-center">
+                  <p className="text-gray-400 text-base leading-relaxed text-center group-hover:text-gray-300 transition-colors duration-300">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -404,12 +433,22 @@ const Landing = () => {
                   className={`glass-effect border-white/10 hover-lift relative transition-all duration-500 animation-delay-${
                     (index + 1) * 200
                   } animate-scale-in ${
-                    plan.is_popular ? "ring-2 ring-purple-500/50 scale-105" : ""
+                    plan.is_popular 
+                      ? "ring-2 ring-purple-500/50 scale-105 before:absolute before:inset-0 before:bg-gradient-to-br before:from-purple-500/20 before:via-pink-500/15 before:to-violet-500/20 before:rounded-lg before:-z-10 before:blur-sm" 
+                      : ""
                   }`}
                 >
+                  {/* Enhanced gradient frame for popular plan */}
                   {plan.is_popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                      <span className="bg-gradient-to-r from-purple-500 to-violet-500 text-white px-4 py-1 rounded-full text-sm font-medium pulse-glow">
+                    <>
+                      <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 rounded-lg blur-sm opacity-75 animate-pulse"></div>
+                      <div className="absolute -inset-[2px] bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-violet-600/50 rounded-lg blur-md opacity-50"></div>
+                    </>
+                  )}
+                  
+                  {plan.is_popular && (
+                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
+                      <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 text-white px-6 py-2 rounded-full text-sm font-medium pulse-glow shadow-lg">
                         Most Popular
                       </span>
                     </div>
