@@ -1,12 +1,34 @@
 import { useState, useEffect } from "react";
-import { Zap, Users, Trophy, BookOpen, ArrowRight, Heart } from "lucide-react";
+import {
+  Zap,
+  Users,
+  Trophy,
+  BookOpen,
+  ArrowRight,
+  Crown,
+  Check,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import AuthModal from "@/components/Auth/AuthModal";
 import CookiesBanner from "@/components/CookiesBanner";
 import { supabase } from "@/integrations/supabase/client";
 import IguanaLogo from "@/assets/iguana-logo.svg";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@radix-ui/react-select";
+import { Badge } from "@/components/ui/badge";
 
 interface PricingPlan {
   id: string;
@@ -154,6 +176,28 @@ const Landing = () => {
       label: "Success Rate",
     },
   ];
+
+  const freeFeatures = [
+    "Post updates to your feed",
+    "Invite and follow friends",
+    "View community posts",
+    "Basic profile customization",
+  ];
+
+  const premiumFeatures = [
+    "All Free features",
+    "Access to figure library",
+    "Create training sessions",
+    "Join challenges",
+    "Track your progress",
+    "Advanced analytics",
+    "Priority support",
+  ];
+
+  const [currency, setCurrency] = useState<"USD" | "PLN">("USD");
+  const getCurrencySymbol = () => (currency === "USD" ? "$" : "zł");
+  const getPremiumPrice = () => (currency === "USD" ? "10" : "40");
+
   const openAuth = (mode: "login" | "register" = "login") => {
     setAuthMode(mode);
     setAuthModalOpen(true);
@@ -432,95 +476,79 @@ const Landing = () => {
               </Card>
 
               {/* Pricing Plans */}
-              {pricingPlans.map((plan, index) => (
-                <Card
-                  key={plan.id}
-                  className={`relative glass-effect border-white/10 hover-lift transition-all duration-500 ${
-                    plan.is_popular ? "ring-2 ring-purple-500/50 scale-105" : ""
-                  }`}
-                >
-                  {/* Enhanced gradient frame for popular plan */}
-                  {plan.is_popular && (
-                    <>
-                      <div className="absolute -inset-1 bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 rounded-lg blur-sm opacity-75 animate-pulse"></div>
-                      <div className="absolute -inset-[2px] bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-violet-600/50 rounded-lg blur-md opacity-50"></div>
-                    </>
-                  )}
-
-                  {plan.is_popular && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-                      <span className="bg-gradient-to-br from-purple-600/50 to-teal-700/50 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                        Recommended
-                      </span>
-                    </div>
-                  )}
-
-                  <CardContent className="p-8 flex flex-col h-full relative z-10 mt-4">
-                    <div className="text-center mb-6">
-                      <h3 className="text-2xl font-bold text-white mb-3">
-                        {plan.name}
-                      </h3>
-                      <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-4xl font-bold mb-3">
-                        {plan.price}
-                      </div>
-                      <p className="text-gray-400 text-base leading-relaxed">
-                        {plan.description}
-                      </p>
-                    </div>
-
-                    <div className="space-y-4 mb-8 flex-grow">
-                      <h4
-                        className={`font-semibold text-base mb-4 ${
-                          plan.is_popular
-                            ? "text-purple-400"
-                            : "text-emerald-400"
-                        }`}
+              <Card className="relative overflow-hidden lg:row-span-1 glass-effect">
+                <CardHeader className="text-center p-4 sm:p-6">
+                  <div className="flex items-center justify-center mb-2">
+                    <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
+                  </div>
+                  <CardTitle className="text-white text-xl sm:text-2xl">
+                    Free
+                  </CardTitle>
+                  <CardDescription className="text-white/70 text-sm sm:text-base">
+                    Perfect for getting started
+                  </CardDescription>
+                  <div className="mt-4">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">
+                      $0
+                    </span>
+                    <span className="text-white/70 text-sm sm:text-base">
+                      /month
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 p-4 sm:p-6">
+                  <ul className="space-y-3">
+                    {freeFeatures.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center text-white/80 text-sm sm:text-base"
                       >
-                        What you'll get:
-                      </h4>
-                      {plan.features.map((feature, featureIndex) => (
-                        <div
-                          key={featureIndex}
-                          className="flex items-center space-x-3"
-                        >
-                          <div
-                            className={`w-1 h-6 rounded-full ${
-                              feature.is_included
-                                ? plan.is_popular
-                                  ? "bg-gradient-to-b from-purple-500 to-pink-500"
-                                  : "bg-gradient-to-b from-emerald-500 to-teal-500"
-                                : "bg-gray-600"
-                            }`}
-                          ></div>
-                          <span
-                            className={`text-base ${
-                              feature.is_included
-                                ? "text-white"
-                                : "text-gray-400"
-                            }`}
-                          >
-                            {getFeatureText(feature.feature_key)}
-                          </span>
-                        </div>
-                      ))}
-                      {plan.features.length < 5 && (
-                        <div className="flex items-center space-x-3">
-                          <div
-                            className={`w-1 h-6 rounded-full ${
-                              plan.is_popular
-                                ? "bg-gradient-to-b from-purple-500 to-pink-500"
-                                : "bg-gradient-to-b from-emerald-500 to-teal-500"
-                            }`}
-                          ></div>
-                          <span className="text-white text-base">
-                            ...and more!
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              {/* Premium Plan */}
+              <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/50 relative">
+                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
+                  RECOMMENDED
+                </Badge>
+                <CardHeader className="text-center p-4 sm:p-6">
+                  <div className="flex items-center justify-center mb-2">
+                    <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
+                  </div>
+                  <CardTitle className="text-white text-xl sm:text-2xl">
+                    Premium
+                  </CardTitle>
+                  <CardDescription className="text-white/70 text-sm sm:text-base">
+                    Unlock your full potential
+                  </CardDescription>
+                  <div className="mt-4">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">
+                      10
+                    </span>
+                    <span className="text-white/70 text-sm sm:text-base">
+                      /month
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 p-4 sm:p-6">
+                  <ul className="space-y-3">
+                    {premiumFeatures.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center text-white/80 text-sm sm:text-base"
+                      >
+                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Decorative arrow - only show on larger screens */}
