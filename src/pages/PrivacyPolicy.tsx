@@ -6,73 +6,73 @@ import ReactMarkdown from "react-markdown";
 const PrivacyPolicy = () => {
   const content = {
     title: "Privacy Policy",
-    content: ` 
-    # 🦎 Privacy Policy - IguanaFlow
+    content: `
+# 🦎 Privacy Policy - IguanaFlow
 
-    Last updated: 13.07.2025
-    
-    ---
-    
-    ## Who is the data controller?
-    
-    The controller of your personal data is:  
-    Joanna Kokot Usługi Informatyczne                     
-    Tax ID: PL9161389290                   
-    E-mail: 📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
-    
-    ---
-    
-    ## What data do we collect?
-    
-    We only collect data necessary for IguanaFlow to work properly:
-    - your email address (for login, notifications, contact),
-    - photos and videos of poses uploaded by users,
-    - info about your activity in the app (saved poses, friends you follow).
-    
-    ---
-    
-    ##  Why do we process your data?
-    
-    We use your data to:
-    - create and manage your account,
-    - provide community features,
-    - improve content and app functionality,
-    - contact you for technical or service reasons.
-    
-    ---
-    
-    ## Who do we share data with?
-    
-    We do not sell your data.  
-    We may share it only with:
-    - technical service providers (e.g. hosting, Stripe payments),
-    - if required by law.
-    
-    ---
-    
-    ## How long do we keep your data?
-    
-    We keep your data as long as you use IguanaFlow.  
-    If you delete your account - we'll remove your data except where we must keep it for legal reasons.
-    
-    ---
-    
-    ## Your rights
-    
-    You have the right to:
-    - access your data,
-    - correct it,
-    - delete it,
-    - restrict processing,
-    - transfer your data,
-    - file a complaint with your local data protection authority (e.g. in the EU: GDPR).
-    
-    ---
-    
-    ## Contact
-    
-    Got questions? Reach out:  
-    📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
+Last updated: 13.07.2025
+
+---
+
+## Who is the data controller?
+
+The controller of your personal data is:  
+Joanna Kokot Usługi Informatyczne                     
+Tax ID: PL9161389290                   
+E-mail: 📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
+
+---
+
+## What data do we collect?
+
+We only collect data necessary for IguanaFlow to work properly:
+- your email address (for login, notifications, contact),
+- photos and videos of poses uploaded by users,
+- info about your activity in the app (saved poses, friends you follow).
+
+---
+
+##  Why do we process your data?
+
+We use your data to:
+- create and manage your account,
+- provide community features,
+- improve content and app functionality,
+- contact you for technical or service reasons.
+
+---
+
+## Who do we share data with?
+
+We do not sell your data.  
+We may share it only with:
+- technical service providers (e.g. hosting, Stripe payments),
+- if required by law.
+
+---
+
+## How long do we keep your data?
+
+We keep your data as long as you use IguanaFlow.  
+If you delete your account - we'll remove your data except where we must keep it for legal reasons.
+
+---
+
+## Your rights
+
+You have the right to:
+- access your data,
+- correct it,
+- delete it,
+- restrict processing,
+- transfer your data,
+- file a complaint with your local data protection authority (e.g. in the EU: GDPR).
+
+---
+
+## Contact
+
+Got questions? Reach out:  
+📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
 `,
   };
 
