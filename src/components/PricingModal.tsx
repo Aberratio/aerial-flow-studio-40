@@ -1,12 +1,29 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Crown, Users, BookOpen, Target, BarChart3, X } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Check, Crown, Users, X } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PricingModalProps {
   isOpen: boolean;
@@ -14,53 +31,59 @@ interface PricingModalProps {
   onUpgrade: () => void;
 }
 
-export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) => {
+export const PricingModal = ({
+  isOpen,
+  onClose,
+  onUpgrade,
+}: PricingModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [currency, setCurrency] = useState<'USD' | 'PLN'>('USD');
+  const [currency, setCurrency] = useState<"USD" | "PLN">("USD");
   const { toast } = useToast();
   const freeFeatures = [
-    'Post updates to your feed',
-    'Invite and follow friends',
-    'View community posts',
-    'Basic profile customization'
+    "Post updates to your feed",
+    "Invite and follow friends",
+    "View community posts",
+    "Basic profile customization",
   ];
 
   const premiumFeatures = [
-    'All Free features',
-    'Access to figure library',
-    'Create training sessions',
-    'Join challenges',
-    'Track your progress',
-    'Advanced analytics',
-    'Priority support'
+    "All Free features",
+    "Access to figure library",
+    "Create training sessions",
+    "Join challenges",
+    "Track your progress",
+    "Advanced analytics",
+    "Priority support",
   ];
 
-  const getCurrencySymbol = () => currency === 'USD' ? '$' : 'zł';
-  const getPremiumPrice = () => currency === 'USD' ? '10' : '40';
-  
+  const getCurrencySymbol = () => (currency === "USD" ? "$" : "zł");
+  const getPremiumPrice = () => (currency === "USD" ? "10" : "40");
+
   const handleUpgradeClick = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          paymentType: 'subscription',
-          currency: currency.toLowerCase()
+      const { data, error } = await supabase.functions.invoke(
+        "create-checkout",
+        {
+          body: {
+            paymentType: "subscription",
+            currency: currency.toLowerCase(),
+          },
         }
-      });
-      
+      );
+
       if (error) throw error;
-      
+
       // Open Stripe checkout in a new tab
       if (data.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, "_blank");
         onClose(); // Close modal after opening checkout
       }
-      
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to start checkout process. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -69,8 +92,10 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-black/95 border-white/10 mx-4 sm:mx-auto"
-        style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+      <DialogContent
+        className="max-w-4xl max-h-[90vh] overflow-y-auto bg-black/95 border-white/10 mx-4 sm:mx-auto"
+        style={{ left: "50%", top: "50%", transform: "translate(-50%, -50%)" }}
+      >
         <DialogHeader>
           <DialogTitle className="text-white text-center text-xl sm:text-2xl">
             Choose Your Plan
@@ -79,7 +104,10 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
             Start your aerial journey with the perfect plan for you
           </p>
           <div className="flex justify-center mt-4">
-            <Select value={currency} onValueChange={(value: 'USD' | 'PLN') => setCurrency(value)}>
+            <Select
+              value={currency}
+              onValueChange={(value: "USD" | "PLN") => setCurrency(value)}
+            >
               <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white">
                 <SelectValue />
               </SelectTrigger>
@@ -98,19 +126,28 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
               <div className="flex items-center justify-center mb-2">
                 <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
               </div>
-              <CardTitle className="text-white text-xl sm:text-2xl">Free</CardTitle>
+              <CardTitle className="text-white text-xl sm:text-2xl">
+                Free
+              </CardTitle>
               <CardDescription className="text-white/70 text-sm sm:text-base">
                 Perfect for getting started
               </CardDescription>
               <div className="mt-4">
-                <span className="text-2xl sm:text-3xl font-bold text-white">{getCurrencySymbol()}0</span>
-                <span className="text-white/70 text-sm sm:text-base">/month</span>
+                <span className="text-2xl sm:text-3xl font-bold text-white">
+                  {getCurrencySymbol()}0
+                </span>
+                <span className="text-white/70 text-sm sm:text-base">
+                  /month
+                </span>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
               <ul className="space-y-3">
                 {freeFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-center text-white/80 text-sm sm:text-base">
+                  <li
+                    key={index}
+                    className="flex items-center text-white/80 text-sm sm:text-base"
+                  >
                     <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
                     {feature}
                   </li>
@@ -135,19 +172,29 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
               <div className="flex items-center justify-center mb-2">
                 <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
               </div>
-              <CardTitle className="text-white text-xl sm:text-2xl">Premium</CardTitle>
+              <CardTitle className="text-white text-xl sm:text-2xl">
+                Premium
+              </CardTitle>
               <CardDescription className="text-white/70 text-sm sm:text-base">
                 Unlock your full potential
               </CardDescription>
               <div className="mt-4">
-                <span className="text-2xl sm:text-3xl font-bold text-white">{getCurrencySymbol()}{getPremiumPrice()}</span>
-                <span className="text-white/70 text-sm sm:text-base">/month</span>
+                <span className="text-2xl sm:text-3xl font-bold text-white">
+                  {getCurrencySymbol()}
+                  {getPremiumPrice()}
+                </span>
+                <span className="text-white/70 text-sm sm:text-base">
+                  /month
+                </span>
               </div>
             </CardHeader>
             <CardContent className="space-y-4 p-4 sm:p-6">
               <ul className="space-y-3">
                 {premiumFeatures.map((feature, index) => (
-                  <li key={index} className="flex items-center text-white/80 text-sm sm:text-base">
+                  <li
+                    key={index}
+                    className="flex items-center text-white/80 text-sm sm:text-base"
+                  >
                     <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
                     {feature}
                   </li>
@@ -159,7 +206,7 @@ export const PricingModal = ({ isOpen, onClose, onUpgrade }: PricingModalProps) 
                 variant="primary"
                 className="w-full text-sm sm:text-base py-2 sm:py-3"
               >
-                {isLoading ? 'Processing...' : 'Upgrade to Premium'}
+                {isLoading ? "Processing..." : "Upgrade to Premium"}
               </Button>
             </CardContent>
           </Card>

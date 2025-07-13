@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +5,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import AppLayout from "@/components/Layout/AppLayout";
-import { ProfileUpgradeWrapper } from "@/components/ProfileUpgradeWrapper";
 import Landing from "@/pages/Landing";
 import Feed from "@/pages/Feed";
 import Library from "@/pages/Library";
@@ -38,9 +36,11 @@ import PremiumRoute from "@/components/PremiumRoute";
 
 const queryClient = new QueryClient();
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const { user, isLoading } = useAuth();
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
@@ -48,17 +48,17 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
       </div>
     );
   }
-  
+
   if (!user) {
     return <Navigate to="/" replace />;
   }
-  
+
   return <AppLayout>{children}</AppLayout>;
 };
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isLoading } = useAuth();
-  
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
@@ -66,137 +66,200 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </div>
     );
   }
-  
+
   if (user) {
     return <Navigate to="/feed" replace />;
   }
-  
+
   return <>{children}</>;
 };
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={
-        <PublicRoute>
-          <Landing />
-        </PublicRoute>
-      } />
-      <Route path="/feed" element={
-        <ProtectedRoute>
-          <Feed />
-        </ProtectedRoute>
-      } />
-      <Route path="/post/:postId" element={
-        <ProtectedRoute>
-          <PostDetail />
-        </ProtectedRoute>
-      } />
-      <Route path="/library" element={
-        <ProtectedRoute>
-          <PremiumRoute>
-            <Library />
-          </PremiumRoute>
-        </ProtectedRoute>
-      } />
-      <Route path="/exercise/:exerciseId" element={
-        <ProtectedRoute>
-          <PremiumRoute>
-            <ExerciseDetail />
-          </PremiumRoute>
-        </ProtectedRoute>
-      } />
-      <Route path="/pricing" element={
-        <ProtectedRoute>
-          <PricingPage />
-        </ProtectedRoute>
-      } />
-      <Route path="/payment-success" element={
-        <ProtectedRoute>
-          <PaymentSuccess />
-        </ProtectedRoute>
-      } />
-      <Route path="/payment-cancelled" element={
-        <ProtectedRoute>
-          <PaymentCancelled />
-        </ProtectedRoute>
-      } />
-      <Route path="/about" element={
-        <ProtectedRoute>
-          <AboutUs />
-        </ProtectedRoute>
-      } />
+      <Route
+        path="/"
+        element={
+          <PublicRoute>
+            <Landing />
+          </PublicRoute>
+        }
+      />
+      <Route
+        path="/feed"
+        element={
+          <ProtectedRoute>
+            <Feed />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/post/:postId"
+        element={
+          <ProtectedRoute>
+            <PostDetail />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/library"
+        element={
+          <ProtectedRoute>
+            <PremiumRoute>
+              <Library />
+            </PremiumRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/exercise/:exerciseId"
+        element={
+          <ProtectedRoute>
+            <PremiumRoute>
+              <ExerciseDetail />
+            </PremiumRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/pricing"
+        element={
+          <ProtectedRoute>
+            <PricingPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/payment-success"
+        element={
+          <ProtectedRoute>
+            <PaymentSuccess />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/payment-cancelled"
+        element={
+          <ProtectedRoute>
+            <PaymentCancelled />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/about"
+        element={
+          <ProtectedRoute>
+            <AboutUs />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/about-us" element={<AboutUs />} />
       <Route path="/privacy-policy" element={<PrivacyPolicy />} />
       <Route path="/terms-of-use" element={<TermsOfUse />} />
       <Route path="/connection-error" element={<BadConnection />} />
-      <Route path="/inbox" element={
-        <ProtectedRoute>
-          <Inbox />
-        </ProtectedRoute>
-      } />
-      <Route path="/challenges" element={
-        <ProtectedRoute>
-          <Challenges />
-        </ProtectedRoute>
-      } />
-      <Route path="/profile" element={
-        <ProtectedRoute>
-          <Profile />
-        </ProtectedRoute>
-      } />
-      <Route path="/profile/my-journey" element={
-        <ProtectedRoute>
-          <MyJourney />
-        </ProtectedRoute>
-      } />
+      <Route
+        path="/inbox"
+        element={
+          <ProtectedRoute>
+            <Inbox />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/challenges"
+        element={
+          <ProtectedRoute>
+            <Challenges />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile/my-journey"
+        element={
+          <ProtectedRoute>
+            <MyJourney />
+          </ProtectedRoute>
+        }
+      />
       <Route path="/profile/:id" element={<FriendProfile />} />
-      <Route path="/friends" element={
-        <ProtectedRoute>
-          <Friends />
-        </ProtectedRoute>
-      } />
-      <Route path="/training" element={
-        <ProtectedRoute>
-          <Training />
-        </ProtectedRoute>
-      } />
-      <Route path="/challenge/:challengeId/day/:dayId" element={
-        <ProtectedRoute>
-          <PremiumRoute>
-            <ChallengeDayOverview />
-          </PremiumRoute>
-        </ProtectedRoute>
-      } />
-      <Route path="/training-session" element={
-        <ProtectedRoute>
-          <PremiumRoute>
-            <TrainingSessionPageWrapper />
-          </PremiumRoute>
-        </ProtectedRoute>
-      } />
-      <Route path="/challenges/:challengeId/edit" element={
-        <ProtectedRoute>
-          <PremiumRoute>
-            <EditChallenge />
-          </PremiumRoute>
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/achievements" element={
-        <ProtectedRoute>
-          <AchievementManagement />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/landing-page" element={
-        <ProtectedRoute>
-          <LandingPageManagement />
-        </ProtectedRoute>
-      } />
-      <Route path="/admin/site-settings" element={
-        <ProtectedRoute>
-          <SiteSettings />
-        </ProtectedRoute>
-      } />
+      <Route
+        path="/friends"
+        element={
+          <ProtectedRoute>
+            <Friends />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training"
+        element={
+          <ProtectedRoute>
+            <Training />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/challenge/:challengeId/day/:dayId"
+        element={
+          <ProtectedRoute>
+            <PremiumRoute>
+              <ChallengeDayOverview />
+            </PremiumRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training-session"
+        element={
+          <ProtectedRoute>
+            <PremiumRoute>
+              <TrainingSessionPageWrapper />
+            </PremiumRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/challenges/:challengeId/edit"
+        element={
+          <ProtectedRoute>
+            <PremiumRoute>
+              <EditChallenge />
+            </PremiumRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/achievements"
+        element={
+          <ProtectedRoute>
+            <AchievementManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/landing-page"
+        element={
+          <ProtectedRoute>
+            <LandingPageManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/site-settings"
+        element={
+          <ProtectedRoute>
+            <SiteSettings />
+          </ProtectedRoute>
+        }
+      />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
@@ -208,11 +271,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <AuthProvider>
-        <ProfileUpgradeWrapper>
-          <BrowserRouter>
-            <AppRoutes />
-          </BrowserRouter>
-        </ProfileUpgradeWrapper>
+        <BrowserRouter>
+          <AppRoutes />
+        </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
