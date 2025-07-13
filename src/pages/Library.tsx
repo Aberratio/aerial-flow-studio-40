@@ -236,8 +236,8 @@ const Library = () => {
             {(user?.role === "trainer" || user?.role === "admin") && (
               <Button
                 onClick={() => setShowCreateExercise(true)}
-                variant="default"
-                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
+                variant="primary"
+                className="w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Add Exercise
