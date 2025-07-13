@@ -194,10 +194,6 @@ const Landing = () => {
     "Priority support",
   ];
 
-  const [currency, setCurrency] = useState<"USD" | "PLN">("USD");
-  const getCurrencySymbol = () => (currency === "USD" ? "$" : "zł");
-  const getPremiumPrice = () => (currency === "USD" ? "10" : "40");
-
   const openAuth = (mode: "login" | "register" = "login") => {
     setAuthMode(mode);
     setAuthModalOpen(true);
@@ -512,8 +508,8 @@ const Landing = () => {
               </Card>
 
               {/* Premium Plan */}
-              <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/50 relative">
-                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
+              <Card className="glass-effect border-purple-500/50 relative">
+                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-purple-600/50 to-teal-700/50 text-white text-xs">
                   RECOMMENDED
                 </Badge>
                 <CardHeader className="text-center p-4 sm:p-6">
@@ -528,7 +524,7 @@ const Landing = () => {
                   </CardDescription>
                   <div className="mt-4">
                     <span className="text-2xl sm:text-3xl font-bold text-white">
-                      10
+                      $10
                     </span>
                     <span className="text-white/70 text-sm sm:text-base">
                       /month
