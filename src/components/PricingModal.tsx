@@ -166,7 +166,7 @@ export const PricingModal = ({
           {/* Premium Plan */}
           <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/50 relative">
             <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
-              RECOMMENDED
+              Most Popular
             </Badge>
             <CardHeader className="text-center p-4 sm:p-6">
               <div className="flex items-center justify-center mb-2">

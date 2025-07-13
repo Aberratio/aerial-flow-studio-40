@@ -510,7 +510,7 @@ const Landing = () => {
               {/* Premium Plan */}
               <Card className="glass-effect border-purple-500/50 relative">
                 <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-br from-purple-600/50 to-teal-700/50 text-white text-xs">
-                  RECOMMENDED
+                  Most Popular
                 </Badge>
                 <CardHeader className="text-center p-4 sm:p-6">
                   <div className="flex items-center justify-center mb-2">

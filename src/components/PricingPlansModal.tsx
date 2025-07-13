@@ -6,7 +6,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,
@@ -15,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Check, Crown, Star, Zap } from "lucide-react";
+import { Check, Crown, Star, Users, Zap } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -154,48 +160,52 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({
             return (
               <Card
                 key={plan.id}
-                className={`bg-slate-800/50 border-white/20 backdrop-blur-sm transition-all duration-200 relative ${
-                  plan.popular ? "ring-2 ring-purple-500 scale-105" : ""
-                } ${isSelected ? "ring-2 ring-blue-500" : ""}`}
+                className={`bg-white/5 border-white/10 relative ${
+                  plan.popular
+                    ? "bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/50"
+                    : ""
+                } `}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-purple-500 text-white">
-                      Most Popular
-                    </Badge>
-                  </div>
+                  <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
+                    Most Popular
+                  </Badge>
                 )}
 
                 <CardHeader className="text-center p-4 sm:p-6">
-                  <div
-                    className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full ${plan.bgColor} flex items-center justify-center`}
-                  >
-                    <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${plan.color}`} />
+                  <div className="flex items-center justify-center mb-2">
+                    {plan.popular ? (
+                      <Crown className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-400" />
+                    ) : (
+                      <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
+                    )}
                   </div>
-                  <CardTitle className="text-white text-lg sm:text-xl">
+                  <CardTitle className="text-white text-xl sm:text-2xl">
                     {plan.name}
                   </CardTitle>
-                  <div className="space-y-1">
-                    <div className="text-2xl sm:text-3xl font-bold text-white">
+                  <CardDescription className="text-white/70 text-sm sm:text-base">
+                    {plan.description}
+                  </CardDescription>
+                  <div className="mt-4">
+                    <span className="text-2xl sm:text-3xl font-bold text-white">
                       {plan.price}
-                      <span className="text-sm sm:text-lg font-normal text-muted-foreground">
-                        /{plan.period}
-                      </span>
-                    </div>
-                    <p className="text-muted-foreground text-xs sm:text-sm">
-                      {plan.description}
-                    </p>
+                    </span>
+
+                    <span className="text-white/70 text-sm sm:text-base">
+                      /{plan.period}
+                    </span>
                   </div>
                 </CardHeader>
 
                 <CardContent className="space-y-4 p-4 sm:p-6">
                   <ul className="space-y-3">
                     {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-center gap-3">
-                        <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm text-white/80">
-                          {feature}
-                        </span>
+                      <li
+                        key={index}
+                        className="flex items-center text-white/80 text-sm sm:text-base"
+                      >
+                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
+                        {feature}
                       </li>
                     ))}
                   </ul>
