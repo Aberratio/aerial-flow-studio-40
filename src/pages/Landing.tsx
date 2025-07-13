@@ -159,21 +159,37 @@ const Landing = () => {
     },
   ];
   const stats = [
+    // {
+    //   value: "10K+",
+    //   label: "Active Athletes",
+    // },
+    // {
+    //   value: "500+",
+    //   label: "Aerial Figures",
+    // },
+    // {
+    //   value: "50+",
+    //   label: "Awesome Challenges",
+    // },
+    // {
+    //   value: "95%",
+    //   label: "Success Rate",
+    // },
     {
-      value: "10K+",
-      label: "Active Athletes",
+      value: "99+",
+      label: "signups waiting to fly",
     },
     {
-      value: "500+",
-      label: "Aerial Figures",
+      value: "∞",
+      label: "possibilitie",
     },
     {
-      value: "50+",
-      label: "Awesome Challenges",
+      value: "100%",
+      label: "unlocked potential",
     },
     {
-      value: "95%",
-      label: "Success Rate",
+      value: "0",
+      label: "excuses left",
     },
   ];
 
