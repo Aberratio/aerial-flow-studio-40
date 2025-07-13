@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
-import { UserPlus, UserCheck, UserX, Clock, Heart, HeartOff, UserMinus } from 'lucide-react';
+import { UserPlus, UserMinus, Check, X, UserCheck, UserX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
 import { useToast } from '@/hooks/use-toast';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
-import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
 
 interface FriendshipActionsProps {
   userId: string;
+  username: string;
   size?: 'sm' | 'default' | 'lg';
-  variant?: 'default' | 'outline' | 'ghost';
 }
 
-export const FriendshipActions = ({ userId, size = 'default', variant = 'default' }: FriendshipActionsProps) => {
+export const FriendshipActions = ({ userId, username, size = 'default' }: FriendshipActionsProps) => {
   const { toast } = useToast();
   const [showRemoveFriendModal, setShowRemoveFriendModal] = useState(false);
   const {
@@ -32,51 +32,50 @@ export const FriendshipActions = ({ userId, size = 'default', variant = 'default
     const success = await sendFriendRequest();
     if (success) {
       toast({
-        title: "Friend request sent!",
-        description: "Your friend request has been sent."
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to send friend request.",
-        variant: "destructive"
+        title: "Friend Request Sent",
+        description: `Your friend request has been sent to ${username}`
       });
     }
   };
 
-  const handleAcceptFriendRequest = async () => {
+  const handleAcceptFriend = async () => {
     const success = await acceptFriendRequest();
     if (success) {
       toast({
-        title: "Friend request accepted!",
-        description: "You are now friends."
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to accept friend request.",
-        variant: "destructive"
+        title: "Friend Request Accepted",
+        description: `You and ${username} are now friends!`
       });
     }
   };
 
-  const handleRejectFriendRequest = async () => {
+  const handleRejectFriend = async () => {
     const success = await rejectFriendRequest();
     if (success) {
       toast({
-        title: "Friend request declined",
-        description: "The friend request has been declined."
+        title: "Friend Request Rejected",
+        description: `You rejected ${username}'s friend request.`
       });
     }
   };
 
-  const handleCancelFriendRequest = async () => {
+  const handleCancelRequest = async () => {
     const success = await cancelFriendRequest();
     if (success) {
       toast({
-        title: "Friend request cancelled",
-        description: "Your friend request has been cancelled."
+        title: "Request Cancelled",
+        description: `Your friend request to ${username} has been cancelled.`
       });
+    }
+  };
+
+  const handleRemoveFriend = async () => {
+    const success = await removeFriend();
+    if (success) {
+      toast({
+        title: "Friend Removed",
+        description: `${username} has been removed from your friends.`
+      });
+      setShowRemoveFriendModal(false);
     }
   };
 
@@ -84,14 +83,8 @@ export const FriendshipActions = ({ userId, size = 'default', variant = 'default
     const success = await followUser();
     if (success) {
       toast({
-        title: "Now following!",
-        description: "You are now following this user."
-      });
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to follow user.",
-        variant: "destructive"
+        title: "Now Following",
+        description: `You are now following ${username}.`
       });
     }
   };
@@ -101,94 +94,209 @@ export const FriendshipActions = ({ userId, size = 'default', variant = 'default
     if (success) {
       toast({
         title: "Unfollowed",
-        description: "You are no longer following this user."
-      });
-    }
-  };
-
-  const handleRemoveFriend = async () => {
-    const success = await removeFriend();
-    if (success) {
-      toast({
-        title: "Friend removed",
-        description: "You are no longer friends with this user."
-      });
-      setShowRemoveFriendModal(false);
-    } else {
-      toast({
-        title: "Error",
-        description: "Failed to remove friend.",
-        variant: "destructive"
+        description: `You are no longer following ${username}.`
       });
     }
   };
 
   if (loading) {
+    return <div className="animate-pulse bg-white/10 h-10 w-32 rounded"></div>;
+  }
+
+  // 1. If the viewed user is an accepted friend
+  if (isFriend) {
     return (
-      <div className="flex space-x-2">
-        <Button size={size} variant={variant} disabled>
-          Loading...
+      <>
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={() => setShowRemoveFriendModal(true)}
+          className="border-green-500/30 text-green-400 hover:bg-green-500/10"
+        >
+          <UserCheck className="w-4 h-4 mr-2" />
+          Friends
+        </Button>
+
+        <ConfirmDeleteModal
+          isOpen={showRemoveFriendModal}
+          onClose={() => setShowRemoveFriendModal(false)}
+          onConfirm={handleRemoveFriend}
+          title="Remove Friend"
+          description={`Are you sure you want to remove ${username} from your friends? You will no longer be able to see their friends-only content and they won't see yours.`}
+        />
+      </>
+    );
+  }
+
+  // 2. If the viewed user has sent me a friend request and I do NOT follow them
+  if (pendingFriendRequest === 'received' && !isFollowing) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button 
+          size={size}
+          onClick={handleAcceptFriend}
+          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+        >
+          <Check className="w-4 h-4 mr-2" />
+          Accept
+        </Button>
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleRejectFriend}
+          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Decline
+        </Button>
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleFollow}
+          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Follow
         </Button>
       </div>
     );
   }
 
-  return (
-    <div className="flex space-x-2">
-      {/* Follow/Unfollow Button */}
-      <Button
-        size={size}
-        variant={isFollowing ? "outline" : variant}
-        onClick={isFollowing ? handleUnfollow : handleFollow}
-      >
-        {isFollowing ? (
-          <>
-            <HeartOff className="w-4 h-4 mr-2" />
-            Unfollow
-          </>
-        ) : (
-          <>
-            <Heart className="w-4 h-4 mr-2" />
-            Follow
-          </>
-        )}
-      </Button>
-
-      {/* Friendship Button */}
-      {isFriend ? (
-        <Button size={size} variant="outline" onClick={() => setShowRemoveFriendModal(true)}>
-          <UserMinus className="w-4 h-4 mr-2" />
-          Remove Friend
+  // 3. If the viewed user has sent me a friend request and I ALREADY follow them
+  if (pendingFriendRequest === 'received' && isFollowing) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button 
+          size={size}
+          onClick={handleAcceptFriend}
+          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+        >
+          <Check className="w-4 h-4 mr-2" />
+          Accept
         </Button>
-      ) : pendingFriendRequest === 'sent' ? (
-        <Button size={size} variant="outline" onClick={handleCancelFriendRequest}>
-          <Clock className="w-4 h-4 mr-2" />
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleRejectFriend}
+          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+        >
+          <X className="w-4 h-4 mr-2" />
+          Decline
+        </Button>
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleUnfollow}
+          className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
+        >
+          <UserMinus className="w-4 h-4 mr-2" />
+          Unfollow
+        </Button>
+      </div>
+    );
+  }
+
+  // 4. If I have sent a friend request and I already follow them
+  if (pendingFriendRequest === 'sent' && isFollowing) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleCancelRequest}
+          className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+        >
+          <UserX className="w-4 h-4 mr-2" />
           Cancel Request
         </Button>
-      ) : pendingFriendRequest === 'received' ? (
-        <div className="flex space-x-1">
-          <Button size={size} onClick={handleAcceptFriendRequest}>
-            <UserCheck className="w-4 h-4 mr-2" />
-            Accept
-          </Button>
-          <Button size={size} variant="outline" onClick={handleRejectFriendRequest}>
-            <UserX className="w-4 h-4" />
-          </Button>
-        </div>
-      ) : (
-        <Button size={size} variant="outline" onClick={handleSendFriendRequest}>
-          <UserPlus className="w-4 h-4 mr-2" />
-          Add Friend
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleUnfollow}
+          className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
+        >
+          <UserMinus className="w-4 h-4 mr-2" />
+          Unfollow
         </Button>
-      )}
+      </div>
+    );
+  }
 
-      <ConfirmDeleteModal
-        isOpen={showRemoveFriendModal}
-        onClose={() => setShowRemoveFriendModal(false)}
-        onConfirm={handleRemoveFriend}
-        title="Remove Friend"
-        description="Are you sure you want to remove this friend? You will no longer be able to see their friends-only content and they won't see yours."
-      />
-    </div>
-  );
+  // 5. If I have sent a friend request and I do NOT follow the user
+  if (pendingFriendRequest === 'sent' && !isFollowing) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleCancelRequest}
+          className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
+        >
+          <UserX className="w-4 h-4 mr-2" />
+          Cancel Request
+        </Button>
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleFollow}
+          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Follow
+        </Button>
+      </div>
+    );
+  }
+
+  // 6. If there is NO friendship and I already follow the user
+  if (pendingFriendRequest === 'none' && isFollowing) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button 
+          size={size}
+          onClick={handleSendFriendRequest}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Send Friend Request
+        </Button>
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleUnfollow}
+          className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
+        >
+          <UserMinus className="w-4 h-4 mr-2" />
+          Unfollow
+        </Button>
+      </div>
+    );
+  }
+
+  // 7. If there is NO friendship and I do NOT follow the user
+  if (pendingFriendRequest === 'none' && !isFollowing) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <Button 
+          size={size}
+          onClick={handleSendFriendRequest}
+          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Send Friend Request
+        </Button>
+        <Button 
+          size={size}
+          variant="outline" 
+          onClick={handleFollow}
+          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+        >
+          <UserPlus className="w-4 h-4 mr-2" />
+          Follow
+        </Button>
+      </div>
+    );
+  }
+
+  return null;
 };

@@ -190,6 +190,7 @@ const AppRoutes = () => {
         }
       />
       <Route path="/profile/:id" element={<FriendProfile />} />
+      <Route path="/friends/:id" element={<FriendProfile />} />
       <Route
         path="/friends"
         element={

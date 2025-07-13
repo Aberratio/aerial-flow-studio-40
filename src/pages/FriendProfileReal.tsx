@@ -16,7 +16,9 @@ import { useMutualFriends } from '@/hooks/useMutualFriends';
 import { supabase } from '@/integrations/supabase/client';
 import { ProfilePreviewModal } from '@/components/ProfilePreviewModal';
 import { FriendInviteModal } from '@/components/FriendInviteModal';
+import { FriendshipActions } from '@/components/FriendshipActions';
 import AppLayout from '@/components/Layout/AppLayout';
+import { Navigate } from 'react-router-dom';
 
 const FriendProfile = () => {
   const { user } = useAuth();
@@ -211,7 +213,10 @@ const FriendProfile = () => {
     }
   };
 
-  // Show public content for non-logged users
+  // If user is viewing their own profile, redirect to /profile
+  if (user?.id === id) {
+    return <Navigate to="/profile" replace />;
+  }
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-3 sm:p-6">
@@ -422,90 +427,21 @@ const FriendProfile = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                  {/* Only show Add Friend and Follow buttons if NOT viewing own profile */}
-                  {user?.id !== id && (
-                    <>
-                      <div className="hidden sm:flex space-x-2">
-                        <Button 
-                          onClick={handleSendFriendRequest}
-                          variant="primary"
-                        >
-                          <UserPlus className="w-4 h-4 mr-2" />
-                          Add Friend
-                        </Button>
-                        {isFollowing ? (
-                          <Button 
-                            variant="outline" 
-                            onClick={handleUnfollow}
-                            className="border-white/20 text-white hover:bg-white/10"
-                          >
-                            <UserMinus className="w-4 h-4 mr-2" />
-                            Unfollow
-                          </Button>
-                        ) : (
-                          <Button 
-                            variant="outline" 
-                            onClick={handleFollow}
-                            className="border-white/20 text-white hover:bg-white/10"
-                          >
-                            <UserPlus className="w-4 h-4 mr-2" />
-                            Follow
-                          </Button>
-                        )}
-                      </div>
-                      
-                      {/* Mobile buttons */}
-                      <div className="flex space-x-4 sm:hidden">
-                        <div className="flex flex-col items-center">
-                          <Button 
-                            onClick={handleSendFriendRequest}
-                            variant="primary"
-                            size="icon"
-                            className="w-12 h-12"
-                          >
-                            <UserPlus className="w-5 h-5" />
-                          </Button>
-                          <span className="text-xs text-white/80 mt-1">Add</span>
-                        </div>
-                        <div className="flex flex-col items-center">
-                          <Button 
-                            variant="outline" 
-                            onClick={isFollowing ? handleUnfollow : handleFollow}
-                            size="icon"
-                            className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
-                          >
-                            {isFollowing ? <UserMinus className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
-                          </Button>
-                          <span className="text-xs text-white/80 mt-1">
-                            {isFollowing ? 'Unfollow' : 'Follow'}
-                          </span>
-                        </div>
-                      </div>
-                    </>
-                  )}
-
+                  {/* Conditional relationship buttons */}
+                  <FriendshipActions 
+                    userId={id || ''} 
+                    username={profileData?.username || ''} 
+                  />
+                  
                   {/* Share Button */}
-                  <div className="hidden sm:flex">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsShareModalOpen(true)}
-                      className="border-white/20 text-white hover:bg-white/10"
-                    >
-                      <Share2 className="w-4 h-4 mr-2" />
-                      Share
-                    </Button>
-                  </div>
-                  <div className="flex flex-col items-center sm:hidden">
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setIsShareModalOpen(true)}
-                      size="icon"
-                      className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
-                    >
-                      <Share2 className="w-5 h-5" />
-                    </Button>
-                    <span className="text-xs text-white/80 mt-1">Share</span>
-                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share
+                  </Button>
                 </div>
               </div>
             </div>
