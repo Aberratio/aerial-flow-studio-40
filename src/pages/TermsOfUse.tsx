@@ -1,42 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
 
 const TermsOfUse = () => {
-  const { currentLanguage } = useLanguage();
-  const [content, setContent] = useState<{ title: string; content: string } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const content = {
+    title: 'Terms of Use',
+    content: `# Acceptance of Terms
 
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('static_pages')
-          .select('title, content')
-          .eq('page_key', 'terms-of-use')
-          .eq('language_id', currentLanguage)
-          .maybeSingle();
-
-        if (error) throw error;
-        
-        if (data) {
-          setContent(data);
-        } else {
-          // Fallback to default content if no translation exists
-          setContent({
-            title: 'Terms of Use',
-            content: `# Acceptance of Terms
-
-By accessing and using AerialJourney, you accept and agree to be bound by the terms and provision of this agreement.
+By accessing and using IguanaFlow, you accept and agree to be bound by the terms and provision of this agreement.
 
 # Scoring System & Points
 
-AerialJourney uses a scoring system to reward user engagement and progress. Points are awarded for various activities:
+IguanaFlow uses a scoring system to reward user engagement and progress. Points are awarded for various activities:
 
 - Create Post: 10 points - Sharing your aerial journey with the community
 - Receive Like: 2 points - When someone likes your post
@@ -69,38 +46,8 @@ You retain ownership of the content you post. By posting content, you grant us a
 
 # Limitation of Liability
 
-AerialJourney is provided "as is" without warranties. We are not liable for any damages arising from your use of the platform.`
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching terms of use:', error);
-        setContent({
-          title: 'Terms of Use',
-          content: 'Unable to load terms of use content.'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchContent();
-  }, [currentLanguage]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!content) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <p className="text-muted-foreground">Terms of use not available.</p>
-      </div>
-    );
-  }
+IguanaFlow is provided "as is" without warranties. We are not liable for any damages arising from your use of the platform.`
+  };
 
   const renderMarkdown = (content: string) => {
     return (

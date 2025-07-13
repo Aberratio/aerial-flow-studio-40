@@ -1,38 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
 
 const AboutUs = () => {
-  const { currentLanguage } = useLanguage();
-  const [content, setContent] = useState<{ title: string; content: string } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const content = {
+    title: 'About Us',
+    content: `# Our Mission
 
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('static_pages')
-          .select('title, content')
-          .eq('page_key', 'about-us')
-          .eq('language_id', currentLanguage)
-          .maybeSingle();
-
-        if (error) throw error;
-        
-        if (data) {
-          setContent(data);
-        } else {
-          // Fallback to default content if no translation exists
-          setContent({
-            title: 'About Us',
-            content: `# Our Mission
-
-AerialJourney is dedicated to creating a supportive community for aerial athletes of all levels. We believe that aerial arts should be accessible, safe, and inspiring for everyone.
+IguanaFlow is dedicated to creating a supportive community for aerial athletes of all levels. We believe that aerial arts should be accessible, safe, and inspiring for everyone.
 
 # What We Offer
 
@@ -44,7 +21,7 @@ AerialJourney is dedicated to creating a supportive community for aerial athlete
 
 # Our Community
 
-Join thousands of aerial enthusiasts who are passionate about silk, lyra, straps, and more. Whether you're a beginner taking your first steps into the air or an advanced practitioner perfecting complex sequences, AerialJourney is here to support your growth.
+Join thousands of aerial enthusiasts who are passionate about silk, lyra, straps, and more. Whether you're a beginner taking your first steps into the air or an advanced practitioner perfecting complex sequences, IguanaFlow is here to support your growth.
 
 # Safety First
 
@@ -52,38 +29,8 @@ We prioritize safety in all our content and encourage proper training, warm-up r
 
 # Contact Us
 
-Have questions or feedback? We'd love to hear from you! Reach out to us at hello@aerialjourney.com`
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching about us content:', error);
-        setContent({
-          title: 'About Us',
-          content: 'Unable to load about us content.'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchContent();
-  }, [currentLanguage]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!content) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <p className="text-muted-foreground">About us content not available.</p>
-      </div>
-    );
-  }
+Have questions or feedback? We'd love to hear from you! Reach out to us at hello@iguanaflow.com`
+  };
 
   const renderMarkdown = (content: string) => {
     return (

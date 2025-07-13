@@ -1,36 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
 import ReactMarkdown from 'react-markdown';
 
 const PrivacyPolicy = () => {
-  const { currentLanguage } = useLanguage();
-  const [content, setContent] = useState<{ title: string; content: string } | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchContent = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('static_pages')
-          .select('title, content')
-          .eq('page_key', 'privacy-policy')
-          .eq('language_id', currentLanguage)
-          .maybeSingle();
-
-        if (error) throw error;
-        
-        if (data) {
-          setContent(data);
-        } else {
-          // Fallback to default content if no translation exists
-          setContent({
-            title: 'Privacy Policy',
-            content: `# Information We Collect
+  const content = {
+    title: 'Privacy Policy',
+    content: `# Information We Collect
 
 We collect information you provide directly to us, such as when you create an account, update your profile, post content, or communicate with us.
 
@@ -65,38 +42,8 @@ We implement appropriate security measures to protect your personal information 
 
 # Contact Us
 
-If you have any questions about this Privacy Policy, please contact us at privacy@aerialjourney.com`
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching privacy policy:', error);
-        setContent({
-          title: 'Privacy Policy',
-          content: 'Unable to load privacy policy content.'
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchContent();
-  }, [currentLanguage]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!content) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <p className="text-muted-foreground">Privacy policy not available.</p>
-      </div>
-    );
-  }
+If you have any questions about this Privacy Policy, please contact us at privacy@iguanaflow.com`
+  };
 
   const renderMarkdown = (content: string) => {
     return (

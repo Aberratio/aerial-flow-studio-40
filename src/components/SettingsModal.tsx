@@ -13,7 +13,6 @@ import {
   CreditCard
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -27,7 +26,6 @@ interface SettingsModalProps {
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
   const { user } = useAuth();
-  const { currentLanguage, setCurrentLanguage, languages } = useLanguage();
   const { toast } = useToast();
   const { hasPremiumAccess, subscribed, subscription_tier, subscription_end, isLoading } = useSubscriptionStatus();
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
