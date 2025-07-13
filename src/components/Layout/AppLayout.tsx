@@ -1,10 +1,9 @@
-
-import React, { useState, useEffect } from 'react';
-import { Menu, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useIsMobile } from '@/hooks/use-mobile';
-import Navigation from './Navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import { Menu, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
+import Navigation from "./Navigation";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -18,14 +17,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
     if (isMobile && sidebarOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     }
 
     // Cleanup on unmount
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = "unset";
     };
   }, [isMobile, sidebarOpen]);
 
@@ -35,24 +34,32 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       {isMobile && (
         <Button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="fixed top-4 left-4 z-[70] bg-black/50 backdrop-blur-sm border border-white/10 text-white hover:bg-black/70"
+          className="fixed top-4 left-4 z-[70]"
+          variant="primary"
           size="sm"
         >
-          {sidebarOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          {sidebarOpen ? (
+            <X className="w-4 h-4" />
+          ) : (
+            <Menu className="w-4 h-4" />
+          )}
         </Button>
       )}
 
-      
       {/* Mobile Overlay */}
       {isMobile && sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
+
       <Navigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <main className={`${isMobile ? 'ml-0 pt-14' : 'ml-20 lg:ml-64'} min-h-screen transition-all duration-300`}>
+      <main
+        className={`${
+          isMobile ? "ml-0 pt-14" : "ml-20 lg:ml-64"
+        } min-h-screen transition-all duration-300`}
+      >
         {children}
       </main>
     </div>

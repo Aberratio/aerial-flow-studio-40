@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Search, UserPlus, Check, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { ProfilePreviewModal } from '@/components/ProfilePreviewModal';
+import React, { useState, useEffect } from "react";
+import { Search, UserPlus, Check, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { ProfilePreviewModal } from "@/components/ProfilePreviewModal";
 
 interface FriendInviteModalProps {
   isOpen: boolean;
@@ -15,9 +20,13 @@ interface FriendInviteModalProps {
   onFriendAdded?: () => void;
 }
 
-export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInviteModalProps) => {
+export const FriendInviteModal = ({
+  isOpen,
+  onClose,
+  onFriendAdded,
+}: FriendInviteModalProps) => {
   const { user } = useAuth();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [suggestedFriends, setSuggestedFriends] = useState<any[]>([]);
   const [sentInvites, setSentInvites] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,29 +40,32 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
 
     try {
       setLoading(true);
-      
+
       // Get users that the current user is not friends with and exclude themselves
       const { data: friendships } = await supabase
-        .from('friendships')
-        .select('requester_id, addressee_id')
-        .eq('status', 'accepted')
+        .from("friendships")
+        .select("requester_id, addressee_id")
+        .eq("status", "accepted")
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
       // Get friend IDs (people we're already friends with)
-      const friendIds = friendships?.map(friendship => {
-        return friendship.requester_id === user.id ? friendship.addressee_id : friendship.requester_id;
-      }) || [];
+      const friendIds =
+        friendships?.map((friendship) => {
+          return friendship.requester_id === user.id
+            ? friendship.addressee_id
+            : friendship.requester_id;
+        }) || [];
 
       const excludeIds = [user.id, ...friendIds];
 
       let query = supabase
-        .from('profiles')
-        .select('id, username, avatar_url, bio')
-        .not('id', 'in', `(${excludeIds.join(',')})`)
+        .from("profiles")
+        .select("id, username, avatar_url, bio")
+        .not("id", "in", `(${excludeIds.join(",")})`)
         .limit(20);
 
       if (searchQuery.trim()) {
-        query = query.ilike('username', `%${searchQuery}%`);
+        query = query.ilike("username", `%${searchQuery}%`);
       }
 
       const { data: profiles, error } = await query;
@@ -61,26 +73,30 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
       if (error) throw error;
 
       // Map profiles and check for pending requests
-      const profilesWithData = await Promise.all((profiles || []).map(async (profile) => {
-        // Check if there's already a pending friend request
-        const { data: existingRequest } = await supabase
-          .from('friendships')
-          .select('status')
-          .or(`and(requester_id.eq.${user.id},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${user.id})`)
-          .maybeSingle();
+      const profilesWithData = await Promise.all(
+        (profiles || []).map(async (profile) => {
+          // Check if there's already a pending friend request
+          const { data: existingRequest } = await supabase
+            .from("friendships")
+            .select("status")
+            .or(
+              `and(requester_id.eq.${user.id},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${user.id})`
+            )
+            .maybeSingle();
 
-        const hasPendingRequest = existingRequest?.status === 'pending';
+          const hasPendingRequest = existingRequest?.status === "pending";
 
-        return {
-          ...profile,
-          isOnline: Math.random() > 0.5, // Temporary random status
-          hasPendingRequest
-        };
-      }));
+          return {
+            ...profile,
+            isOnline: Math.random() > 0.5, // Temporary random status
+            hasPendingRequest,
+          };
+        })
+      );
 
       setSuggestedFriends(profilesWithData);
     } catch (error) {
-      console.error('Error fetching suggested friends:', error);
+      console.error("Error fetching suggested friends:", error);
     } finally {
       setLoading(false);
     }
@@ -96,43 +112,46 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
     try {
       // Insert the friend request
       const { error: friendshipError } = await supabase
-        .from('friendships')
+        .from("friendships")
         .insert({
           requester_id: user.id,
           addressee_id: friendId,
-          status: 'pending'
+          status: "pending",
         });
 
       if (friendshipError) throw friendshipError;
 
       // Create activity notification for the recipient
       const { error: activityError } = await supabase
-        .from('user_activities')
+        .from("user_activities")
         .insert({
           user_id: friendId,
-          activity_type: 'friend_request',
-          activity_data: { requester_id: user.id, requester_username: user.username },
+          activity_type: "friend_request",
+          activity_data: {
+            requester_id: user.id,
+            requester_username: user.username,
+          },
           target_user_id: user.id,
-          points_awarded: 0
+          points_awarded: 0,
         });
 
       if (activityError) {
-        console.error('Error creating friend request activity:', activityError);
+        console.error("Error creating friend request activity:", activityError);
       }
 
-      setSentInvites(prev => [...prev, friendId]);
+      setSentInvites((prev) => [...prev, friendId]);
       // Refresh the suggested friends to update the UI
       fetchSuggestedFriends();
       toast({
         title: "Friend request sent!",
-        description: `Your friend request has been sent to ${username}.`
+        description: `Your friend request has been sent to ${username}.`,
       });
     } catch (error) {
-      console.error('Error sending friend request:', error);
+      console.error("Error sending friend request:", error);
       toast({
         title: "Error",
         description: "Failed to send friend request. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
@@ -143,7 +162,7 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
         <DialogHeader>
           <DialogTitle className="text-white">Find Friends</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="relative">
             <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
@@ -157,9 +176,11 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
 
           <div className="space-y-3 max-h-96 overflow-y-auto">
             <h3 className="text-sm font-medium text-muted-foreground">
-              {searchQuery ? `Search results for "${searchQuery}"` : 'Suggested for you'}
+              {searchQuery
+                ? `Search results for "${searchQuery}"`
+                : "Suggested for you"}
             </h3>
-            
+
             {loading ? (
               <div className="text-center py-8">
                 <div className="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
@@ -167,12 +188,19 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
               </div>
             ) : suggestedFriends.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <p>{searchQuery ? `No users found matching "${searchQuery}"` : 'No users to suggest at the moment'}</p>
+                <p>
+                  {searchQuery
+                    ? `No users found matching "${searchQuery}"`
+                    : "No users to suggest at the moment"}
+                </p>
               </div>
             ) : (
               suggestedFriends.map((friend) => (
-                <div key={friend.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 gap-4">
-                  <div 
+                <div
+                  key={friend.id}
+                  className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 gap-4"
+                >
+                  <div
                     className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-white/5 rounded p-2 -m-2"
                     onClick={() => {
                       setSelectedUserId(friend.id);
@@ -182,22 +210,27 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
                     <div className="relative">
                       <Avatar>
                         <AvatarImage src={friend.avatar_url} />
-                        <AvatarFallback>{friend.username[0].toUpperCase()}</AvatarFallback>
+                        <AvatarFallback>
+                          {friend.username[0].toUpperCase()}
+                        </AvatarFallback>
                       </Avatar>
                       {friend.isOnline && (
                         <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-white truncate">{friend.username}</p>
+                      <p className="font-medium text-white truncate">
+                        {friend.username}
+                      </p>
                       <p className="text-sm text-muted-foreground truncate">
-                        {friend.bio || 'Aerial enthusiast'}
+                        {friend.bio || "Aerial enthusiast"}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex-shrink-0">
-                    {sentInvites.includes(friend.id) || friend.hasPendingRequest ? (
+                    {sentInvites.includes(friend.id) ||
+                    friend.hasPendingRequest ? (
                       <div className="flex items-center space-x-2 text-green-400">
                         <Check className="w-4 h-4" />
                         <span className="text-sm whitespace-nowrap">Sent</span>
@@ -213,7 +246,8 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
                         className="whitespace-nowrap"
                       >
                         <UserPlus className="w-4 h-4 mr-2" />
-                        Add Friend
+                        <span className="hidden sm:inline">Add Friend</span>
+                        <span className="sm:hidden">Add</span>
                       </Button>
                     )}
                   </div>
@@ -227,7 +261,7 @@ export const FriendInviteModal = ({ isOpen, onClose, onFriendAdded }: FriendInvi
         <ProfilePreviewModal
           isOpen={showProfilePreview}
           onClose={() => setShowProfilePreview(false)}
-          userId={selectedUserId || ''}
+          userId={selectedUserId || ""}
         />
       </DialogContent>
     </Dialog>

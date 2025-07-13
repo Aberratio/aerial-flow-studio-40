@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, Settings, Share2, Eye, Edit } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import { Camera, Settings, Share2, Eye, Edit } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProfileHeaderProps {
   onEditProfile: () => void;
@@ -18,13 +24,13 @@ interface ProfileHeaderProps {
   privacyFilter?: string;
 }
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
-  onEditProfile, 
-  onSettings, 
-  onShare, 
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+  onEditProfile,
+  onSettings,
+  onShare,
   isOwnProfile = true,
   onPrivacyChange,
-  privacyFilter = 'all'
+  privacyFilter = "all",
 }) => {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
@@ -32,53 +38,52 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const [stats, setStats] = useState({
     posts: 0,
     followers: 0,
-    following: 0
+    following: 0,
   });
-  
 
-  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
     setIsUploadingAvatar(true);
-    console.log('Starting avatar upload...', file);
-    
+    console.log("Starting avatar upload...", file);
+
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from("avatars")
         .upload(fileName, file, { upsert: true });
 
       if (uploadError) {
-        console.error('Error uploading avatar:', uploadError);
+        console.error("Error uploading avatar:", uploadError);
         throw uploadError;
       }
 
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-      
+      const { data } = supabase.storage.from("avatars").getPublicUrl(fileName);
+
       const avatarUrl = data.publicUrl;
-      console.log('Avatar uploaded successfully:', avatarUrl);
+      console.log("Avatar uploaded successfully:", avatarUrl);
 
       // Update profile in database
       const { error } = await supabase
-        .from('profiles')
+        .from("profiles")
         .update({
           avatar_url: avatarUrl,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', user.id);
+        .eq("id", user.id);
 
       if (error) {
-        console.error('Database update error:', error);
+        console.error("Database update error:", error);
         throw error;
       }
 
-      console.log('Profile avatar updated successfully!');
-      
+      console.log("Profile avatar updated successfully!");
+
       toast({
         title: "Profile Photo Updated",
         description: "Your profile photo has been successfully updated.",
@@ -87,11 +92,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       // Refresh user data to show new avatar
       await refreshUser();
     } catch (error: any) {
-      console.error('Avatar upload error:', error);
+      console.error("Avatar upload error:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to update profile photo",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsUploadingAvatar(false);
@@ -105,29 +110,29 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       try {
         // Fetch posts count
         const { count: postsCount } = await supabase
-          .from('posts')
-          .select('*', { count: 'exact', head: true })
-          .eq('user_id', user.id);
+          .from("posts")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", user.id);
 
         // Fetch followers count (people following this user)
         const { count: followersCount } = await supabase
-          .from('user_follows')
-          .select('*', { count: 'exact', head: true })
-          .eq('following_id', user.id);
+          .from("user_follows")
+          .select("*", { count: "exact", head: true })
+          .eq("following_id", user.id);
 
         // Fetch following count (people this user follows)
         const { count: followingCount } = await supabase
-          .from('user_follows')
-          .select('*', { count: 'exact', head: true })
-          .eq('follower_id', user.id);
+          .from("user_follows")
+          .select("*", { count: "exact", head: true })
+          .eq("follower_id", user.id);
 
         setStats({
           posts: postsCount || 0,
           followers: followersCount || 0,
-          following: followingCount || 0
+          following: followingCount || 0,
         });
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error("Error fetching stats:", error);
       }
     };
 
@@ -135,9 +140,9 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   }, [user]);
 
   const displayStats = [
-    { label: 'Posts', value: stats.posts.toLocaleString() },
-    { label: 'Followers', value: stats.followers.toLocaleString() },
-    { label: 'Following', value: stats.following.toLocaleString() }
+    { label: "Posts", value: stats.posts.toLocaleString() },
+    { label: "Followers", value: stats.followers.toLocaleString() },
+    { label: "Following", value: stats.following.toLocaleString() },
   ];
 
   return (
@@ -146,7 +151,13 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
           {/* Avatar */}
           <div className="relative">
-            <Avatar className={`w-32 h-32 ${user?.role === 'trainer' ? 'ring-4 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-4 ring-offset-black' : ''}`}>
+            <Avatar
+              className={`w-32 h-32 ${
+                user?.role === "trainer"
+                  ? "ring-4 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-4 ring-offset-black"
+                  : ""
+              }`}
+            >
               <AvatarImage src={user?.avatar} />
               <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-4xl">
                 {user?.username?.[0]?.toUpperCase()}
@@ -163,7 +174,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               <Button
                 size="sm"
                 disabled={isUploadingAvatar}
-                className="absolute bottom-0 right-0 w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 cursor-pointer"
+                className="absolute bottom-0 right-0 w-10 h-10 rounded-full cursor-pointer"
+                variant="primary"
                 asChild
               >
                 <span>
@@ -180,14 +192,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           {/* Profile Info */}
           <div className="flex-1 text-center md:text-left">
             <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
-              <h1 className="text-3xl font-bold text-white">{user?.username}</h1>
+              <h1 className="text-3xl font-bold text-white">
+                {user?.username}
+              </h1>
               <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
                 {user?.role && (
-                  <Badge 
+                  <Badge
                     className={
-                      user.role === 'trainer' 
-                        ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold" 
-                        : user.role === 'premium'
+                      user.role === "trainer"
+                        ? "bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold"
+                        : user.role === "premium"
                         ? "bg-gradient-to-r from-purple-400 to-pink-400 text-white"
                         : "bg-white/10 text-white"
                     }
@@ -204,8 +218,12 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             <div className="grid grid-cols-3 gap-4 mb-6">
               {displayStats.map((stat, index) => (
                 <div key={index} className="text-center">
-                  <div className="gradient-text text-2xl font-bold">{stat.value}</div>
-                  <div className="text-muted-foreground text-sm">{stat.label}</div>
+                  <div className="gradient-text text-2xl font-bold">
+                    {stat.value}
+                  </div>
+                  <div className="text-muted-foreground text-sm">
+                    {stat.label}
+                  </div>
                 </div>
               ))}
             </div>
@@ -215,16 +233,33 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
               <div className="mb-4">
                 <div className="flex items-center space-x-2 mb-2">
                   <Eye className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">View as:</span>
+                  <span className="text-sm text-muted-foreground">
+                    View as:
+                  </span>
                 </div>
                 <Select value={privacyFilter} onValueChange={onPrivacyChange}>
                   <SelectTrigger className="bg-white/5 border-white/20 text-white">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-white/20">
-                    <SelectItem value="all" className="text-white hover:bg-white/10">All Content (Private View)</SelectItem>
-                    <SelectItem value="public" className="text-white hover:bg-white/10">Public Only</SelectItem>
-                    <SelectItem value="friends" className="text-white hover:bg-white/10">Friends Only</SelectItem>
+                    <SelectItem
+                      value="all"
+                      className="text-white hover:bg-white/10"
+                    >
+                      All Content (Private View)
+                    </SelectItem>
+                    <SelectItem
+                      value="public"
+                      className="text-white hover:bg-white/10"
+                    >
+                      Public Only
+                    </SelectItem>
+                    <SelectItem
+                      value="friends"
+                      className="text-white hover:bg-white/10"
+                    >
+                      Friends Only
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -234,7 +269,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             <div className="flex flex-wrap gap-3 justify-center md:justify-start">
               {isOwnProfile ? (
                 <>
-                  <Button 
+                  <Button
                     variant="primary"
                     onClick={onEditProfile}
                     className="hidden sm:flex"
@@ -242,7 +277,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     Edit Profile
                   </Button>
                   <div className="flex flex-col items-center sm:hidden">
-                    <Button 
+                    <Button
                       variant="primary"
                       onClick={onEditProfile}
                       size="icon"
@@ -252,8 +287,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     </Button>
                     <span className="text-xs text-white/80 mt-1">Edit</span>
                   </div>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={onSettings}
                     className="border-white/20 text-white hover:bg-white/10 hidden sm:flex"
                   >
@@ -261,8 +296,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     Settings
                   </Button>
                   <div className="flex flex-col items-center sm:hidden">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={onSettings}
                       size="icon"
                       className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
@@ -273,11 +308,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   </div>
                 </>
               ) : null}
-              
+
               {onShare && (
                 <>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={onShare}
                     className="border-white/20 text-white hover:bg-white/10 hidden sm:flex"
                   >
@@ -285,8 +320,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     Share
                   </Button>
                   <div className="flex flex-col items-center sm:hidden">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={onShare}
                       size="icon"
                       className="border-white/20 text-white hover:bg-white/10 w-12 h-12"

@@ -1,74 +1,88 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Check, Crown, Star, Zap } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Check, Crown, Star, Zap } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PricingPlansModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }) => {
+const PricingPlansModal: React.FC<PricingPlansModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [currency, setCurrency] = useState<'USD' | 'PLN'>('USD');
+  const [currency, setCurrency] = useState<"USD" | "PLN">("USD");
   const { toast } = useToast();
 
-  const getCurrencySymbol = () => currency === 'USD' ? '$' : 'zł';
-  const getPremiumPrice = () => currency === 'USD' ? '10' : '40';
+  const getCurrencySymbol = () => (currency === "USD" ? "$" : "zł");
+  const getPremiumPrice = () => (currency === "USD" ? "10" : "40");
 
   const plans = [
     {
-      id: 'free',
-      name: 'Free',
+      id: "free",
+      name: "Free",
       price: `${getCurrencySymbol()}0`,
-      period: 'forever',
-      description: 'Perfect for getting started with basic training',
+      period: "forever",
+      description: "Perfect for getting started with basic training",
       features: [
-        'Access to basic exercises',
-        'Limited training sessions',
-        'Community support',
-        'Basic progress tracking'
+        "Access to basic exercises",
+        "Limited training sessions",
+        "Community support",
+        "Basic progress tracking",
       ],
       icon: Star,
-      color: 'text-gray-400',
-      bgColor: 'bg-gray-500/10',
-      borderColor: 'border-gray-500/30',
-      current: true
+      color: "text-gray-400",
+      bgColor: "bg-gray-500/10",
+      borderColor: "border-gray-500/30",
+      current: true,
     },
     {
-      id: 'premium',
-      name: 'Premium',
+      id: "premium",
+      name: "Premium",
       price: `${getCurrencySymbol()}${getPremiumPrice()}`,
-      period: 'per month',
-      description: 'Unlock advanced features and unlimited access',
+      period: "per month",
+      description: "Unlock advanced features and unlimited access",
       features: [
-        'Unlimited training sessions',
-        'Advanced exercise library',
-        'Personalized training plans',
-        'Progress analytics',
-        'Premium support',
-        'Challenge participation',
-        'Export workout data'
+        "Unlimited training sessions",
+        "Advanced exercise library",
+        "Personalized training plans",
+        "Progress analytics",
+        "Premium support",
+        "Challenge participation",
+        "Export workout data",
       ],
       icon: Crown,
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-500/10',
-      borderColor: 'border-purple-500/50',
-      popular: true
-    }
+      color: "text-purple-400",
+      bgColor: "bg-purple-500/10",
+      borderColor: "border-purple-500/50",
+      popular: true,
+    },
   ];
 
   const handlePlanSelect = async (planId: string) => {
-    if (planId === 'free') {
+    if (planId === "free") {
       toast({
         title: "Current Plan",
-        description: "You're already on the free plan!"
+        description: "You're already on the free plan!",
       });
       return;
     }
@@ -77,25 +91,27 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
-        body: { 
-          paymentType: 'subscription',
-          currency: currency.toLowerCase()
+      const { data, error } = await supabase.functions.invoke(
+        "create-checkout",
+        {
+          body: {
+            paymentType: "subscription",
+            currency: currency.toLowerCase(),
+          },
         }
-      });
-      
+      );
+
       if (error) throw error;
-      
+
       // Open Stripe checkout in a new tab
       if (data.url) {
-        window.open(data.url, '_blank');
+        window.open(data.url, "_blank");
       }
-      
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to start checkout process. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -107,12 +123,17 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-4xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white">
         <DialogHeader>
-          <DialogTitle className="text-xl sm:text-2xl text-white text-center">Choose Your Plan</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl text-white text-center">
+            Choose Your Plan
+          </DialogTitle>
           <p className="text-white/70 text-center text-sm sm:text-base">
             Upgrade your training experience with premium features
           </p>
           <div className="flex justify-center mt-4">
-            <Select value={currency} onValueChange={(value: 'USD' | 'PLN') => setCurrency(value)}>
+            <Select
+              value={currency}
+              onValueChange={(value: "USD" | "PLN") => setCurrency(value)}
+            >
               <SelectTrigger className="w-32 bg-white/10 border-white/20 text-white">
                 <SelectValue />
               </SelectTrigger>
@@ -124,30 +145,36 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
           </div>
         </DialogHeader>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-8 mt-8">
           {plans.map((plan) => {
             const Icon = plan.icon;
             const isCurrentPlan = plan.current;
             const isSelected = selectedPlan === plan.id;
-            
+
             return (
-              <Card 
-                key={plan.id} 
+              <Card
+                key={plan.id}
                 className={`bg-slate-800/50 border-white/20 backdrop-blur-sm transition-all duration-200 relative ${
-                  plan.popular ? 'ring-2 ring-purple-500 scale-105' : ''
-                } ${isSelected ? 'ring-2 ring-blue-500' : ''}`}
+                  plan.popular ? "ring-2 ring-purple-500 scale-105" : ""
+                } ${isSelected ? "ring-2 ring-blue-500" : ""}`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                    <Badge className="bg-purple-500 text-white">Most Popular</Badge>
+                    <Badge className="bg-purple-500 text-white">
+                      Most Popular
+                    </Badge>
                   </div>
                 )}
-                
+
                 <CardHeader className="text-center p-4 sm:p-6">
-                  <div className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full ${plan.bgColor} flex items-center justify-center`}>
+                  <div
+                    className={`w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full ${plan.bgColor} flex items-center justify-center`}
+                  >
                     <Icon className={`w-6 h-6 sm:w-8 sm:h-8 ${plan.color}`} />
                   </div>
-                  <CardTitle className="text-white text-lg sm:text-xl">{plan.name}</CardTitle>
+                  <CardTitle className="text-white text-lg sm:text-xl">
+                    {plan.name}
+                  </CardTitle>
                   <div className="space-y-1">
                     <div className="text-2xl sm:text-3xl font-bold text-white">
                       {plan.price}
@@ -155,7 +182,9 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                         /{plan.period}
                       </span>
                     </div>
-                    <p className="text-muted-foreground text-xs sm:text-sm">{plan.description}</p>
+                    <p className="text-muted-foreground text-xs sm:text-sm">
+                      {plan.description}
+                    </p>
                   </div>
                 </CardHeader>
 
@@ -164,7 +193,9 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-center gap-3">
                         <Check className="w-4 h-4 text-green-400 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm text-white/80">{feature}</span>
+                        <span className="text-xs sm:text-sm text-white/80">
+                          {feature}
+                        </span>
                       </li>
                     ))}
                   </ul>
@@ -174,16 +205,16 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
                     disabled={isCurrentPlan || isLoading}
                     variant={plan.popular ? "primary" : "outline"}
                     className={`w-full text-sm sm:text-base py-2 sm:py-3 ${
-                      !plan.popular ? 'border-white/20 text-white hover:bg-white/10' : ''
+                      !plan.popular
+                        ? "border-white/20 text-white hover:bg-white/10"
+                        : ""
                     }`}
                   >
-                    {isLoading && isSelected ? (
-                      'Processing...'
-                    ) : isCurrentPlan ? (
-                      'Current Plan'
-                    ) : (
-                      `Choose ${plan.name}`
-                    )}
+                    {isLoading && isSelected
+                      ? "Processing..."
+                      : isCurrentPlan
+                      ? "Current Plan"
+                      : `Choose ${plan.name}`}
                   </Button>
                 </CardContent>
               </Card>
@@ -196,7 +227,8 @@ const PricingPlansModal: React.FC<PricingPlansModalProps> = ({ isOpen, onClose }
             All plans include a 7-day free trial. Cancel anytime.
           </p>
           <p className="text-white/60 text-xs">
-            Payments are processed securely through Stripe. Your data is protected.
+            Payments are processed securely through Stripe. Your data is
+            protected.
           </p>
         </div>
       </DialogContent>

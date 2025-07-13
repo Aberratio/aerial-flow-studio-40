@@ -1,14 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { X, Image, Users, Lock, Globe, Video, Loader2, Target } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import {
+  X,
+  Image,
+  Users,
+  Lock,
+  Globe,
+  Video,
+  Loader2,
+  Target,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CreatePostModalProps {
   isOpen: boolean;
@@ -17,16 +36,23 @@ interface CreatePostModalProps {
   preselectedFigure?: any;
 }
 
-export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFigure }: CreatePostModalProps) => {
+export const CreatePostModal = ({
+  isOpen,
+  onClose,
+  onPostCreated,
+  preselectedFigure,
+}: CreatePostModalProps) => {
   const { user } = useAuth();
-  const [content, setContent] = useState('');
-  const [privacy, setPrivacy] = useState('public');
+  const [content, setContent] = useState("");
+  const [privacy, setPrivacy] = useState("public");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(null);
-  const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
+  const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(
+    null
+  );
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedFigure, setSelectedFigure] = useState<any>(null);
-  const [figureSearchTerm, setFigureSearchTerm] = useState('');
+  const [figureSearchTerm, setFigureSearchTerm] = useState("");
   const [availableFigures, setAvailableFigures] = useState([]);
   const [showFigureSearch, setShowFigureSearch] = useState(false);
   const { toast } = useToast();
@@ -35,14 +61,14 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
   const fetchFigures = async () => {
     try {
       const { data: figures, error } = await supabase
-        .from('figures')
-        .select('id, name, difficulty_level, category, image_url')
-        .order('name', { ascending: true });
+        .from("figures")
+        .select("id, name, difficulty_level, category, image_url")
+        .order("name", { ascending: true });
 
       if (error) throw error;
       setAvailableFigures(figures || []);
     } catch (error) {
-      console.error('Error fetching figures:', error);
+      console.error("Error fetching figures:", error);
     }
   };
 
@@ -56,7 +82,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
     }
   }, [isOpen, preselectedFigure]);
 
-  const filteredFigures = availableFigures.filter(figure =>
+  const filteredFigures = availableFigures.filter((figure) =>
     figure.name.toLowerCase().includes(figureSearchTerm.toLowerCase())
   );
 
@@ -77,7 +103,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
       toast({
         title: "Error",
         description: "Please add some content to your post",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -86,60 +112,62 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
       toast({
         title: "Error",
         description: "You must be logged in to create a post",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
-    console.log('Starting post creation...', { user, content, selectedFile });
+    console.log("Starting post creation...", { user, content, selectedFile });
     try {
       let mediaUrl = null;
 
       // Upload media file if selected
       if (selectedFile) {
-        console.log('Uploading media file...', selectedFile);
-        const fileExt = selectedFile.name.split('.').pop();
+        console.log("Uploading media file...", selectedFile);
+        const fileExt = selectedFile.name.split(".").pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase.storage
-          .from('posts')
+          .from("posts")
           .upload(fileName, selectedFile);
 
         if (uploadError) {
-          console.error('Error uploading file:', uploadError);
+          console.error("Error uploading file:", uploadError);
           throw uploadError;
         } else {
           const { data } = supabase.storage
-            .from('posts')
+            .from("posts")
             .getPublicUrl(fileName);
           mediaUrl = data.publicUrl;
-          console.log('Media uploaded successfully:', mediaUrl);
+          console.log("Media uploaded successfully:", mediaUrl);
         }
       }
 
-      console.log('Creating post in database...');
+      console.log("Creating post in database...");
       // Create post in database
       const { data: newPost, error } = await supabase
-        .from('posts')
+        .from("posts")
         .insert({
           user_id: user.id,
           content,
           privacy,
-          image_url: mediaType === 'image' ? mediaUrl : null,
-          video_url: mediaType === 'video' ? mediaUrl : null,
+          image_url: mediaType === "image" ? mediaUrl : null,
+          video_url: mediaType === "video" ? mediaUrl : null,
           figure_id: selectedFigure?.id || null,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .select(`
+        .select(
+          `
           *,
           profiles (
             id,
             username,
             avatar_url
           )
-        `)
+        `
+        )
         .single();
 
       if (error) {
@@ -148,23 +176,23 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
 
       // Pass the raw post data to the callback
       onPostCreated(newPost);
-      
+
       // Reset form
-      setContent('');
+      setContent("");
       setSelectedFile(null);
       setSelectedFilePreview(null);
-      setPrivacy('public');
+      setPrivacy("public");
       onClose();
-      
+
       toast({
         title: "Post created!",
-        description: "Your post has been shared successfully."
+        description: "Your post has been shared successfully.",
       });
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "Failed to create post",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -173,9 +201,9 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
 
   const getPrivacyIcon = () => {
     switch (privacy) {
-      case 'friends':
+      case "friends":
         return <Users className="w-4 h-4" />;
-      case 'private':
+      case "private":
         return <Lock className="w-4 h-4" />;
       default:
         return <Globe className="w-4 h-4" />;
@@ -188,12 +216,14 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
         <DialogHeader>
           <DialogTitle className="text-white">Create New Post</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <div className="flex items-center space-x-3">
             <Avatar>
               <AvatarImage src={user?.avatar_url} />
-              <AvatarFallback>{user?.username?.[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback>
+                {user?.username?.[0]?.toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div>
               <p className="font-semibold text-white">{user?.username}</p>
@@ -208,7 +238,13 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
                   <SelectValue>
                     <div className="flex items-center space-x-2">
                       {getPrivacyIcon()}
-                      <span className="capitalize">{privacy === 'friends' ? 'Friends only' : privacy === 'private' ? 'Only me' : 'Public'}</span>
+                      <span className="capitalize">
+                        {privacy === "friends"
+                          ? "Friends only"
+                          : privacy === "private"
+                          ? "Only me"
+                          : "Public"}
+                      </span>
                     </div>
                   </SelectValue>
                 </SelectTrigger>
@@ -237,7 +273,11 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
           </div>
 
           <Textarea
-            placeholder={preselectedFigure ? `Share your version of ${preselectedFigure.name}...` : "What's on your mind?"}
+            placeholder={
+              preselectedFigure
+                ? `Share your version of ${preselectedFigure.name}...`
+                : "What's on your mind?"
+            }
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-muted-foreground resize-none"
@@ -249,15 +289,19 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   {selectedFigure.image_url && (
-                    <img 
-                      src={selectedFigure.image_url} 
+                    <img
+                      src={selectedFigure.image_url}
                       alt={selectedFigure.name}
                       className="w-12 h-12 rounded object-cover"
                     />
                   )}
                   <div>
-                    <p className="text-white font-medium">{selectedFigure.name}</p>
-                    <p className="text-muted-foreground text-sm">{selectedFigure.difficulty_level}</p>
+                    <p className="text-white font-medium">
+                      {selectedFigure.name}
+                    </p>
+                    <p className="text-muted-foreground text-sm">
+                      {selectedFigure.difficulty_level}
+                    </p>
                   </div>
                 </div>
                 {!preselectedFigure && (
@@ -283,9 +327,11 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
                 className="w-full justify-start border-white/20 text-white hover:bg-white/10"
               >
                 <Target className="w-4 h-4 mr-2" />
-                {showFigureSearch ? 'Hide Figure Selection' : 'Link to a Figure (Optional)'}
+                {showFigureSearch
+                  ? "Hide Figure Selection"
+                  : "Link to a Figure (Optional)"}
               </Button>
-              
+
               {showFigureSearch && (
                 <div className="space-y-3 p-4 bg-white/5 rounded-lg border border-white/10">
                   <input
@@ -302,25 +348,31 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
                         onClick={() => {
                           setSelectedFigure(figure);
                           setShowFigureSearch(false);
-                          setFigureSearchTerm('');
+                          setFigureSearchTerm("");
                         }}
                         className="p-3 hover:bg-white/10 rounded-md cursor-pointer flex items-center space-x-3 transition-colors"
                       >
                         {figure.image_url && (
-                          <img 
-                            src={figure.image_url} 
+                          <img
+                            src={figure.image_url}
                             alt={figure.name}
                             className="w-10 h-10 rounded object-cover flex-shrink-0"
                           />
                         )}
                         <div className="min-w-0 flex-1">
-                          <p className="text-white font-medium truncate">{figure.name}</p>
-                          <p className="text-muted-foreground text-sm">{figure.difficulty_level}</p>
+                          <p className="text-white font-medium truncate">
+                            {figure.name}
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            {figure.difficulty_level}
+                          </p>
                         </div>
                       </div>
                     ))}
                     {filteredFigures.length === 0 && (
-                      <p className="text-muted-foreground text-center py-4">No figures found</p>
+                      <p className="text-muted-foreground text-center py-4">
+                        No figures found
+                      </p>
                     )}
                   </div>
                 </div>
@@ -328,7 +380,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
             </div>
           )}
 
-          {selectedFilePreview && mediaType === 'image' && (
+          {selectedFilePreview && mediaType === "image" && (
             <div className="relative">
               <img
                 src={selectedFilePreview}
@@ -349,7 +401,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
             </div>
           )}
 
-          {selectedFilePreview && mediaType === 'video' && (
+          {selectedFilePreview && mediaType === "video" && (
             <div className="relative">
               <video
                 src={selectedFilePreview}
@@ -384,7 +436,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
                   variant="ghost"
                   className="text-muted-foreground hover:text-white text-sm"
                   asChild
-                  onClick={() => setMediaType('image')}
+                  onClick={() => setMediaType("image")}
                 >
                   <span className="flex items-center space-x-2 cursor-pointer">
                     <Image className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -393,7 +445,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
                   </span>
                 </Button>
               </label>
-              
+
               <input
                 type="file"
                 accept="video/*"
@@ -409,20 +461,27 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
               >
                 <span className="flex items-center space-x-2">
                   <Video className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline">Add Video (Coming Soon)</span>
+                  <span className="hidden sm:inline">
+                    Add Video (Coming Soon)
+                  </span>
                   <span className="sm:hidden">Video</span>
                 </span>
               </Button>
             </div>
 
             <div className="flex space-x-2 justify-end">
-              <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-white hover:bg-white/5 text-sm">
+              <Button
+                variant="ghost"
+                onClick={onClose}
+                className="text-muted-foreground hover:text-white hover:bg-white/5 text-sm"
+              >
                 Cancel
               </Button>
-              <Button 
-                onClick={handleSubmit} 
+              <Button
+                onClick={handleSubmit}
                 disabled={isLoading}
-                className="bg-primary hover:bg-primary/90 text-sm"
+                className="text-sm"
+                variant="primary"
               >
                 {isLoading ? (
                   <>
@@ -431,7 +490,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated, preselectedFig
                     <span className="sm:hidden">...</span>
                   </>
                 ) : (
-                  'Post'
+                  "Post"
                 )}
               </Button>
             </div>
