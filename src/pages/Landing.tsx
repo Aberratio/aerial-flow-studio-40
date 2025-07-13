@@ -414,7 +414,7 @@ const Landing = () => {
                       </span>
                     </div>
                   )}
-                  <CardContent className="p-6 sm:p-8">
+                  <CardContent className="p-6 sm:p-8 flex flex-col h-full">
                     <div className="text-center mb-6">
                       <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
                         {plan.name}
@@ -427,7 +427,7 @@ const Landing = () => {
                       </p>
                     </div>
 
-                    <div className="space-y-3 mb-6">
+                    <div className="space-y-4 mb-8 flex-grow">
                       {plan.features.map((feature, featureIndex) => (
                         <div
                           key={featureIndex}
@@ -447,7 +447,7 @@ const Landing = () => {
                             )}
                           </div>
                           <span
-                            className={`text-sm ${
+                            className={`text-base ${
                               feature.is_included
                                 ? "text-white"
                                 : "text-gray-400"
@@ -461,7 +461,7 @@ const Landing = () => {
 
                     <Button
                       variant={plan.is_popular ? "primary" : "outline"}
-                      className="w-full"
+                      className="w-full mt-auto"
                       onClick={() => openAuth("register")}
                     >
                       {plan.plan_key === "free" ? "Get Started" : "Upgrade Now"}
@@ -527,66 +527,68 @@ const Landing = () => {
       <CookiesBanner />
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 px-6 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <img
-                  src={IguanaLogo}
-                  alt="IguanaFlow Logo"
-                  className="w-6 h-6"
-                />
-                <span className="font-bold text-lg">
-                  <span className="text-white">Iguana</span>
-                  <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
-                    Flow
+      <footer className="relative z-10 mt-16">
+        <div className="glass-effect border-t border-white/10 py-12 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid md:grid-cols-3 gap-8 mb-8">
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <img
+                    src={IguanaLogo}
+                    alt="IguanaFlow Logo"
+                    className="w-8 h-8"
+                  />
+                  <span className="font-bold text-xl">
+                    <span className="text-white">Iguana</span>
+                    <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
+                      Flow
+                    </span>
                   </span>
-                </span>
+                </div>
+                <p className="text-gray-300 text-base leading-relaxed">
+                  Elevate your aerial practice with our comprehensive platform
+                  designed for aerial athletes of all levels.
+                </p>
               </div>
-              <p className="text-gray-400 text-sm">
-                Elevate your aerial practice with our comprehensive platform
-                designed for aerial athletes of all levels.
+
+              <div>
+                <h4 className="font-semibold text-white mb-6 text-lg">Quick Links</h4>
+                <div className="space-y-3">
+                  <Link
+                    to="/about-us"
+                    className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200"
+                  >
+                    About Us
+                  </Link>
+                  <Link
+                    to="/privacy-policy"
+                    className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200"
+                  >
+                    Privacy Policy
+                  </Link>
+                  <Link
+                    to="/terms-of-use"
+                    className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200"
+                  >
+                    Terms of Use
+                  </Link>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-white mb-6 text-lg">Contact</h4>
+                <div className="space-y-3">
+                  <p className="text-gray-300 text-base">hello@iguanaflow.com</p>
+                  <p className="text-gray-300 text-base">Support Center</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-white/10 pt-8 text-center">
+              <p className="text-gray-400 text-base">
+                © 2025 IguanaFlow. All rights reserved.
               </p>
             </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Quick Links</h4>
-              <div className="space-y-2">
-                <Link
-                  to="/about-us"
-                  className="text-gray-400 hover:text-purple-400 transition-colors text-sm block"
-                >
-                  About Us
-                </Link>
-                <Link
-                  to="/privacy-policy"
-                  className="text-gray-400 hover:text-purple-400 transition-colors text-sm block"
-                >
-                  Privacy Policy
-                </Link>
-                <Link
-                  to="/terms-of-use"
-                  className="text-gray-400 hover:text-purple-400 transition-colors text-sm block"
-                >
-                  Terms of Use
-                </Link>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="font-semibold text-white mb-4">Contact</h4>
-              <div className="space-y-2">
-                <p className="text-gray-400 text-sm">hello@iguanaflow.com</p>
-                <p className="text-gray-400 text-sm">Support Center</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-t border-white/10 pt-6 text-center">
-            <p className="text-gray-400 text-sm">
-              © 2025 IguanaFlow. All rights reserved.
-            </p>
           </div>
         </div>
       </footer>
