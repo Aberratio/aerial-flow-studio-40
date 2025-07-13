@@ -198,14 +198,14 @@ const Landing = () => {
 
       {/* Dynamic Gradient Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900 animate-fade-in"></div>
-      
+
       {/* Additional dynamic background effects */}
       <div className="absolute inset-0">
         <div className="absolute top-0 left-1/4 w-72 h-72 bg-gradient-to-br from-purple-600/20 to-pink-600/15 rounded-full blur-3xl animate-pulse animation-delay-0"></div>
         <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-gradient-to-bl from-emerald-500/15 to-teal-500/10 rounded-full blur-3xl animate-pulse animation-delay-1000"></div>
         <div className="absolute bottom-1/4 left-1/3 w-80 h-80 bg-gradient-to-tr from-violet-500/20 to-purple-500/15 rounded-full blur-2xl animate-pulse animation-delay-600"></div>
         <div className="absolute bottom-0 right-1/3 w-64 h-64 bg-gradient-to-tl from-pink-500/15 to-purple-600/10 rounded-full blur-3xl animate-pulse animation-delay-800"></div>
-        
+
         {/* Floating geometric shapes */}
         <div className="absolute top-1/4 left-1/6 w-3 h-3 bg-purple-400/60 rounded-full animate-pulse animation-delay-200"></div>
         <div className="absolute top-3/4 right-1/5 w-2 h-2 bg-pink-400/70 rounded-full animate-pulse animation-delay-400"></div>
@@ -366,13 +366,8 @@ const Landing = () => {
               >
                 <CardContent className="p-6 flex flex-col items-center justify-center">
                   <div
-                    className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${
-                      feature.accent === "tropical"
-                        ? "from-emerald-500 to-teal-500"
-                        : "from-purple-500 to-violet-500"
-                    } flex items-center justify-center mb-6 pulse-glow${
-                      feature.accent === "tropical" ? "-tropical" : ""
-                    }`}
+                    className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600/50 to-teal-700/50 
+                     flex items-center justify-center mb-6 `}
                   >
                     <feature.icon className="w-7 h-7 text-white" />
                   </div>
@@ -408,24 +403,31 @@ const Landing = () => {
           <div className="relative">
             {/* Background decorative circle */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-purple-500/10 to-pink-500/5 rounded-full blur-3xl"></div>
-            
+
             <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto relative z-10">
               {/* Left Decorative Card */}
-              <Card className="relative overflow-hidden lg:row-span-1">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600 via-pink-600 to-purple-800"></div>
-                <div className="absolute inset-0 bg-gradient-to-t from-purple-600/30 to-transparent"></div>
-                <CardContent className="relative z-10 p-8 h-full flex flex-col justify-center items-center text-center">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-6 leading-tight">
+              <Card className="relative overflow-hidden lg:row-span-1 glass-effect">
+                <CardContent className="relative z-10 px-8 py-12 h-full flex flex-col justify-center items-center text-center">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-10 leading-tight">
                     Choose what's right for you
                   </h3>
-                  <div className="w-24 h-24 mx-auto mb-4">
-                    <div className="w-full h-full rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                  <div className="w-24 h-24 mx-auto mb-10">
+                    <div className="w-full h-full rounded-full bg-gradient-to-br from-purple-600/50 to-teal-700/50 flex items-center justify-center">
                       <Trophy className="w-12 h-12 text-white" />
                     </div>
                   </div>
                   <p className="text-white font-medium">
                     Find the perfect plan for your aerial journey
                   </p>
+
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full font-bold lg:mt-auto mt-10"
+                    onClick={() => openAuth("register")}
+                  >
+                    GET STARTED
+                  </Button>
                 </CardContent>
               </Card>
 
@@ -434,9 +436,7 @@ const Landing = () => {
                 <Card
                   key={plan.id}
                   className={`relative glass-effect border-white/10 hover-lift transition-all duration-500 ${
-                    plan.is_popular 
-                      ? "ring-2 ring-purple-500/50 scale-105" 
-                      : ""
+                    plan.is_popular ? "ring-2 ring-purple-500/50 scale-105" : ""
                   }`}
                 >
                   {/* Enhanced gradient frame for popular plan */}
@@ -446,19 +446,11 @@ const Landing = () => {
                       <div className="absolute -inset-[2px] bg-gradient-to-r from-purple-600/50 via-pink-600/50 to-violet-600/50 rounded-lg blur-md opacity-50"></div>
                     </>
                   )}
-                  
+
                   {plan.is_popular && (
                     <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-                      <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                      <span className="bg-gradient-to-br from-purple-600/50 to-teal-700/50 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
                         Recommended
-                      </span>
-                    </div>
-                  )}
-                  
-                  {!plan.is_popular && (
-                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-                      <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
-                        Free Forever
                       </span>
                     </div>
                   )}
@@ -477,9 +469,13 @@ const Landing = () => {
                     </div>
 
                     <div className="space-y-4 mb-8 flex-grow">
-                      <h4 className={`font-semibold text-base mb-4 ${
-                        plan.is_popular ? "text-purple-400" : "text-emerald-400"
-                      }`}>
+                      <h4
+                        className={`font-semibold text-base mb-4 ${
+                          plan.is_popular
+                            ? "text-purple-400"
+                            : "text-emerald-400"
+                        }`}
+                      >
                         What you'll get:
                       </h4>
                       {plan.features.map((feature, featureIndex) => (
@@ -487,11 +483,15 @@ const Landing = () => {
                           key={featureIndex}
                           className="flex items-center space-x-3"
                         >
-                          <div className={`w-1 h-6 rounded-full ${
-                            feature.is_included
-                              ? (plan.is_popular ? "bg-gradient-to-b from-purple-500 to-pink-500" : "bg-gradient-to-b from-emerald-500 to-teal-500")
-                              : "bg-gray-600"
-                          }`}></div>
+                          <div
+                            className={`w-1 h-6 rounded-full ${
+                              feature.is_included
+                                ? plan.is_popular
+                                  ? "bg-gradient-to-b from-purple-500 to-pink-500"
+                                  : "bg-gradient-to-b from-emerald-500 to-teal-500"
+                                : "bg-gray-600"
+                            }`}
+                          ></div>
                           <span
                             className={`text-base ${
                               feature.is_included
@@ -505,28 +505,19 @@ const Landing = () => {
                       ))}
                       {plan.features.length < 5 && (
                         <div className="flex items-center space-x-3">
-                          <div className={`w-1 h-6 rounded-full ${
-                            plan.is_popular ? "bg-gradient-to-b from-purple-500 to-pink-500" : "bg-gradient-to-b from-emerald-500 to-teal-500"
-                          }`}></div>
+                          <div
+                            className={`w-1 h-6 rounded-full ${
+                              plan.is_popular
+                                ? "bg-gradient-to-b from-purple-500 to-pink-500"
+                                : "bg-gradient-to-b from-emerald-500 to-teal-500"
+                            }`}
+                          ></div>
                           <span className="text-white text-base">
                             ...and more!
                           </span>
                         </div>
                       )}
                     </div>
-
-                    <Button
-                      variant={plan.is_popular ? "primary" : "outline"}
-                      size="lg"
-                      className={`w-full mt-auto font-bold ${
-                        plan.is_popular 
-                          ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-600 hover:from-purple-500 hover:via-purple-400 hover:to-purple-500" 
-                          : ""
-                      }`}
-                      onClick={() => openAuth("register")}
-                    >
-                      GET STARTED
-                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -545,9 +536,9 @@ const Landing = () => {
       {/* CTA Section */}
       <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          <Card className="glass-effect-intense border-white/20 pulse-glow-soft overflow-hidden">
+          <Card className="glass-effect border-white/10 overflow-hidden">
             <CardContent className="p-8 sm:p-12 relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-violet-500/10 to-emerald-500/10"></div>
+              <div className="absolute inset-0"></div>
               <div className="relative z-10 space-y-6">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
                   Ready to{" "}
@@ -568,13 +559,6 @@ const Landing = () => {
                     className="text-lg px-8 animate-bounce-in"
                   >
                     Start Free Today
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={() => openAuth("login")}
-                    className="text-white hover:text-purple-300 text-lg px-8"
-                  >
-                    Sign In
                   </Button>
                 </div>
               </div>
@@ -620,7 +604,9 @@ const Landing = () => {
               </div>
 
               <div>
-                <h4 className="font-semibold text-white mb-6 text-lg">Quick Links</h4>
+                <h4 className="font-semibold text-white mb-6 text-lg">
+                  Quick Links
+                </h4>
                 <div className="space-y-3">
                   <Link
                     to="/about-us"
@@ -644,9 +630,13 @@ const Landing = () => {
               </div>
 
               <div>
-                <h4 className="font-semibold text-white mb-6 text-lg">Contact</h4>
+                <h4 className="font-semibold text-white mb-6 text-lg">
+                  Contact
+                </h4>
                 <div className="space-y-3">
-                  <p className="text-gray-300 text-base">hello@iguanaflow.com</p>
+                  <p className="text-gray-300 text-base">
+                    hello@iguanaflow.com
+                  </p>
                   <p className="text-gray-300 text-base">Support Center</p>
                 </div>
               </div>
