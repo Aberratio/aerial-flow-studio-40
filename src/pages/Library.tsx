@@ -7,13 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { CreateExerciseModal } from '@/components/CreateExerciseModal';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 const Library = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');

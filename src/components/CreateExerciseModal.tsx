@@ -5,10 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Upload, Loader2, Languages } from 'lucide-react';
+import { Upload, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -33,36 +31,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     video_url: '',
     tags: [] as string[]
   });
-  const [translations, setTranslations] = useState<Record<string, {
-    name: string;
-    description: string;
-    instructions: string;
-    tags: string[];
-  }>>({});
-  const [availableLanguages, setAvailableLanguages] = useState<Array<{id: string, name: string, native_name: string}>>([]);
   const [tagInput, setTagInput] = useState('');
-  const [translationTagInputs, setTranslationTagInputs] = useState<Record<string, string>>({});
-
-  // Fetch available languages
-  useEffect(() => {
-    const fetchLanguages = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('languages')
-          .select('id, name, native_name')
-          .order('is_default', { ascending: false });
-
-        if (error) throw error;
-        setAvailableLanguages(data || []);
-      } catch (error) {
-        console.error('Error fetching languages:', error);
-      }
-    };
-
-    if (isOpen) {
-      fetchLanguages();
-    }
-  }, [isOpen]);
 
   // Update form when editing a figure
   useEffect(() => {
@@ -79,33 +48,6 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         video_url: editingFigure.video_url || '',
         tags: editingFigure.tags || []
       });
-
-      // Fetch existing translations
-      const fetchTranslations = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('figure_translations')
-            .select('*')
-            .eq('figure_id', editingFigure.id);
-
-          if (error) throw error;
-
-          const translationData: Record<string, any> = {};
-          data?.forEach(translation => {
-            translationData[translation.language_id] = {
-              name: translation.name || '',
-              description: translation.description || '',
-              instructions: translation.instructions || '',
-              tags: translation.tags || []
-            };
-          });
-          setTranslations(translationData);
-        } catch (error) {
-          console.error('Error fetching translations:', error);
-        }
-      };
-
-      fetchTranslations();
     } else {
       setFormData({
         name: '',
@@ -119,11 +61,10 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         video_url: '',
         tags: []
       });
-      setTranslations({});
     }
     setTagInput('');
-    setTranslationTagInputs({});
   }, [editingFigure, isOpen]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -187,8 +128,6 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
       }
 
       // Create or update the figure
-      let figureId = editingFigure?.id;
-      
       if (editingFigure) {
         const { error } = await supabase
           .from('figures')
@@ -209,7 +148,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
         if (error) throw error;
       } else {
-        const { data, error } = await supabase
+        const { error } = await supabase
           .from('figures')
           .insert({
             name: formData.name.trim(),
@@ -223,51 +162,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             video_url: videoUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
             created_by: user.id
-          })
-          .select('id')
-          .single();
+          });
 
         if (error) throw error;
-        figureId = data.id;
-      }
-
-      // Save translations
-      for (const [languageId, translation] of Object.entries(translations)) {
-        if (translation.name.trim()) {
-          const translationData = {
-            figure_id: figureId,
-            language_id: languageId,
-            name: translation.name.trim(),
-            description: translation.description.trim() || null,
-            instructions: translation.instructions.trim() || null,
-            tags: translation.tags.length > 0 ? translation.tags : null
-          };
-
-          // Check if translation already exists
-          const { data: existingTranslation } = await supabase
-            .from('figure_translations')
-            .select('id')
-            .eq('figure_id', figureId)
-            .eq('language_id', languageId)
-            .single();
-
-          if (existingTranslation) {
-            // Update existing translation
-            const { error: translationError } = await supabase
-              .from('figure_translations')
-              .update(translationData)
-              .eq('id', existingTranslation.id);
-
-            if (translationError) throw translationError;
-          } else {
-            // Create new translation
-            const { error: translationError } = await supabase
-              .from('figure_translations')
-              .insert(translationData);
-
-            if (translationError) throw translationError;
-          }
-        }
       }
 
       toast({
@@ -288,11 +185,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         video_url: '',
         tags: []
       });
-      setTranslations({});
       setImageFile(null);
       setVideoFile(null);
       setTagInput('');
-      setTranslationTagInputs({});
 
       if (onExerciseCreated) onExerciseCreated();
       onClose();
@@ -346,37 +241,6 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     }
   };
 
-  const addTranslationTag = (languageId: string) => {
-    const tag = translationTagInputs[languageId]?.trim();
-    if (tag && !translations[languageId]?.tags?.includes(tag)) {
-      setTranslations(prev => ({
-        ...prev,
-        [languageId]: {
-          ...prev[languageId],
-          tags: [...(prev[languageId]?.tags || []), tag]
-        }
-      }));
-      setTranslationTagInputs(prev => ({ ...prev, [languageId]: '' }));
-    }
-  };
-
-  const removeTranslationTag = (languageId: string, tagToRemove: string) => {
-    setTranslations(prev => ({
-      ...prev,
-      [languageId]: {
-        ...prev[languageId],
-        tags: prev[languageId]?.tags?.filter(tag => tag !== tagToRemove) || []
-      }
-    }));
-  };
-
-  const handleTranslationKeyPress = (e: React.KeyboardEvent, languageId: string) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      addTranslationTag(languageId);
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10">
@@ -387,371 +251,186 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="basic">Basic Info</TabsTrigger>
-              <TabsTrigger value="translations" className="flex items-center">
-                <Languages className="w-4 h-4 mr-2" />
-                Translations
-              </TabsTrigger>
-            </TabsList>
+          <div>
+            <Label htmlFor="name" className="text-white">Exercise Name *</Label>
+            <Input
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+              placeholder="Enter exercise name"
+              required
+            />
+          </div>
 
-            <TabsContent value="basic" className="space-y-4 mt-6">
-              <div className="mb-4 p-3 bg-white/5 rounded-lg border border-white/10">
-                <p className="text-sm text-white/80">
-                  <span className="font-medium">Primary Language:</span> English (Default)
-                </p>
-                <p className="text-xs text-white/60 mt-1">
-                  Add translations in the Translations tab to make your exercise available in other languages.
-                </p>
-              </div>
-              
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="name" className="text-white">Exercise Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                placeholder="Enter exercise name"
-                required
-              />
+              <Label htmlFor="difficulty" className="text-white">Difficulty Level (Optional)</Label>
+              <Select 
+                value={formData.difficulty_level} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}
+              >
+                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectValue placeholder="Select difficulty" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Beginner">Beginner</SelectItem>
+                  <SelectItem value="Intermediate">Intermediate</SelectItem>
+                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  <SelectItem value="Expert">Expert</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="difficulty" className="text-white">Difficulty Level (Optional)</Label>
-                <Select 
-                  value={formData.difficulty_level} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}
+            <div>
+              <Label htmlFor="category" className="text-white">Category (Optional)</Label>
+              <Select 
+                value={formData.category} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+              >
+                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="silks">Silks</SelectItem>
+                  <SelectItem value="hoop">Hoop</SelectItem>
+                  <SelectItem value="pole">Pole</SelectItem>
+                  <SelectItem value="straps">Straps</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="type" className="text-white">Type (Optional)</Label>
+              <Select 
+                value={formData.type} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+              >
+                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="single figure">Single Figure</SelectItem>
+                  <SelectItem value="combo">Combo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="description" className="text-white">Description (Optional)</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+              placeholder="Brief description of the exercise"
+              rows={3}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="instructions" className="text-white">Instructions (Optional)</Label>
+            <Textarea
+              id="instructions"
+              value={formData.instructions}
+              onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
+              className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+              placeholder="Step-by-step instructions"
+              rows={4}
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="tags" className="text-white">Tags (Optional)</Label>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  id="tags"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  placeholder="Add a tag and press Enter"
+                />
+                <Button
+                  type="button"
+                  onClick={addTag}
+                  variant="outline"
+                  className="border-white/10 text-white hover:bg-white/10"
                 >
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                    <SelectValue placeholder="Select difficulty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Beginner">Beginner</SelectItem>
-                    <SelectItem value="Intermediate">Intermediate</SelectItem>
-                    <SelectItem value="Advanced">Advanced</SelectItem>
-                    <SelectItem value="Expert">Expert</SelectItem>
-                  </SelectContent>
-                </Select>
+                  Add
+                </Button>
               </div>
-
-              <div>
-                <Label htmlFor="category" className="text-white">Category (Optional)</Label>
-                <Select 
-                  value={formData.category} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
-                >
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="silks">Silks</SelectItem>
-                    <SelectItem value="hoop">Hoop</SelectItem>
-                    <SelectItem value="pole">Pole</SelectItem>
-                    <SelectItem value="straps">Straps</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="type" className="text-white">Type (Optional)</Label>
-                <Select 
-                  value={formData.type} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
-                >
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="single figure">Single Figure</SelectItem>
-                    <SelectItem value="combo">Combo</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex flex-wrap gap-2">
+                {formData.tags.map((tag, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="bg-white/10 text-white border-white/20 cursor-pointer"
+                    onClick={() => removeTag(tag)}
+                  >
+                    {tag} ✕
+                  </Badge>
+                ))}
               </div>
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="description" className="text-white">Description (Optional)</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                placeholder="Brief description of the exercise"
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="instructions" className="text-white">Instructions (Optional)</Label>
-              <Textarea
-                id="instructions"
-                value={formData.instructions}
-                onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                placeholder="Step-by-step instructions"
-                rows={4}
-              />
-            </div>
-
-            <div>
-              <Label className="text-white">Tags (Optional)</Label>
-              <div className="mt-2 space-y-2">
-                <div className="flex space-x-2">
-                  <Input
-                    value={tagInput}
-                    onChange={(e) => setTagInput(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                    placeholder="Add a tag (press Enter)"
-                  />
-                        <Button
-                          type="button"
-                          variant="primary"
-                          onClick={addTag}
-                          disabled={!tagInput.trim()}
-                        >
-                          Add
-                        </Button>
-                </div>
-                {formData.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.tags.map((tag, index) => (
-                      <Badge 
-                        key={index} 
-                        variant="outline" 
-                        className="border-purple-500/30 text-purple-300 pr-1"
-                      >
-                        {tag}
-                        <button
-                          type="button"
-                          onClick={() => removeTag(tag)}
-                          className="ml-1 hover:text-red-400"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+              <Label htmlFor="image" className="text-white">Exercise Image *</Label>
+              <div className="space-y-2">
+                <Input
+                  id="image"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="bg-white/5 border-white/10 text-white file:bg-white/10 file:text-white file:border-0"
+                />
+                {imageFile && (
+                  <p className="text-sm text-green-400">Image selected: {imageFile.name}</p>
+                )}
+                {formData.image_url && !imageFile && (
+                  <p className="text-sm text-white/60">Current image URL set</p>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-white">Image Upload {!editingFigure ? '*' : '(Optional)'}</Label>
-                <div className="mt-2">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    id="image-upload"
-                  />
-                  <label htmlFor="image-upload">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-white/20 text-white hover:bg-white/10"
-                      asChild
-                    >
-                      <span>
-                        <Upload className="w-4 h-4 mr-2" />
-                        {imageFile ? imageFile.name : 'Upload Image'}
-                      </span>
-                    </Button>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <Label className="text-white">Video Upload (Optional)</Label>
-                <div className="mt-2">
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoUpload}
-                    className="hidden"
-                    id="video-upload"
-                  />
-                  <label htmlFor="video-upload">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full border-white/20 text-white hover:bg-white/10"
-                      asChild
-                    >
-                      <span>
-                        <Upload className="w-4 h-4 mr-2" />
-                        {videoFile ? videoFile.name : 'Upload Video'}
-                      </span>
-                    </Button>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="text-sm text-muted-foreground">
-              Or provide URLs instead:
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="image_url" className="text-white">Image URL (Optional)</Label>
+            <div>
+              <Label htmlFor="video" className="text-white">Video (Optional)</Label>
+              <div className="space-y-2">
                 <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="https://example.com/image.jpg"
-                  disabled={!!imageFile}
+                  id="video"
+                  type="file"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                  className="bg-white/5 border-white/10 text-white file:bg-white/10 file:text-white file:border-0"
                 />
-              </div>
-
-              <div>
-                <Label htmlFor="video_url" className="text-white">Video URL (Optional)</Label>
-                <Input
-                  id="video_url"
-                  value={formData.video_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, video_url: e.target.value }))}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="https://example.com/video.mp4"
-                  disabled={!!videoFile}
-                />
+                {videoFile && (
+                  <p className="text-sm text-green-400">Video selected: {videoFile.name}</p>
+                )}
+                {formData.video_url && !videoFile && (
+                  <p className="text-sm text-white/60">Current video URL set</p>
+                )}
               </div>
             </div>
-            </TabsContent>
+          </div>
 
-            <TabsContent value="translations" className="space-y-4 mt-6">
-              <div className="text-sm text-muted-foreground mb-4">
-                Add translations for this exercise in different languages. This helps make your content accessible to more users.
-              </div>
-              
-              {availableLanguages.filter(lang => lang.id !== 'en').map(language => (
-                <Card key={language.id} className="glass-effect border-white/10">
-                  <CardHeader>
-                    <CardTitle className="text-white text-lg">{language.native_name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label className="text-white">Exercise Name (Optional)</Label>
-                      <Input
-                        value={translations[language.id]?.name || ''}
-                        onChange={(e) => setTranslations(prev => ({
-                          ...prev,
-                          [language.id]: { 
-                            name: e.target.value, 
-                            description: prev[language.id]?.description || '',
-                            instructions: prev[language.id]?.instructions || '',
-                            tags: prev[language.id]?.tags || []
-                          }
-                        }))}
-                        className="bg-white/5 border-white/10 text-white"
-                        placeholder={`Exercise name in ${language.native_name}`}
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white">Description (Optional)</Label>
-                      <Textarea
-                        value={translations[language.id]?.description || ''}
-                        onChange={(e) => setTranslations(prev => ({
-                          ...prev,
-                          [language.id]: { 
-                            name: prev[language.id]?.name || '',
-                            description: e.target.value,
-                            instructions: prev[language.id]?.instructions || '',
-                            tags: prev[language.id]?.tags || []
-                          }
-                        }))}
-                        className="bg-white/5 border-white/10 text-white"
-                        rows={3}
-                        placeholder={`Description in ${language.native_name}`}
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white">Instructions (Optional)</Label>
-                      <Textarea
-                        value={translations[language.id]?.instructions || ''}
-                        onChange={(e) => setTranslations(prev => ({
-                          ...prev,
-                          [language.id]: { 
-                            name: prev[language.id]?.name || '',
-                            description: prev[language.id]?.description || '',
-                            instructions: e.target.value,
-                            tags: prev[language.id]?.tags || []
-                          }
-                        }))}
-                        className="bg-white/5 border-white/10 text-white"
-                        rows={4}
-                        placeholder={`Instructions in ${language.native_name}`}
-                      />
-                    </div>
-
-                    <div>
-                      <Label className="text-white">Tags (Optional)</Label>
-                      <div className="flex space-x-2 mt-2">
-                        <Input
-                          value={translationTagInputs[language.id] || ''}
-                          onChange={(e) => setTranslationTagInputs(prev => ({ ...prev, [language.id]: e.target.value }))}
-                          onKeyPress={(e) => handleTranslationKeyPress(e, language.id)}
-                          className="bg-white/5 border-white/10 text-white"
-                          placeholder="Add a tag (press Enter)"
-                        />
-                        <Button
-                          type="button"
-                          variant="primary"
-                          onClick={() => addTranslationTag(language.id)}
-                          disabled={!translationTagInputs[language.id]?.trim()}
-                        >
-                          Add
-                        </Button>
-                      </div>
-                      {translations[language.id]?.tags?.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {translations[language.id].tags.map((tag, index) => (
-                            <Badge 
-                              key={index} 
-                              variant="outline" 
-                              className="border-purple-500/30 text-purple-300 pr-1"
-                            >
-                              {tag}
-                              <button
-                                type="button"
-                                onClick={() => removeTranslationTag(language.id, tag)}
-                                className="ml-1 hover:text-red-400"
-                              >
-                                ×
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </TabsContent>
-          </Tabs>
-
-          <div className="flex space-x-3 pt-4">
+          <div className="flex justify-end space-x-4">
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="flex-1 border-white/20 text-white hover:bg-white/10"
-              disabled={isLoading}
+              className="border-white/10 text-white hover:bg-white/10"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="primary"
-              className="flex-1"
               disabled={isLoading}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
             >
               {isLoading ? (
                 <>
@@ -759,7 +438,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                   {editingFigure ? 'Updating...' : 'Creating...'}
                 </>
               ) : (
-                editingFigure ? 'Update Exercise' : 'Add Exercise'
+                editingFigure ? 'Update Exercise' : 'Create Exercise'
               )}
             </Button>
           </div>

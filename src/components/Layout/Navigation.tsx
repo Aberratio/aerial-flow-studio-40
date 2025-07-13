@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Languages, Globe } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import IguanaLogo from '@/assets/iguana-logo.svg';
+
 interface NavigationProps {
   isOpen?: boolean;
   onClose?: () => void;
 }
+
 const Navigation: React.FC<NavigationProps> = ({
   isOpen = false,
   onClose
@@ -22,7 +23,6 @@ const Navigation: React.FC<NavigationProps> = ({
     user,
     logout
   } = useAuth();
-  const { t } = useLanguage();
   const [unreadCount, setUnreadCount] = useState(0);
   const isMobile = useIsMobile();
 
@@ -62,37 +62,39 @@ const Navigation: React.FC<NavigationProps> = ({
   // Check if user has premium access or admin override
   const hasPremiumAccess = user?.role && ['premium', 'trainer', 'admin'].includes(user.role);
   const isAdmin = user?.role === 'admin';
+  
   const freeNavItems = [{
     path: '/feed',
     icon: Home,
-    label: t('nav.feed')
+    label: 'Feed'
   }, {
     path: '/friends',
     icon: Users,
-    label: t('nav.friends')
+    label: 'Friends'
   }, {
     path: '/profile',
     icon: User,
-    label: t('nav.profile')
+    label: 'Profile'
   }, {
     path: '/inbox',
     icon: Bell,
-    label: t('nav.inbox')
+    label: 'Inbox'
   }];
+  
   const premiumNavItems = [{
     path: '/library',
     icon: BookOpen,
-    label: t('nav.library'),
+    label: 'Library',
     premium: true
   }, {
     path: '/challenges',
     icon: Trophy,
-    label: t('nav.challenges'),
+    label: 'Challenges',
     premium: true
   }, {
     path: '/training',
     icon: Dumbbell,
-    label: t('nav.training'),
+    label: 'Training',
     premium: true
   }];
 
@@ -100,18 +102,17 @@ const Navigation: React.FC<NavigationProps> = ({
   const adminItems = user?.role === 'admin' ? [{
     path: '/admin/achievements',
     icon: Settings,
-    label: t('nav.achievements')
-  }, {
-    path: '/admin/translations',
-    icon: Languages,
-    label: t('nav.translations')
+    label: 'Achievements'
   }, {
     path: '/admin/landing-page',
     icon: Globe,
-    label: t('nav.landing_page')
+    label: 'Landing Page'
   }] : [];
+  
   const isActive = (path: string) => location.pathname === path;
-  return <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
+  
+  return (
+    <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
       <div className="flex flex-col h-full p-4 overflow-y-auto">
         {/* Logo */}
         <Link to="/feed" onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 group ${isMobile ? 'mb-4 mt-16' : 'mb-8 mt-4'}`}>
@@ -124,49 +125,59 @@ const Navigation: React.FC<NavigationProps> = ({
         {/* Free Navigation Items */}
         <div className="flex-1 space-y-2">
           {freeNavItems.map(item => {
-          const Icon = item.icon;
-            return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+            const Icon = item.icon;
+            return (
+              <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                 <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
-              </Link>;
-        })}
+              </Link>
+            );
+          })}
 
           {/* Premium Section */}
           <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
           <div className="flex items-center space-x-2 px-3 mb-2">
             <Crown className="w-4 h-4 text-yellow-400" />
             <span className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider ${isMobile ? 'block' : 'hidden lg:block'}`}>
-              {t('nav.premium')}
+              Premium
             </span>
-            {!hasPremiumAccess && <Badge className={`bg-yellow-500/20 text-yellow-400 text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                {t('nav.upgrade')}
-              </Badge>}
+            {!hasPremiumAccess && (
+              <Badge className={`bg-yellow-500/20 text-yellow-400 text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
+                Upgrade
+              </Badge>
+            )}
           </div>
           
           {premiumNavItems.map(item => {
-          const Icon = item.icon;
-          const isDisabled = !hasPremiumAccess && !isAdmin;
-          return <Link key={item.path} to={isDisabled ? '/pricing' : item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) && !isDisabled ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : isDisabled ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+            const Icon = item.icon;
+            const isDisabled = !hasPremiumAccess && !isAdmin;
+            return (
+              <Link key={item.path} to={isDisabled ? '/pricing' : item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) && !isDisabled ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : isDisabled ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                 <Icon className={`w-5 h-5 flex-shrink-0 ${!isDisabled ? 'group-hover:scale-110' : ''} transition-transform`} />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
                 {isDisabled && <Lock className={`w-3 h-3 ml-auto text-muted-foreground/50 ${isMobile ? 'block' : 'hidden lg:block'}`} />}
-              </Link>;
-        })}
+              </Link>
+            );
+          })}
 
           {/* Admin Section */}
-          {adminItems.length > 0 && <>
+          {adminItems.length > 0 && (
+            <>
               <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
               <div className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2 ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                {t('nav.admin')}
+                Admin
               </div>
               {adminItems.map(item => {
-            const Icon = item.icon;
-            return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+                const Icon = item.icon;
+                return (
+                  <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                     <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                     <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
-                  </Link>;
-          })}
-            </>}
+                  </Link>
+                );
+              })}
+            </>
+          )}
         </div>
 
         {/* User Profile */}
@@ -186,27 +197,29 @@ const Navigation: React.FC<NavigationProps> = ({
             </Link>
           </div>
           <Button onClick={() => {
-          logout();
-          if (isMobile && onClose) onClose();
-        }} variant="ghost" size="sm" className="w-full mt-2 text-muted-foreground hover:text-white hover:bg-white/10 justify-start">
+            logout();
+            if (isMobile && onClose) onClose();
+          }} variant="ghost" size="sm" className="w-full mt-2 text-muted-foreground hover:text-white hover:bg-white/10 justify-start">
             <LogOut className="w-4 h-4 mr-3" />
-            <span className={isMobile ? 'block' : 'hidden lg:block'}>{t('nav.logout')}</span>
+            <span className={isMobile ? 'block' : 'hidden lg:block'}>Logout</span>
           </Button>
           
           {/* Footer Links */}
           <div className={`space-y-2 border-t border-white/10 ${isMobile ? 'mt-2 pt-2' : 'mt-4 pt-4'}`}>
             <Link to="/privacy-policy" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              {t('nav.privacy_policy')}
+              Privacy Policy
             </Link>
             <Link to="/terms-of-use" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              {t('nav.terms_of_use')}
+              Terms of Use
             </Link>
-            <Link to="/about" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              {t('nav.about_us')}
+            <Link to="/about-us" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
+              About Us
             </Link>
           </div>
         </div>
       </div>
-    </nav>;
+    </nav>
+  );
 };
+
 export default Navigation;

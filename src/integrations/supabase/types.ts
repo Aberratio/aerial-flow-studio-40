@@ -314,57 +314,6 @@ export type Database = {
           },
         ]
       }
-      figure_translations: {
-        Row: {
-          created_at: string
-          description: string | null
-          figure_id: string
-          id: string
-          instructions: string | null
-          language_id: string
-          name: string
-          tags: string[] | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          figure_id: string
-          id?: string
-          instructions?: string | null
-          language_id: string
-          name: string
-          tags?: string[] | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          figure_id?: string
-          id?: string
-          instructions?: string | null
-          language_id?: string
-          name?: string
-          tags?: string[] | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "figure_translations_figure_id_fkey"
-            columns: ["figure_id"]
-            isOneToOne: false
-            referencedRelation: "figures"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "figure_translations_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: false
-            referencedRelation: "languages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       figures: {
         Row: {
           category: string | null
@@ -469,51 +418,6 @@ export type Database = {
           },
         ]
       }
-      landing_page_content: {
-        Row: {
-          content_key: string
-          content_value: string
-          created_at: string
-          id: string
-          language_id: string
-          section_id: string
-          updated_at: string
-        }
-        Insert: {
-          content_key: string
-          content_value: string
-          created_at?: string
-          id?: string
-          language_id: string
-          section_id: string
-          updated_at?: string
-        }
-        Update: {
-          content_key?: string
-          content_value?: string
-          created_at?: string
-          id?: string
-          language_id?: string
-          section_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "landing_page_content_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: false
-            referencedRelation: "languages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "landing_page_content_section_id_fkey"
-            columns: ["section_id"]
-            isOneToOne: false
-            referencedRelation: "landing_page_sections"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       landing_page_sections: {
         Row: {
           created_at: string
@@ -543,33 +447,6 @@ export type Database = {
           is_active?: boolean
           section_key?: string
           section_type?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      languages: {
-        Row: {
-          created_at: string
-          id: string
-          is_default: boolean
-          name: string
-          native_name: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id: string
-          is_default?: boolean
-          name: string
-          native_name: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_default?: boolean
-          name?: string
-          native_name?: string
           updated_at?: string
         }
         Relationships: []
@@ -739,41 +616,6 @@ export type Database = {
           },
         ]
       }
-      pricing_feature_translations: {
-        Row: {
-          created_at: string
-          feature_key: string
-          feature_text: string
-          id: string
-          language_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          feature_key: string
-          feature_text: string
-          id?: string
-          language_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          feature_key?: string
-          feature_text?: string
-          id?: string
-          language_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pricing_feature_translations_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: false
-            referencedRelation: "languages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       pricing_plan_features: {
         Row: {
           created_at: string
@@ -802,51 +644,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "pricing_plan_features_plan_id_fkey"
-            columns: ["plan_id"]
-            isOneToOne: false
-            referencedRelation: "pricing_plans"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      pricing_plan_translations: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          language_id: string
-          name: string
-          plan_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          language_id: string
-          name: string
-          plan_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          language_id?: string
-          name?: string
-          plan_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "pricing_plan_translations_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: false
-            referencedRelation: "languages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "pricing_plan_translations_plan_id_fkey"
             columns: ["plan_id"]
             isOneToOne: false
             referencedRelation: "pricing_plans"
@@ -1015,44 +812,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      static_pages: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          language_id: string
-          page_key: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          language_id: string
-          page_key: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          language_id?: string
-          page_key?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "static_pages_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: false
-            referencedRelation: "languages"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       subscribers: {
         Row: {
@@ -1242,44 +1001,6 @@ export type Database = {
           },
         ]
       }
-      ui_strings: {
-        Row: {
-          category: string | null
-          created_at: string
-          id: string
-          language_id: string
-          string_key: string
-          updated_at: string
-          value: string
-        }
-        Insert: {
-          category?: string | null
-          created_at?: string
-          id?: string
-          language_id: string
-          string_key: string
-          updated_at?: string
-          value: string
-        }
-        Update: {
-          category?: string | null
-          created_at?: string
-          id?: string
-          language_id?: string
-          string_key?: string
-          updated_at?: string
-          value?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ui_strings_language_id_fkey"
-            columns: ["language_id"]
-            isOneToOne: false
-            referencedRelation: "languages"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -1411,45 +1132,6 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
-      }
-      user_settings: {
-        Row: {
-          created_at: string
-          id: string
-          language_preference: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          language_preference?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          language_preference?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_settings_language_preference_fkey"
-            columns: ["language_preference"]
-            isOneToOne: false
-            referencedRelation: "languages"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_settings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
       }
     }
     Views: {

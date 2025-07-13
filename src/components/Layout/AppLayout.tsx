@@ -4,7 +4,6 @@ import { Menu, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Navigation from './Navigation';
-import { LanguageSelector } from '@/components/LanguageSelector';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AppLayoutProps {
@@ -43,12 +42,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
         </Button>
       )}
 
-      {/* Language Selector - Top Right (Admin Only) */}
-      {user?.role === 'admin' && (
-        <div className="fixed top-4 right-4 z-50">
-          <LanguageSelector />
-        </div>
-      )}
       
       {/* Mobile Overlay */}
       {isMobile && sidebarOpen && (

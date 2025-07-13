@@ -12,7 +12,6 @@ import { SharePostModal } from '@/components/SharePostModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { useFeedPosts } from '@/hooks/useFeedPosts';
 import { useAuth } from '@/contexts/AuthContext';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { formatDistanceToNow } from 'date-fns';
 import { PricingModal } from '@/components/PricingModal';
@@ -40,7 +39,6 @@ const Feed = () => {
   const {
     user
   } = useAuth();
-  const { t } = useLanguage();
   const { hasPremiumAccess } = useSubscriptionStatus();
   const handlePostCreated = (newPost: any) => {
     // Convert the new post to match our FeedPost interface
@@ -106,8 +104,8 @@ const Feed = () => {
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">{t('feed.title')}</h1>
-              <p className="text-muted-foreground">{t('feed.subtitle')}</p>
+              <h1 className="text-3xl font-bold text-white mb-2">Your Feed</h1>
+              <p className="text-muted-foreground">See what your fellow aerial athletes are up to</p>
             </div>
           </div>
         </div>
@@ -122,7 +120,7 @@ const Feed = () => {
               </Avatar>
               <Button onClick={() => setShowCreatePost(true)} variant="ghost" className="flex-1 min-w-0 justify-start text-muted-foreground hover:text-white bg-white/5 hover:bg-white/10 h-12 text-sm sm:text-base">
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-                <span className="truncate">{t('feed.create_post_placeholder')}</span>
+                <span className="truncate">What's on your mind?</span>
               </Button>
             </div>
           </CardContent>
@@ -130,7 +128,7 @@ const Feed = () => {
 
         {posts.length === 0 ? <Card className="glass-effect border-white/10">
             <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">{t('feed.no_posts')}</p>
+              <p className="text-muted-foreground">No posts yet. Follow some users or create your first post!</p>
             </CardContent>
           </Card> : posts.map(post => <Card key={post.id} className="glass-effect border-white/10">
               <CardContent className="p-6">
@@ -163,11 +161,11 @@ const Feed = () => {
                         <DropdownMenuContent align="end" className="bg-background/95 border-white/10">
                           <DropdownMenuItem onClick={() => setEditingPost(post)} className="text-white hover:bg-white/10">
                             <Edit className="w-4 h-4 mr-2" />
-                            {t('feed.edit_post')}
+                            Edit Post
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeletingPost(post)} className="text-red-400 hover:bg-red-400/10 hover:text-red-300">
                             <Trash2 className="w-4 h-4 mr-2" />
-                            {t('feed.delete_post')}
+                            Delete Post
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>}
@@ -230,7 +228,7 @@ const Feed = () => {
         {posts.length > 0 && hasMore && <div className="flex justify-center mt-8">
             <Button onClick={loadMorePosts} disabled={loadingMore} variant="outline" className="border-white/20 text-white hover:bg-white/10">
               {loadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {loadingMore ? t('feed.loading') : t('feed.load_more')}
+              {loadingMore ? 'Loading...' : 'Load More Posts'}
             </Button>
           </div>}
       </div>
