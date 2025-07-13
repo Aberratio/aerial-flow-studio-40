@@ -7,7 +7,6 @@ import AuthModal from '@/components/Auth/AuthModal';
 import CookiesBanner from '@/components/CookiesBanner';
 import { supabase } from '@/integrations/supabase/client';
 import IguanaLogo from '@/assets/iguana-logo.svg';
-
 interface PricingPlan {
   id: string;
   plan_key: string;
@@ -17,13 +16,11 @@ interface PricingPlan {
   is_popular: boolean;
   features: PricingFeature[];
 }
-
 interface PricingFeature {
   feature_key: string;
   is_included: boolean;
   feature_text: string;
 }
-
 const Landing = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
@@ -31,12 +28,10 @@ const Landing = () => {
   const [heroImage, setHeroImage] = useState<string | null>(null);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [allDataLoaded, setAllDataLoaded] = useState(false);
-
   useEffect(() => {
     loadHeroImage();
     loadPricingPlans();
   }, []);
-
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
@@ -48,15 +43,11 @@ const Landing = () => {
       setAllDataLoaded(true);
     }
   }, [heroImage, pricingPlans]);
-
   const loadHeroImage = async () => {
     try {
-      const { data: heroSection } = await supabase
-        .from('landing_page_sections')
-        .select('image_url')
-        .eq('section_key', 'hero')
-        .single();
-      
+      const {
+        data: heroSection
+      } = await supabase.from('landing_page_sections').select('image_url').eq('section_key', 'hero').single();
       if (heroSection?.image_url) {
         setHeroImage(heroSection.image_url);
       }
@@ -64,30 +55,25 @@ const Landing = () => {
       console.error('Error loading hero image:', error);
     }
   };
-
   const loadPricingPlans = async () => {
     try {
-      const { data: plansData } = await supabase
-        .from('pricing_plans')
-        .select(`
+      const {
+        data: plansData
+      } = await supabase.from('pricing_plans').select(`
           *,
           pricing_plan_features (
             feature_key,
             is_included,
             display_order
           )
-        `)
-        .order('display_order');
-      
+        `).order('display_order');
       if (plansData) {
         const plansWithFeatures = plansData.map(plan => ({
           ...plan,
-          features: plan.pricing_plan_features
-            .map((feature: any) => ({
-              ...feature,
-              feature_text: getFeatureText(feature.feature_key)
-            }))
-            .sort((a, b) => a.display_order - b.display_order)
+          features: plan.pricing_plan_features.map((feature: any) => ({
+            ...feature,
+            feature_text: getFeatureText(feature.feature_key)
+          })).sort((a, b) => a.display_order - b.display_order)
         }));
         setPricingPlans(plansWithFeatures);
       }
@@ -95,7 +81,6 @@ const Landing = () => {
       console.error('Error loading pricing plans:', error);
     }
   };
-
   const getFeatureText = (featureKey: string) => {
     const featureTexts: Record<string, string> = {
       'basic_features': 'Basic features',
@@ -109,49 +94,46 @@ const Landing = () => {
     };
     return featureTexts[featureKey] || featureKey;
   };
-
-  const features = [
-    {
-      icon: Users,
-      title: 'Connect & Share',
-      description: 'Follow other aerial athletes, share your progress, and get inspired by the community.',
-      accent: 'tropical'
-    },
-    {
-      icon: BookOpen,
-      title: 'Comprehensive Library',
-      description: 'Access hundreds of aerial figures with detailed instructions and progressions.',
-      accent: 'primary'
-    },
-    {
-      icon: Trophy,
-      title: 'Take on Challenges',
-      description: 'Join structured training programs and track your improvement over time.',
-      accent: 'tropical'
-    },
-    {
-      icon: Zap,
-      title: 'Track Progress',
-      description: 'Log your training sessions and see your aerial journey unfold.',
-      accent: 'primary'
-    }
-  ];
-
-  const stats = [
-    { value: '10K+', label: 'Active Athletes' },
-    { value: '500+', label: 'Aerial Figures' },
-    { value: '50+', label: 'Challenges' },
-    { value: '95%', label: 'Success Rate' }
-  ];
-
+  const features = [{
+    icon: Users,
+    title: 'Connect & Share',
+    description: 'Follow other aerial athletes, share your progress, and get inspired by the community.',
+    accent: 'tropical'
+  }, {
+    icon: BookOpen,
+    title: 'Comprehensive Library',
+    description: 'Access hundreds of aerial figures with detailed instructions and progressions.',
+    accent: 'primary'
+  }, {
+    icon: Trophy,
+    title: 'Take on Challenges',
+    description: 'Join structured training programs and track your improvement over time.',
+    accent: 'tropical'
+  }, {
+    icon: Zap,
+    title: 'Track Progress',
+    description: 'Log your training sessions and see your aerial journey unfold.',
+    accent: 'primary'
+  }];
+  const stats = [{
+    value: '10K+',
+    label: 'Active Athletes'
+  }, {
+    value: '500+',
+    label: 'Aerial Figures'
+  }, {
+    value: '50+',
+    label: 'Challenges'
+  }, {
+    value: '95%',
+    label: 'Success Rate'
+  }];
   const openAuth = (mode: 'login' | 'register' = 'login') => {
     setAuthMode(mode);
     setAuthModalOpen(true);
   };
-
   if (!allDataLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
+    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
         <div className="text-center space-y-6">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
@@ -166,12 +148,9 @@ const Landing = () => {
           </div>
           <p className="text-muted-foreground animate-pulse">Loading your aerial journey...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="min-h-screen relative overflow-hidden parallax-bg">
+  return <div className="min-h-screen relative overflow-hidden parallax-bg">
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="hero-particle"></div>
@@ -209,7 +188,7 @@ const Landing = () => {
               </span>
               <span className="hidden md:inline">Get Started</span>
               <span className="hidden sm:inline md:hidden">Start</span>
-              <span className="sm:hidden">Start</span>
+              <span className="sm:hidden">Sign up</span>
               <span className="hidden sm:inline">
                 <ChevronRight className="ml-1 w-3 h-3 sm:w-4 sm:h-4" />
               </span>
@@ -241,22 +220,16 @@ const Landing = () => {
               </div>
 
               <div className={`grid grid-cols-2 sm:flex sm:items-center sm:space-x-8 gap-4 sm:gap-0 pt-6 sm:pt-8 max-w-sm mx-auto lg:mx-0 transition-all duration-1000 animation-delay-800 ${isLoaded ? 'animate-scale-in' : 'opacity-0 scale-90'}`}>
-                {stats.map((stat, index) => (
-                  <div key={index} className="text-center card-hover-effect">
+                {stats.map((stat, index) => <div key={index} className="text-center card-hover-effect">
                     <div className="gradient-text-mega text-2xl sm:text-3xl font-bold">{stat.value}</div>
                     <div className="text-muted-foreground text-xs sm:text-sm">{stat.label}</div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </div>
 
             <div className={`relative order-first lg:order-last transition-all duration-1000 animation-delay-1000 ${isLoaded ? 'animate-scale-in floating' : 'opacity-0 scale-75'}`}>
               <div className="relative z-10">
-                <img 
-                  src={heroImage || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"} 
-                  alt="Aerial athlete performing on silks" 
-                  className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense pulse-glow" 
-                />
+                <img src={heroImage || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"} alt="Aerial athlete performing on silks" className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense pulse-glow" />
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
               
@@ -282,8 +255,7 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className={`glass-effect border-white/10 hover-lift card-hover-effect transition-all duration-500 animation-delay-${(index + 1) * 200} animate-scale-in`}>
+            {features.map((feature, index) => <Card key={index} className={`glass-effect border-white/10 hover-lift card-hover-effect transition-all duration-500 animation-delay-${(index + 1) * 200} animate-scale-in`}>
                 <CardContent className="p-6">
                   <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${feature.accent === 'tropical' ? 'from-emerald-500 to-teal-500' : 'from-purple-500 to-violet-500'} flex items-center justify-center mb-4 pulse-glow${feature.accent === 'tropical' ? '-tropical' : ''}`}>
                     <feature.icon className="w-6 h-6 text-white" />
@@ -291,8 +263,7 @@ const Landing = () => {
                   <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -311,15 +282,12 @@ const Landing = () => {
 
           <div className="flex justify-center">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl">
-            {pricingPlans.map((plan, index) => (
-              <Card key={plan.id} className={`glass-effect border-white/10 hover-lift relative transition-all duration-500 animation-delay-${(index + 1) * 200} animate-scale-in ${plan.is_popular ? 'ring-2 ring-purple-500/50 scale-105' : ''}`}>
-                {plan.is_popular && (
-                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+            {pricingPlans.map((plan, index) => <Card key={plan.id} className={`glass-effect border-white/10 hover-lift relative transition-all duration-500 animation-delay-${(index + 1) * 200} animate-scale-in ${plan.is_popular ? 'ring-2 ring-purple-500/50 scale-105' : ''}`}>
+                {plan.is_popular && <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <span className="bg-gradient-to-r from-purple-500 to-violet-500 text-white px-4 py-1 rounded-full text-sm font-medium pulse-glow">
                       Most Popular
                     </span>
-                  </div>
-                )}
+                  </div>}
                 <CardContent className="p-6 sm:p-8">
                   <div className="text-center mb-6">
                     <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">{plan.name}</h3>
@@ -328,32 +296,21 @@ const Landing = () => {
                   </div>
                   
                   <div className="space-y-3 mb-6">
-                    {plan.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center space-x-3">
+                    {plan.features.map((feature, featureIndex) => <div key={featureIndex} className="flex items-center space-x-3">
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center ${feature.is_included ? 'bg-gradient-to-r from-emerald-500 to-teal-500' : 'bg-gray-600'}`}>
-                          {feature.is_included ? (
-                            <Heart className="w-3 h-3 text-white" />
-                          ) : (
-                            <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                          )}
+                          {feature.is_included ? <Heart className="w-3 h-3 text-white" /> : <span className="w-1 h-1 bg-gray-400 rounded-full"></span>}
                         </div>
                         <span className={`text-sm ${feature.is_included ? 'text-white' : 'text-gray-400'}`}>
                           {feature.feature_text}
                         </span>
-                      </div>
-                    ))}
+                      </div>)}
                   </div>
                   
-                  <Button 
-                    variant={plan.is_popular ? "primary" : "outline"} 
-                    className="w-full" 
-                    onClick={() => openAuth('register')}
-                  >
+                  <Button variant={plan.is_popular ? "primary" : "outline"} className="w-full" onClick={() => openAuth('register')}>
                     {plan.plan_key === 'free' ? 'Get Started' : 'Upgrade Now'}
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
             </div>
           </div>
         </div>
@@ -389,12 +346,7 @@ const Landing = () => {
       </section>
 
       {/* Auth Modal */}
-      <AuthModal
-        open={authModalOpen}
-        onOpenChange={setAuthModalOpen}
-        mode={authMode}
-        onModeChange={setAuthMode}
-      />
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} mode={authMode} onModeChange={setAuthMode} />
 
       {/* Cookies Banner */}
       <CookiesBanner />
@@ -457,8 +409,6 @@ const Landing = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default Landing;
