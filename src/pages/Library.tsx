@@ -270,25 +270,7 @@ const Library = () => {
             isOpen={!!selectedFigure}
             onClose={() => setSelectedFigure(null)}
             figure={selectedFigure}
-          >
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-white text-lg font-semibold mb-2">{selectedFigure.name}</h3>
-                <p className="text-muted-foreground mb-4">
-                  {selectedFigure.description || "No description available."}
-                </p>
-                
-                {selectedFigure.instructions && (
-                  <div className="space-y-2">
-                    <h4 className="text-white font-medium">Instructions:</h4>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      {selectedFigure.instructions || "No instructions available."}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </FigurePreviewModal>
+          />
         )}
 
         {/* Create Exercise Modal */}
@@ -298,11 +280,11 @@ const Library = () => {
             setShowCreateExercise(false);
             setEditingFigure(null);
           }}
-          onSuccess={() => {
+          onExerciseCreated={() => {
             fetchFigures();
             setEditingFigure(null);
           }}
-          figure={editingFigure}
+          editingFigure={editingFigure}
         />
 
         {/* Delete Confirmation Modal */}
