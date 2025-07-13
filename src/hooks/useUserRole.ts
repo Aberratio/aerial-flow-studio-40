@@ -37,13 +37,19 @@ export const useUserRole = () => {
 
   const isTrainer = userRole === 'trainer';
   const isAdmin = userRole === 'admin';
+  const isPremium = userRole === 'premium';
+  const isFree = userRole === 'free';
   const canCreateChallenges = isTrainer || isAdmin;
+  const canAccessLibrary = isPremium || isTrainer || isAdmin;
 
   return {
     userRole,
     isLoading,
     isTrainer,
     isAdmin,
-    canCreateChallenges
+    isPremium,
+    isFree,
+    canCreateChallenges,
+    canAccessLibrary
   };
 };

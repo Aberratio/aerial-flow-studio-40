@@ -19,9 +19,13 @@ import { TrainingDetailsModal } from "@/components/TrainingDetailsModal";
 import { TrainingSessionPage } from "@/components/TrainingSessionPage";
 import { CreateTrainingModal } from "@/components/CreateTrainingModal";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useNavigate } from "react-router-dom";
 const Training = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
+  const navigate = useNavigate();
   const [showCreateSession, setShowCreateSession] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [showSessionDetails, setShowSessionDetails] = useState(false);
@@ -135,6 +139,57 @@ const Training = () => {
       />
     );
   }
+  // Show admin-only access message for non-admin users
+  if (!roleLoading && !isAdmin) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="glass-effect p-8 rounded-xl border border-white/10">
+            <div className="mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-primary-foreground rounded-full flex items-center justify-center">
+                <Target className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+                Admin Only
+              </h1>
+              <p className="text-muted-foreground text-lg mb-6">
+                Training sessions are currently only accessible to administrators.
+              </p>
+              <div className="space-y-3 text-left">
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Create and manage training sessions</span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Interactive workout guidance</span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Progress tracking and analytics</span>
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate("/")}
+              variant="primary"
+              className="mr-4"
+            >
+              Go to Home
+            </Button>
+            <Button
+              onClick={() => navigate("/library")}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              View Library
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-6xl mx-auto space-y-4 sm:space-y-6">

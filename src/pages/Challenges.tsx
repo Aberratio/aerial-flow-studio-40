@@ -11,7 +11,9 @@ import CreateChallengeModal from '@/components/CreateChallengeModal';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 const Challenges = () => {
+  const navigate = useNavigate();
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -25,7 +27,9 @@ const Challenges = () => {
     averageDuration: '0 days'
   });
   const {
-    canCreateChallenges
+    canCreateChallenges,
+    isAdmin,
+    isLoading: roleLoading
   } = useUserRole();
   const {
     user
@@ -257,6 +261,57 @@ const Challenges = () => {
         return 'View';
     }
   };
+  // Show admin-only access message for non-admin users
+  if (!roleLoading && !isAdmin) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="glass-effect p-8 rounded-xl border border-white/10">
+            <div className="mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-primary-foreground rounded-full flex items-center justify-center">
+                <Trophy className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+                Admin Only
+              </h1>
+              <p className="text-muted-foreground text-lg mb-6">
+                Challenges are currently only accessible to administrators.
+              </p>
+              <div className="space-y-3 text-left">
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Create and manage training challenges</span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Track participant progress</span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
+                  <span>Community engagement features</span>
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={() => navigate("/")}
+              variant="primary"
+              className="mr-4"
+            >
+              Go to Home
+            </Button>
+            <Button
+              onClick={() => navigate("/library")}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              View Library
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return <div className="min-h-screen p-4 sm:p-6">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6 sm:mb-8">

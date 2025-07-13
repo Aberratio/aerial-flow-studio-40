@@ -36,7 +36,7 @@ const Library = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { isAdmin, isLoading: roleLoading } = useUserRole();
+  const { canAccessLibrary, isLoading: roleLoading } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
@@ -222,8 +222,8 @@ const Library = () => {
     );
   }
 
-  // Show work in progress page for non-admin users
-  if (!isAdmin) {
+  // Show work in progress page for non-premium/trainer/admin users
+  if (!canAccessLibrary) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="max-w-2xl mx-auto text-center">
@@ -233,10 +233,10 @@ const Library = () => {
                 <AlertCircle className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                Work in Progress
+                Premium Feature
               </h1>
               <p className="text-muted-foreground text-lg mb-6">
-                The Exercise Library is currently under development and only accessible to administrators.
+                The Exercise Library is available for Premium subscribers, Trainers, and Administrators.
               </p>
               <div className="space-y-3 text-left">
                 <div className="flex items-center text-muted-foreground">
