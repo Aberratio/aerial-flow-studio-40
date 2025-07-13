@@ -181,7 +181,7 @@ const Landing = () => {
     },
     {
       value: "∞",
-      label: "possibilitie",
+      label: "possibilities",
     },
     {
       value: "100%",
