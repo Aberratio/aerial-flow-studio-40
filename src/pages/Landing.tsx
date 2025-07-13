@@ -425,16 +425,37 @@ const Landing = () => {
             </p>
           </div>
 
-          <div className="flex justify-center">
-            <div className="grid md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl mx-auto">
+          <div className="relative">
+            {/* Background decorative circle */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-purple-500/10 to-pink-500/5 rounded-full blur-3xl"></div>
+            
+            <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto relative z-10">
+              {/* Left Decorative Card */}
+              <Card className="relative overflow-hidden lg:row-span-1">
+                <div className="absolute inset-0 bg-gradient-to-br from-yellow-400 via-orange-400 to-pink-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-purple-600/30 to-transparent"></div>
+                <CardContent className="relative z-10 p-8 h-full flex flex-col justify-center items-center text-center">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 leading-tight">
+                    Choose what's right for you
+                  </h3>
+                  <div className="w-24 h-24 mx-auto mb-4">
+                    <div className="w-full h-full rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center">
+                      <Trophy className="w-12 h-12 text-white" />
+                    </div>
+                  </div>
+                  <p className="text-gray-800 font-medium">
+                    Find the perfect plan for your aerial journey
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Pricing Plans */}
               {pricingPlans.map((plan, index) => (
                 <Card
                   key={plan.id}
-                  className={`glass-effect border-white/10 hover-lift relative transition-all duration-500 animation-delay-${
-                    (index + 1) * 200
-                  } animate-scale-in ${
+                  className={`relative glass-effect border-white/10 hover-lift transition-all duration-500 ${
                     plan.is_popular 
-                      ? "ring-2 ring-purple-500/50 scale-105 before:absolute before:inset-0 before:bg-gradient-to-br before:from-purple-500/20 before:via-pink-500/15 before:to-violet-500/20 before:rounded-lg before:-z-10 before:blur-sm" 
+                      ? "ring-2 ring-purple-500/50 scale-105" 
                       : ""
                   }`}
                 >
@@ -447,44 +468,50 @@ const Landing = () => {
                   )}
                   
                   {plan.is_popular && (
-                    <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-20">
-                      <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 text-white px-6 py-2 rounded-full text-sm font-medium pulse-glow shadow-lg">
-                        Most Popular
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
+                      <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-violet-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                        All Features Unlimited
                       </span>
                     </div>
                   )}
-                  <CardContent className="p-6 sm:p-8 flex flex-col h-full">
+                  
+                  {!plan.is_popular && (
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
+                      <span className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                        Free Forever
+                      </span>
+                    </div>
+                  )}
+
+                  <CardContent className="p-8 flex flex-col h-full relative z-10 mt-4">
                     <div className="text-center mb-6">
-                      <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">
+                      <h3 className="text-2xl font-bold text-white mb-3">
                         {plan.name}
                       </h3>
-                      <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-3xl sm:text-4xl font-bold mb-2">
+                      <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-4xl font-bold mb-3">
                         {plan.price}
                       </div>
-                      <p className="text-gray-400 text-sm">
+                      <p className="text-gray-400 text-base leading-relaxed">
                         {plan.description}
                       </p>
                     </div>
 
                     <div className="space-y-4 mb-8 flex-grow">
+                      <h4 className={`font-semibold text-base mb-4 ${
+                        plan.is_popular ? "text-purple-400" : "text-emerald-400"
+                      }`}>
+                        What you'll get:
+                      </h4>
                       {plan.features.map((feature, featureIndex) => (
                         <div
                           key={featureIndex}
                           className="flex items-center space-x-3"
                         >
-                          <div
-                            className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                              feature.is_included
-                                ? "bg-gradient-to-r from-emerald-500 to-teal-500"
-                                : "bg-gray-600"
-                            }`}
-                          >
-                            {feature.is_included ? (
-                              <Heart className="w-3 h-3 text-white" />
-                            ) : (
-                              <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                            )}
-                          </div>
+                          <div className={`w-1 h-6 rounded-full ${
+                            feature.is_included
+                              ? (plan.is_popular ? "bg-gradient-to-b from-purple-500 to-pink-500" : "bg-gradient-to-b from-emerald-500 to-teal-500")
+                              : "bg-gray-600"
+                          }`}></div>
                           <span
                             className={`text-base ${
                               feature.is_included
@@ -496,18 +523,40 @@ const Landing = () => {
                           </span>
                         </div>
                       ))}
+                      {plan.features.length < 5 && (
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-1 h-6 rounded-full ${
+                            plan.is_popular ? "bg-gradient-to-b from-purple-500 to-pink-500" : "bg-gradient-to-b from-emerald-500 to-teal-500"
+                          }`}></div>
+                          <span className="text-white text-base">
+                            ...and more!
+                          </span>
+                        </div>
+                      )}
                     </div>
 
                     <Button
                       variant={plan.is_popular ? "primary" : "outline"}
-                      className="w-full mt-auto"
+                      size="lg"
+                      className={`w-full mt-auto font-bold ${
+                        plan.is_popular 
+                          ? "bg-gradient-to-r from-purple-600 via-purple-500 to-purple-600 hover:from-purple-500 hover:via-purple-400 hover:to-purple-500" 
+                          : ""
+                      }`}
                       onClick={() => openAuth("register")}
                     >
-                      {plan.plan_key === "free" ? "Get Started" : "Upgrade Now"}
+                      {plan.plan_key === "free" ? "GET STARTED" : "JOIN WAITLIST"}
                     </Button>
                   </CardContent>
                 </Card>
               ))}
+            </div>
+
+            {/* Decorative arrow - only show on larger screens */}
+            <div className="hidden lg:block absolute top-1/2 left-1/3 transform -translate-y-1/2 translate-x-8">
+              <div className="w-12 h-1 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full relative">
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1 w-0 h-0 border-l-4 border-l-orange-400 border-y-2 border-y-transparent"></div>
+              </div>
             </div>
           </div>
         </div>
