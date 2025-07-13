@@ -72,6 +72,18 @@ export const useFriendshipStatus = (userId: string) => {
     if (!user || !userId) return false;
 
     try {
+      // Check for existing relationship before sending request
+      const { data: existingRelationship } = await supabase
+        .from('friendships')
+        .select('status')
+        .or(`and(requester_id.eq.${user.id},addressee_id.eq.${userId}),and(requester_id.eq.${userId},addressee_id.eq.${user.id})`)
+        .maybeSingle();
+
+      if (existingRelationship) {
+        console.error('Relationship already exists:', existingRelationship.status);
+        return false;
+      }
+
       const { error } = await supabase
         .from('friendships')
         .insert({
@@ -80,7 +92,14 @@ export const useFriendshipStatus = (userId: string) => {
           status: 'pending'
         });
 
-      if (error) throw error;
+      if (error) {
+        // Handle constraint violation for duplicate requests
+        if (error.code === '23505') {
+          console.error('Duplicate friendship attempt prevented by database constraint');
+          return false;
+        }
+        throw error;
+      }
 
       // Award points for sending friend request
       await supabase

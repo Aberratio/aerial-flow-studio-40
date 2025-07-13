@@ -41,22 +41,21 @@ export const FriendInviteModal = ({
     try {
       setLoading(true);
 
-      // Get users that the current user is not friends with and exclude themselves
-      const { data: friendships } = await supabase
+      // Get all existing relationships (any status) to exclude from suggestions
+      const { data: allRelationships } = await supabase
         .from("friendships")
-        .select("requester_id, addressee_id")
-        .eq("status", "accepted")
+        .select("requester_id, addressee_id, status")
         .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
-      // Get friend IDs (people we're already friends with)
-      const friendIds =
-        friendships?.map((friendship) => {
-          return friendship.requester_id === user.id
-            ? friendship.addressee_id
-            : friendship.requester_id;
+      // Get all user IDs that have any relationship with current user
+      const relatedUserIds =
+        allRelationships?.map((relationship) => {
+          return relationship.requester_id === user.id
+            ? relationship.addressee_id
+            : relationship.requester_id;
         }) || [];
 
-      const excludeIds = [user.id, ...friendIds];
+      const excludeIds = [user.id, ...relatedUserIds];
 
       let query = supabase
         .from("profiles")
@@ -72,27 +71,13 @@ export const FriendInviteModal = ({
 
       if (error) throw error;
 
-      // Map profiles and check for pending requests
-      const profilesWithData = await Promise.all(
-        (profiles || []).map(async (profile) => {
-          // Check if there's already a pending friend request
-          const { data: existingRequest } = await supabase
-            .from("friendships")
-            .select("status")
-            .or(
-              `and(requester_id.eq.${user.id},addressee_id.eq.${profile.id}),and(requester_id.eq.${profile.id},addressee_id.eq.${user.id})`
-            )
-            .maybeSingle();
-
-          const hasPendingRequest = existingRequest?.status === "pending";
-
-          return {
-            ...profile,
-            isOnline: Math.random() > 0.5, // Temporary random status
-            hasPendingRequest,
-          };
-        })
-      );
+      // Since we already excluded users with any relationship, 
+      // no need to check for pending requests again
+      const profilesWithData = (profiles || []).map((profile) => ({
+        ...profile,
+        isOnline: Math.random() > 0.5, // Temporary random status
+        hasPendingRequest: false, // Already filtered out
+      }));
 
       setSuggestedFriends(profilesWithData);
     } catch (error) {
@@ -110,6 +95,24 @@ export const FriendInviteModal = ({
     if (!user) return;
 
     try {
+      // Double-check for existing relationship before inserting
+      const { data: existingRelationship } = await supabase
+        .from("friendships")
+        .select("status")
+        .or(
+          `and(requester_id.eq.${user.id},addressee_id.eq.${friendId}),and(requester_id.eq.${friendId},addressee_id.eq.${user.id})`
+        )
+        .maybeSingle();
+
+      if (existingRelationship) {
+        toast({
+          title: "Cannot send request",
+          description: "A friendship or request already exists with this user.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Insert the friend request
       const { error: friendshipError } = await supabase
         .from("friendships")
@@ -119,7 +122,18 @@ export const FriendInviteModal = ({
           status: "pending",
         });
 
-      if (friendshipError) throw friendshipError;
+      if (friendshipError) {
+        // Handle specific constraint violation
+        if (friendshipError.code === '23505') {
+          toast({
+            title: "Request already exists",
+            description: "A friendship or request already exists with this user.",
+            variant: "destructive",
+          });
+          return;
+        }
+        throw friendshipError;
+      }
 
       // Create activity notification for the recipient
       const { error: activityError } = await supabase

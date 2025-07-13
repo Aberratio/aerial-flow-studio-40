@@ -1156,6 +1156,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      friendship_user_pair: {
+        Args: { user1_id: string; user2_id: string }
+        Returns: string[]
+      }
     }
     Enums: {
       user_role: "free" | "premium" | "trainer" | "admin"
