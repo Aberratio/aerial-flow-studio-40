@@ -12,6 +12,7 @@ import {
   Crown,
   Play
 } from 'lucide-react';
+import { PricingModal } from '@/components/PricingModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -29,6 +30,7 @@ const Summary = () => {
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [featuredExercises, setFeaturedExercises] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   const hasFullAccess = isPremium || isTrainer || isAdmin;
 
@@ -82,23 +84,20 @@ const Summary = () => {
         .eq('privacy', 'public')
         .neq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(3);
+        .limit(6);
 
       setRecentPosts(postsData || []);
 
-      // Fetch featured exercises (beginner level for free users, all for premium)
-      let exerciseQuery = supabase
+      // Fetch random featured exercises 
+      const { data: exercisesData } = await supabase
         .from('figures')
         .select('id, name, description, image_url, difficulty_level, category')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(20);
 
-      if (!hasFullAccess) {
-        exerciseQuery = exerciseQuery.eq('difficulty_level', 'beginner');
-      }
-
-      const { data: exercisesData } = await exerciseQuery.limit(3);
-      setFeaturedExercises(exercisesData || []);
-
+      // Shuffle and take 6 random exercises
+      const shuffled = exercisesData?.sort(() => 0.5 - Math.random()) || [];
+      setFeaturedExercises(shuffled.slice(0, 6));
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast({
@@ -197,28 +196,36 @@ const Summary = () => {
             </Card>
           </Link>
 
-          <Link to="/challenges">
-            <Card className="glass-effect border-white/10 hover-lift group cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="font-semibold text-white mb-1">Challenges</h3>
-                <p className="text-muted-foreground text-sm">Join competitions</p>
-              </CardContent>
-            </Card>
-          </Link>
+          <Card 
+            className="glass-effect border-white/10 hover-lift group cursor-pointer relative"
+            onClick={() => hasFullAccess ? window.location.href = '/challenges' : setShowPricingModal(true)}
+          >
+            <CardContent className="p-6 text-center">
+              <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-white mb-1">Challenges</h3>
+              <p className="text-muted-foreground text-sm">Join competitions</p>
+              {!hasFullAccess && (
+                <Crown className="w-5 h-5 text-yellow-400 absolute top-4 right-4" />
+              )}
+            </CardContent>
+          </Card>
 
-          <Link to="/training">
-            <Card className="glass-effect border-white/10 hover-lift group cursor-pointer">
-              <CardContent className="p-6 text-center">
-                <Dumbbell className="w-8 h-8 text-green-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
-                <h3 className="font-semibold text-white mb-1">Training</h3>
-                <p className="text-muted-foreground text-sm">Your sessions</p>
-              </CardContent>
-            </Card>
-          </Link>
+          <Card 
+            className="glass-effect border-white/10 hover-lift group cursor-pointer relative"
+            onClick={() => hasFullAccess ? window.location.href = '/training' : setShowPricingModal(true)}
+          >
+            <CardContent className="p-6 text-center">
+              <Dumbbell className="w-8 h-8 text-green-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
+              <h3 className="font-semibold text-white mb-1">Training</h3>
+              <p className="text-muted-foreground text-sm">Your sessions</p>
+              {!hasFullAccess && (
+                <Crown className="w-5 h-5 text-yellow-400 absolute top-4 right-4" />
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Suggested Friends */}
           <Card className="glass-effect border-white/10">
             <CardHeader>
@@ -277,7 +284,7 @@ const Summary = () => {
                 Community Posts
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 max-h-96 overflow-y-auto">
               {recentPosts.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">
                   No recent posts to show
@@ -319,61 +326,81 @@ const Summary = () => {
               </Link>
             </CardContent>
           </Card>
+        </div>
 
-          {/* Featured Exercises */}
-          <Card className="glass-effect border-white/10">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <BookOpen className="w-5 h-5 mr-2" />
-                Featured Exercises
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+        {/* Featured Exercises - Full Width Section */}
+        <Card className="glass-effect border-white/10 mt-8">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center">
+              <BookOpen className="w-5 h-5 mr-2" />
+              Featured Exercises
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {featuredExercises.length === 0 ? (
-                <p className="text-muted-foreground text-center py-4">
+                <p className="text-muted-foreground text-center py-4 col-span-full">
                   No exercises available
                 </p>
               ) : (
                 featuredExercises.map((exercise) => {
                   const isLocked = !hasFullAccess && exercise.difficulty_level?.toLowerCase() !== 'beginner';
                   
+                  const handleClick = () => {
+                    if (isLocked) {
+                      setShowPricingModal(true);
+                    } else {
+                      window.location.href = `/exercise/${exercise.id}`;
+                    }
+                  };
+                  
                   return (
-                    <Link key={exercise.id} to={`/exercise/${exercise.id}`}>
-                      <div className={`p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer relative ${isLocked ? 'opacity-75' : ''}`}>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-white font-medium text-sm">{exercise.name}</h4>
-                          {isLocked && <Crown className="w-4 h-4 text-yellow-400" />}
-                        </div>
-                        {exercise.difficulty_level && (
-                          <Badge className={`text-xs ${getDifficultyColor(exercise.difficulty_level)} mb-2`}>
-                            {exercise.difficulty_level}
-                          </Badge>
-                        )}
-                        <p className="text-muted-foreground text-xs line-clamp-2">
-                          {exercise.description || 'No description available'}
-                        </p>
-                        {exercise.image_url && (
-                          <img 
-                            src={exercise.image_url} 
-                            alt={exercise.name}
-                            className={`w-full h-20 object-cover rounded mt-2 ${isLocked ? 'filter grayscale' : ''}`}
-                          />
-                        )}
+                    <div 
+                      key={exercise.id} 
+                      className={`p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer relative ${isLocked ? 'opacity-75' : ''}`}
+                      onClick={handleClick}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="text-white font-medium text-sm">{exercise.name}</h4>
+                        {isLocked && <Crown className="w-4 h-4 text-yellow-400" />}
                       </div>
-                    </Link>
+                      {exercise.difficulty_level && (
+                        <Badge className={`text-xs ${getDifficultyColor(exercise.difficulty_level)} mb-2`}>
+                          {exercise.difficulty_level}
+                        </Badge>
+                      )}
+                      <p className="text-muted-foreground text-xs line-clamp-2 mb-3">
+                        {exercise.description || 'No description available'}
+                      </p>
+                      {exercise.image_url && (
+                        <img 
+                          src={exercise.image_url} 
+                          alt={exercise.name}
+                          className={`w-full h-32 object-cover rounded ${isLocked ? 'filter grayscale' : ''}`}
+                        />
+                      )}
+                    </div>
                   );
                 })
               )}
+            </div>
+            <div className="mt-6">
               <Link to="/library">
                 <Button variant="ghost" className="w-full text-muted-foreground hover:text-white">
-                  View Library
+                  View Full Library
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      <PricingModal 
+        isOpen={showPricingModal} 
+        onClose={() => setShowPricingModal(false)}
+        onUpgrade={() => setShowPricingModal(false)}
+      />
     </div>
   );
 };

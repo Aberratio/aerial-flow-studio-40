@@ -66,7 +66,7 @@ const Navigation: React.FC<NavigationProps> = ({
   const freeNavItems = [{
     path: '/summary',
     icon: LayoutDashboard,
-    label: 'Summary'
+    label: 'Home'
   }, {
     path: '/feed',
     icon: Home,
