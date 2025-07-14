@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Globe } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Globe, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -64,9 +64,17 @@ const Navigation: React.FC<NavigationProps> = ({
   const isAdmin = user?.role === 'admin';
   
   const freeNavItems = [{
+    path: '/summary',
+    icon: LayoutDashboard,
+    label: 'Summary'
+  }, {
     path: '/feed',
     icon: Home,
     label: 'Feed'
+  }, {
+    path: '/library',
+    icon: BookOpen,
+    label: 'Library'
   }, {
     path: '/friends',
     icon: Users,
@@ -82,11 +90,6 @@ const Navigation: React.FC<NavigationProps> = ({
   }];
   
   const premiumNavItems = [{
-    path: '/library',
-    icon: BookOpen,
-    label: 'Library',
-    premium: true
-  }, {
     path: '/challenges',
     icon: Trophy,
     label: 'Challenges',
@@ -115,7 +118,7 @@ const Navigation: React.FC<NavigationProps> = ({
     <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
       <div className="flex flex-col h-full p-4 overflow-y-auto">
         {/* Logo */}
-        <Link to="/feed" onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 group ${isMobile ? 'mb-4 mt-16' : 'mb-8 mt-4'}`}>
+        <Link to="/summary" onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 group ${isMobile ? 'mb-4 mt-16' : 'mb-8 mt-4'}`}>
           <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-8 h-8" />
           <span className={`font-bold text-xl ${isMobile ? 'block' : 'hidden lg:block'} group-hover:scale-105 transition-transform`}>
             <span className="text-white">Iguana</span><span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">Flow</span>

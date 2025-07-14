@@ -29,6 +29,7 @@ import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
 import PostDetail from "@/pages/PostDetail";
 import ExerciseDetail from "@/pages/ExerciseDetail";
 import AchievementManagement from "@/pages/AchievementManagement";
+import Summary from "@/pages/Summary";
 
 import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
@@ -68,7 +69,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (user) {
-    return <Navigate to="/feed" replace />;
+    return <Navigate to="/summary" replace />;
   }
 
   return <>{children}</>;
@@ -83,6 +84,14 @@ const AppRoutes = () => {
           <PublicRoute>
             <Landing />
           </PublicRoute>
+        }
+      />
+      <Route
+        path="/summary"
+        element={
+          <ProtectedRoute>
+            <Summary />
+          </ProtectedRoute>
         }
       />
       <Route
