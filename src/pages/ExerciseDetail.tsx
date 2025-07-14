@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share, Users, Globe, Plus, X, UserCheck } from 'lucide-react';
+import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share, Users, Globe, Plus, X, UserCheck, Crown } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,15 +9,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useUserRole } from '@/hooks/useUserRole';
 import { ShareExerciseModal } from '@/components/ShareExerciseModal';
 import { CreateExerciseModal } from '@/components/CreateExerciseModal';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
+import { PricingModal } from '@/components/PricingModal';
 
 const ExerciseDetail = () => {
   const { exerciseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { isPremium, isTrainer, isAdmin } = useUserRole();
   
   const [exercise, setExercise] = useState<any>(null);
   const [progress, setProgress] = useState<any>(null);
@@ -35,6 +38,7 @@ const ExerciseDetail = () => {
   const [showAddExpert, setShowAddExpert] = useState(false);
   const [searchUser, setSearchUser] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -354,6 +358,61 @@ const ExerciseDetail = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Library
           </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const hasFullAccess = isPremium || isTrainer || isAdmin;
+  const isLocked = !hasFullAccess && exercise.difficulty_level?.toLowerCase() !== 'beginner';
+
+  if (isLocked) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="glass-effect p-8 rounded-xl border border-white/10">
+            <div className="mb-6">
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-full flex items-center justify-center">
+                <Crown className="w-8 h-8 text-white" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+                Premium Exercise
+              </h1>
+              <p className="text-muted-foreground text-lg mb-6">
+                This {exercise.difficulty_level} level exercise is available for Premium subscribers, Trainers, and Administrators.
+              </p>
+              <div className="space-y-3 text-left">
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                  <span>Access to all difficulty levels</span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                  <span>Advanced exercise library</span>
+                </div>
+                <div className="flex items-center text-muted-foreground">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
+                  <span>Progress tracking and achievements</span>
+                </div>
+              </div>
+            </div>
+            <Button
+              onClick={() => setShowPricingModal(true)}
+              variant="primary"
+              className="mr-4"
+            >
+              <Crown className="w-4 h-4 mr-2" />
+              Upgrade to Premium
+            </Button>
+            <Button
+              onClick={() => navigate('/library')}
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Library
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -898,6 +957,13 @@ const ExerciseDetail = () => {
           </div>
         </div>
       )}
+
+      {/* Pricing Modal */}
+      <PricingModal
+        isOpen={showPricingModal}
+        onClose={() => setShowPricingModal(false)}
+        onUpgrade={() => setShowPricingModal(false)}
+      />
     </div>
   );
 };

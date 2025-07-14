@@ -105,9 +105,7 @@ const AppRoutes = () => {
         path="/library"
         element={
           <ProtectedRoute>
-            <PremiumRoute>
-              <Library />
-            </PremiumRoute>
+            <Library />
           </ProtectedRoute>
         }
       />
@@ -115,9 +113,7 @@ const AppRoutes = () => {
         path="/exercise/:exerciseId"
         element={
           <ProtectedRoute>
-            <PremiumRoute>
-              <ExerciseDetail />
-            </PremiumRoute>
+            <ExerciseDetail />
           </ProtectedRoute>
         }
       />

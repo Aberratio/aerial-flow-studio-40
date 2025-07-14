@@ -11,6 +11,7 @@ import {
   Bookmark,
   AlertCircle,
   CircleMinus,
+  Crown,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ import {
 import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { FigurePreviewModal } from "@/components/FigurePreviewModal";
+import { PricingModal } from "@/components/PricingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -36,7 +38,7 @@ const Library = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { canAccessLibrary, isLoading: roleLoading } = useUserRole();
+  const { isPremium, isTrainer, isAdmin, isLoading: roleLoading } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedLevel, setSelectedLevel] = useState("all");
@@ -55,6 +57,7 @@ const Library = () => {
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [showFigureSearch, setShowFigureSearch] = useState(false);
   const [selectedFigure, setSelectedFigure] = useState(null);
+  const [showPricingModal, setShowPricingModal] = useState(false);
 
   const categories = ["all", "silks", "hoop", "pole", "straps"];
   const levels = ["all", "beginner", "intermediate", "advanced", "expert"];
@@ -222,56 +225,29 @@ const Library = () => {
     );
   }
 
-  // Show work in progress page for non-premium/trainer/admin users
-  if (!canAccessLibrary) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="glass-effect p-8 rounded-xl border border-white/10">
-            <div className="mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-primary-foreground rounded-full flex items-center justify-center">
-                <AlertCircle className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                Premium Feature
-              </h1>
-              <p className="text-muted-foreground text-lg mb-6">
-                The Exercise Library is available for Premium subscribers, Trainers, and Administrators.
-              </p>
-              <div className="space-y-3 text-left">
-                <div className="flex items-center text-muted-foreground">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Enhanced exercise management system</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Advanced filtering and search capabilities</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Progress tracking and achievements</span>
-                </div>
-              </div>
-            </div>
-            <Button
-              onClick={() => navigate("/training")}
-              variant="primary"
-              className="mr-4"
-            >
-              Go to Training
-            </Button>
-            <Button
-              onClick={() => navigate("/challenges")}
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              View Challenges
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const hasFullAccess = isPremium || isTrainer || isAdmin;
+
+  const handleFigureClick = (figure: any) => {
+    // Check if figure is locked for free users
+    if (!hasFullAccess && figure.difficulty_level?.toLowerCase() !== 'beginner') {
+      setShowPricingModal(true);
+      return;
+    }
+    
+    navigate(`/exercise/${figure.id}`);
+  };
+
+  const handleViewDetails = (e: React.MouseEvent, figure: any) => {
+    e.stopPropagation();
+    
+    // Check if figure is locked for free users
+    if (!hasFullAccess && figure.difficulty_level?.toLowerCase() !== 'beginner') {
+      setShowPricingModal(true);
+      return;
+    }
+    
+    setSelectedFigure(figure);
+  };
 
   return (
     <div className="min-h-screen p-6">
@@ -377,23 +353,38 @@ const Library = () => {
               No exercises found matching your criteria.
             </p>
           ) : (
-            filteredFigures.map((figure) => (
-              <Card
-                key={figure.id}
-                className="glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative"
-                onClick={() => navigate(`/exercise/${figure.id}`)}
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={
-                      figure.image_url ||
-                      "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop"
-                    }
-                    alt={figure.name}
-                    className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:scale-110 transition-transform duration-300" />
-                </div>
+            filteredFigures.map((figure) => {
+              const isLocked = !hasFullAccess && figure.difficulty_level?.toLowerCase() !== 'beginner';
+              
+              return (
+                <Card
+                  key={figure.id}
+                  className={`glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative ${
+                    isLocked ? 'opacity-75' : ''
+                  }`}
+                  onClick={() => handleFigureClick(figure)}
+                >
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={
+                        figure.image_url ||
+                        "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop"
+                      }
+                      alt={figure.name}
+                      className={`w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300 ${
+                        isLocked ? 'filter grayscale' : ''
+                      }`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:scale-110 transition-transform duration-300" />
+                    
+                    {isLocked && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="bg-black/80 rounded-full p-3">
+                          <Crown className="w-8 h-8 text-yellow-400" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between mb-2">
@@ -429,14 +420,23 @@ const Library = () => {
                     <Button
                       variant="primary"
                       size="sm"
-                      onClick={() => setSelectedFigure(figure)}
+                      onClick={(e) => handleViewDetails(e, figure)}
+                      className={isLocked ? 'opacity-75' : ''}
                     >
-                      View Details
+                      {isLocked ? (
+                        <>
+                          <Crown className="w-4 h-4 mr-1" />
+                          Premium
+                        </>
+                      ) : (
+                        "View Details"
+                      )}
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
 
@@ -470,6 +470,13 @@ const Library = () => {
           onConfirm={() => deleteFigure(deleteModal.figure?.id)}
           title="Delete Exercise"
           description={`Are you sure you want to delete "${deleteModal.figure?.name}"? This action cannot be undone.`}
+        />
+
+        {/* Pricing Modal */}
+        <PricingModal
+          isOpen={showPricingModal}
+          onClose={() => setShowPricingModal(false)}
+          onUpgrade={() => setShowPricingModal(false)}
         />
       </div>
     </div>
