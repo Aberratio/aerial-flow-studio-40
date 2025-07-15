@@ -402,9 +402,18 @@ const Library = () => {
                     )}
                   </div>
 
-                  <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                    {figure.description || "No description available."}
-                  </p>
+                  {figure.description && (
+                    <p className="text-muted-foreground text-sm mb-2 line-clamp-2">
+                      {figure.description}
+                    </p>
+                  )}
+                  
+                  <div className="flex items-center gap-2 mb-4">
+                    {getStatusIcon(figure.progress_status)}
+                    <span className="text-sm text-muted-foreground capitalize">
+                      {figure.progress_status.replace('_', ' ')}
+                    </span>
+                  </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col space-y-1">
