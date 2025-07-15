@@ -391,37 +391,78 @@ const Summary = () => {
                   return (
                     <div 
                       key={exercise.id} 
-                      className={`p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer relative ${isLocked ? 'opacity-75' : ''}`}
+                      className={`
+                        /* Mobile: Social media card style */
+                        md:p-4 md:rounded-lg md:bg-white/5 md:hover:bg-white/10 md:transition-colors
+                        /* Mobile: Feed-like layout */
+                        p-0 bg-transparent hover:bg-white/5 transition-colors rounded-xl overflow-hidden
+                        cursor-pointer relative ${isLocked ? 'opacity-75' : ''}
+                      `}
                       onClick={handleClick}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-white font-medium text-sm">{exercise.name}</h4>
-                        {isLocked && <Crown className="w-4 h-4 text-yellow-400" />}
+                      {/* Mobile: Image first (social media style) */}
+                      <div className="md:order-last">
+                        {exercise.image_url && (
+                          <div className="relative">
+                            <img 
+                              src={exercise.image_url} 
+                              alt={exercise.name}
+                              className={`
+                                /* Mobile: Full width with better aspect ratio */
+                                w-full h-56 object-cover rounded-t-xl
+                                /* Desktop: Keep original style */
+                                md:h-32 md:rounded md:rounded-t-none
+                                ${isLocked ? 'filter grayscale' : ''}
+                              `}
+                            />
+                            {/* Mobile: Overlay for locked content */}
+                            {isLocked && (
+                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center md:hidden">
+                                <div className="bg-black/80 rounded-full p-2">
+                                  <Crown className="w-6 h-6 text-yellow-400" />
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {exercise.difficulty_level && (
-                        <Badge className={`text-xs ${getDifficultyColor(exercise.difficulty_level)} mb-2`}>
-                          {exercise.difficulty_level}
-                        </Badge>
-                      )}
-                      {exercise.description && (
-                        <p className="text-muted-foreground text-xs line-clamp-2 mb-2">
-                          {exercise.description}
-                        </p>
-                      )}
                       
-                      <div className="flex items-center gap-2 mb-3">
-                        {getStatusIcon(exercise.progress_status)}
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {exercise.progress_status.replace('_', ' ')}
-                        </span>
+                      {/* Mobile: Content below image */}
+                      <div className="p-4 md:p-0 md:mb-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="text-white font-medium text-base md:text-sm">{exercise.name}</h4>
+                          {isLocked && <Crown className="w-4 h-4 text-yellow-400 md:hidden" />}
+                        </div>
+                        
+                        <div className="flex items-center gap-2 mb-2">
+                          {exercise.difficulty_level && (
+                            <Badge className={`text-xs ${getDifficultyColor(exercise.difficulty_level)}`}>
+                              {exercise.difficulty_level}
+                            </Badge>
+                          )}
+                          {/* Mobile: Status inline with difficulty */}
+                          <div className="flex items-center gap-1 md:hidden">
+                            {getStatusIcon(exercise.progress_status)}
+                            <span className="text-xs text-muted-foreground capitalize">
+                              {exercise.progress_status.replace('_', ' ')}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {exercise.description && (
+                          <p className="text-muted-foreground text-sm md:text-xs line-clamp-2 mb-2">
+                            {exercise.description}
+                          </p>
+                        )}
+                        
+                        {/* Desktop: Status separate (original layout) */}
+                        <div className="hidden md:flex items-center gap-2">
+                          {getStatusIcon(exercise.progress_status)}
+                          <span className="text-xs text-muted-foreground capitalize">
+                            {exercise.progress_status.replace('_', ' ')}
+                          </span>
+                        </div>
                       </div>
-                      {exercise.image_url && (
-                        <img 
-                          src={exercise.image_url} 
-                          alt={exercise.name}
-                          className={`w-full h-32 object-cover rounded ${isLocked ? 'filter grayscale' : ''}`}
-                        />
-                      )}
                     </div>
                   );
                 })
