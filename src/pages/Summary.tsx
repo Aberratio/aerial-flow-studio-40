@@ -10,7 +10,10 @@ import {
   MessageCircle,
   UserPlus,
   Crown,
-  Play
+  Play,
+  CheckCircle,
+  Bookmark,
+  AlertCircle
 } from 'lucide-react';
 import { PricingModal } from '@/components/PricingModal';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,6 +36,34 @@ const Summary = () => {
   const [showPricingModal, setShowPricingModal] = useState(false);
 
   const hasFullAccess = isPremium || isTrainer || isAdmin;
+
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case "beginner":
+        return "bg-green-500/20 text-green-400 border-green-500/30";
+      case "intermediate":
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+      case "advanced":
+        return "bg-red-500/20 text-red-400 border-red-500/30";
+      case "expert":
+        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
+      default:
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+    }
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle className="w-3 h-3 text-green-400" />;
+      case "for_later":
+        return <Bookmark className="w-3 h-3 text-blue-400" />;
+      case "failed":
+        return <AlertCircle className="w-3 h-3 text-red-400" />;
+      default:
+        return null;
+    }
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -95,9 +126,26 @@ const Summary = () => {
         .order('created_at', { ascending: false })
         .limit(20);
 
-      // Shuffle and take 6 random exercises
-      const shuffled = exercisesData?.sort(() => 0.5 - Math.random()) || [];
-      setFeaturedExercises(shuffled.slice(0, 6));
+      // Fetch progress for current user if logged in
+      if (exercisesData) {
+        const { data: progressData } = await supabase
+          .from('figure_progress')
+          .select('figure_id, status')
+          .eq('user_id', user.id);
+
+        const progressMap = new Map(
+          progressData?.map((p) => [p.figure_id, p.status]) || []
+        );
+        
+        const exercisesWithProgress = exercisesData.map((exercise) => ({
+          ...exercise,
+          progress_status: progressMap.get(exercise.id) || 'not_tried',
+        }));
+        
+        // Shuffle and take 6 random exercises
+        const shuffled = exercisesWithProgress?.sort(() => 0.5 - Math.random()) || [];
+        setFeaturedExercises(shuffled.slice(0, 6));
+      }
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
       toast({
@@ -138,20 +186,6 @@ const Summary = () => {
     }
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty?.toLowerCase()) {
-      case 'beginner':
-        return 'bg-green-500/20 text-green-400 border-green-500/30';
-      case 'intermediate':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'advanced':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
-      case 'expert':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-400 border-gray-500/30';
-    }
-  };
 
   if (loading) {
     return (
@@ -369,9 +403,18 @@ const Summary = () => {
                           {exercise.difficulty_level}
                         </Badge>
                       )}
-                      <p className="text-muted-foreground text-xs line-clamp-2 mb-3">
-                        {exercise.description || 'No description available'}
-                      </p>
+                      {exercise.description && (
+                        <p className="text-muted-foreground text-xs line-clamp-2 mb-2">
+                          {exercise.description}
+                        </p>
+                      )}
+                      
+                      <div className="flex items-center gap-2 mb-3">
+                        {getStatusIcon(exercise.progress_status)}
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {exercise.progress_status.replace('_', ' ')}
+                        </span>
+                      </div>
                       {exercise.image_url && (
                         <img 
                           src={exercise.image_url} 

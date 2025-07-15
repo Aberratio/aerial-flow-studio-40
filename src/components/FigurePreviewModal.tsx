@@ -273,10 +273,6 @@ export const FigurePreviewModal = ({
                     </Badge>)}
                 </div>
 
-                {figure.profiles?.username && <div className="flex items-center space-x-2 text-muted-foreground">
-                    <User className="w-4 h-4" />
-                    <span>Created by {figure.profiles.username}</span>
-                  </div>}
               </div>
 
                {/* Progress Status Section */}

@@ -417,14 +417,6 @@ const Library = () => {
 
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col space-y-1">
-                      {figure.profiles?.username && (
-                        <Badge
-                          variant="outline"
-                          className="border-white/20 text-white/60 text-xs"
-                        >
-                          by {figure.profiles.username}
-                        </Badge>
-                      )}
                     </div>
                     <Button
                       variant="primary"
