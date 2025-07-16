@@ -407,7 +407,7 @@ const ExerciseDetail = () => {
   }
 
   const hasFullAccess = isPremium || isTrainer || isAdmin;
-  const isLocked = !hasFullAccess && exercise.difficulty_level?.toLowerCase() !== 'beginner';
+  const isLocked = !hasFullAccess && exercise.premium;
 
   // Non-logged in user view
   if (!user) {
@@ -447,7 +447,7 @@ const ExerciseDetail = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                 
                 {/* Premium Lock Overlay */}
-                {exercise.difficulty_level?.toLowerCase() !== 'beginner' && (
+                {exercise.premium && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <div className="bg-black/80 rounded-full p-4">
                       <Crown className="w-12 h-12 text-yellow-400" />
@@ -505,14 +505,14 @@ const ExerciseDetail = () => {
                 </div>
 
                 {/* Premium Info or Sign Up CTA */}
-                {exercise.difficulty_level?.toLowerCase() !== 'beginner' ? (
+                {exercise.premium ? (
                   <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
                     <div className="flex items-center mb-3">
                       <Crown className="w-5 h-5 text-yellow-400 mr-2" />
                       <h3 className="text-lg font-semibold text-white">Premium Content</h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
-                      This {exercise.difficulty_level} level exercise is available for Premium subscribers, Trainers, and Administrators.
+                      This exercise is available for Premium subscribers, Trainers, and Administrators.
                     </p>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center text-muted-foreground">
@@ -616,7 +616,7 @@ const ExerciseDetail = () => {
                 Premium Exercise
               </h1>
               <p className="text-muted-foreground text-lg mb-6">
-                This {exercise.difficulty_level} level exercise is available for Premium subscribers, Trainers, and Administrators.
+                This exercise is available for Premium subscribers, Trainers, and Administrators.
               </p>
               <div className="space-y-3 text-left">
                 <div className="flex items-center text-muted-foreground">
