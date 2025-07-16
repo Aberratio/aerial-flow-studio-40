@@ -454,7 +454,7 @@ const Summary = () => {
                 Community Posts
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+            <CardContent className="space-y-6 max-h-96 overflow-y-auto">
               {recentPosts.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">
                   No recent posts to show

@@ -132,9 +132,9 @@ const Friends = () => {
               <p className="text-muted-foreground text-sm sm:text-base">Connect with fellow aerial athletes</p>
             </div>
             <div className="flex justify-end w-full sm:w-auto">
-              <Button variant="primary" onClick={() => setShowFriendInvite(true)} className="w-full sm:w-auto">
+              <Button variant="primary" onClick={() => setShowFriendInvite(true)} className="w-full sm:w-auto px-4 py-2 text-sm sm:text-base">
                 <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                <span className="text-sm sm:text-base">Find Friends</span>
+                <span>Find Friends</span>
               </Button>
             </div>
           </div>
@@ -171,7 +171,7 @@ const Friends = () => {
                 <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
                 <h3 className="text-xl font-semibold text-white mb-2">No friends yet</h3>
                 <p className="text-muted-foreground mb-6">Start building your aerial community by finding and connecting with other athletes</p>
-                <Button variant="primary" onClick={() => setShowFriendInvite(true)}>
+                <Button variant="primary" onClick={() => setShowFriendInvite(true)} className="px-4 py-2 text-sm sm:text-base">
                   <UserPlus className="w-5 h-5 mr-2" />
                   Find Friends
                 </Button>
@@ -188,7 +188,7 @@ const Friends = () => {
                       <p className="text-muted-foreground text-xs sm:text-sm truncate">{friend.bio || 'Aerial enthusiast'}</p>
                     </div>
                      <div className="flex-shrink-0">
-                       <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 h-8 w-8 p-0 sm:h-auto sm:w-auto sm:px-3" onClick={e => {
+                       <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 hover:bg-red-400/10 px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm" onClick={e => {
                   e.stopPropagation();
                   setFriendToRemove(friend.id);
                   setShowRemoveModal(true);

@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Share2, Bookmark, Plus, Loader2, MoreHorizontal, 
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { PostPreviewModal } from '@/components/PostPreviewModal';
 import { CreatePostModal } from '@/components/CreatePostModal';
@@ -10,7 +11,7 @@ import { EditPostModal } from '@/components/EditPostModal';
 import { ConfirmDeletePostModal } from '@/components/ConfirmDeletePostModal';
 import { SharePostModal } from '@/components/SharePostModal';
 import { Link, useNavigate } from 'react-router-dom';
-import { useFeedPosts } from '@/hooks/useFeedPosts';
+import { useFeedTabs } from '@/hooks/useFeedTabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
 import { formatDistanceToNow } from 'date-fns';
@@ -30,13 +31,15 @@ const Feed = () => {
     loading,
     loadingMore,
     hasMore,
+    activeTab,
+    switchTab,
     loadMorePosts,
     toggleLike,
     toggleSave,
     addPost,
     updatePost,
     deletePost
-  } = useFeedPosts();
+  } = useFeedTabs();
   const {
     user
   } = useAuth();
@@ -127,12 +130,33 @@ const Feed = () => {
           </CardContent>
         </Card>
 
-        {posts.length === 0 ? <Card className="glass-effect border-white/10">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No posts yet. Follow some users or create your first post!</p>
-            </CardContent>
-          </Card> : posts.map(post => <Card key={post.id} className="glass-effect border-white/10">
-              <CardContent className="p-6">
+        {/* Feed Tabs */}
+        <Tabs value={activeTab} onValueChange={(value) => switchTab(value as 'my_feed' | 'public_feed')} className="w-full mb-6">
+          <TabsList className="grid w-full grid-cols-2 bg-white/5 border-white/10">
+            <TabsTrigger value="my_feed" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+              My Feed
+            </TabsTrigger>
+            <TabsTrigger value="public_feed" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+              Public Feed
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value={activeTab} className="mt-6">
+            {posts.length === 0 ? (
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">
+                    {activeTab === 'my_feed' 
+                      ? 'No posts from your friends and followed users yet. Try the Public Feed to discover new content!'
+                      : 'No public posts to show at the moment.'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              posts.map(post => (
+                <Card key={post.id} className="glass-effect border-white/10 mb-6">
+                  <CardContent className="p-6">
                 {/* User Header */}
                 <div className="flex items-center space-x-3 mb-4">
                   <Link to={`/profile/${post.user.id}`} className="cursor-pointer">
@@ -219,17 +243,23 @@ const Feed = () => {
                   {post.user_id !== user?.id && <Button variant="ghost" size="sm" onClick={() => toggleSave(post.id)} className={`text-muted-foreground hover:text-white ${post.is_saved ? 'text-blue-400' : ''} px-2 sm:px-3 flex-shrink-0`}>
                       <Bookmark className={`w-4 h-4 sm:w-5 sm:h-5 ${post.is_saved ? 'fill-current' : ''}`} />
                     </Button>}
-                </div>
-              </CardContent>
-            </Card>)}
+                  </div>
+                </CardContent>
+              </Card>
+              ))
+            )}
+          </TabsContent>
+        </Tabs>
 
         {/* Load More Button */}
-        {posts.length > 0 && hasMore && <div className="flex justify-center mt-8">
+        {posts.length > 0 && hasMore && (
+          <div className="flex justify-center mt-8">
             <Button onClick={loadMorePosts} disabled={loadingMore} variant="outline" className="border-white/20 text-white hover:bg-white/10">
               {loadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               {loadingMore ? 'Loading...' : 'Load More Posts'}
             </Button>
-          </div>}
+          </div>
+        )}
       </div>
 
       <PostPreviewModal post={selectedPost} isOpen={!!selectedPost} onClose={() => setSelectedPost(null)} onToggleLike={toggleLike} onToggleSave={toggleSave} />
