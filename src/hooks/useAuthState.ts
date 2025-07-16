@@ -9,6 +9,7 @@ export const useAuthState = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isFirstLogin, setIsFirstLogin] = useState(false);
+  const [showIntroModal, setShowIntroModal] = useState(false);
   
   // Get follow counts for the current user
   const { followersCount, followingCount, refetchCounts } = useFollowCounts(session?.user?.id || '');
@@ -55,7 +56,12 @@ export const useAuthState = () => {
               setUser(userWithCompat);
               console.log('AuthContext: User set', userWithCompat);
 
-              // Check if user is new and hasn't seen pricing modal yet
+              // Check if user needs to see introduction modal
+              if (!profile.has_seen_intro && (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED')) {
+                setShowIntroModal(true);
+              }
+
+              // Check if user is new for pricing modal
               const createdAt = new Date(profile.created_at);
               const now = new Date();
               const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 3600);
@@ -184,12 +190,31 @@ export const useAuthState = () => {
     }
   };
 
+  const markIntroAsComplete = async () => {
+    if (user) {
+      try {
+        await supabase
+          .from('profiles')
+          .update({ has_seen_intro: true })
+          .eq('id', user.id);
+        
+        setShowIntroModal(false);
+        refreshUser();
+      } catch (error) {
+        console.error('Error marking intro as complete:', error);
+      }
+    }
+  };
+
   return {
     user,
     session,
     isLoading,
     isFirstLogin,
     setIsFirstLogin,
+    showIntroModal,
+    setShowIntroModal,
+    markIntroAsComplete,
     clearAuth,
     refetchCounts,
     refreshUser,

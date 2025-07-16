@@ -34,13 +34,14 @@ import Summary from "@/pages/Summary";
 import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
 import PremiumRoute from "@/components/PremiumRoute";
+import IntroductionModal from "@/components/IntroductionModal";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, showIntroModal, setShowIntroModal, markIntroAsComplete } = useAuth();
 
   if (isLoading) {
     return (
@@ -54,7 +55,16 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
     return <Navigate to="/" replace />;
   }
 
-  return <AppLayout>{children}</AppLayout>;
+  return (
+    <>
+      <AppLayout>{children}</AppLayout>
+      <IntroductionModal
+        open={showIntroModal}
+        onClose={() => setShowIntroModal(false)}
+        onComplete={markIntroAsComplete}
+      />
+    </>
+  );
 };
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -76,7 +86,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 };
 
 const ConditionalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, showIntroModal, setShowIntroModal, markIntroAsComplete } = useAuth();
 
   if (isLoading) {
     return (
@@ -88,7 +98,16 @@ const ConditionalLayout: React.FC<{ children: React.ReactNode }> = ({ children }
 
   // If user is logged in, wrap with AppLayout, otherwise render directly
   if (user) {
-    return <AppLayout>{children}</AppLayout>;
+    return (
+      <>
+        <AppLayout>{children}</AppLayout>
+        <IntroductionModal
+          open={showIntroModal}
+          onClose={() => setShowIntroModal(false)}
+          onComplete={markIntroAsComplete}
+        />
+      </>
+    );
   }
 
   return <>{children}</>;
