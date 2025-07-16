@@ -1,4 +1,5 @@
 import React, { createContext, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthState } from '@/hooks/useAuthState';
 import { useAuthOperations } from '@/hooks/useAuthOperations';
 import type { AuthContextType } from '@/types/auth';
@@ -14,12 +15,14 @@ export const useAuth = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const navigate = useNavigate();
   const { user, session, isLoading, isFirstLogin, setIsFirstLogin, showIntroModal, setShowIntroModal, markIntroAsComplete, clearAuth, refetchCounts, refreshUser } = useAuthState();
   const { signIn, signUp, signOut, login, register, logout } = useAuthOperations();
 
   const handleSignOut = async () => {
     await signOut();
     clearAuth();
+    navigate('/');
   };
 
   return (

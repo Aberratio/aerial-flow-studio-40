@@ -16,6 +16,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { PricingModal } from '@/components/PricingModal';
+import { ProfileCompletionSection } from '@/components/ProfileCompletionSection';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -374,43 +375,8 @@ const Summary = () => {
         </div>
 
         {/* Finish Your Profile Section */}
-        {user && (!user.avatar_url || !user.bio) && (
-          <Card className="glass-effect border-white/10 mb-8 border-2 border-purple-400/30">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <Users className="w-5 h-5 mr-2 text-purple-400" />
-                Finish Your Profile
-                <Badge className="ml-2 bg-purple-500/20 text-purple-300 border-purple-400/30">
-                  Recommended
-                </Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground mb-4">
-                Complete your profile to get better recommendations and connect with the community
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {!user.avatar_url && (
-                  <div className="flex items-center p-3 bg-white/5 rounded-lg border border-white/10">
-                    <div className="w-3 h-3 bg-red-400 rounded-full mr-3"></div>
-                    <span className="text-white text-sm">Add profile picture</span>
-                  </div>
-                )}
-                {!user.bio && (
-                  <div className="flex items-center p-3 bg-white/5 rounded-lg border border-white/10">
-                    <div className="w-3 h-3 bg-red-400 rounded-full mr-3"></div>
-                    <span className="text-white text-sm">Write your bio</span>
-                  </div>
-                )}
-              </div>
-              <Link to="/profile">
-                <Button variant="primary" className="w-full mt-4">
-                  Complete Profile
-                  <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
+        {user && (!user.avatar_url || !user.bio || !(user as any).sports?.length) && (
+          <ProfileCompletionSection user={user} onUpdate={fetchDashboardData} />
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
