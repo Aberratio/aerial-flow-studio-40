@@ -1231,7 +1231,7 @@ const ExerciseDetail = () => {
             ))}
             
             {/* Main congratulations content */}
-            <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-8 text-center max-w-md mx-auto animate-scale-in shadow-2xl">
+            <div className="bg-gradient-to-br from-purple-600/50 to-teal-700/50 rounded-xl p-8 text-center max-w-md mx-auto animate-scale-in shadow-2xl border border-white/20">
               <div className="text-6xl mb-4 animate-bounce">🎉</div>
               <h2 className="text-2xl font-bold text-white mb-2">Congratulations!</h2>
               <p className="text-white/80 mb-4">You've completed this exercise!</p>
