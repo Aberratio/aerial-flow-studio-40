@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share, Users, Globe, Plus, X, UserCheck, Crown } from 'lucide-react';
+import { ArrowLeft, Play, User, Clock, Target, BookOpen, Edit, Trash2, CheckCircle, Bookmark, AlertCircle, Share, Users, Globe, Plus, X, UserCheck, Crown, UserPlus, LogIn, MessageCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -366,6 +366,200 @@ const ExerciseDetail = () => {
   const hasFullAccess = isPremium || isTrainer || isAdmin;
   const isLocked = !hasFullAccess && exercise.difficulty_level?.toLowerCase() !== 'beginner';
 
+  // Non-logged in user view
+  if (!user) {
+    return (
+      <div className="min-h-screen p-6">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/library')}
+              className="text-white hover:bg-white/5"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Library
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowShareModal(true)}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              <Share className="w-4 h-4 mr-2" />
+              Share
+            </Button>
+          </div>
+
+          {/* Exercise Preview Card */}
+          <Card className="glass-effect border-white/10 mb-6">
+            <div className="grid lg:grid-cols-2 gap-0">
+              {/* Image Section */}
+              <div className="relative">
+                <img
+                  src={exercise.image_url || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=400&fit=crop'}
+                  alt={exercise.name}
+                  className="w-full h-64 lg:h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                
+                {/* Premium Lock Overlay */}
+                {exercise.difficulty_level?.toLowerCase() !== 'beginner' && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="bg-black/80 rounded-full p-4">
+                      <Crown className="w-12 h-12 text-yellow-400" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Content Section */}
+              <CardContent className="p-6 lg:p-8">
+                <div className="flex items-center gap-3 mb-4">
+                  <h1 className="text-2xl lg:text-3xl font-bold text-white">{exercise.name}</h1>
+                  {exercise.difficulty_level && (
+                    <Badge className={`text-xs ${getDifficultyColor(exercise.difficulty_level)}`}>
+                      {exercise.difficulty_level}
+                    </Badge>
+                  )}
+                </div>
+
+                {exercise.description && (
+                  <p className="text-muted-foreground mb-6 leading-relaxed">
+                    {exercise.description}
+                  </p>
+                )}
+
+                {/* Exercise Details */}
+                <div className="space-y-4 mb-6">
+                  <div className="flex items-center text-muted-foreground">
+                    <Target className="w-4 h-4 mr-2" />
+                    <span className="text-sm">Difficulty: {exercise.difficulty_level}</span>
+                  </div>
+                  {exercise.category && (
+                    <div className="flex items-center text-muted-foreground">
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      <span className="text-sm">Category: {exercise.category}</span>
+                    </div>
+                  )}
+                  {exercise.tags && exercise.tags.length > 0 && (
+                    <div className="flex items-center text-muted-foreground">
+                      <span className="text-sm mr-2">Tags:</span>
+                      <div className="flex flex-wrap gap-1">
+                        {exercise.tags.slice(0, 3).map((tag: string, index: number) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {exercise.tags.length > 3 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{exercise.tags.length - 3} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Premium Info or Sign Up CTA */}
+                {exercise.difficulty_level?.toLowerCase() !== 'beginner' ? (
+                  <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
+                    <div className="flex items-center mb-3">
+                      <Crown className="w-5 h-5 text-yellow-400 mr-2" />
+                      <h3 className="text-lg font-semibold text-white">Premium Content</h3>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      This {exercise.difficulty_level} level exercise is available for Premium subscribers, Trainers, and Administrators.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center text-muted-foreground">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                        <span>Full exercise instructions</span>
+                      </div>
+                      <div className="flex items-center text-muted-foreground">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                        <span>Progress tracking</span>
+                      </div>
+                      <div className="flex items-center text-muted-foreground">
+                        <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+                        <span>Community features</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {/* Action Buttons */}
+                <div className="flex flex-col gap-3">
+                  <Button
+                    onClick={() => navigate('/')}
+                    variant="primary"
+                    className="w-full"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Sign Up to Access
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/')}
+                    variant="outline"
+                    className="w-full border-white/20 text-white hover:bg-white/10"
+                  >
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Already have an account?
+                  </Button>
+                </div>
+              </CardContent>
+            </div>
+          </Card>
+
+          {/* Community Versions Preview */}
+          {communityVersions.length > 0 && (
+            <Card className="glass-effect border-white/10">
+              <CardContent className="p-6">
+                <h3 className="text-xl font-semibold text-white mb-4">Community Versions</h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {communityVersions.slice(0, 6).map((version) => (
+                    <div key={version.id} className="relative group">
+                      <div className="aspect-square rounded-lg overflow-hidden">
+                        {version.image_url ? (
+                          <img 
+                            src={version.image_url} 
+                            alt="Community version"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-white/10 flex items-center justify-center">
+                            <MessageCircle className="w-8 h-8 text-purple-400" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <div className="flex items-center text-white text-xs">
+                          <Avatar className="w-4 h-4 mr-1">
+                            <AvatarImage src={version.profiles?.avatar_url} />
+                            <AvatarFallback className="bg-purple-500 text-white text-xs">
+                              {version.profiles?.username?.[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="truncate">{version.profiles?.username}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-center mt-4">
+                  <p className="text-sm text-muted-foreground">
+                    Sign up to see more community versions and share your own!
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Premium lock screen for logged-in users
   if (isLocked) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
