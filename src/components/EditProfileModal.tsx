@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Save, X, Loader2 } from 'lucide-react';
+import { Camera, Save, X, Loader2, Plus, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -21,10 +22,52 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
   const [username, setUsername] = useState(user?.username || '');
   const [bio, setBio] = useState(user?.bio || '');
   const [email, setEmail] = useState(user?.email || '');
-  const [location, setLocation] = useState('');
+  const [sports, setSports] = useState<string[]>([]);
+  const [newSport, setNewSport] = useState('');
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const popularSports = [
+    'Aerial Silks', 'Aerial Hoop/Lyra', 'Aerial Hammock', 'Pole Dancing', 
+    'Acrobatics', 'Gymnastics', 'Dance', 'Yoga', 'Contortion', 'Circus Arts'
+  ];
+
+  useEffect(() => {
+    if (user && isOpen) {
+      // Fetch user's sports from profile
+      const fetchUserSports = async () => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('sports')
+          .eq('id', user.id)
+          .single();
+        
+        if (data?.sports) {
+          setSports(data.sports || []);
+        }
+      };
+      
+      fetchUserSports();
+    }
+  }, [user, isOpen]);
+
+  const addSport = (sport: string) => {
+    if (!sports.includes(sport)) {
+      setSports([...sports, sport]);
+    }
+  };
+
+  const removeSport = (sport: string) => {
+    setSports(sports.filter(s => s !== sport));
+  };
+
+  const addCustomSport = () => {
+    if (newSport.trim() && !sports.includes(newSport.trim())) {
+      setSports([...sports, newSport.trim()]);
+      setNewSport('');
+    }
+  };
 
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -77,6 +120,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
           bio,
           email,
           avatar_url: avatarUrl,
+          sports: sports,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -191,14 +235,70 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
             </div>
 
             <div>
-              <Label htmlFor="location" className="text-white">Location</Label>
-              <Input
-                id="location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                placeholder="Enter location"
-              />
+              <Label className="text-white">Sports & Activities</Label>
+              <div className="space-y-3">
+                {/* Popular Sports */}
+                <div className="flex flex-wrap gap-2">
+                  {popularSports.map((sport) => (
+                    <Button
+                      key={sport}
+                      variant={sports.includes(sport) ? "primary" : "outline"}
+                      size="sm"
+                      onClick={() => sports.includes(sport) ? removeSport(sport) : addSport(sport)}
+                      className={sports.includes(sport) 
+                        ? "bg-purple-500/80 text-white" 
+                        : "border-white/20 text-white hover:bg-white/10"
+                      }
+                    >
+                      {sport}
+                    </Button>
+                  ))}
+                </div>
+
+                {/* Selected Sports */}
+                {sports.length > 0 && (
+                  <div className="border border-white/10 rounded-lg p-3 bg-white/5">
+                    <Label className="text-white text-sm mb-2 block">Your Sports:</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {sports.map((sport) => (
+                        <Badge 
+                          key={sport} 
+                          className="bg-purple-500/20 text-purple-300 border-purple-400/30 flex items-center gap-1"
+                        >
+                          {sport}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeSport(sport)}
+                            className="h-4 w-4 p-0 hover:bg-red-500/20"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Add Custom Sport */}
+                <div className="flex gap-2">
+                  <Input
+                    value={newSport}
+                    onChange={(e) => setNewSport(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60 flex-1"
+                    placeholder="Add a custom sport..."
+                    onKeyPress={(e) => e.key === 'Enter' && addCustomSport()}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={addCustomSport}
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 

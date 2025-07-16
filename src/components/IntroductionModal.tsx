@@ -186,7 +186,7 @@ const IntroductionModal: React.FC<IntroductionModalProps> = ({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="absolute -right-2 -top-2 text-white/60 hover:text-white h-8 w-8 p-0"
+            className="absolute -right-2 -top-2 text-white/60 hover:text-white h-8 w-8 p-0 flex items-center justify-center"
           >
             <X className="w-4 h-4" />
           </Button>

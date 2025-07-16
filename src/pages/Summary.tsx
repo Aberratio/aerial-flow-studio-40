@@ -368,6 +368,46 @@ const Summary = () => {
           </Card>
         </div>
 
+        {/* Finish Your Profile Section */}
+        {user && (!user.avatar_url || !user.bio) && (
+          <Card className="glass-effect border-white/10 mb-8 border-2 border-purple-400/30">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <Users className="w-5 h-5 mr-2 text-purple-400" />
+                Finish Your Profile
+                <Badge className="ml-2 bg-purple-500/20 text-purple-300 border-purple-400/30">
+                  Recommended
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground mb-4">
+                Complete your profile to get better recommendations and connect with the community
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {!user.avatar_url && (
+                  <div className="flex items-center p-3 bg-white/5 rounded-lg border border-white/10">
+                    <div className="w-3 h-3 bg-red-400 rounded-full mr-3"></div>
+                    <span className="text-white text-sm">Add profile picture</span>
+                  </div>
+                )}
+                {!user.bio && (
+                  <div className="flex items-center p-3 bg-white/5 rounded-lg border border-white/10">
+                    <div className="w-3 h-3 bg-red-400 rounded-full mr-3"></div>
+                    <span className="text-white text-sm">Write your bio</span>
+                  </div>
+                )}
+              </div>
+              <Link to="/profile">
+                <Button variant="primary" className="w-full mt-4">
+                  Complete Profile
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Suggested Friends */}
           <Card className="glass-effect border-white/10">
@@ -384,17 +424,23 @@ const Summary = () => {
                 </p>
               ) : (
                 suggestedFriends.map((friend) => (
-                  <div key={friend.id} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10">
+                  <div 
+                    key={friend.id} 
+                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all hover-lift cursor-pointer group"
+                    onClick={() => window.location.href = `/friend/${friend.id}`}
+                  >
+                    <div className="flex items-center space-x-3 flex-1">
+                      <Avatar className="w-12 h-12 ring-2 ring-white/10 group-hover:ring-purple-400/50 transition-all">
                         <AvatarImage src={friend.avatar_url} />
-                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500">
+                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">
                           {friend.username?.[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div>
-                        <p className="text-white font-medium text-sm">{friend.username}</p>
-                        <p className="text-muted-foreground text-xs truncate max-w-24">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-white font-semibold text-sm group-hover:text-purple-300 transition-colors">
+                          {friend.username}
+                        </p>
+                        <p className="text-muted-foreground text-xs truncate">
                           {friend.bio || 'Aerial enthusiast'}
                         </p>
                       </div>
@@ -402,8 +448,11 @@ const Summary = () => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => sendFriendRequest(friend.id)}
-                      className="border-white/20 text-white hover:bg-white/10"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        sendFriendRequest(friend.id);
+                      }}
+                      className="border-white/20 text-white hover:bg-purple-500/20 hover:border-purple-400/50 transition-all ml-3"
                     >
                       <UserPlus className="w-4 h-4" />
                     </Button>
@@ -411,8 +460,8 @@ const Summary = () => {
                 ))
               )}
               <Link to="/friends">
-                <Button variant="ghost" className="w-full text-muted-foreground hover:text-white">
-                  View All
+                <Button variant="ghost" className="w-full text-muted-foreground hover:text-white mt-4">
+                  View All Friends
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>

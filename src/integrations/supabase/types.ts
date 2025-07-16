@@ -698,6 +698,7 @@ export type Database = {
           last_login_at: string | null
           login_count: number | null
           role: Database["public"]["Enums"]["user_role"]
+          sports: string[] | null
           updated_at: string | null
           username: string
         }
@@ -711,6 +712,7 @@ export type Database = {
           last_login_at?: string | null
           login_count?: number | null
           role?: Database["public"]["Enums"]["user_role"]
+          sports?: string[] | null
           updated_at?: string | null
           username: string
         }
@@ -724,6 +726,7 @@ export type Database = {
           last_login_at?: string | null
           login_count?: number | null
           role?: Database["public"]["Enums"]["user_role"]
+          sports?: string[] | null
           updated_at?: string | null
           username?: string
         }
