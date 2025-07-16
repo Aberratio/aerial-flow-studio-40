@@ -54,6 +54,20 @@ export const ProfilePreviewHeader = ({
       <div className="flex-1">
         <h2 className="text-2xl font-bold text-white">{profile.username}</h2>
         {profile.bio && <p className="text-muted-foreground">{profile.bio}</p>}
+        {profile.sports && profile.sports.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {profile.sports.slice(0, 3).map((sport: string) => (
+              <Badge key={sport} variant="secondary" className="text-xs">
+                {sport}
+              </Badge>
+            ))}
+            {profile.sports.length > 3 && (
+              <Badge variant="secondary" className="text-xs">
+                +{profile.sports.length - 3} more
+              </Badge>
+            )}
+          </div>
+        )}
         <div className="flex items-center space-x-4 mt-2">
           {profile.role === 'trainer' && (
             <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black">

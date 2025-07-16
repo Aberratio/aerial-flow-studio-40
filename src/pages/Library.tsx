@@ -24,6 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 
@@ -40,11 +42,11 @@ const Library = () => {
   const navigate = useNavigate();
   const { isPremium, isTrainer, isAdmin, isLoading: roleLoading } = useUserRole();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [selectedLevel, setSelectedLevel] = useState("all");
-  const [selectedType, setSelectedType] = useState("all");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedLevels, setSelectedLevels] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [editingFigure, setEditingFigure] = useState(null);
   const [figures, setFigures] = useState([]);
@@ -165,19 +167,25 @@ const Library = () => {
       .toLowerCase()
       .includes(searchTerm.toLowerCase());
     const matchesCategory =
-      selectedCategory === "all" ||
-      (figure.category && figure.category.toLowerCase() === selectedCategory);
+      selectedCategories.length === 0 ||
+      selectedCategories.includes("all") ||
+      (figure.category && selectedCategories.includes(figure.category.toLowerCase()));
     const matchesLevel =
-      selectedLevel === "all" ||
+      selectedLevels.length === 0 ||
+      selectedLevels.includes("all") ||
       (figure.difficulty_level &&
-        figure.difficulty_level.toLowerCase() === selectedLevel);
+        selectedLevels.includes(figure.difficulty_level.toLowerCase()));
     const matchesType =
-      selectedType === "all" || (figure.type && figure.type === selectedType);
+      selectedTypes.length === 0 ||
+      selectedTypes.includes("all") ||
+      (figure.type && selectedTypes.includes(figure.type));
     const matchesTags =
       selectedTags.length === 0 ||
       selectedTags.some((tag) => figure.tags?.includes(tag));
     const matchesStatus =
-      selectedStatus === "all" || figure.progress_status === selectedStatus;
+      selectedStatuses.length === 0 ||
+      selectedStatuses.includes("all") ||
+      selectedStatuses.includes(figure.progress_status);
     return (
       matchesSearch &&
       matchesCategory &&
@@ -288,59 +296,181 @@ const Library = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.slice(1).map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {/* Category Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between">
+                  <span>Categories ({selectedCategories.length})</span>
+                  <Filter className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="all-categories"
+                      checked={selectedCategories.includes("all")}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedCategories(["all"]);
+                        } else {
+                          setSelectedCategories([]);
+                        }
+                      }}
+                    />
+                    <label htmlFor="all-categories" className="text-white">All Categories</label>
+                  </div>
+                  {categories.slice(1).map((category) => (
+                    <div key={category} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={category}
+                        checked={selectedCategories.includes(category)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedCategories(prev => [...prev.filter(c => c !== "all"), category]);
+                          } else {
+                            setSelectedCategories(prev => prev.filter(c => c !== category));
+                          }
+                        }}
+                      />
+                      <label htmlFor={category} className="text-white capitalize">{category}</label>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
 
-            <Select value={selectedLevel} onValueChange={setSelectedLevel}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                <SelectValue placeholder="Filter by difficulty" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Difficulties</SelectItem>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-                <SelectItem value="expert">Expert</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Level Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between">
+                  <span>Difficulty ({selectedLevels.length})</span>
+                  <Filter className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="all-levels"
+                      checked={selectedLevels.includes("all")}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedLevels(["all"]);
+                        } else {
+                          setSelectedLevels([]);
+                        }
+                      }}
+                    />
+                    <label htmlFor="all-levels" className="text-white">All Difficulties</label>
+                  </div>
+                  {levels.slice(1).map((level) => (
+                    <div key={level} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={level}
+                        checked={selectedLevels.includes(level)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedLevels(prev => [...prev.filter(l => l !== "all"), level]);
+                          } else {
+                            setSelectedLevels(prev => prev.filter(l => l !== level));
+                          }
+                        }}
+                      />
+                      <label htmlFor={level} className="text-white capitalize">{level}</label>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
 
-            <Select value={selectedType} onValueChange={setSelectedType}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="single_figure">Single Figure</SelectItem>
-                <SelectItem value="combo">Combo</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Type Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between">
+                  <span>Types ({selectedTypes.length})</span>
+                  <Filter className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="all-types"
+                      checked={selectedTypes.includes("all")}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedTypes(["all"]);
+                        } else {
+                          setSelectedTypes([]);
+                        }
+                      }}
+                    />
+                    <label htmlFor="all-types" className="text-white">All Types</label>
+                  </div>
+                  {types.slice(1).map((type) => (
+                    <div key={type} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={type}
+                        checked={selectedTypes.includes(type)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedTypes(prev => [...prev.filter(t => t !== "all"), type]);
+                          } else {
+                            setSelectedTypes(prev => prev.filter(t => t !== type));
+                          }
+                        }}
+                      />
+                      <label htmlFor={type} className="text-white capitalize">{type.replace('_', ' ')}</label>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
 
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="for_later">For Later</SelectItem>
-                <SelectItem value="failed">Failed</SelectItem>
-                <SelectItem value="not_tried">Not Tried</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* Status Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between">
+                  <span>Status ({selectedStatuses.length})</span>
+                  <Filter className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm">
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="all-statuses"
+                      checked={selectedStatuses.includes("all")}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setSelectedStatuses(["all"]);
+                        } else {
+                          setSelectedStatuses([]);
+                        }
+                      }}
+                    />
+                    <label htmlFor="all-statuses" className="text-white">All Statuses</label>
+                  </div>
+                  {statuses.slice(1).map((status) => (
+                    <div key={status} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={status}
+                        checked={selectedStatuses.includes(status)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedStatuses(prev => [...prev.filter(s => s !== "all"), status]);
+                          } else {
+                            setSelectedStatuses(prev => prev.filter(s => s !== status));
+                          }
+                        }}
+                      />
+                      <label htmlFor={status} className="text-white capitalize">{status.replace('_', ' ')}</label>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 

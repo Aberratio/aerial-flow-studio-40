@@ -447,12 +447,12 @@ const Summary = () => {
                     </div>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="primary"
                       onClick={(e) => {
                         e.stopPropagation();
                         sendFriendRequest(friend.id);
                       }}
-                      className="border-white/20 text-white hover:bg-purple-500/20 hover:border-purple-400/50 transition-all ml-3"
+                      className="ml-3"
                     >
                       <UserPlus className="w-4 h-4" />
                     </Button>
