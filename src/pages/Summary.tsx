@@ -427,7 +427,7 @@ const Summary = () => {
                   <div 
                     key={friend.id} 
                     className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all hover-lift cursor-pointer group"
-                    onClick={() => window.location.href = `/friend/${friend.id}`}
+                    onClick={() => window.location.href = `/friends/${friend.id}`}
                   >
                     <div className="flex items-center space-x-3 flex-1">
                       <Avatar className="w-12 h-12 ring-2 ring-white/10 group-hover:ring-purple-400/50 transition-all">
