@@ -55,11 +55,11 @@ const Summary = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="w-3 h-3 text-green-400" />;
+        return <CheckCircle className="w-4 h-4 text-green-400" />;
       case "for_later":
-        return <Bookmark className="w-3 h-3 text-blue-400" />;
+        return <Bookmark className="w-4 h-4 text-blue-400" />;
       case "failed":
-        return <AlertCircle className="w-3 h-3 text-red-400" />;
+        return <AlertCircle className="w-4 h-4 text-red-400" />;
       default:
         return null;
     }
@@ -387,42 +387,92 @@ const Summary = () => {
                       window.location.href = `/exercise/${exercise.id}`;
                     }
                   };
+
+                  const handleViewDetails = (e: React.MouseEvent) => {
+                    e.stopPropagation();
+                    
+                    if (isLocked) {
+                      setShowPricingModal(true);
+                      return;
+                    }
+                    
+                    window.location.href = `/exercise/${exercise.id}`;
+                  };
                   
                   return (
-                    <div 
-                      key={exercise.id} 
-                      className={`p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer relative ${isLocked ? 'opacity-75' : ''}`}
+                    <Card
+                      key={exercise.id}
+                      className={`glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative ${
+                        isLocked ? 'opacity-75' : ''
+                      }`}
                       onClick={handleClick}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="text-white font-medium text-sm">{exercise.name}</h4>
-                        {isLocked && <Crown className="w-4 h-4 text-yellow-400" />}
-                      </div>
-                      {exercise.difficulty_level && (
-                        <Badge className={`text-xs ${getDifficultyColor(exercise.difficulty_level)} mb-2`}>
-                          {exercise.difficulty_level}
-                        </Badge>
-                      )}
-                      {exercise.description && (
-                        <p className="text-muted-foreground text-xs line-clamp-2 mb-2">
-                          {exercise.description}
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center gap-2 mb-3">
-                        {getStatusIcon(exercise.progress_status)}
-                        <span className="text-xs text-muted-foreground capitalize">
-                          {exercise.progress_status.replace('_', ' ')}
-                        </span>
-                      </div>
-                      {exercise.image_url && (
-                        <img 
-                          src={exercise.image_url} 
+                      <div className="relative overflow-hidden">
+                        <img
+                          src={
+                            exercise.image_url ||
+                            "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop"
+                          }
                           alt={exercise.name}
-                          className={`w-full h-32 object-cover rounded ${isLocked ? 'filter grayscale' : ''}`}
+                          className={`w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300 ${
+                            isLocked ? 'filter grayscale' : ''
+                          }`}
                         />
-                      )}
-                    </div>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:scale-110 transition-transform duration-300" />
+                        
+                        {isLocked && (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="bg-black/80 rounded-full p-3">
+                              <Crown className="w-8 h-8 text-yellow-400" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-2">
+                          <h3 className="font-semibold text-white text-lg">
+                            {exercise.name}
+                          </h3>
+                          {exercise.difficulty_level && (
+                            <Badge
+                              className={`text-xs ${getDifficultyColor(
+                                exercise.difficulty_level
+                              )}`}
+                            >
+                              {exercise.difficulty_level}
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2 mb-4">
+                          {getStatusIcon(exercise.progress_status)}
+                          <span className="text-sm text-muted-foreground capitalize">
+                            {exercise.progress_status.replace('_', ' ')}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex flex-col space-y-1">
+                          </div>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={handleViewDetails}
+                            className={isLocked ? 'opacity-75' : ''}
+                          >
+                            {isLocked ? (
+                              <>
+                                <Crown className="w-4 h-4 mr-1" />
+                                Premium
+                              </>
+                            ) : (
+                              "View Details"
+                            )}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
                 })
               )}
