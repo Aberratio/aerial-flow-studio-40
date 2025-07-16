@@ -694,6 +694,8 @@ export type Database = {
           created_at: string | null
           email: string | null
           id: string
+          last_login_at: string | null
+          login_count: number | null
           role: Database["public"]["Enums"]["user_role"]
           updated_at: string | null
           username: string
@@ -704,6 +706,8 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id: string
+          last_login_at?: string | null
+          login_count?: number | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
           username: string
@@ -714,6 +718,8 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           id?: string
+          last_login_at?: string | null
+          login_count?: number | null
           role?: Database["public"]["Enums"]["user_role"]
           updated_at?: string | null
           username?: string
@@ -1159,6 +1165,10 @@ export type Database = {
       friendship_user_pair: {
         Args: { user1_id: string; user2_id: string }
         Returns: string[]
+      }
+      update_user_login_tracking: {
+        Args: { user_id: string }
+        Returns: undefined
       }
     }
     Enums: {

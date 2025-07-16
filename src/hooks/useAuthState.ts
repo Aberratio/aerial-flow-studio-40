@@ -23,6 +23,18 @@ export const useAuthState = () => {
           setSession(session);
 
           if (session?.user) {
+            // Update login tracking for login events
+            if (_event === 'SIGNED_IN' || _event === 'TOKEN_REFRESHED') {
+              try {
+                await supabase.rpc('update_user_login_tracking', {
+                  user_id: session.user.id
+                });
+                console.log('AuthContext: Login tracking updated');
+              } catch (trackingError) {
+                console.error('AuthContext: Failed to update login tracking:', trackingError);
+              }
+            }
+
             const { data: profile, error } = await supabase
               .from('profiles')
               .select('*')
