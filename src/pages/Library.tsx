@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/select";
 import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
-import { FigurePreviewModal } from "@/components/FigurePreviewModal";
+
 import { PricingModal } from "@/components/PricingModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -56,7 +56,6 @@ const Library = () => {
   });
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [showFigureSearch, setShowFigureSearch] = useState(false);
-  const [selectedFigure, setSelectedFigure] = useState(null);
   const [showPricingModal, setShowPricingModal] = useState(false);
 
   const categories = ["all", "silks", "hoop", "pole", "straps"];
@@ -246,7 +245,7 @@ const Library = () => {
       return;
     }
     
-    setSelectedFigure(figure);
+    navigate(`/exercise/${figure.id}`);
   };
 
   return (
@@ -443,14 +442,6 @@ const Library = () => {
           )}
         </div>
 
-        {/* Figure Preview Modal */}
-        {selectedFigure && (
-          <FigurePreviewModal
-            isOpen={!!selectedFigure}
-            onClose={() => setSelectedFigure(null)}
-            figure={selectedFigure}
-          />
-        )}
 
         {/* Create Exercise Modal */}
         <CreateExerciseModal

@@ -131,11 +131,7 @@ const Friends = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Friends</h1>
               <p className="text-muted-foreground text-sm sm:text-base">Connect with fellow aerial athletes</p>
             </div>
-            <div className="flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
-              <Button onClick={() => setShowFriendRequests(true)} variant="outline" className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto">
-                <Mail className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                <span className="text-sm sm:text-base">Friend Requests</span>
-              </Button>
+            <div className="flex justify-end w-full sm:w-auto">
               <Button variant="primary" onClick={() => setShowFriendInvite(true)} className="w-full sm:w-auto">
                 <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
                 <span className="text-sm sm:text-base">Find Friends</span>

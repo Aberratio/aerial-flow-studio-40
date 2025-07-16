@@ -39,6 +39,7 @@ const ExerciseDetail = () => {
   const [searchUser, setSearchUser] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [showCongrats, setShowCongrats] = useState(false);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -191,10 +192,21 @@ const ExerciseDetail = () => {
       if (error) throw error;
 
       setProgress(data);
-      toast({
-        title: "Progress Updated",
-        description: `Exercise marked as ${status.replace('_', ' ')}`
-      });
+      
+      // Show congratulations animation for completed exercises
+      if (status === 'completed') {
+        setShowCongrats(true);
+        setTimeout(() => setShowCongrats(false), 3000);
+        toast({
+          title: "🎉 Congratulations!",
+          description: "You've completed this exercise! Great job!"
+        });
+      } else {
+        toast({
+          title: "Progress Updated",
+          description: `Exercise marked as ${status.replace('_', ' ')}`
+        });
+      }
     } catch (error) {
       console.error('Error updating progress:', error);
       toast({
@@ -1189,6 +1201,49 @@ const ExerciseDetail = () => {
         onClose={() => setShowPricingModal(false)}
         onUpgrade={() => setShowPricingModal(false)}
       />
+
+      {/* Congratulations Animation */}
+      {showCongrats && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="relative">
+            {/* Confetti elements */}
+            {[...Array(15)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute animate-pulse"
+                style={{
+                  left: `${Math.random() * 400}px`,
+                  top: `${Math.random() * 400}px`,
+                  animationDelay: `${Math.random() * 2}s`,
+                  animationDuration: `${1 + Math.random() * 2}s`,
+                }}
+              >
+                <div
+                  className={`w-2 h-2 rounded-full animate-bounce ${
+                    ['bg-yellow-400', 'bg-green-400', 'bg-purple-400', 'bg-blue-400', 'bg-pink-400'][i % 5]
+                  }`}
+                  style={{
+                    animationDelay: `${Math.random() * 1}s`,
+                    animationDuration: `${0.5 + Math.random() * 1}s`,
+                  }}
+                />
+              </div>
+            ))}
+            
+            {/* Main congratulations content */}
+            <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-8 text-center max-w-md mx-auto animate-scale-in shadow-2xl">
+              <div className="text-6xl mb-4 animate-bounce">🎉</div>
+              <h2 className="text-2xl font-bold text-white mb-2">Congratulations!</h2>
+              <p className="text-white/80 mb-4">You've completed this exercise!</p>
+              <div className="flex justify-center space-x-2">
+                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
