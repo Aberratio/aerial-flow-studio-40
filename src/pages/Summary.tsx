@@ -397,22 +397,29 @@ const Summary = () => {
                 suggestedFriends.map((friend) => (
                   <div 
                     key={friend.id} 
-                    className="flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all hover-lift cursor-pointer group"
+                    className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all hover-lift cursor-pointer group"
                     onClick={() => window.location.href = `/friends/${friend.id}`}
                   >
-                    <div className="flex items-center space-x-3 flex-1">
-                      <Avatar className="w-12 h-12 ring-2 ring-white/10 group-hover:ring-purple-400/50 transition-all">
+                    <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                      <Avatar className="w-8 h-8 sm:w-12 sm:h-12 ring-2 ring-white/10 group-hover:ring-purple-400/50 transition-all">
                         <AvatarImage src={friend.avatar_url} />
-                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold">
+                        <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-xs sm:text-sm">
                           {friend.username?.[0]?.toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-semibold text-sm group-hover:text-purple-300 transition-colors">
+                        <p className="text-white font-semibold text-xs sm:text-sm group-hover:text-purple-300 transition-colors truncate">
                           {friend.username}
                         </p>
                         <p className="text-muted-foreground text-xs truncate">
-                          {friend.bio || 'Aerial enthusiast'}
+                          {friend.bio ? (
+                            <span className="hidden sm:inline">{friend.bio}</span>
+                          ) : (
+                            'Aerial enthusiast'
+                          )}
+                          <span className="sm:hidden">
+                            {friend.bio?.length > 20 ? `${friend.bio.substring(0, 20)}...` : friend.bio || 'Aerial enthusiast'}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -423,9 +430,9 @@ const Summary = () => {
                         e.stopPropagation();
                         sendFriendRequest(friend.id);
                       }}
-                      className="ml-3"
+                      className="ml-2 sm:ml-3 p-1 sm:p-2"
                     >
-                      <UserPlus className="w-4 h-4" />
+                      <UserPlus className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
                   </div>
                 ))

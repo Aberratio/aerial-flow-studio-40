@@ -154,25 +154,27 @@ export const ProfileCompletionSection: React.FC<ProfileCompletionSectionProps> =
   return (
     <Card className="glass-effect border-white/10 mb-8 border-2 border-purple-400/30">
       <CardHeader>
-        <CardTitle className="text-white flex items-center justify-between">
-          <div className="flex items-center">
-            <Users className="w-5 h-5 mr-2 text-purple-400" />
-            Finish Your Profile
-            <Badge className="ml-2 bg-purple-500/20 text-purple-300 border-purple-400/30">
-              {missingItems.length} item{missingItems.length !== 1 ? 's' : ''} missing
-            </Badge>
+        <CardTitle className="text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="flex items-center flex-wrap gap-2">
+              <Users className="w-5 h-5 text-purple-400" />
+              <span>Finish Your Profile</span>
+              <Badge className="bg-purple-500/20 text-purple-300 border-purple-400/30 text-xs">
+                {missingItems.length} item{missingItems.length !== 1 ? 's' : ''} missing
+              </Badge>
+            </div>
+            {!isEditing && (
+              <Button
+                onClick={() => setIsEditing(true)}
+                variant="outline"
+                size="sm"
+                className="text-purple-400 border-purple-400/30 hover:bg-purple-500/20 w-fit"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit
+              </Button>
+            )}
           </div>
-          {!isEditing && (
-            <Button
-              onClick={() => setIsEditing(true)}
-              variant="outline"
-              size="sm"
-              className="text-purple-400 border-purple-400/30 hover:bg-purple-500/20"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit
-            </Button>
-          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
