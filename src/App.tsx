@@ -118,14 +118,7 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/exercise/:exerciseId"
-        element={
-          <ProtectedRoute>
-            <ExerciseDetail />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/exercise/:exerciseId" element={<ExerciseDetail />} />
       <Route
         path="/pricing"
         element={
