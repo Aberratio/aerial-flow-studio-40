@@ -10,6 +10,19 @@ export const useAuthOperations = () => {
     if (error) {
       throw error;
     }
+
+    // Update login tracking only on successful sign in
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase.rpc('update_user_login_tracking', {
+          user_id: user.id
+        });
+        console.log('Login tracking updated on sign in');
+      }
+    } catch (trackingError) {
+      console.error('Failed to update login tracking:', trackingError);
+    }
   };
 
   const signUp = async (email: string, password: string, username: string) => {

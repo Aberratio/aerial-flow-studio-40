@@ -70,6 +70,11 @@ const Summary = () => {
   const getDeterministicRandomExercise = (exercises: any[]) => {
     if (!exercises || exercises.length === 0) return null;
     
+    // Filter to only include non-premium exercises
+    const freeExercises = exercises.filter(exercise => !exercise.premium);
+    
+    if (freeExercises.length === 0) return null;
+    
     const today = new Date();
     const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
     
@@ -81,9 +86,9 @@ const Summary = () => {
       hash = hash & hash; // Convert to 32-bit integer
     }
     
-    // Use the hash to select an exercise
-    const index = Math.abs(hash) % exercises.length;
-    return exercises[index];
+    // Use the hash to select an exercise from free exercises only
+    const index = Math.abs(hash) % freeExercises.length;
+    return freeExercises[index];
   };
 
   useEffect(() => {
@@ -143,7 +148,7 @@ const Summary = () => {
       // Fetch random featured exercises 
       const { data: exercisesData } = await supabase
         .from('figures')
-        .select('id, name, description, image_url, difficulty_level, category')
+        .select('id, name, description, image_url, difficulty_level, category, premium')
         .order('created_at', { ascending: false })
         .limit(20);
 
@@ -289,7 +294,7 @@ const Summary = () => {
                       variant="primary"
                       size="lg"
                       onClick={() => {
-                        const isLocked = !hasFullAccess && exerciseOfTheDay.difficulty_level?.toLowerCase() !== 'beginner';
+                        const isLocked = !hasFullAccess && exerciseOfTheDay.premium;
                         if (isLocked) {
                           setShowPricingModal(true);
                         } else {
@@ -298,7 +303,7 @@ const Summary = () => {
                       }}
                       className="flex-1"
                     >
-                      {!hasFullAccess && exerciseOfTheDay.difficulty_level?.toLowerCase() !== 'beginner' ? (
+                      {!hasFullAccess && exerciseOfTheDay.premium ? (
                         <>
                           <Crown className="w-4 h-4 mr-2" />
                           Unlock Premium
@@ -536,7 +541,7 @@ const Summary = () => {
                 </p>
               ) : (
                 featuredExercises.map((exercise) => {
-                  const isLocked = !hasFullAccess && exercise.difficulty_level?.toLowerCase() !== 'beginner';
+                  const isLocked = !hasFullAccess && exercise.premium;
                   
                   const handleClick = () => {
                     if (isLocked) {

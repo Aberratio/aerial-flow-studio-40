@@ -324,16 +324,28 @@ const Library = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-3">
             {/* Category Filter */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between">
-                  <span>Categories ({selectedCategories.length})</span>
-                  <Filter className="w-4 h-4" />
+                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-9">
+                  <span className="truncate">
+                    {selectedCategories.length === 0 ? 'Categories' : 
+                     selectedCategories.includes('all') ? 'All Categories' :
+                     selectedCategories.length === 1 ? selectedCategories[0].charAt(0).toUpperCase() + selectedCategories[0].slice(1) :
+                     `${selectedCategories.length} Categories`}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {selectedCategories.length > 0 && !selectedCategories.includes('all') && (
+                      <span className="bg-purple-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                        {selectedCategories.length}
+                      </span>
+                    )}
+                    <Filter className="w-3 h-3 ml-1" />
+                  </div>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm">
+              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-56">
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -347,7 +359,7 @@ const Library = () => {
                         }
                       }}
                     />
-                    <label htmlFor="all-categories" className="text-white">All Categories</label>
+                    <label htmlFor="all-categories" className="text-white font-medium">All Categories</label>
                   </div>
                   {categories.slice(1).map((category) => (
                     <div key={category} className="flex items-center space-x-2">
@@ -372,12 +384,24 @@ const Library = () => {
             {/* Level Filter */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between">
-                  <span>Difficulty ({selectedLevels.length})</span>
-                  <Filter className="w-4 h-4" />
+                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-9">
+                  <span className="truncate">
+                    {selectedLevels.length === 0 ? 'Difficulty' : 
+                     selectedLevels.includes('all') ? 'All Difficulties' :
+                     selectedLevels.length === 1 ? selectedLevels[0].charAt(0).toUpperCase() + selectedLevels[0].slice(1) :
+                     `${selectedLevels.length} Difficulties`}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {selectedLevels.length > 0 && !selectedLevels.includes('all') && (
+                      <span className="bg-purple-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                        {selectedLevels.length}
+                      </span>
+                    )}
+                    <Filter className="w-3 h-3 ml-1" />
+                  </div>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm">
+              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-56">
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -391,7 +415,7 @@ const Library = () => {
                         }
                       }}
                     />
-                    <label htmlFor="all-levels" className="text-white">All Difficulties</label>
+                    <label htmlFor="all-levels" className="text-white font-medium">All Difficulties</label>
                   </div>
                   {levels.slice(1).map((level) => (
                     <div key={level} className="flex items-center space-x-2">
@@ -416,12 +440,24 @@ const Library = () => {
             {/* Type Filter */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between">
-                  <span>Types ({selectedTypes.length})</span>
-                  <Filter className="w-4 h-4" />
+                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-9">
+                  <span className="truncate">
+                    {selectedTypes.length === 0 ? 'Types' : 
+                     selectedTypes.includes('all') ? 'All Types' :
+                     selectedTypes.length === 1 ? selectedTypes[0].replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') :
+                     `${selectedTypes.length} Types`}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {selectedTypes.length > 0 && !selectedTypes.includes('all') && (
+                      <span className="bg-purple-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                        {selectedTypes.length}
+                      </span>
+                    )}
+                    <Filter className="w-3 h-3 ml-1" />
+                  </div>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm">
+              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-56">
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -435,7 +471,7 @@ const Library = () => {
                         }
                       }}
                     />
-                    <label htmlFor="all-types" className="text-white">All Types</label>
+                    <label htmlFor="all-types" className="text-white font-medium">All Types</label>
                   </div>
                   {types.slice(1).map((type) => (
                     <div key={type} className="flex items-center space-x-2">
@@ -460,12 +496,24 @@ const Library = () => {
             {/* Status Filter */}
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between">
-                  <span>Status ({selectedStatuses.length})</span>
-                  <Filter className="w-4 h-4" />
+                <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-9">
+                  <span className="truncate">
+                    {selectedStatuses.length === 0 ? 'Status' : 
+                     selectedStatuses.includes('all') ? 'All Statuses' :
+                     selectedStatuses.length === 1 ? selectedStatuses[0].replace('_', ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') :
+                     `${selectedStatuses.length} Statuses`}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {selectedStatuses.length > 0 && !selectedStatuses.includes('all') && (
+                      <span className="bg-purple-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                        {selectedStatuses.length}
+                      </span>
+                    )}
+                    <Filter className="w-3 h-3 ml-1" />
+                  </div>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm">
+              <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-56">
                 <div className="space-y-2">
                   <div className="flex items-center space-x-2">
                     <Checkbox
@@ -479,7 +527,7 @@ const Library = () => {
                         }
                       }}
                     />
-                    <label htmlFor="all-statuses" className="text-white">All Statuses</label>
+                    <label htmlFor="all-statuses" className="text-white font-medium">All Statuses</label>
                   </div>
                   {statuses.slice(1).map((status) => (
                     <div key={status} className="flex items-center space-x-2">
@@ -501,6 +549,36 @@ const Library = () => {
               </PopoverContent>
             </Popover>
           </div>
+
+          {/* Active Filters Summary */}
+          {(selectedCategories.length > 0 || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedStatuses.length > 0) && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {selectedCategories.filter(c => c !== 'all').map((category) => (
+                <Badge key={category} variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-400/30 flex items-center gap-1">
+                  {category}
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedCategories(prev => prev.filter(c => c !== category))} />
+                </Badge>
+              ))}
+              {selectedLevels.filter(l => l !== 'all').map((level) => (
+                <Badge key={level} variant="secondary" className="bg-yellow-500/20 text-yellow-300 border-yellow-400/30 flex items-center gap-1">
+                  {level}
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedLevels(prev => prev.filter(l => l !== level))} />
+                </Badge>
+              ))}
+              {selectedTypes.filter(t => t !== 'all').map((type) => (
+                <Badge key={type} variant="secondary" className="bg-blue-500/20 text-blue-300 border-blue-400/30 flex items-center gap-1">
+                  {type.replace('_', ' ')}
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedTypes(prev => prev.filter(t => t !== type))} />
+                </Badge>
+              ))}
+              {selectedStatuses.filter(s => s !== 'all').map((status) => (
+                <Badge key={status} variant="secondary" className="bg-green-500/20 text-green-300 border-green-400/30 flex items-center gap-1">
+                  {status.replace('_', ' ')}
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedStatuses(prev => prev.filter(s => s !== status))} />
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Figures Grid */}
