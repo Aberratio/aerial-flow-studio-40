@@ -365,16 +365,18 @@ const Library = () => {
                   onClick={() => handleFigureClick(figure)}
                 >
                   <div className="relative overflow-hidden">
-                    <img
-                      src={
-                        figure.image_url ||
-                        "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=300&h=300&fit=crop"
-                      }
-                      alt={figure.name}
-                      className={`w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300 ${
-                        isLocked ? 'filter grayscale' : ''
-                      }`}
-                    />
+                    <div className="w-full h-56 md:h-64 overflow-hidden">
+                      <img
+                        src={
+                          figure.image_url ||
+                          "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=400&h=400&fit=crop"
+                        }
+                        alt={figure.name}
+                        className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 ${
+                          isLocked ? 'filter grayscale' : ''
+                        }`}
+                      />
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:scale-110 transition-transform duration-300" />
                     
                     {isLocked && (
