@@ -75,6 +75,25 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
+const ConditionalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  // If user is logged in, wrap with AppLayout, otherwise render directly
+  if (user) {
+    return <AppLayout>{children}</AppLayout>;
+  }
+
+  return <>{children}</>;
+};
+
 const AppRoutes = () => {
   return (
     <Routes>
@@ -118,7 +137,14 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route path="/exercise/:exerciseId" element={<ExerciseDetail />} />
+      <Route 
+        path="/exercise/:exerciseId" 
+        element={
+          <ConditionalLayout>
+            <ExerciseDetail />
+          </ConditionalLayout>
+        } 
+      />
       <Route
         path="/pricing"
         element={
