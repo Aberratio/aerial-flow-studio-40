@@ -131,11 +131,11 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
   // 2. If the viewed user has sent me a friend request and I do NOT follow them
   if (pendingFriendRequest === 'received' && !isFollowing) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
           size={size}
           onClick={handleAcceptFriend}
-          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 w-full sm:w-auto px-3 py-2 text-sm"
         >
           <Check className="w-4 h-4 mr-2" />
           Accept
@@ -144,7 +144,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           size={size}
           variant="outline" 
           onClick={handleRejectFriend}
-          className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+          className="border-red-500/30 text-red-400 hover:bg-red-500/10 w-full sm:w-auto px-3 py-2 text-sm"
         >
           <X className="w-4 h-4 mr-2" />
           Decline
@@ -153,7 +153,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           size={size}
           variant="outline" 
           onClick={handleFollow}
-          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+          className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10 w-full sm:w-auto px-3 py-2 text-sm"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Follow
@@ -165,7 +165,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
   // 3. If the viewed user has sent me a friend request and I ALREADY follow them
   if (pendingFriendRequest === 'received' && isFollowing) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
           size={size}
           onClick={handleAcceptFriend}
@@ -199,7 +199,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
   // 4. If I have sent a friend request and I already follow them
   if (pendingFriendRequest === 'sent' && isFollowing) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
           size={size}
           variant="outline" 
@@ -225,7 +225,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
   // 5. If I have sent a friend request and I do NOT follow the user
   if (pendingFriendRequest === 'sent' && !isFollowing) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
           size={size}
           variant="outline" 
@@ -251,7 +251,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
   // 6. If there is NO friendship and I already follow the user
   if (pendingFriendRequest === 'none' && isFollowing) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
           size={size}
           onClick={handleSendFriendRequest}
@@ -276,7 +276,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
   // 7. If there is NO friendship and I do NOT follow the user
   if (pendingFriendRequest === 'none' && !isFollowing) {
     return (
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
           size={size}
           onClick={handleSendFriendRequest}

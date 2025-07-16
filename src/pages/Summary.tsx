@@ -413,13 +413,15 @@ const Summary = () => {
                         </p>
                         <p className="text-muted-foreground text-xs truncate">
                           {friend.bio ? (
-                            <span className="hidden sm:inline">{friend.bio}</span>
+                            <>
+                              <span className="hidden sm:inline">{friend.bio}</span>
+                              <span className="sm:hidden">
+                                {friend.bio.length > 20 ? `${friend.bio.substring(0, 20)}...` : friend.bio}
+                              </span>
+                            </>
                           ) : (
-                            'Aerial enthusiast'
+                            <span className="text-muted-foreground/70">No bio</span>
                           )}
-                          <span className="sm:hidden">
-                            {friend.bio?.length > 20 ? `${friend.bio.substring(0, 20)}...` : friend.bio || 'Aerial enthusiast'}
-                          </span>
                         </p>
                       </div>
                     </div>

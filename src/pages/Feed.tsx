@@ -132,11 +132,11 @@ const Feed = () => {
 
         {/* Feed Tabs */}
         <Tabs value={activeTab} onValueChange={(value) => switchTab(value as 'my_feed' | 'public_feed')} className="w-full mb-6">
-          <TabsList className="grid w-full grid-cols-2 bg-white/5 border-white/10">
-            <TabsTrigger value="my_feed" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+          <TabsList className="grid w-full grid-cols-2 bg-white/5 rounded-lg p-1">
+            <TabsTrigger value="my_feed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-white">
               My Feed
             </TabsTrigger>
-            <TabsTrigger value="public_feed" className="data-[state=active]:bg-primary data-[state=active]:text-white">
+            <TabsTrigger value="public_feed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-white">
               Public Feed
             </TabsTrigger>
           </TabsList>

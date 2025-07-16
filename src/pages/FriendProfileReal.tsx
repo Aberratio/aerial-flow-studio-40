@@ -426,7 +426,7 @@ const FriendProfile = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+                <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start w-full sm:w-auto">
                   {/* Conditional relationship buttons */}
                   <FriendshipActions 
                     userId={id || ''} 
@@ -437,7 +437,7 @@ const FriendProfile = () => {
                   <Button 
                     variant="outline" 
                     onClick={() => setIsShareModalOpen(true)}
-                    className="border-white/20 text-white hover:bg-white/10"
+                    className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto px-3 py-2 text-sm"
                   >
                     <Share2 className="w-4 h-4 mr-2" />
                     Share
