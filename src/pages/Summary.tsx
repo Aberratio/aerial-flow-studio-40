@@ -32,6 +32,7 @@ const Summary = () => {
   const [suggestedFriends, setSuggestedFriends] = useState<any[]>([]);
   const [recentPosts, setRecentPosts] = useState<any[]>([]);
   const [featuredExercises, setFeaturedExercises] = useState<any[]>([]);
+  const [exerciseOfTheDay, setExerciseOfTheDay] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showPricingModal, setShowPricingModal] = useState(false);
 
@@ -63,6 +64,26 @@ const Summary = () => {
       default:
         return null;
     }
+  };
+
+  // Function to get a deterministic random exercise based on current date
+  const getDeterministicRandomExercise = (exercises: any[]) => {
+    if (!exercises || exercises.length === 0) return null;
+    
+    const today = new Date();
+    const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    
+    // Create a simple hash from the date string
+    let hash = 0;
+    for (let i = 0; i < dateString.length; i++) {
+      const char = dateString.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    
+    // Use the hash to select an exercise
+    const index = Math.abs(hash) % exercises.length;
+    return exercises[index];
   };
 
   useEffect(() => {
@@ -142,6 +163,10 @@ const Summary = () => {
           progress_status: progressMap.get(exercise.id) || 'not_tried',
         }));
         
+        // Select exercise of the day
+        const exerciseOfDay = getDeterministicRandomExercise(exercisesWithProgress);
+        setExerciseOfTheDay(exerciseOfDay);
+        
         // Shuffle and take 6 random exercises
         const shuffled = exercisesWithProgress?.sort(() => 0.5 - Math.random()) || [];
         setFeaturedExercises(shuffled.slice(0, 6));
@@ -207,6 +232,90 @@ const Summary = () => {
             Here's what's happening in your aerial journey today
           </p>
         </div>
+
+        {/* Exercise of the Day */}
+        {exerciseOfTheDay && (
+          <Card className="glass-effect border-white/10 mb-8 overflow-hidden">
+            <CardContent className="p-0">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                {/* Image Section */}
+                <div className="relative h-64 lg:h-auto">
+                  <img
+                    src={
+                      exerciseOfTheDay.image_url ||
+                      "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=400&fit=crop"
+                    }
+                    alt={exerciseOfTheDay.name}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute top-4 left-4">
+                    <Badge className="bg-purple-500/90 text-white border-none">
+                      Exercise of the Day
+                    </Badge>
+                  </div>
+                </div>
+
+                {/* Content Section */}
+                <div className="p-6 lg:p-8 flex flex-col justify-center">
+                  <div className="mb-4">
+                    <h2 className="text-2xl lg:text-3xl font-bold text-white mb-2">
+                      {exerciseOfTheDay.name}
+                    </h2>
+                    <div className="flex items-center gap-3 mb-3">
+                      {exerciseOfTheDay.difficulty_level && (
+                        <Badge
+                          className={`text-xs ${getDifficultyColor(
+                            exerciseOfTheDay.difficulty_level
+                          )}`}
+                        >
+                          {exerciseOfTheDay.difficulty_level}
+                        </Badge>
+                      )}
+                      <div className="flex items-center gap-2">
+                        {getStatusIcon(exerciseOfTheDay.progress_status)}
+                        <span className="text-sm text-muted-foreground capitalize">
+                          {exerciseOfTheDay.progress_status.replace('_', ' ')}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="text-muted-foreground mb-6 leading-relaxed">
+                      Challenge yourself with today's featured exercise. Perfect for building strength and improving your aerial skills.
+                    </p>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      onClick={() => {
+                        const isLocked = !hasFullAccess && exerciseOfTheDay.difficulty_level?.toLowerCase() !== 'beginner';
+                        if (isLocked) {
+                          setShowPricingModal(true);
+                        } else {
+                          window.location.href = `/exercise/${exerciseOfTheDay.id}`;
+                        }
+                      }}
+                      className="flex-1"
+                    >
+                      {!hasFullAccess && exerciseOfTheDay.difficulty_level?.toLowerCase() !== 'beginner' ? (
+                        <>
+                          <Crown className="w-4 h-4 mr-2" />
+                          Unlock Premium
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-4 h-4 mr-2" />
+                          Start Exercise
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
