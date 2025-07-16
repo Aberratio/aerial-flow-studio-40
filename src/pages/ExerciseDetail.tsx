@@ -149,12 +149,19 @@ const ExerciseDetail = () => {
       }
     } catch (error) {
       console.error('Error fetching exercise:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load exercise details",
-        variant: "destructive"
-      });
-      navigate('/library');
+      
+      // Only navigate away if user is logged in, for non-logged-in users show the error state
+      if (user) {
+        toast({
+          title: "Error",
+          description: "Failed to load exercise details",
+          variant: "destructive"
+        });
+        navigate('/library');
+      } else {
+        // For non-logged-in users, just set exercise to null so they see the not found state
+        setExercise(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -352,12 +359,36 @@ const ExerciseDetail = () => {
   if (!exercise) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-white text-lg mb-4">Exercise not found</p>
-          <Button onClick={() => navigate('/library')}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Library
-          </Button>
+        <div className="text-center max-w-md">
+          {user ? (
+            // Logged-in user - show generic not found
+            <>
+              <p className="text-white text-lg mb-4">Exercise not found</p>
+              <Button onClick={() => navigate('/library')}>
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Library
+              </Button>
+            </>
+          ) : (
+            // Non-logged-in user - show sign up CTA
+            <>
+              <UserPlus className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold text-white mb-4">Sign Up to Access Exercises</h2>
+              <p className="text-muted-foreground mb-6">
+                Join our community to access thousands of aerial exercises, track your progress, and connect with other athletes.
+              </p>
+              <div className="flex flex-col gap-3">
+                <Button onClick={() => navigate('/')} variant="primary">
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  Sign Up Now
+                </Button>
+                <Button onClick={() => navigate('/')} variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Already have an account?
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
