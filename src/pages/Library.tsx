@@ -59,11 +59,39 @@ const Library = () => {
   const [availableTags, setAvailableTags] = useState<string[]>([]);
   const [showFigureSearch, setShowFigureSearch] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
+  const [userProfile, setUserProfile] = useState(null);
 
   const categories = ["all", "silks", "hoop", "pole", "straps"];
   const levels = ["all", "beginner", "intermediate", "advanced", "expert"];
   const types = ["all", "single_figure", "combo"];
   const statuses = ["all", "completed", "for_later", "failed", "not_tried"];
+
+  // Fetch user profile to get sports preferences
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('sports')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      setUserProfile(data);
+      
+      // Preselect categories based on user's sports
+      if (data?.sports && data.sports.length > 0) {
+        const userSports = data.sports.filter(sport => 
+          categories.includes(sport) && sport !== 'all'
+        );
+        if (userSports.length > 0) {
+          setSelectedCategories(userSports);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
 
   // Fetch figures from database
   const fetchFigures = async () => {
@@ -160,6 +188,7 @@ const Library = () => {
 
   useEffect(() => {
     fetchFigures();
+    fetchUserProfile();
   }, [user]);
 
   const filteredFigures = figuresWithProgress.filter((figure) => {

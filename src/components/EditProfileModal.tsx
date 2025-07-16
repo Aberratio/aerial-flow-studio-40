@@ -29,8 +29,8 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
   const [isLoading, setIsLoading] = useState(false);
 
   const popularSports = [
-    'Aerial Silks', 'Aerial Hoop/Lyra', 'Aerial Hammock', 'Pole Dancing', 
-    'Acrobatics', 'Gymnastics', 'Dance', 'Yoga', 'Contortion', 'Circus Arts'
+    'silks', 'hoop', 'pole', 'straps', 'hammock', 'acrobatics', 
+    'gymnastics', 'dance', 'yoga', 'contortion', 'circus arts'
   ];
 
   useEffect(() => {
@@ -250,7 +250,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
                         : "border-white/20 text-white hover:bg-white/10"
                       }
                     >
-                      {sport}
+                      {sport.charAt(0).toUpperCase() + sport.slice(1)}
                     </Button>
                   ))}
                 </div>
