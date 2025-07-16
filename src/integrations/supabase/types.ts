@@ -326,6 +326,7 @@ export type Database = {
           instructions: string | null
           level: string | null
           name: string
+          premium: boolean
           tags: string[] | null
           type: string | null
           updated_at: string | null
@@ -342,6 +343,7 @@ export type Database = {
           instructions?: string | null
           level?: string | null
           name: string
+          premium?: boolean
           tags?: string[] | null
           type?: string | null
           updated_at?: string | null
@@ -358,6 +360,7 @@ export type Database = {
           instructions?: string | null
           level?: string | null
           name?: string
+          premium?: boolean
           tags?: string[] | null
           type?: string | null
           updated_at?: string | null

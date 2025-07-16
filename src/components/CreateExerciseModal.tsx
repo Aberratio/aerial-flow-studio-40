@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Upload, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -29,7 +30,8 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     type: '',
     image_url: '',
     video_url: '',
-    tags: [] as string[]
+    tags: [] as string[],
+    premium: false
   });
   const [tagInput, setTagInput] = useState('');
 
@@ -46,7 +48,8 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         type: editingFigure.type || '',
         image_url: editingFigure.image_url || '',
         video_url: editingFigure.video_url || '',
-        tags: editingFigure.tags || []
+        tags: editingFigure.tags || [],
+        premium: editingFigure.premium || false
       });
     } else {
       setFormData({
@@ -59,7 +62,8 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         type: '',
         image_url: '',
         video_url: '',
-        tags: []
+        tags: [],
+        premium: false
       });
     }
     setTagInput('');
@@ -142,6 +146,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             image_url: imageUrl || null,
             video_url: videoUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
+            premium: formData.premium,
             updated_at: new Date().toISOString()
           })
           .eq('id', editingFigure.id);
@@ -161,6 +166,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             image_url: imageUrl || null,
             video_url: videoUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
+            premium: formData.premium,
             created_by: user.id
           });
 
@@ -183,7 +189,8 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         type: '',
         image_url: '',
         video_url: '',
-        tags: []
+        tags: [],
+        premium: false
       });
       setImageFile(null);
       setVideoFile(null);
@@ -263,7 +270,21 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="premium" className="text-white">Access Level</Label>
+              <div className="flex items-center space-x-3 mt-2">
+                <Switch
+                  id="premium"
+                  checked={formData.premium}
+                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, premium: checked }))}
+                />
+                <Label htmlFor="premium" className="text-white cursor-pointer">
+                  {formData.premium ? 'Premium' : 'Free'}
+                </Label>
+              </div>
+            </div>
+
             <div>
               <Label htmlFor="difficulty" className="text-white">Difficulty Level (Optional)</Label>
               <Select 
@@ -281,7 +302,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                 </SelectContent>
               </Select>
             </div>
+          </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="category" className="text-white">Category (Optional)</Label>
               <Select 
@@ -312,6 +335,25 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                 <SelectContent>
                   <SelectItem value="single figure">Single Figure</SelectItem>
                   <SelectItem value="combo">Combo</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="level" className="text-white">Level (Optional)</Label>
+              <Select 
+                value={formData.level} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, level: value }))}
+              >
+                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectValue placeholder="Select level" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Level 1</SelectItem>
+                  <SelectItem value="2">Level 2</SelectItem>
+                  <SelectItem value="3">Level 3</SelectItem>
+                  <SelectItem value="4">Level 4</SelectItem>
+                  <SelectItem value="5">Level 5</SelectItem>
                 </SelectContent>
               </Select>
             </div>

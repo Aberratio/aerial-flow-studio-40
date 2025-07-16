@@ -265,7 +265,7 @@ const Library = () => {
 
   const handleFigureClick = (figure: any) => {
     // Check if figure is locked for free users
-    if (!hasFullAccess && figure.difficulty_level?.toLowerCase() !== 'beginner') {
+    if (!hasFullAccess && figure.premium) {
       setShowPricingModal(true);
       return;
     }
@@ -277,7 +277,7 @@ const Library = () => {
     e.stopPropagation();
     
     // Check if figure is locked for free users
-    if (!hasFullAccess && figure.difficulty_level?.toLowerCase() !== 'beginner') {
+    if (!hasFullAccess && figure.premium) {
       setShowPricingModal(true);
       return;
     }
@@ -512,7 +512,7 @@ const Library = () => {
             </p>
           ) : (
             filteredFigures.map((figure) => {
-              const isLocked = !hasFullAccess && figure.difficulty_level?.toLowerCase() !== 'beginner';
+              const isLocked = !hasFullAccess && figure.premium;
               
               return (
                 <Card
