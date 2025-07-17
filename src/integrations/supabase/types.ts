@@ -327,6 +327,7 @@ export type Database = {
           level: string | null
           name: string
           premium: boolean
+          synonyms: string[] | null
           tags: string[] | null
           type: string | null
           updated_at: string | null
@@ -344,6 +345,7 @@ export type Database = {
           level?: string | null
           name: string
           premium?: boolean
+          synonyms?: string[] | null
           tags?: string[] | null
           type?: string | null
           updated_at?: string | null
@@ -361,6 +363,7 @@ export type Database = {
           level?: string | null
           name?: string
           premium?: boolean
+          synonyms?: string[] | null
           tags?: string[] | null
           type?: string | null
           updated_at?: string | null

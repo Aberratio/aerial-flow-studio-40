@@ -31,9 +31,11 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     image_url: '',
     video_url: '',
     tags: [] as string[],
+    synonyms: [] as string[],
     premium: false
   });
   const [tagInput, setTagInput] = useState('');
+  const [synonymInput, setSynonymInput] = useState('');
 
   // Update form when editing a figure
   useEffect(() => {
@@ -49,6 +51,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         image_url: editingFigure.image_url || '',
         video_url: editingFigure.video_url || '',
         tags: editingFigure.tags || [],
+        synonyms: editingFigure.synonyms || [],
         premium: editingFigure.premium || false
       });
     } else {
@@ -63,10 +66,12 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         image_url: '',
         video_url: '',
         tags: [],
+        synonyms: [],
         premium: false
       });
     }
     setTagInput('');
+    setSynonymInput('');
   }, [editingFigure, isOpen]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -146,6 +151,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             image_url: imageUrl || null,
             video_url: videoUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
+            synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
             premium: formData.premium,
             updated_at: new Date().toISOString()
           })
@@ -166,6 +172,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             image_url: imageUrl || null,
             video_url: videoUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
+            synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
             premium: formData.premium,
             created_by: user.id
           });
@@ -190,11 +197,13 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
         image_url: '',
         video_url: '',
         tags: [],
+        synonyms: [],
         premium: false
       });
       setImageFile(null);
       setVideoFile(null);
       setTagInput('');
+      setSynonymInput('');
 
       if (onExerciseCreated) onExerciseCreated();
       onClose();
@@ -245,6 +254,28 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     if (e.key === 'Enter') {
       e.preventDefault();
       addTag();
+    }
+  };
+
+  const addSynonym = () => {
+    const synonym = synonymInput.trim();
+    if (synonym && !formData.synonyms.includes(synonym)) {
+      setFormData(prev => ({ ...prev, synonyms: [...prev.synonyms, synonym] }));
+      setSynonymInput('');
+    }
+  };
+
+  const removeSynonym = (synonymToRemove: string) => {
+    setFormData(prev => ({ 
+      ...prev, 
+      synonyms: prev.synonyms.filter(synonym => synonym !== synonymToRemove) 
+    }));
+  };
+
+  const handleSynonymKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addSynonym();
     }
   };
 
@@ -413,6 +444,43 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                     onClick={() => removeTag(tag)}
                   >
                     {tag} ✕
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="synonyms" className="text-white">Synonyms (Optional)</Label>
+            <p className="text-sm text-white/60 mb-2">Alternative names for this exercise</p>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <Input
+                  id="synonyms"
+                  value={synonymInput}
+                  onChange={(e) => setSynonymInput(e.target.value)}
+                  onKeyPress={handleSynonymKeyPress}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  placeholder="Add a synonym and press Enter"
+                />
+                <Button
+                  type="button"
+                  onClick={addSynonym}
+                  variant="outline"
+                  className="border-white/10 text-white hover:bg-white/10"
+                >
+                  Add
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.synonyms.map((synonym, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="bg-blue-500/20 text-blue-300 border-blue-500/30 cursor-pointer"
+                    onClick={() => removeSynonym(synonym)}
+                  >
+                    {synonym} ✕
                   </Badge>
                 ))}
               </div>

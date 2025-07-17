@@ -192,9 +192,13 @@ const Library = () => {
   }, [user]);
 
   const filteredFigures = figuresWithProgress.filter((figure) => {
+    const searchLower = searchTerm.toLowerCase();
     const matchesSearch = figure.name
       .toLowerCase()
-      .includes(searchTerm.toLowerCase());
+      .includes(searchLower) ||
+      (figure.synonyms && figure.synonyms.some(synonym => 
+        synonym.toLowerCase().includes(searchLower)
+      ));
     const matchesCategory =
       selectedCategories.length === 0 ||
       selectedCategories.includes("all") ||
