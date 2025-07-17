@@ -227,7 +227,7 @@ const Library = () => {
       matchesTags &&
       matchesStatus
     );
-  });
+  }).sort((a, b) => a.name.localeCompare(b.name));
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {

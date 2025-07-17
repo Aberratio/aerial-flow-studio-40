@@ -105,7 +105,7 @@ export const useFeedTabs = () => {
 
         query = query.or(conditions.join(','));
       } else {
-        // Public feed - all public posts excluding user's own posts and friends/follows
+        // Public feed - all public posts excluding user's own posts
         query = query
           .eq('privacy', 'public')
           .neq('user_id', user.id);
