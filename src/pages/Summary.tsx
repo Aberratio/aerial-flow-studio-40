@@ -1,30 +1,30 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { 
-  Users, 
-  BookOpen, 
-  Trophy, 
-  Dumbbell, 
-  ArrowRight, 
-  Heart, 
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  Users,
+  BookOpen,
+  Trophy,
+  Dumbbell,
+  ArrowRight,
+  Heart,
   MessageCircle,
   UserPlus,
   Crown,
   Play,
   CheckCircle,
   Bookmark,
-  AlertCircle
-} from 'lucide-react';
-import { PricingModal } from '@/components/PricingModal';
-import { ProfileCompletionSection } from '@/components/ProfileCompletionSection';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useUserRole } from '@/hooks/useUserRole';
+  AlertCircle,
+} from "lucide-react";
+import { PricingModal } from "@/components/PricingModal";
+import { ProfileCompletionSection } from "@/components/ProfileCompletionSection";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const Summary = () => {
   const { user } = useAuth();
@@ -70,23 +70,23 @@ const Summary = () => {
   // Function to get a deterministic random exercise based on current date
   const getDeterministicRandomExercise = (exercises: any[]) => {
     if (!exercises || exercises.length === 0) return null;
-    
+
     // Filter to only include non-premium exercises
-    const freeExercises = exercises.filter(exercise => !exercise.premium);
-    
+    const freeExercises = exercises.filter((exercise) => !exercise.premium);
+
     if (freeExercises.length === 0) return null;
-    
+
     const today = new Date();
-    const dateString = today.toISOString().split('T')[0]; // YYYY-MM-DD
-    
+    const dateString = today.toISOString().split("T")[0]; // YYYY-MM-DD
+
     // Create a simple hash from the date string
     let hash = 0;
     for (let i = 0; i < dateString.length; i++) {
       const char = dateString.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
-    
+
     // Use the hash to select an exercise from free exercises only
     const index = Math.abs(hash) % freeExercises.length;
     return freeExercises[index];
@@ -101,33 +101,36 @@ const Summary = () => {
 
     try {
       setLoading(true);
-      
+
       // Fetch suggested friends (users not already friends with)
       const { data: friendsData } = await supabase
-        .from('profiles')
-        .select('id, username, avatar_url, bio')
-        .neq('id', user.id)
+        .from("profiles")
+        .select("id, username, avatar_url, bio")
+        .neq("id", user.id)
         .limit(3);
 
       // Filter out existing friends
       if (friendsData) {
         const { data: existingFriends } = await supabase
-          .from('friendships')
-          .select('requester_id, addressee_id')
+          .from("friendships")
+          .select("requester_id, addressee_id")
           .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
 
         const friendIds = new Set(
-          existingFriends?.flatMap(f => [f.requester_id, f.addressee_id]).filter(id => id !== user.id) || []
+          existingFriends
+            ?.flatMap((f) => [f.requester_id, f.addressee_id])
+            .filter((id) => id !== user.id) || []
         );
 
-        const suggestedUsers = friendsData.filter(u => !friendIds.has(u.id));
+        const suggestedUsers = friendsData.filter((u) => !friendIds.has(u.id));
         setSuggestedFriends(suggestedUsers.slice(0, 3));
       }
 
       // Fetch recent public posts from other users
       const { data: postsData } = await supabase
-        .from('posts')
-        .select(`
+        .from("posts")
+        .select(
+          `
           id,
           content,
           image_url,
@@ -138,51 +141,57 @@ const Summary = () => {
             avatar_url
           ),
           post_likes(count)
-        `)
-        .eq('privacy', 'public')
-        .neq('user_id', user.id)
-        .order('created_at', { ascending: false })
+        `
+        )
+        .eq("privacy", "public")
+        .neq("user_id", user.id)
+        .order("created_at", { ascending: false })
         .limit(6);
 
       setRecentPosts(postsData || []);
 
-      // Fetch random featured exercises 
+      // Fetch random featured exercises
       const { data: exercisesData } = await supabase
-        .from('figures')
-        .select('id, name, description, image_url, difficulty_level, category, premium')
-        .order('created_at', { ascending: false })
+        .from("figures")
+        .select(
+          "id, name, description, image_url, difficulty_level, category, premium"
+        )
+        .order("created_at", { ascending: false })
         .limit(20);
 
       // Fetch progress for current user if logged in
       if (exercisesData) {
         const { data: progressData } = await supabase
-          .from('figure_progress')
-          .select('figure_id, status')
-          .eq('user_id', user.id);
+          .from("figure_progress")
+          .select("figure_id, status")
+          .eq("user_id", user.id);
 
         const progressMap = new Map(
           progressData?.map((p) => [p.figure_id, p.status]) || []
         );
-        
+
         const exercisesWithProgress = exercisesData.map((exercise) => ({
           ...exercise,
-          progress_status: progressMap.get(exercise.id) || 'not_tried',
+          progress_status: progressMap.get(exercise.id) || "not_tried",
         }));
-        
+
         // Select exercise of the day
-        const exerciseOfDay = getDeterministicRandomExercise(exercisesWithProgress);
+        const exerciseOfDay = getDeterministicRandomExercise(
+          exercisesWithProgress
+        );
         setExerciseOfTheDay(exerciseOfDay);
-        
+
         // Shuffle and take 6 random exercises
-        const shuffled = exercisesWithProgress?.sort(() => 0.5 - Math.random()) || [];
+        const shuffled =
+          exercisesWithProgress?.sort(() => 0.5 - Math.random()) || [];
         setFeaturedExercises(shuffled.slice(0, 6));
       }
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error("Error fetching dashboard data:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to load dashboard content',
-        variant: 'destructive'
+        title: "Error",
+        description: "Failed to load dashboard content",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -191,32 +200,31 @@ const Summary = () => {
 
   const sendFriendRequest = async (userId: string) => {
     try {
-      const { error } = await supabase
-        .from('friendships')
-        .insert({
-          requester_id: user?.id,
-          addressee_id: userId,
-          status: 'pending'
-        });
+      const { error } = await supabase.from("friendships").insert({
+        requester_id: user?.id,
+        addressee_id: userId,
+        status: "pending",
+      });
 
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'Friend request sent successfully!'
+        title: "Success",
+        description: "Friend request sent successfully!",
       });
 
       // Remove from suggested friends
-      setSuggestedFriends(prev => prev.filter(friend => friend.id !== userId));
+      setSuggestedFriends((prev) =>
+        prev.filter((friend) => friend.id !== userId)
+      );
     } catch (error: any) {
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to send friend request',
-        variant: 'destructive'
+        title: "Error",
+        description: error.message || "Failed to send friend request",
+        variant: "destructive",
       });
     }
   };
-
 
   if (loading) {
     return (
@@ -281,12 +289,13 @@ const Summary = () => {
                       <div className="flex items-center gap-2">
                         {getStatusIcon(exerciseOfTheDay.progress_status)}
                         <span className="text-sm text-muted-foreground capitalize">
-                          {exerciseOfTheDay.progress_status.replace('_', ' ')}
+                          {exerciseOfTheDay.progress_status.replace("_", " ")}
                         </span>
                       </div>
                     </div>
                     <p className="text-muted-foreground mb-6 leading-relaxed">
-                      Challenge yourself with today's featured exercise. Perfect for building strength and improving your aerial skills.
+                      Challenge yourself with today's featured exercise. Perfect
+                      for building strength and improving your aerial skills.
                     </p>
                   </div>
 
@@ -295,7 +304,8 @@ const Summary = () => {
                       variant="primary"
                       size="lg"
                       onClick={() => {
-                        const isLocked = !hasFullAccess && exerciseOfTheDay.premium;
+                        const isLocked =
+                          !hasFullAccess && exerciseOfTheDay.premium;
                         if (isLocked) {
                           setShowPricingModal(true);
                         } else {
@@ -312,7 +322,7 @@ const Summary = () => {
                       ) : (
                         <>
                           <Play className="w-4 h-4 mr-2" />
-                          Start Exercise
+                          View Exercise
                         </>
                       )}
                     </Button>
@@ -330,7 +340,9 @@ const Summary = () => {
               <CardContent className="p-6 text-center">
                 <Users className="w-8 h-8 text-purple-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
                 <h3 className="font-semibold text-white mb-1">Friends</h3>
-                <p className="text-muted-foreground text-sm">Connect with others</p>
+                <p className="text-muted-foreground text-sm">
+                  Connect with others
+                </p>
               </CardContent>
             </Card>
           </Link>
@@ -340,14 +352,20 @@ const Summary = () => {
               <CardContent className="p-6 text-center">
                 <BookOpen className="w-8 h-8 text-blue-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
                 <h3 className="font-semibold text-white mb-1">Library</h3>
-                <p className="text-muted-foreground text-sm">Explore exercises</p>
+                <p className="text-muted-foreground text-sm">
+                  Explore exercises
+                </p>
               </CardContent>
             </Card>
           </Link>
 
-          <Card 
+          <Card
             className="glass-effect border-white/10 hover-lift group cursor-pointer relative"
-            onClick={() => hasFullAccess ? window.location.href = '/challenges' : setShowPricingModal(true)}
+            onClick={() =>
+              hasFullAccess
+                ? (window.location.href = "/challenges")
+                : setShowPricingModal(true)
+            }
           >
             <CardContent className="p-6 text-center">
               <Trophy className="w-8 h-8 text-yellow-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
@@ -359,9 +377,13 @@ const Summary = () => {
             </CardContent>
           </Card>
 
-          <Card 
+          <Card
             className="glass-effect border-white/10 hover-lift group cursor-pointer relative"
-            onClick={() => hasFullAccess ? window.location.href = '/training' : setShowPricingModal(true)}
+            onClick={() =>
+              hasFullAccess
+                ? (window.location.href = "/training")
+                : setShowPricingModal(true)
+            }
           >
             <CardContent className="p-6 text-center">
               <Dumbbell className="w-8 h-8 text-green-400 mx-auto mb-3 group-hover:scale-110 transition-transform" />
@@ -375,9 +397,13 @@ const Summary = () => {
         </div>
 
         {/* Finish Your Profile Section */}
-        {user && (!user.avatar_url || !user.bio || !(user as any).sports?.length) && (
-          <ProfileCompletionSection user={user} onUpdate={fetchDashboardData} />
-        )}
+        {user &&
+          (!user.avatar_url || !user.bio || !(user as any).sports?.length) && (
+            <ProfileCompletionSection
+              user={user}
+              onUpdate={fetchDashboardData}
+            />
+          )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Suggested Friends */}
@@ -395,10 +421,12 @@ const Summary = () => {
                 </p>
               ) : (
                 suggestedFriends.map((friend) => (
-                  <div 
-                    key={friend.id} 
+                  <div
+                    key={friend.id}
                     className="flex items-center justify-between p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-all hover-lift cursor-pointer group"
-                    onClick={() => window.location.href = `/friends/${friend.id}`}
+                    onClick={() =>
+                      (window.location.href = `/friends/${friend.id}`)
+                    }
                   >
                     <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                       <Avatar className="w-8 h-8 sm:w-12 sm:h-12 ring-2 ring-white/10 group-hover:ring-purple-400/50 transition-all">
@@ -414,13 +442,19 @@ const Summary = () => {
                         <p className="text-muted-foreground text-xs truncate">
                           {friend.bio ? (
                             <>
-                              <span className="hidden sm:inline">{friend.bio}</span>
+                              <span className="hidden sm:inline">
+                                {friend.bio}
+                              </span>
                               <span className="sm:hidden">
-                                {friend.bio.length > 20 ? `${friend.bio.substring(0, 20)}...` : friend.bio}
+                                {friend.bio.length > 20
+                                  ? `${friend.bio.substring(0, 20)}...`
+                                  : friend.bio}
                               </span>
                             </>
                           ) : (
-                            <span className="text-muted-foreground/70">No bio</span>
+                            <span className="text-muted-foreground/70">
+                              No bio
+                            </span>
                           )}
                         </p>
                       </div>
@@ -440,7 +474,10 @@ const Summary = () => {
                 ))
               )}
               <Link to="/friends">
-                <Button variant="ghost" className="w-full text-muted-foreground hover:text-white mt-4">
+                <Button
+                  variant="ghost"
+                  className="w-full text-muted-foreground hover:text-white mt-4"
+                >
                   View All Friends
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -480,9 +517,9 @@ const Summary = () => {
                         {post.content}
                       </p>
                       {post.image_url && (
-                        <img 
-                          src={post.image_url} 
-                          alt="Post image" 
+                        <img
+                          src={post.image_url}
+                          alt="Post image"
                           className="w-full h-24 object-cover rounded mt-2"
                         />
                       )}
@@ -491,7 +528,10 @@ const Summary = () => {
                 ))
               )}
               <Link to="/feed">
-                <Button variant="ghost" className="w-full text-muted-foreground hover:text-white">
+                <Button
+                  variant="ghost"
+                  className="w-full text-muted-foreground hover:text-white"
+                >
                   View Feed
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -517,7 +557,7 @@ const Summary = () => {
               ) : (
                 featuredExercises.map((exercise) => {
                   const isLocked = !hasFullAccess && exercise.premium;
-                  
+
                   const handleClick = () => {
                     if (isLocked) {
                       setShowPricingModal(true);
@@ -528,20 +568,20 @@ const Summary = () => {
 
                   const handleViewDetails = (e: React.MouseEvent) => {
                     e.stopPropagation();
-                    
+
                     if (isLocked) {
                       setShowPricingModal(true);
                       return;
                     }
-                    
+
                     window.location.href = `/exercise/${exercise.id}`;
                   };
-                  
+
                   return (
                     <Card
                       key={exercise.id}
                       className={`glass-effect border-white/10 hover-lift group overflow-hidden cursor-pointer relative ${
-                        isLocked ? 'opacity-75' : ''
+                        isLocked ? "opacity-75" : ""
                       }`}
                       onClick={handleClick}
                     >
@@ -554,12 +594,12 @@ const Summary = () => {
                             }
                             alt={exercise.name}
                             className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 ${
-                              isLocked ? 'filter grayscale' : ''
+                              isLocked ? "filter grayscale" : ""
                             }`}
                           />
                         </div>
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent group-hover:scale-110 transition-transform duration-300" />
-                        
+
                         {isLocked && (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <div className="bg-black/80 rounded-full p-3">
@@ -588,18 +628,17 @@ const Summary = () => {
                         <div className="flex items-center gap-2 mb-4">
                           {getStatusIcon(exercise.progress_status)}
                           <span className="text-sm text-muted-foreground capitalize">
-                            {exercise.progress_status.replace('_', ' ')}
+                            {exercise.progress_status.replace("_", " ")}
                           </span>
                         </div>
 
                         <div className="flex items-center justify-between">
-                          <div className="flex flex-col space-y-1">
-                          </div>
+                          <div className="flex flex-col space-y-1"></div>
                           <Button
                             variant="primary"
                             size="sm"
                             onClick={handleViewDetails}
-                            className={isLocked ? 'opacity-75' : ''}
+                            className={isLocked ? "opacity-75" : ""}
                           >
                             {isLocked ? (
                               <>
@@ -619,7 +658,10 @@ const Summary = () => {
             </div>
             <div className="mt-6">
               <Link to="/library">
-                <Button variant="ghost" className="w-full text-muted-foreground hover:text-white">
+                <Button
+                  variant="ghost"
+                  className="w-full text-muted-foreground hover:text-white"
+                >
                   View Full Library
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
@@ -629,8 +671,8 @@ const Summary = () => {
         </Card>
       </div>
 
-      <PricingModal 
-        isOpen={showPricingModal} 
+      <PricingModal
+        isOpen={showPricingModal}
         onClose={() => setShowPricingModal(false)}
         onUpgrade={() => setShowPricingModal(false)}
       />
