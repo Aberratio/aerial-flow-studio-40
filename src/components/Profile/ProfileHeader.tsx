@@ -14,6 +14,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ImageCropModal } from "@/components/ImageCropModal";
 
 interface ProfileHeaderProps {
   onEditProfile: () => void;
@@ -35,70 +36,39 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [stats, setStats] = useState({
     posts: 0,
     followers: 0,
     following: 0,
   });
 
-  const resizeAndCropImage = (file: File): Promise<File> => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
-      const img = new Image();
-      
-      img.onload = () => {
-        const size = 400; // Target size for square avatar
-        canvas.width = size;
-        canvas.height = size;
-        
-        // Calculate dimensions for center crop
-        const scale = Math.max(size / img.width, size / img.height);
-        const scaledWidth = img.width * scale;
-        const scaledHeight = img.height * scale;
-        const offsetX = (size - scaledWidth) / 2;
-        const offsetY = (size - scaledHeight) / 2;
-        
-        // Fill background with white (for transparent images)
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, size, size);
-        
-        // Draw cropped and scaled image
-        ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-        
-        canvas.toBlob((blob) => {
-          const resizedFile = new File([blob!], file.name, {
-            type: 'image/jpeg',
-            lastModified: Date.now(),
-          });
-          resolve(resizedFile);
-        }, 'image/jpeg', 0.9);
-      };
-      
-      img.src = URL.createObjectURL(file);
-    });
+  const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageSrc = e.target?.result as string;
+      setSelectedImage(imageSrc);
+      setIsCropModalOpen(true);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleAvatarUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file || !user) return;
+  const handleCropComplete = async (croppedImageFile: File) => {
+    if (!user) return;
 
     setIsUploadingAvatar(true);
-    console.log("Starting avatar upload...", file);
+    console.log("Starting avatar upload...", croppedImageFile);
 
     try {
-      // Resize and crop image to square
-      const processedFile = await resizeAndCropImage(file);
-      console.log("Image processed for square format");
-
-      const fileExt = 'jpg'; // Always use jpg for consistency
-      const fileName = `${user.id}.${fileExt}`;
+      const fileName = `${user.id}.jpg`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(fileName, processedFile, { upsert: true });
+        .upload(fileName, croppedImageFile, { upsert: true });
 
       if (uploadError) {
         console.error("Error uploading avatar:", uploadError);
@@ -208,7 +178,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             <input
               type="file"
               accept="image/*"
-              onChange={handleAvatarUpload}
+              onChange={handleAvatarSelect}
               className="hidden"
               id="avatar-upload"
             />
@@ -377,6 +347,19 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             </div>
           </div>
         </div>
+
+        {/* Image Crop Modal */}
+        {selectedImage && (
+          <ImageCropModal
+            isOpen={isCropModalOpen}
+            onClose={() => {
+              setIsCropModalOpen(false);
+              setSelectedImage(null);
+            }}
+            imageSrc={selectedImage}
+            onCropComplete={handleCropComplete}
+          />
+        )}
       </CardContent>
     </Card>
   );

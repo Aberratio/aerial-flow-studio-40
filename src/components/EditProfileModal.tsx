@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
+import { ImageCropModal } from '@/components/ImageCropModal';
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -27,6 +28,8 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const popularSports = [
     'silks', 'hoop', 'pole', 'straps', 'hammock', 'acrobatics', 
@@ -69,62 +72,26 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
     }
   };
 
-  const resizeAndCropImage = (file: File): Promise<{ file: File; preview: string }> => {
-    return new Promise((resolve) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
-      const img = new Image();
-      
-      img.onload = () => {
-        const size = 400; // Target size for square avatar
-        canvas.width = size;
-        canvas.height = size;
-        
-        // Calculate dimensions for center crop
-        const scale = Math.max(size / img.width, size / img.height);
-        const scaledWidth = img.width * scale;
-        const scaledHeight = img.height * scale;
-        const offsetX = (size - scaledWidth) / 2;
-        const offsetY = (size - scaledHeight) / 2;
-        
-        // Fill background with white (for transparent images)
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, size, size);
-        
-        // Draw cropped and scaled image
-        ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
-        
-        const preview = canvas.toDataURL('image/jpeg', 0.9);
-        
-        canvas.toBlob((blob) => {
-          const resizedFile = new File([blob!], file.name, {
-            type: 'image/jpeg',
-            lastModified: Date.now(),
-          });
-          resolve({ file: resizedFile, preview });
-        }, 'image/jpeg', 0.9);
-      };
-      
-      img.src = URL.createObjectURL(file);
-    });
-  };
-
-  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      try {
-        const { file: processedFile, preview } = await resizeAndCropImage(file);
-        setAvatarFile(processedFile);
-        setAvatarPreview(preview);
-      } catch (error) {
-        console.error('Error processing image:', error);
-        toast({
-          title: "Error",
-          description: "Failed to process image. Please try another file.",
-          variant: "destructive"
-        });
-      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageSrc = e.target?.result as string;
+        setSelectedImage(imageSrc);
+        setIsCropModalOpen(true);
+      };
+      reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = (croppedImageFile: File) => {
+    setAvatarFile(croppedImageFile);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setAvatarPreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(croppedImageFile);
   };
 
   const handleSave = async () => {
@@ -217,7 +184,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
               <input
                 type="file"
                 accept="image/*"
-                onChange={handleAvatarChange}
+                onChange={handleAvatarSelect}
                 className="hidden"
                 id="avatar-upload"
               />
@@ -373,6 +340,19 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
             </Button>
           </div>
         </div>
+
+        {/* Image Crop Modal */}
+        {selectedImage && (
+          <ImageCropModal
+            isOpen={isCropModalOpen}
+            onClose={() => {
+              setIsCropModalOpen(false);
+              setSelectedImage(null);
+            }}
+            imageSrc={selectedImage}
+            onCropComplete={handleCropComplete}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
