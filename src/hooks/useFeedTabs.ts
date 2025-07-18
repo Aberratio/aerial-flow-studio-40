@@ -105,10 +105,41 @@ export const useFeedTabs = () => {
 
         query = query.or(conditions.join(','));
       } else {
-        // Public feed - all public posts excluding user's own posts
-        query = query
-          .eq('privacy', 'public')
-          .neq('user_id', user.id);
+        // Public feed - all public posts excluding user's own posts and friends
+        // Get user's friends and follows to exclude them
+        const { data: friendships } = await supabase
+          .from('friendships')
+          .select('requester_id, addressee_id')
+          .eq('status', 'accepted')
+          .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`);
+
+        const { data: follows } = await supabase
+          .from('user_follows')
+          .select('following_id')
+          .eq('follower_id', user.id);
+
+        // Extract friend and follow IDs to exclude
+        const excludeIds = new Set<string>([user.id]); // Start with user's own ID
+        
+        friendships?.forEach(friendship => {
+          if (friendship.requester_id === user.id) {
+            excludeIds.add(friendship.addressee_id);
+          } else {
+            excludeIds.add(friendship.requester_id);
+          }
+        });
+
+        follows?.forEach(follow => {
+          excludeIds.add(follow.following_id);
+        });
+
+        query = query.eq('privacy', 'public');
+        
+        // Exclude posts from user, friends, and follows
+        if (excludeIds.size > 0) {
+          const excludeIdsArray = Array.from(excludeIds);
+          query = query.not('user_id', 'in', `(${excludeIdsArray.join(',')})`);
+        }
       }
 
       const { data: postsData, error } = await query;
