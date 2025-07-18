@@ -78,17 +78,24 @@ const Summary = () => {
 
     const today = new Date();
     const dateString = today.toISOString().split("T")[0]; // YYYY-MM-DD
-
-    // Create a simple hash from the date string
+    
+    // Add multipliers to make the randomness more varied
+    const magicMultiplier = 1337; // A large prime-like number
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Create a more complex hash from the date string with multipliers
     let hash = 0;
     for (let i = 0; i < dateString.length; i++) {
       const char = dateString.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
+      hash = ((hash << 7) - hash + char * magicMultiplier + dayOfYear) * 31;
       hash = hash & hash; // Convert to 32-bit integer
     }
 
-    // Use the hash to select an exercise from free exercises only
-    const index = Math.abs(hash) % freeExercises.length;
+    // Add more randomness with additional operations
+    hash = Math.abs(hash * 7919 + dayOfYear * 127) % 2147483647;
+
+    // Use the enhanced hash to select an exercise from free exercises only
+    const index = hash % freeExercises.length;
     return freeExercises[index];
   };
 
