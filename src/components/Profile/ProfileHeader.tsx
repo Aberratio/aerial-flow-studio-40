@@ -41,6 +41,44 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     following: 0,
   });
 
+  const resizeAndCropImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      const img = new Image();
+      
+      img.onload = () => {
+        const size = 400; // Target size for square avatar
+        canvas.width = size;
+        canvas.height = size;
+        
+        // Calculate dimensions for center crop
+        const scale = Math.max(size / img.width, size / img.height);
+        const scaledWidth = img.width * scale;
+        const scaledHeight = img.height * scale;
+        const offsetX = (size - scaledWidth) / 2;
+        const offsetY = (size - scaledHeight) / 2;
+        
+        // Fill background with white (for transparent images)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        
+        // Draw cropped and scaled image
+        ctx.drawImage(img, offsetX, offsetY, scaledWidth, scaledHeight);
+        
+        canvas.toBlob((blob) => {
+          const resizedFile = new File([blob!], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now(),
+          });
+          resolve(resizedFile);
+        }, 'image/jpeg', 0.9);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleAvatarUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -51,12 +89,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     console.log("Starting avatar upload...", file);
 
     try {
-      const fileExt = file.name.split(".").pop();
+      // Resize and crop image to square
+      const processedFile = await resizeAndCropImage(file);
+      console.log("Image processed for square format");
+
+      const fileExt = 'jpg'; // Always use jpg for consistency
       const fileName = `${user.id}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from("avatars")
-        .upload(fileName, file, { upsert: true });
+        .upload(fileName, processedFile, { upsert: true });
 
       if (uploadError) {
         console.error("Error uploading avatar:", uploadError);
