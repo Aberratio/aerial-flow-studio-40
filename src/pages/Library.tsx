@@ -12,6 +12,8 @@ import {
   AlertCircle,
   CircleMinus,
   Crown,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,11 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 
@@ -47,6 +54,9 @@ const Library = () => {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
+  const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
+  const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>([]);
+  const [extendedFiltersOpen, setExtendedFiltersOpen] = useState(false);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [editingFigure, setEditingFigure] = useState(null);
   const [figures, setFigures] = useState([]);
@@ -57,6 +67,7 @@ const Library = () => {
     figure: null,
   });
   const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [availableExperts, setAvailableExperts] = useState<{id: string, username: string}[]>([]);
   const [showFigureSearch, setShowFigureSearch] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
@@ -65,6 +76,7 @@ const Library = () => {
   const levels = ["all", "beginner", "intermediate", "advanced", "expert"];
   const types = ["all", "single_figure", "combo"];
   const statuses = ["all", "completed", "for_later", "failed", "not_tried"];
+  const contentTypes = ["all", "free", "premium"];
 
   // Fetch user profile to get sports preferences
   const fetchUserProfile = async () => {
@@ -104,6 +116,13 @@ const Library = () => {
           *,
           profiles!figures_created_by_fkey (
             username
+          ),
+          figure_experts (
+            expert_user_id,
+            profiles!figure_experts_expert_user_id_fkey (
+              id,
+              username
+            )
           )
         `
         )
@@ -140,6 +159,15 @@ const Library = () => {
       const allTags = figuresData?.flatMap((figure) => figure.tags || []) || [];
       const uniqueTags = [...new Set(allTags)].sort();
       setAvailableTags(uniqueTags);
+
+      // Extract unique experts for filtering
+      const allExperts = figuresData?.flatMap((figure) => 
+        figure.figure_experts?.map(expert => expert.profiles) || []
+      ) || [];
+      const uniqueExperts = allExperts.filter((expert, index, self) => 
+        expert && self.findIndex(e => e?.id === expert.id) === index
+      );
+      setAvailableExperts(uniqueExperts);
     } catch (error) {
       console.error("Error fetching figures:", error);
       toast({
@@ -219,13 +247,26 @@ const Library = () => {
       selectedStatuses.length === 0 ||
       selectedStatuses.includes("all") ||
       selectedStatuses.includes(figure.progress_status);
+    const matchesExpert =
+      selectedExperts.length === 0 ||
+      selectedExperts.includes("all") ||
+      (figure.figure_experts?.some(expert => 
+        selectedExperts.includes(expert.expert_user_id)
+      ));
+    const matchesContentType =
+      selectedContentTypes.length === 0 ||
+      selectedContentTypes.includes("all") ||
+      (selectedContentTypes.includes("free") && !figure.premium) ||
+      (selectedContentTypes.includes("premium") && figure.premium);
     return (
       matchesSearch &&
       matchesCategory &&
       matchesLevel &&
       matchesType &&
       matchesTags &&
-      matchesStatus
+      matchesStatus &&
+      matchesExpert &&
+      matchesContentType
     );
   }).sort((a, b) => a.name.localeCompare(b.name));
 
@@ -554,8 +595,143 @@ const Library = () => {
             </Popover>
           </div>
 
+          {/* Extended Filters */}
+          <Collapsible open={extendedFiltersOpen} onOpenChange={setExtendedFiltersOpen}>
+            <CollapsibleTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between"
+              >
+                <span>Extended Filters</span>
+                {extendedFiltersOpen ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Expert Filter */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-9">
+                      <span className="truncate">
+                        {selectedExperts.length === 0 ? 'Expert' : 
+                         selectedExperts.includes('all') ? 'All Experts' :
+                         selectedExperts.length === 1 ? availableExperts.find(e => e.id === selectedExperts[0])?.username || 'Expert' :
+                         `${selectedExperts.length} Experts`}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {selectedExperts.length > 0 && !selectedExperts.includes('all') && (
+                          <span className="bg-purple-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                            {selectedExperts.length}
+                          </span>
+                        )}
+                        <Filter className="w-3 h-3 ml-1" />
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-56">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="all-experts"
+                          checked={selectedExperts.includes("all")}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedExperts(["all"]);
+                            } else {
+                              setSelectedExperts([]);
+                            }
+                          }}
+                        />
+                        <label htmlFor="all-experts" className="text-white font-medium">All Experts</label>
+                      </div>
+                      {availableExperts.map((expert) => (
+                        <div key={expert.id} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={expert.id}
+                            checked={selectedExperts.includes(expert.id)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedExperts(prev => [...prev.filter(e => e !== "all"), expert.id]);
+                              } else {
+                                setSelectedExperts(prev => prev.filter(e => e !== expert.id));
+                              }
+                            }}
+                          />
+                          <label htmlFor={expert.id} className="text-white">{expert.username}</label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {/* Content Type Filter */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-9">
+                      <span className="truncate">
+                        {selectedContentTypes.length === 0 ? 'Content Type' : 
+                         selectedContentTypes.includes('all') ? 'All Content' :
+                         selectedContentTypes.length === 1 ? selectedContentTypes[0].charAt(0).toUpperCase() + selectedContentTypes[0].slice(1) :
+                         `${selectedContentTypes.length} Types`}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        {selectedContentTypes.length > 0 && !selectedContentTypes.includes('all') && (
+                          <span className="bg-purple-500 text-white rounded-full w-4 h-4 text-xs flex items-center justify-center">
+                            {selectedContentTypes.length}
+                          </span>
+                        )}
+                        <Filter className="w-3 h-3 ml-1" />
+                      </div>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-56">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="all-content-types"
+                          checked={selectedContentTypes.includes("all")}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedContentTypes(["all"]);
+                            } else {
+                              setSelectedContentTypes([]);
+                            }
+                          }}
+                        />
+                        <label htmlFor="all-content-types" className="text-white font-medium">All Content</label>
+                      </div>
+                      {contentTypes.slice(1).map((type) => (
+                        <div key={type} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`content-${type}`}
+                            checked={selectedContentTypes.includes(type)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedContentTypes(prev => [...prev.filter(t => t !== "all"), type]);
+                              } else {
+                                setSelectedContentTypes(prev => prev.filter(t => t !== type));
+                              }
+                            }}
+                          />
+                          <label htmlFor={`content-${type}`} className="text-white capitalize flex items-center gap-1">
+                            {type === 'premium' && <Crown className="w-3 h-3" />}
+                            {type}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
           {/* Active Filters Summary */}
-          {(selectedCategories.length > 0 || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedStatuses.length > 0) && (
+          {(selectedCategories.length > 0 || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedStatuses.length > 0 || selectedExperts.length > 0 || selectedContentTypes.length > 0) && (
             <div className="flex flex-wrap gap-2 pt-2">
               {selectedCategories.filter(c => c !== 'all').map((category) => (
                 <Badge key={category} variant="secondary" className="bg-purple-500/20 text-purple-300 border-purple-400/30 flex items-center gap-1">
@@ -579,6 +755,22 @@ const Library = () => {
                 <Badge key={status} variant="secondary" className="bg-green-500/20 text-green-300 border-green-400/30 flex items-center gap-1">
                   {status.replace('_', ' ')}
                   <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedStatuses(prev => prev.filter(s => s !== status))} />
+                </Badge>
+              ))}
+              {selectedExperts.filter(e => e !== 'all').map((expertId) => {
+                const expert = availableExperts.find(e => e.id === expertId);
+                return (
+                  <Badge key={expertId} variant="secondary" className="bg-indigo-500/20 text-indigo-300 border-indigo-400/30 flex items-center gap-1">
+                    Expert: {expert?.username || 'Unknown'}
+                    <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedExperts(prev => prev.filter(e => e !== expertId))} />
+                  </Badge>
+                );
+              })}
+              {selectedContentTypes.filter(t => t !== 'all').map((type) => (
+                <Badge key={type} variant="secondary" className="bg-orange-500/20 text-orange-300 border-orange-400/30 flex items-center gap-1">
+                  {type === 'premium' && <Crown className="w-3 h-3" />}
+                  {type}
+                  <X className="w-3 h-3 cursor-pointer" onClick={() => setSelectedContentTypes(prev => prev.filter(t => t !== type))} />
                 </Badge>
               ))}
             </div>
