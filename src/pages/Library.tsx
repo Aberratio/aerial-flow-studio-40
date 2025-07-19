@@ -638,7 +638,7 @@ const Library = () => {
               <CollapsibleTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="w-full text-white justify-between p-0 h-auto font-medium"
+                  className="w-full text-white justify-between p-0 h-auto font-medium hover:bg-transparent"
                 >
                   <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4" />
