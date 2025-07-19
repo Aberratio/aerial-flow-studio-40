@@ -132,10 +132,10 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
   if (pendingFriendRequest === 'received' && !isFollowing) {
     return (
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-        <Button 
+        <Button  
+          variant="primary"
           size={size}
           onClick={handleAcceptFriend}
-          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 w-full sm:w-auto px-3 py-2 text-sm"
         >
           <Check className="w-4 h-4 mr-2" />
           Accept
@@ -167,9 +167,9 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     return (
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
+          variant="primary"
           size={size}
           onClick={handleAcceptFriend}
-          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
         >
           <Check className="w-4 h-4 mr-2" />
           Accept
@@ -253,9 +253,9 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     return (
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
+          variant="primary"
           size={size}
           onClick={handleSendFriendRequest}
-          className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
         >
           <UserPlus className="w-4 h-4 mr-2" />
           Send Friend Request
@@ -278,6 +278,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     return (
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
+          variant="primary"
           size={size}
           onClick={handleSendFriendRequest}
         >
