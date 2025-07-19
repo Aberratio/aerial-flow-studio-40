@@ -279,6 +279,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
       <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
         <Button 
           size={size}
+          variant="primary"
           onClick={handleSendFriendRequest}
           className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
         >
