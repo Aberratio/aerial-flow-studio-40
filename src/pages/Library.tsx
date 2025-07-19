@@ -217,7 +217,43 @@ const Library = () => {
   useEffect(() => {
     fetchFigures();
     fetchUserProfile();
+    loadFiltersFromLocalStorage();
   }, [user]);
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    const filters = {
+      selectedCategories,
+      selectedLevels,
+      selectedTypes,
+      selectedTags,
+      selectedStatuses,
+      selectedExperts,
+      selectedContentTypes,
+      extendedFiltersOpen,
+    };
+    localStorage.setItem('libraryFilters', JSON.stringify(filters));
+  }, [selectedCategories, selectedLevels, selectedTypes, selectedTags, selectedStatuses, selectedExperts, selectedContentTypes, extendedFiltersOpen]);
+
+  // Load filters from localStorage
+  const loadFiltersFromLocalStorage = () => {
+    try {
+      const savedFilters = localStorage.getItem('libraryFilters');
+      if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        setSelectedCategories(filters.selectedCategories || []);
+        setSelectedLevels(filters.selectedLevels || []);
+        setSelectedTypes(filters.selectedTypes || []);
+        setSelectedTags(filters.selectedTags || []);
+        setSelectedStatuses(filters.selectedStatuses || []);
+        setSelectedExperts(filters.selectedExperts || []);
+        setSelectedContentTypes(filters.selectedContentTypes || []);
+        setExtendedFiltersOpen(filters.extendedFiltersOpen || false);
+      }
+    } catch (error) {
+      console.error('Error loading filters from localStorage:', error);
+    }
+  };
 
   const filteredFigures = figuresWithProgress.filter((figure) => {
     const searchLower = searchTerm.toLowerCase();
@@ -602,7 +638,7 @@ const Library = () => {
               <CollapsibleTrigger asChild>
                 <Button 
                   variant="ghost" 
-                  className="w-full text-white hover:bg-white/10 justify-between p-0 h-auto font-medium"
+                  className="w-full text-white justify-between p-0 h-auto font-medium"
                 >
                   <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4" />
