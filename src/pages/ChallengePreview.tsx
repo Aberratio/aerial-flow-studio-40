@@ -11,6 +11,7 @@ import {
   Target,
   RotateCcw,
   AlertTriangle,
+  Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 import { format, parseISO, addDays, isSameDay, startOfMonth, endOfMonth, isAfter, isBefore } from "date-fns";
 
 interface Challenge {
@@ -43,6 +45,7 @@ interface Challenge {
   status: string;
   image_url?: string;
   type: string;
+  created_by?: string;
   achievements?: Array<{
     id: string;
     name: string;
@@ -75,6 +78,7 @@ const ChallengePreview = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { canCreateChallenges } = useUserRole();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
@@ -487,14 +491,27 @@ const ChallengePreview = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/challenges")}
-            className="text-white hover:bg-white/10 mb-4"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Back to Challenges
-          </Button>
+          <div className="flex items-center justify-between mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/challenges")}
+              className="text-white hover:bg-white/10"
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              Back to Challenges
+            </Button>
+            
+            {canCreateChallenges && (user?.role === "admin" || challenge?.created_by === user?.id) && (
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/challenges/${challengeId}/edit`)}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Challenge
+              </Button>
+            )}
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
             {/* Challenge Hero */}
@@ -754,7 +771,7 @@ const ChallengePreview = () => {
                 <div className="bg-white/5 rounded-lg p-6 border border-white/10">
                   <Calendar
                     mode="single"
-                    className="pointer-events-auto w-full [&_.react-flow\_\_node]:!h-20 [&_.react-flow\_\_node]:!w-20 [&_.react-flow\_\_node]:!min-h-0 [&_.react-flow\_\_node]:!min-w-0 [&_td]:!h-20 [&_th]:!h-12 [&_td]:!w-20 [&_tbody_td]:!p-0 [&_th]:!text-base [&_button]:!h-20 [&_button]:!w-20 [&_button]:!text-sm [&_button]:!flex [&_button]:!flex-col [&_button]:!items-center [&_button]:!justify-center [&_button]:!gap-1 [&_button]:!p-2"
+                    className="pointer-events-auto w-full [&_td]:!h-20 [&_th]:!h-12 [&_td]:!w-20 [&_tbody_td]:!p-0 [&_th]:!text-base [&_button]:!h-full [&_button]:!w-full [&_button]:!text-sm [&_button]:!flex [&_button]:!flex-col [&_button]:!items-center [&_button]:!justify-center [&_button]:!gap-1 [&_button]:!p-2"
                     components={{
                       DayContent: ({ date }) => {
                         const dayInfo = getCalendarDayInfo(date);

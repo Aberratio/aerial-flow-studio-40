@@ -13,6 +13,7 @@ import {
   Pause,
   X,
   AlertTriangle,
+  Calendar as CalendarIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import ChallengeExerciseModal from "@/components/ChallengeExerciseModal";
 import ChallengeTimer from "@/components/ChallengeTimer";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format, subMonths } from "date-fns";
 interface Exercise {
   id: string;
   sets?: number;
@@ -109,6 +117,8 @@ const ChallengeDayOverview = () => {
   );
   const [showTimer, setShowTimer] = useState(false);
   const [allDays, setAllDays] = useState<TrainingDayBasic[]>([]);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>();
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
   const { toast } = useToast();
@@ -319,21 +329,56 @@ const ChallengeDayOverview = () => {
     if (!user) return;
 
     try {
-      // Save day progress when timer completes
+      // Check if this is the first challenge day
+      const isFirstDay = dayNumber === 1;
+      
+      if (isFirstDay) {
+        // Show date picker for first day completion
+        setShowStartDatePicker(true);
+        return;
+      }
+
+      // For non-first days, proceed with normal completion
+      await completeDay();
+    } catch (error) {
+      console.error("Error handling timer complete:", error);
+    }
+
+    setShowTimer(false);
+  };
+
+  const completeDay = async (startDate?: Date) => {
+    if (!user) return;
+
+    try {
+      const completionData = {
+        user_id: user.id,
+        challenge_id: challengeId!,
+        training_day_id: dayId!,
+        exercises_completed: trainingDay!.exercises.length,
+        total_exercises: trainingDay!.exercises.length,
+        completed_at: new Date().toISOString(),
+        status: 'completed',
+        scheduled_date: (startDate || new Date()).toISOString(),
+      };
+
+      // Save day progress
       const { error: progressError } = await supabase
         .from("challenge_day_progress")
-        .upsert({
-          user_id: user.id,
-          challenge_id: challengeId!,
-          training_day_id: dayId!,
-          exercises_completed: trainingDay!.exercises.length,
-          total_exercises: trainingDay!.exercises.length,
-          completed_at: new Date().toISOString(),
-          status: 'completed',
-          scheduled_date: new Date().toISOString(),
-        });
+        .upsert(completionData);
 
       if (progressError) throw progressError;
+
+      // If start date was provided, update the user's started_at date
+      if (startDate) {
+        const { error: participantError } = await supabase
+          .from("challenge_participants")
+          .update({ user_started_at: startDate.toISOString() })
+          .eq("challenge_id", challengeId!)
+          .eq("user_id", user.id);
+
+        if (participantError) throw participantError;
+      }
 
       // Create activity entry for points
       const { error: activityError } = await supabase.rpc(
@@ -367,8 +412,14 @@ const ChallengeDayOverview = () => {
         variant: "default",
       });
     }
+  };
 
-    setShowTimer(false);
+  const handleStartDateConfirm = async () => {
+    if (selectedStartDate) {
+      await completeDay(selectedStartDate);
+      setShowStartDatePicker(false);
+      setSelectedStartDate(undefined);
+    }
   };
 
   return (
@@ -868,6 +919,69 @@ const ChallengeDayOverview = () => {
             </Button>
           </div>
         </div>
+
+        {/* Start Date Picker Modal */}
+        {showStartDatePicker && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <Card className="glass-effect border-white/10 max-w-md w-full">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <CalendarIcon className="w-5 h-5 mr-2" />
+                  Choose Challenge Start Date
+                </CardTitle>
+                <p className="text-muted-foreground">
+                  Select when you want to start this challenge (up to 1 month ago)
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal border-white/20 bg-black/20"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedStartDate ? format(selectedStartDate, "PPP") : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedStartDate}
+                        onSelect={setSelectedStartDate}
+                        disabled={(date) =>
+                          date > new Date() || date < subMonths(new Date(), 1)
+                        }
+                        initialFocus
+                        className="p-3 pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={handleStartDateConfirm}
+                      disabled={!selectedStartDate}
+                      className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    >
+                      Confirm & Complete Day
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowStartDatePicker(false);
+                        setSelectedStartDate(undefined);
+                      }}
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Timer Mode */}
         {showTimer && trainingDay && (
