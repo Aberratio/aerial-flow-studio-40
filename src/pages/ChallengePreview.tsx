@@ -245,21 +245,19 @@ const ChallengePreview = () => {
   const generateCalendarDays = () => {
     if (!challenge?.training_days) return [];
     
-    const startDate = parseISO(challenge.start_date);
     const days = [];
     
-    for (let i = 0; i < challenge.training_days.length; i++) {
-      const dayDate = addDays(startDate, i);
-      const trainingDay = challenge.training_days[i];
+    challenge.training_days.forEach((trainingDay, index) => {
+      const dayDate = parseISO(trainingDay.day_date);
       
       days.push({
         date: dayDate,
-        day: i + 1,
+        day: index + 1,
         trainingDay,
         isToday: format(dayDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'),
         isPast: dayDate < new Date()
       });
-    }
+    });
     
     return days;
   };
