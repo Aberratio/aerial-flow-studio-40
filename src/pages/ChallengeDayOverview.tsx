@@ -121,6 +121,9 @@ const ChallengeDayOverview = () => {
   const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>();
   const [dayProgress, setDayProgress] = useState<any>(null);
   const [isDayCompleted, setIsDayCompleted] = useState(false);
+  const [userParticipant, setUserParticipant] = useState<any>(null);
+  const [restDayAction, setRestDayAction] = useState(false);
+  const [failedDayAction, setFailedDayAction] = useState(false);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
   const { toast } = useToast();
@@ -167,12 +170,13 @@ const ChallengeDayOverview = () => {
         // Fetch user's participation status
         const { data: participationData } = await supabase
           .from("challenge_participants")
-          .select("status")
+          .select("*")
           .eq("challenge_id", challengeId)
           .eq("user_id", user.id)
           .single();
         if (participationData) {
           setParticipationStatus(participationData.status);
+          setUserParticipant(participationData);
         }
       }
 
@@ -268,10 +272,23 @@ const ChallengeDayOverview = () => {
     }
   };
   const handleStartDay = () => {
-    if (!trainingDay || trainingDay.exercises.length === 0) return;
+    if (!trainingDay || !user) return;
+
+    // Check if this is the first challenge day and if the user hasn't set a start date yet
+    const isFirstDay = dayNumber === 1;
+    const hasStartDate = userParticipant?.user_started_at;
+    
+    if (isFirstDay && !hasStartDate) {
+      // Show date picker for first day to set challenge start date
+      setShowStartDatePicker(true);
+      return;
+    }
+
+    // For timer-based challenges, show the timer
     if (challenge?.type === "timer") {
       setShowTimer(true);
     } else {
+      // For manual challenges, show exercise modal
       setIsExerciseModalOpen(true);
     }
   };
@@ -439,10 +456,142 @@ const ChallengeDayOverview = () => {
   };
 
   const handleStartDateConfirm = async () => {
-    if (selectedStartDate) {
-      await completeDay(selectedStartDate);
+    if (!selectedStartDate || !user) return;
+
+    try {
+      // Update participant's start date first
+      const { error: participantError } = await supabase
+        .from("challenge_participants")
+        .update({ user_started_at: selectedStartDate.toISOString() })
+        .eq("challenge_id", challengeId!)
+        .eq("user_id", user.id);
+
+      if (participantError) throw participantError;
+
+      // Now handle the specific action
+      if (restDayAction) {
+        await handleRestDayWithDate(selectedStartDate);
+      } else if (failedDayAction) {
+        await handleFailedDayWithDate(selectedStartDate);
+      } else {
+        // This is starting the first day - proceed with normal flow
+        setShowStartDatePicker(false);
+        setSelectedStartDate(null);
+        
+        // Refresh participant data
+        await fetchChallengeAndDay();
+        
+        // Now start the actual day
+        if (challenge?.type === "timer") {
+          setShowTimer(true);
+        } else {
+          setIsExerciseModalOpen(true);
+        }
+        return;
+      }
+      
       setShowStartDatePicker(false);
-      setSelectedStartDate(undefined);
+      setSelectedStartDate(null);
+      setRestDayAction(false);
+      setFailedDayAction(false);
+    } catch (error) {
+      console.error("Error confirming start date:", error);
+      toast({
+        title: "Error",
+        description: "Failed to set start date. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRestDayWithDate = async (startDate: Date) => {
+    if (!user) return;
+    
+    try {
+      // Update participant's start date
+      const { error: participantError } = await supabase
+        .from("challenge_participants")
+        .update({ user_started_at: startDate.toISOString() })
+        .eq("challenge_id", challengeId!)
+        .eq("user_id", user.id);
+
+      if (participantError) throw participantError;
+
+      // Mark rest day as completed
+      const { error: progressError } = await supabase
+        .from("challenge_day_progress")
+        .insert({
+          user_id: user.id,
+          challenge_id: challengeId!,
+          training_day_id: dayId!,
+          exercises_completed: 0,
+          total_exercises: 0,
+          changed_status_at: new Date().toISOString(),
+          status: 'rest',
+          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
+        });
+
+      if (progressError) throw progressError;
+
+      toast({
+        title: "Rest Day Complete!",
+        description: "Great job taking time to recover! You earned 10 points.",
+      });
+
+      window.location.reload();
+    } catch (error) {
+      console.error("Error completing rest day:", error);
+      toast({
+        title: "Error",
+        description: "Failed to mark rest day as complete. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFailedDayWithDate = async (startDate: Date) => {
+    if (!user) return;
+    
+    try {
+      // Update participant's start date
+      const { error: participantError } = await supabase
+        .from("challenge_participants")
+        .update({ user_started_at: startDate.toISOString() })
+        .eq("challenge_id", challengeId!)
+        .eq("user_id", user.id);
+
+      if (participantError) throw participantError;
+
+      // Mark day as failed
+      const { error: progressError } = await supabase
+        .from("challenge_day_progress")
+        .insert({
+          user_id: user.id,
+          challenge_id: challengeId!,
+          training_day_id: dayId!,
+          exercises_completed: 0,
+          total_exercises: trainingDay!.exercises.length,
+          status: 'failed',
+          changed_status_at: new Date().toISOString(),
+          notes: 'User marked day as failed - needs retry',
+          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
+        });
+
+      if (progressError) throw progressError;
+
+      toast({
+        title: "Day Marked as Failed",
+        description: "This day will be retried tomorrow. Don't give up!",
+      });
+
+      window.location.reload();
+    } catch (error) {
+      console.error("Error marking day as failed:", error);
+      toast({
+        title: "Error",
+        description: "Failed to mark day as failed. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -792,8 +941,8 @@ const ChallengeDayOverview = () => {
           </Card>
         )}
 
-        {/* Action Buttons - Only show if day is not completed/failed */}
-        {!isDayCompleted && (
+        {/* Action Buttons - Only show if day has no status */}
+        {!dayProgress && (
           <div className="space-y-4">
             {/* Primary Action Button */}
             <div className="flex space-x-3">
@@ -807,67 +956,79 @@ const ChallengeDayOverview = () => {
                   Start Day {dayNumber}
                 </Button>
               ) : (
-                <Button
-                  onClick={async () => {
-                    if (!user) return;
-                    try {
-                      // Mark rest day as completed
-                      const { error: progressError } = await supabase
-                        .from("challenge_day_progress")
-                        .insert({
-                          user_id: user.id,
-                          challenge_id: challengeId!,
-                          training_day_id: dayId!,
-                          exercises_completed: 0,
-                          total_exercises: 0,
-                          changed_status_at: new Date().toISOString(),
-                          status: 'rest',
-                          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
-                        });
+                 <Button
+                   onClick={async () => {
+                     if (!user) return;
+                     
+                     // Check if this is the first challenge day and if the user hasn't set a start date yet
+                     const isFirstDay = dayNumber === 1;
+                     const hasStartDate = userParticipant?.user_started_at;
+                     
+                     if (isFirstDay && !hasStartDate) {
+                       // Show date picker for first day to set challenge start date
+                       setRestDayAction(true);
+                       setShowStartDatePicker(true);
+                       return;
+                     }
+                     
+                     try {
+                       // Mark rest day as completed
+                       const { error: progressError } = await supabase
+                         .from("challenge_day_progress")
+                         .insert({
+                           user_id: user.id,
+                           challenge_id: challengeId!,
+                           training_day_id: dayId!,
+                           exercises_completed: 0,
+                           total_exercises: 0,
+                           changed_status_at: new Date().toISOString(),
+                           status: 'rest',
+                           attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
+                         });
 
-                      if (progressError) throw progressError;
+                       if (progressError) throw progressError;
 
-                      // Award points for rest day completion
-                      const { error: activityError } = await supabase.rpc(
-                        "create_activity_with_points",
-                        {
-                          user_id: user.id,
-                          activity_type: "challenge_day_completed",
-                          activity_data: {
-                            challenge_id: challengeId,
-                            training_day_id: dayId,
-                            exercises_completed: 0,
-                          },
-                          points: 10, // Award 10 points for completing a rest day
-                        }
-                      );
+                       // Award points for rest day completion
+                       const { error: activityError } = await supabase.rpc(
+                         "create_activity_with_points",
+                         {
+                           user_id: user.id,
+                           activity_type: "challenge_day_completed",
+                           activity_data: {
+                             challenge_id: challengeId,
+                             training_day_id: dayId,
+                             exercises_completed: 0,
+                           },
+                           points: 10, // Award 10 points for completing a rest day
+                         }
+                       );
 
-                      if (activityError)
-                        console.error("Error creating activity:", activityError);
+                       if (activityError)
+                         console.error("Error creating activity:", activityError);
 
-                      toast({
-                        title: "Rest Day Complete!",
-                        description:
-                          "Great job taking time to recover! You earned 10 points.",
-                      });
+                       toast({
+                         title: "Rest Day Complete!",
+                         description:
+                           "Great job taking time to recover! You earned 10 points.",
+                       });
 
-                      // Refresh to update progress
-                      window.location.reload();
-                    } catch (error) {
-                      console.error("Error completing rest day:", error);
-                      toast({
-                        title: "Error",
-                        description:
-                          "Failed to mark rest day as complete. Please try again.",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600"
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Complete Rest Day
-                </Button>
+                       // Refresh to update progress
+                       window.location.reload();
+                     } catch (error) {
+                       console.error("Error completing rest day:", error);
+                       toast({
+                         title: "Error",
+                         description:
+                           "Failed to mark rest day as complete. Please try again.",
+                         variant: "destructive",
+                       });
+                     }
+                   }}
+                   className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600"
+                 >
+                   <CheckCircle className="w-4 h-4 mr-2" />
+                   Complete Rest Day
+                 </Button>
               )}
 
               <Button
@@ -883,71 +1044,95 @@ const ChallengeDayOverview = () => {
             {/* Additional Action Buttons - Only for non-rest days */}
             {!trainingDay.is_rest_day && (
               <div className="flex space-x-3">
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    if (!user) return;
-                    try {
-                      const { error } = await supabase
-                        .from("challenge_day_progress")
-                        .insert({
-                          user_id: user.id,
-                          challenge_id: challengeId!,
-                          training_day_id: dayId!,
-                          exercises_completed: 0,
-                          total_exercises: trainingDay.exercises.length,
-                          status: 'rest',
-                          changed_status_at: new Date().toISOString(),
-                          notes: 'User set additional rest day',
-                          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
-                        });
+                 <Button
+                   variant="outline"
+                   onClick={async () => {
+                     if (!user) return;
+                     
+                     // Check if this is the first challenge day and if the user hasn't set a start date yet
+                     const isFirstDay = dayNumber === 1;
+                     const hasStartDate = userParticipant?.user_started_at;
+                     
+                     if (isFirstDay && !hasStartDate) {
+                       // Show date picker for first day to set challenge start date
+                       setRestDayAction(true);
+                       setShowStartDatePicker(true);
+                       return;
+                     }
+                     
+                     try {
+                       const { error } = await supabase
+                         .from("challenge_day_progress")
+                         .insert({
+                           user_id: user.id,
+                           challenge_id: challengeId!,
+                           training_day_id: dayId!,
+                           exercises_completed: 0,
+                           total_exercises: trainingDay.exercises.length,
+                           status: 'rest',
+                           changed_status_at: new Date().toISOString(),
+                           notes: 'User set additional rest day',
+                           attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
+                         });
 
-                      if (error) throw error;
+                       if (error) throw error;
 
-                      toast({
-                        title: "Rest Day Set",
-                        description: "Today has been marked as a rest day. Take time to recover!",
-                      });
+                       toast({
+                         title: "Rest Day Set",
+                         description: "Today has been marked as a rest day. Take time to recover!",
+                       });
 
-                      window.location.reload();
-                    } catch (error) {
-                      console.error("Error setting rest day:", error);
-                      toast({
-                        title: "Error",
-                        description: "Failed to set rest day. Please try again.",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
-                >
-                  <Pause className="w-4 h-4 mr-2" />
-                  Set Rest Day
-                </Button>
+                       window.location.reload();
+                     } catch (error) {
+                       console.error("Error setting rest day:", error);
+                       toast({
+                         title: "Error",
+                         description: "Failed to set rest day. Please try again.",
+                         variant: "destructive",
+                       });
+                     }
+                   }}
+                   className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                 >
+                   <Pause className="w-4 h-4 mr-2" />
+                   Set Rest Day
+                 </Button>
 
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    if (!user) return;
-                    try {
-                      const { error } = await supabase
-                        .from("challenge_day_progress")
-                        .insert({
-                          user_id: user.id,
-                          challenge_id: challengeId!,
-                          training_day_id: dayId!,
-                          exercises_completed: 0,
-                          total_exercises: trainingDay.exercises.length,
-                          status: 'failed',
-                          changed_status_at: new Date().toISOString(),
-                          notes: 'User marked day as failed - needs retry',
-                          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
-                        });
+                 <Button
+                   variant="outline"
+                   onClick={async () => {
+                     if (!user) return;
+                     
+                     // Check if this is the first challenge day and if the user hasn't set a start date yet
+                     const isFirstDay = dayNumber === 1;
+                     const hasStartDate = userParticipant?.user_started_at;
+                     
+                     if (isFirstDay && !hasStartDate) {
+                       // Show date picker for first day to set challenge start date
+                       setFailedDayAction(true);
+                       setShowStartDatePicker(true);
+                       return;
+                     }
+                     
+                     try {
+                       const { error } = await supabase
+                         .from("challenge_day_progress")
+                         .insert({
+                           user_id: user.id,
+                           challenge_id: challengeId!,
+                           training_day_id: dayId!,
+                           exercises_completed: 0,
+                           total_exercises: trainingDay.exercises.length,
+                           status: 'failed',
+                           changed_status_at: new Date().toISOString(),
+                           notes: 'User marked day as failed - needs retry',
+                           attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
+                         });
 
-                      if (error) throw error;
+                       if (error) throw error;
 
-                      toast({
-                        title: "Day Marked as Failed",
+                       toast({
+                         title: "Day Marked as Failed",
                         description: "This day will be retried tomorrow. Don't give up!",
                       });
 

@@ -408,12 +408,12 @@ const ChallengePreview = () => {
 
       if (progressError) throw progressError;
 
-      // Reset participant status to active with new start time
+      // Reset participant status and remove start date so user can set it again
       const { error: participantError } = await supabase
         .from("challenge_participants")
         .update({
           status: "active",
-          user_started_at: new Date().toISOString(),
+          user_started_at: null, // Clear the start date so user can set it again
           completed: false,
         })
         .eq("challenge_id", challengeId)
@@ -423,6 +423,7 @@ const ChallengePreview = () => {
 
       // Clear local state
       setCompletedDays(new Set());
+      setFailedDays(new Set());
 
       // Reload data
       await checkParticipation();
