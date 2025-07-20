@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Play, Pause, SkipForward, Timer } from 'lucide-react';
+import { Play, Pause, SkipForward, Timer, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +34,43 @@ const ChallengeTimer = ({ exercises, isAudioEnabled, onComplete }: ChallengeTime
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [segments, setSegments] = useState<TimerSegment[]>([]);
+  const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
+  const [hasAnnouncedSegment, setHasAnnouncedSegment] = useState(false);
+
+  // Text-to-speech function
+  const speak = useCallback((text: string) => {
+    if (!isVoiceEnabled || !('speechSynthesis' in window)) return;
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    window.speechSynthesis.speak(utterance);
+  }, [isVoiceEnabled]);
+
+  // Handle segment changes and voice announcements
+  useEffect(() => {
+    if (currentSegmentIndex >= 0 && segments[currentSegmentIndex] && !hasAnnouncedSegment && isRunning) {
+      const segment = segments[currentSegmentIndex];
+      if (segment.type === 'exercise') {
+        speak(`Starting ${segment.exerciseName}, set ${segment.setIndex + 1}`);
+      } else {
+        speak('Rest time');
+      }
+      setHasAnnouncedSegment(true);
+    }
+  }, [currentSegmentIndex, segments, hasAnnouncedSegment, isRunning, speak]);
+
+  // Handle countdown voice (3, 2, 1)
+  useEffect(() => {
+    if (isVoiceEnabled && isRunning && timeRemaining <= 3 && timeRemaining > 0) {
+      speak(timeRemaining.toString());
+    }
+  }, [timeRemaining, isVoiceEnabled, isRunning, speak]);
 
   // Generate timer segments from exercises
   useEffect(() => {
@@ -85,6 +122,7 @@ const ChallengeTimer = ({ exercises, isAudioEnabled, onComplete }: ChallengeTime
             if (currentSegmentIndex < segments.length - 1) {
               const nextIndex = currentSegmentIndex + 1;
               setCurrentSegmentIndex(nextIndex);
+              setHasAnnouncedSegment(false); // Reset for next segment
               return segments[nextIndex].duration;
             } else {
               // Timer complete
@@ -110,6 +148,7 @@ const ChallengeTimer = ({ exercises, isAudioEnabled, onComplete }: ChallengeTime
       const nextIndex = currentSegmentIndex + 1;
       setCurrentSegmentIndex(nextIndex);
       setTimeRemaining(segments[nextIndex].duration);
+      setHasAnnouncedSegment(false); // Reset for next segment
     } else {
       onComplete();
     }
@@ -198,7 +237,7 @@ const ChallengeTimer = ({ exercises, isAudioEnabled, onComplete }: ChallengeTime
         </div>
 
         {/* Controls */}
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center items-center space-x-4">
           <Button
             onClick={handlePlayPause}
             className="flex items-center gap-2"
@@ -215,6 +254,15 @@ const ChallengeTimer = ({ exercises, isAudioEnabled, onComplete }: ChallengeTime
           >
             <SkipForward className="w-5 h-5" />
             Skip
+          </Button>
+          <Button
+            onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
+            variant="outline"
+            className="flex items-center gap-2"
+            size="lg"
+          >
+            {isVoiceEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+            {isVoiceEnabled ? 'Sound On' : 'Sound Off'}
           </Button>
         </div>
 
