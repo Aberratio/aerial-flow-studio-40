@@ -443,8 +443,9 @@ const ChallengePreview = () => {
     if (dayInfo) {
       return {
         trainingDay: dayInfo.trainingDay,
-        isCompleted: completedDays.has(dayInfo.trainingDay.id),
-        isFailed: failedDays.has(dayInfo.trainingDay.id),
+        // For failed repetitions, reset status - show as fresh attempt
+        isCompleted: dayInfo.isFailedRepetition ? false : completedDays.has(dayInfo.trainingDay.id),
+        isFailed: dayInfo.isFailedRepetition ? false : failedDays.has(dayInfo.trainingDay.id),
         isToday: isSameDay(date, new Date()),
         isPast: isBefore(date, new Date()),
         isFailedRepetition: dayInfo.isFailedRepetition,
@@ -454,7 +455,8 @@ const ChallengePreview = () => {
            challenge.training_days.find(td => td.day_number === dayInfo.trainingDay.day_number - 1) &&
            completedDays.has(challenge.training_days.find(td => td.day_number === dayInfo.trainingDay.day_number - 1)!.id)) ||
           completedDays.has(dayInfo.trainingDay.id) ||
-          failedDays.has(dayInfo.trainingDay.id) // Failed days are also accessible for retry
+          failedDays.has(dayInfo.trainingDay.id) || // Failed days are also accessible for retry
+          dayInfo.isFailedRepetition // Failed repetitions are always accessible
         )
       };
     }
@@ -792,7 +794,7 @@ const ChallengePreview = () => {
                 <div className="bg-white/5 rounded-lg p-6 border border-white/10">
                   <Calendar
                     mode="single"
-                    className="pointer-events-auto w-full [&_td]:!h-20 [&_th]:!h-12 [&_td]:!w-20 [&_tbody_td]:!p-0 [&_th]:!text-base [&_button]:!h-full [&_button]:!w-full [&_button]:!text-sm [&_button]:!flex [&_button]:!flex-col [&_button]:!items-center [&_button]:!justify-center [&_button]:!gap-1 [&_button]:!p-2"
+                    className="pointer-events-auto w-full [&_td]:!h-24 [&_th]:!h-12 [&_td]:!w-24 [&_tbody_td]:!p-1 [&_th]:!text-base [&_button]:!h-full [&_button]:!w-full [&_button]:!text-sm [&_button]:!flex [&_button]:!flex-col [&_button]:!items-start [&_button]:!justify-start [&_button]:!gap-1 [&_button]:!p-2"
                     components={{
                       DayContent: ({ date }) => {
                         const dayInfo = getCalendarDayInfo(date);
@@ -802,15 +804,15 @@ const ChallengePreview = () => {
                           return <span className="text-muted-foreground">{dayNumber}</span>;
                         }
 
-                        const { trainingDay, isCompleted, isFailed, isToday, isAccessible } = dayInfo;
+                        const { trainingDay, isCompleted, isFailed, isToday, isAccessible, isFailedRepetition } = dayInfo;
                         
                         return (
                           <div className={`
-                            w-full h-full rounded-lg border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-1 p-2
+                            relative w-full h-full rounded-lg border-2 transition-all cursor-pointer flex flex-col p-2
                             ${isCompleted 
                               ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg' 
                               : isFailed 
-                              ? 'bg-red-500/30 border-red-500/50 text-red-400 hover:bg-red-500/40 animate-pulse'
+                              ? 'bg-red-500/30 border-red-500/50 text-red-400 hover:bg-red-500/40'
                               : isToday 
                               ? 'bg-purple-500 border-purple-400 text-white shadow-lg animate-pulse' 
                               : trainingDay.is_rest_day 
@@ -820,18 +822,20 @@ const ChallengePreview = () => {
                               : 'bg-gray-500/20 border-gray-500/30 text-gray-500 opacity-50 cursor-not-allowed'
                             }
                           `}>
-                            <div className="text-xs font-bold">{dayNumber}</div>
-                            <div className="text-lg">
-                              {isCompleted ? '✅' : isFailed ? '❌' : trainingDay.is_rest_day ? '🌴' : '💪'}
+                            <div className="absolute top-1 left-1 text-xs font-bold">{dayNumber}</div>
+                            <div className="flex-1 flex items-center justify-center">
+                              <div className="text-2xl">
+                                {isCompleted ? '✅' : isFailed ? '❌' : trainingDay.is_rest_day ? '🌴' : '💪'}
+                              </div>
                             </div>
-                            <div className="text-xs text-center leading-tight">
+                            <div className="text-xs text-center leading-tight mt-auto">
                               Day {trainingDay.day_number}
                             </div>
-                            {isFailed && (
-                              <div className="text-xs">🔄</div>
+                            {isFailedRepetition && (
+                              <div className="absolute top-1 right-1 text-xs">🔄</div>
                             )}
                             {!isAccessible && !isCompleted && !isFailed && (
-                              <div className="text-xs">🔒</div>
+                              <div className="absolute bottom-1 right-1 text-xs">🔒</div>
                             )}
                           </div>
                         );
