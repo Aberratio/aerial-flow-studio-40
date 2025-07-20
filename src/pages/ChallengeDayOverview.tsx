@@ -119,6 +119,8 @@ const ChallengeDayOverview = () => {
   const [allDays, setAllDays] = useState<TrainingDayBasic[]>([]);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState<Date | undefined>();
+  const [dayProgress, setDayProgress] = useState<any>(null);
+  const [isDayCompleted, setIsDayCompleted] = useState(false);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
   const { toast } = useToast();
@@ -142,8 +144,44 @@ const ChallengeDayOverview = () => {
       if (challengeError) throw challengeError;
       setChallenge(challengeData);
 
-      // Fetch user's participation status
+      // Check if user has already completed or failed this specific day
       if (user) {
+        const { data: progressData, error: progressError } = await supabase
+          .from("challenge_day_progress")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("challenge_id", challengeId)
+          .eq("training_day_id", dayId)
+          .single();
+
+        if (!progressError && progressData) {
+          setDayProgress(progressData);
+          
+          // If day is completed or failed, prevent re-access
+          if (progressData.status === 'completed' || progressData.status === 'failed') {
+            setIsDayCompleted(true);
+            
+            if (progressData.status === 'completed') {
+              toast({
+                title: "Day Already Completed",
+                description: `You completed this training day on ${new Date(progressData.completed_at).toLocaleDateString()}. Great job!`,
+              });
+            } else if (progressData.status === 'failed') {
+              toast({
+                title: "Day Previously Failed",
+                description: "This day was marked as failed. You can retry it from the challenge overview.",
+              });
+            }
+            
+            // Redirect back to challenge overview after showing the message
+            setTimeout(() => {
+              navigate(`/challenges/${challengeId}`);
+            }, 3000);
+            return;
+          }
+        }
+
+        // Fetch user's participation status
         const { data: participationData } = await supabase
           .from("challenge_participants")
           .select("status")
@@ -310,6 +348,28 @@ const ChallengeDayOverview = () => {
       </div>
     );
   }
+
+  // Show message if day is already completed/failed
+  if (isDayCompleted && dayProgress) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h2 className="text-white text-2xl mb-4">
+            {dayProgress.status === 'completed' ? '✅ Day Already Completed!' : '❌ Day Previously Failed'}
+          </h2>
+          <p className="text-muted-foreground mb-4">
+            {dayProgress.status === 'completed' 
+              ? `You completed this training day on ${new Date(dayProgress.completed_at).toLocaleDateString()}. Great job!`
+              : 'This day was marked as failed. You can retry it from the challenge overview.'
+            }
+          </p>
+          <Button onClick={() => navigate(`/challenges/${challengeId}`)} variant="outline">
+            Back to Challenge Overview
+          </Button>
+        </div>
+      </div>
+    );
+  }
   const calculateDuration = () => {
     if (!trainingDay.exercises.length) return "No duration set";
     let totalMinutes = 0;
@@ -351,15 +411,18 @@ const ChallengeDayOverview = () => {
     if (!user) return;
 
     try {
+      const completionDate = new Date().toISOString();
+      const scheduledDate = (startDate || new Date()).toISOString();
+      
       const completionData = {
         user_id: user.id,
         challenge_id: challengeId!,
         training_day_id: dayId!,
         exercises_completed: trainingDay!.exercises.length,
         total_exercises: trainingDay!.exercises.length,
-        completed_at: new Date().toISOString(),
+        completed_at: completionDate, // Save the actual completion timestamp
         status: 'completed',
-        scheduled_date: (startDate || new Date()).toISOString(),
+        scheduled_date: scheduledDate, // Save when the day was scheduled to be done
       };
 
       // Save day progress
