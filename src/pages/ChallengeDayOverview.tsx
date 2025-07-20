@@ -373,18 +373,14 @@ const ChallengeDayOverview = () => {
     if (!user) return;
 
     try {
-      const completionDate = new Date().toISOString();
-      const scheduledDate = (startDate || new Date()).toISOString();
-      
       const completionData = {
         user_id: user.id,
         challenge_id: challengeId!,
         training_day_id: dayId!,
         exercises_completed: trainingDay!.exercises.length,
         total_exercises: trainingDay!.exercises.length,
-        completed_at: completionDate, // Save the actual completion timestamp
+        changed_status_at: new Date().toISOString(),
         status: 'completed',
-        scheduled_date: scheduledDate, // Save when the day was scheduled to be done
       };
 
       // Save day progress
@@ -500,20 +496,20 @@ const ChallengeDayOverview = () => {
                     {dayProgress.status === 'completed' ? 'Day Already Completed! 🎉' : 'Day Previously Failed'}
                   </h3>
                   <p className="text-muted-foreground mb-3">
-                    {dayProgress.status === 'completed' 
-                      ? `Great job! You completed this training day on ${new Date(dayProgress.completed_at).toLocaleDateString()}. You're viewing this day for reference only.`
+                     {dayProgress.status === 'completed' 
+                      ? `Great job! You completed this training day on ${new Date(dayProgress.changed_status_at).toLocaleDateString()}. You're viewing this day for reference only.`
                       : 'This day was marked as failed and can be retried. You\'re viewing this day for reference only.'
-                    }
+                     }
                   </p>
-                  <div className="text-sm text-muted-foreground">
-                    <span className="font-medium">Status:</span> {dayProgress.status === 'completed' ? 'Completed' : 'Failed'} • 
-                    <span className="font-medium ml-2">Date:</span> {new Date(dayProgress.completed_at).toLocaleDateString()}
-                    {dayProgress.attempt_number > 1 && (
-                      <>
-                        <span className="font-medium ml-2">Attempt:</span> {dayProgress.attempt_number}
-                      </>
-                    )}
-                  </div>
+                   <div className="text-sm text-muted-foreground">
+                     <span className="font-medium">Status:</span> {dayProgress.status === 'completed' ? 'Completed' : 'Failed'} • 
+                     <span className="font-medium ml-2">Date:</span> {new Date(dayProgress.changed_status_at).toLocaleDateString()}
+                     {dayProgress.attempt_number > 1 && (
+                       <>
+                         <span className="font-medium ml-2">Attempt:</span> {dayProgress.attempt_number}
+                       </>
+                     )}
+                   </div>
                 </div>
               </div>
             </CardContent>
@@ -599,26 +595,6 @@ const ChallengeDayOverview = () => {
                     </div>
                   </div>
 
-                  {/* Status Selector */}
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">
-                      Status:
-                    </span>
-                    <Select
-                      value={participationStatus}
-                      onValueChange={handleStatusChange}
-                    >
-                      <SelectTrigger className="w-32 h-8 border-white/20 bg-black/20">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="active">Active</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="failed">Failed</SelectItem>
-                        <SelectItem value="paused">Paused</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
                 </div>
               </div>
               <Button
@@ -841,9 +817,8 @@ const ChallengeDayOverview = () => {
                           training_day_id: dayId!,
                           exercises_completed: 0,
                           total_exercises: 0,
-                          completed_at: new Date().toISOString(),
+                          changed_status_at: new Date().toISOString(),
                           status: 'rest',
-                          scheduled_date: new Date().toISOString(),
                         });
 
                       if (progressError) throw progressError;
@@ -901,90 +876,92 @@ const ChallengeDayOverview = () => {
             </div>
 
 
-            {/* Additional Action Buttons */}
-            <div className="flex space-x-3">
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  if (!user) return;
-                  try {
-                    const { error } = await supabase
-                      .from("challenge_day_progress")
-                      .upsert({
-                        user_id: user.id,
-                        challenge_id: challengeId!,
-                        training_day_id: dayId!,
-                        exercises_completed: 0,
-                        total_exercises: trainingDay.exercises.length,
-                        status: 'rest',
-                        scheduled_date: new Date().toISOString(),
-                        notes: 'User set additional rest day',
+            {/* Additional Action Buttons - Only for non-rest days */}
+            {!trainingDay.is_rest_day && (
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    if (!user) return;
+                    try {
+                      const { error } = await supabase
+                        .from("challenge_day_progress")
+                        .upsert({
+                          user_id: user.id,
+                          challenge_id: challengeId!,
+                          training_day_id: dayId!,
+                          exercises_completed: 0,
+                          total_exercises: trainingDay.exercises.length,
+                          status: 'rest',
+                          changed_status_at: new Date().toISOString(),
+                          notes: 'User set additional rest day',
+                        });
+
+                      if (error) throw error;
+
+                      toast({
+                        title: "Rest Day Set",
+                        description: "Today has been marked as a rest day. Take time to recover!",
                       });
 
-                    if (error) throw error;
+                      window.location.reload();
+                    } catch (error) {
+                      console.error("Error setting rest day:", error);
+                      toast({
+                        title: "Error",
+                        description: "Failed to set rest day. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                >
+                  <Pause className="w-4 h-4 mr-2" />
+                  Set Rest Day
+                </Button>
 
-                    toast({
-                      title: "Rest Day Set",
-                      description: "Today has been marked as a rest day. Take time to recover!",
-                    });
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    if (!user) return;
+                    try {
+                      const { error } = await supabase
+                        .from("challenge_day_progress")
+                        .upsert({
+                          user_id: user.id,
+                          challenge_id: challengeId!,
+                          training_day_id: dayId!,
+                          exercises_completed: 0,
+                          total_exercises: trainingDay.exercises.length,
+                          status: 'failed',
+                          changed_status_at: new Date().toISOString(),
+                          notes: 'User marked day as failed - needs retry',
+                        });
 
-                    window.location.reload();
-                  } catch (error) {
-                    console.error("Error setting rest day:", error);
-                    toast({
-                      title: "Error",
-                      description: "Failed to set rest day. Please try again.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
-              >
-                <Pause className="w-4 h-4 mr-2" />
-                Set Rest Day
-              </Button>
+                      if (error) throw error;
 
-              <Button
-                variant="outline"
-                onClick={async () => {
-                  if (!user) return;
-                  try {
-                    const { error } = await supabase
-                      .from("challenge_day_progress")
-                      .upsert({
-                        user_id: user.id,
-                        challenge_id: challengeId!,
-                        training_day_id: dayId!,
-                        exercises_completed: 0,
-                        total_exercises: trainingDay.exercises.length,
-                        status: 'failed',
-                        scheduled_date: new Date().toISOString(),
-                        notes: 'User marked day as failed - needs retry',
+                      toast({
+                        title: "Day Marked as Failed",
+                        description: "This day will be retried tomorrow. Don't give up!",
                       });
 
-                    if (error) throw error;
-
-                    toast({
-                      title: "Day Marked as Failed",
-                      description: "This day will be retried tomorrow. Don't give up!",
-                    });
-
-                    window.location.reload();
-                  } catch (error) {
-                    console.error("Error marking day as failed:", error);
-                    toast({
-                      title: "Error",
-                      description: "Failed to mark day as failed. Please try again.",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
-              >
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                Mark as Failed
-              </Button>
-            </div>
+                      window.location.reload();
+                    } catch (error) {
+                      console.error("Error marking day as failed:", error);
+                      toast({
+                        title: "Error",
+                        description: "Failed to mark day as failed. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                >
+                  <AlertTriangle className="w-4 h-4 mr-2" />
+                  Mark as Failed
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

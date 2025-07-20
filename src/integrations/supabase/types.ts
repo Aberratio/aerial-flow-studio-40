@@ -101,12 +101,11 @@ export type Database = {
         Row: {
           attempt_number: number
           challenge_id: string
-          completed_at: string
+          changed_status_at: string | null
           created_at: string
           exercises_completed: number | null
           id: string
           notes: string | null
-          scheduled_date: string | null
           status: string
           total_exercises: number | null
           training_day_id: string
@@ -116,12 +115,11 @@ export type Database = {
         Insert: {
           attempt_number?: number
           challenge_id: string
-          completed_at?: string
+          changed_status_at?: string | null
           created_at?: string
           exercises_completed?: number | null
           id?: string
           notes?: string | null
-          scheduled_date?: string | null
           status?: string
           total_exercises?: number | null
           training_day_id: string
@@ -131,12 +129,11 @@ export type Database = {
         Update: {
           attempt_number?: number
           challenge_id?: string
-          completed_at?: string
+          changed_status_at?: string | null
           created_at?: string
           exercises_completed?: number | null
           id?: string
           notes?: string | null
-          scheduled_date?: string | null
           status?: string
           total_exercises?: number | null
           training_day_id?: string
