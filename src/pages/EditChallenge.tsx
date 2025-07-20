@@ -1,23 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Plus, Save, Globe, X, Award, CalendarDays, ArrowLeft } from 'lucide-react';
-import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { cn } from '@/lib/utils';
-import ExerciseManagement from '@/components/ExerciseManagement';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  Calendar,
+  Plus,
+  Save,
+  Globe,
+  X,
+  Award,
+  CalendarDays,
+  ArrowLeft,
+} from "lucide-react";
+import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
+import ExerciseManagement from "@/components/ExerciseManagement";
 
 interface Achievement {
   id: string;
@@ -67,23 +91,59 @@ interface Challenge {
   image_url?: string;
 }
 
+interface ChallengeTrainingDay {
+  id: string;
+  day_number: number;
+  title?: string;
+  description?: string;
+  is_rest_day?: boolean;
+  training_day_exercises?: TrainingDayExercise[];
+}
+
+interface TrainingDayExercise {
+  id: string;
+  figure_id: string;
+  order_index: number;
+  sets?: number;
+  reps?: number;
+  hold_time_seconds?: number;
+  rest_time_seconds?: number;
+  video_url?: string;
+  audio_url?: string;
+  notes?: string;
+  figure?: {
+    id: string;
+    name: string;
+    difficulty_level: string;
+    category: string;
+  };
+}
+
+interface ChallengeAchievement {
+  id: string;
+  challenge_id: string;
+  achievement_id: string;
+}
+
 const EditChallenge = () => {
   const { challengeId } = useParams();
   const navigate = useNavigate();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [difficultyLevel, setDifficultyLevel] = useState('intermediate');
-  const [type, setType] = useState('manual');
-  const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
+  const [difficultyLevel, setDifficultyLevel] = useState("intermediate");
+  const [type, setType] = useState("manual");
+  const [selectedAchievements, setSelectedAchievements] = useState<string[]>(
+    []
+  );
   const [trainingDays, setTrainingDays] = useState<TrainingDay[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [imageUrl, setImageUrl] = useState<string>("");
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -100,14 +160,15 @@ const EditChallenge = () => {
 
       // Fetch challenge with related data
       const { data: challengeData, error: challengeError } = await supabase
-        .from('challenges')
-        .select(`
+        .from("challenges")
+        .select(
+          `
           *,
           challenge_achievements (
             achievement_id
           ),
           challenge_training_days (
-            id, day_date, title, description,
+            id, day_number, title, description, is_rest_day,
             training_day_exercises (
               *,
               figure:figures (
@@ -115,57 +176,69 @@ const EditChallenge = () => {
               )
             )
           )
-        `)
-        .eq('id', challengeId)
+        `
+        )
+        .eq("id", challengeId)
         .single();
 
       if (challengeError) throw challengeError;
 
       setChallenge(challengeData);
       setTitle(challengeData.title);
-      setDescription(challengeData.description || '');
+      setDescription(challengeData.description || "");
       setStartDate(new Date(challengeData.start_date));
       setEndDate(new Date(challengeData.end_date));
-      setDifficultyLevel(challengeData.difficulty_level || 'intermediate');
-      setType(challengeData.type || 'manual');
-      setImageUrl(challengeData.image_url || '');
-      
+      setDifficultyLevel(challengeData.difficulty_level || "intermediate");
+      setType(challengeData.type || "manual");
+      setImageUrl(challengeData.image_url || "");
+
       // Set selected achievements
       setSelectedAchievements(
-        challengeData.challenge_achievements?.map((ca: any) => ca.achievement_id) || []
+        challengeData.challenge_achievements?.map(
+          (ca: ChallengeAchievement) => ca.achievement_id
+        ) || []
       );
 
       // Set training days with exercises
-      const formattedTrainingDays = challengeData.challenge_training_days?.map((day: any) => ({
-        id: day.id,
-        date: new Date(day.day_date),
-        title: day.title || '',
-        description: day.description || '',
-        exercises: day.training_day_exercises?.map((ex: any) => ({
-          id: ex.id,
-          figure_id: ex.figure_id,
-          order_index: ex.order_index,
-          sets: ex.sets,
-          reps: ex.reps,
-          hold_time_seconds: ex.hold_time_seconds,
-          rest_time_seconds: ex.rest_time_seconds,
-          video_url: ex.video_url,
-          audio_url: ex.audio_url,
-          notes: ex.notes,
-          figure: ex.figure
-        })) || []
-      })) || [];
+      const formattedTrainingDays =
+        challengeData.challenge_training_days?.map(
+          (day: ChallengeTrainingDay) => ({
+            id: day.id,
+            date: startDate
+              ? new Date(
+                  startDate.getTime() +
+                    (day.day_number - 1) * 24 * 60 * 60 * 1000
+                )
+              : new Date(),
+            title: day.title || "",
+            description: day.description || "",
+            isRestDay: day.is_rest_day || false,
+            exercises:
+              day.training_day_exercises?.map((ex: TrainingDayExercise) => ({
+                id: ex.id,
+                figure_id: ex.figure_id,
+                order_index: ex.order_index,
+                sets: ex.sets,
+                reps: ex.reps,
+                hold_time_seconds: ex.hold_time_seconds,
+                rest_time_seconds: ex.rest_time_seconds,
+                video_url: ex.video_url,
+                audio_url: ex.audio_url,
+                notes: ex.notes,
+                figure: ex.figure,
+              })) || [],
+          })
+        ) || [];
 
       setTrainingDays(formattedTrainingDays);
-
     } catch (error) {
-      console.error('Error fetching challenge:', error);
+      console.error("Error fetching challenge:", error);
       toast({
         title: "Error",
         description: "Failed to load challenge data.",
         variant: "destructive",
       });
-      navigate('/challenges');
+      navigate("/challenges");
     } finally {
       setIsLoadingData(false);
     }
@@ -174,25 +247,25 @@ const EditChallenge = () => {
   const fetchAchievements = async () => {
     try {
       const { data, error } = await supabase
-        .from('achievements')
-        .select('*')
-        .order('name');
+        .from("achievements")
+        .select("*")
+        .order("name");
 
       if (error) throw error;
       setAchievements(data || []);
     } catch (error) {
-      console.error('Error fetching achievements:', error);
+      console.error("Error fetching achievements:", error);
     }
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `challenges/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('challenges')
+        .from("challenges")
         .upload(filePath, file);
 
       if (uploadError) {
@@ -200,19 +273,19 @@ const EditChallenge = () => {
       }
 
       const { data } = supabase.storage
-        .from('challenges')
+        .from("challenges")
         .getPublicUrl(filePath);
 
       return data.publicUrl;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error("Error uploading image:", error);
       return null;
     }
   };
 
   const saveChallenge = async () => {
     if (!user || !challenge) return;
-    
+
     if (!title.trim() || !startDate || !endDate) {
       toast({
         title: "Missing Information",
@@ -226,7 +299,7 @@ const EditChallenge = () => {
 
     try {
       let uploadedImageUrl = imageUrl;
-      
+
       // Upload image if a new file is selected
       if (imageFile) {
         const uploadedUrl = await uploadImage(imageFile);
@@ -238,7 +311,7 @@ const EditChallenge = () => {
 
       // Update challenge
       const { error: updateError } = await supabase
-        .from('challenges')
+        .from("challenges")
         .update({
           title: title.trim(),
           description: description.trim() || null,
@@ -248,21 +321,21 @@ const EditChallenge = () => {
           type: type,
           image_url: uploadedImageUrl || null,
         })
-        .eq('id', challengeId);
+        .eq("id", challengeId);
 
       if (updateError) throw updateError;
 
       // Save achievements and training days
       await saveAchievementsAndTrainingDays();
-      
+
       toast({
         title: "Success",
         description: "Challenge updated successfully.",
       });
-      
-      navigate('/challenges');
+
+      navigate("/challenges");
     } catch (error) {
-      console.error('Error updating challenge:', error);
+      console.error("Error updating challenge:", error);
       toast({
         title: "Error",
         description: "Failed to update challenge.",
@@ -278,20 +351,20 @@ const EditChallenge = () => {
 
     // Save achievements
     if (selectedAchievements.length > 0) {
-      const achievementData = selectedAchievements.map(achievementId => ({
+      const achievementData = selectedAchievements.map((achievementId) => ({
         challenge_id: challengeId,
-        achievement_id: achievementId
+        achievement_id: achievementId,
       }));
 
       const { error: deleteError } = await supabase
-        .from('challenge_achievements')
+        .from("challenge_achievements")
         .delete()
-        .eq('challenge_id', challengeId);
+        .eq("challenge_id", challengeId);
 
       if (deleteError) throw deleteError;
 
       const { error: insertError } = await supabase
-        .from('challenge_achievements')
+        .from("challenge_achievements")
         .insert(achievementData);
 
       if (insertError) throw insertError;
@@ -301,19 +374,19 @@ const EditChallenge = () => {
     if (trainingDays.length > 0) {
       // First, delete existing training days (this will cascade delete exercises)
       const { error: deleteError } = await supabase
-        .from('challenge_training_days')
+        .from("challenge_training_days")
         .delete()
-        .eq('challenge_id', challengeId);
+        .eq("challenge_id", challengeId);
 
       if (deleteError) throw deleteError;
 
       // Insert training days one by one to get their IDs
       for (const day of trainingDays) {
         const { data: trainingDayData, error: dayError } = await supabase
-          .from('challenge_training_days')
+          .from("challenge_training_days")
           .insert({
             challenge_id: challengeId,
-            day_date: day.date.toISOString().split('T')[0],
+            day_number: trainingDays.indexOf(day) + 1,
             title: day.title,
             description: day.description || null,
             is_rest_day: day.isRestDay || false,
@@ -335,11 +408,11 @@ const EditChallenge = () => {
             rest_time_seconds: exercise.rest_time_seconds,
             video_url: exercise.video_url,
             audio_url: exercise.audio_url,
-            notes: exercise.notes
+            notes: exercise.notes,
           }));
 
           const { error: exerciseError } = await supabase
-            .from('training_day_exercises')
+            .from("training_day_exercises")
             .insert(exerciseData);
 
           if (exerciseError) throw exerciseError;
@@ -352,7 +425,7 @@ const EditChallenge = () => {
     const newDay = {
       date: null,
       title: `Day ${trainingDays.length + 1}`,
-      description: '',
+      description: "",
       exercises: [],
       isRestDay: false,
     };
@@ -363,16 +436,20 @@ const EditChallenge = () => {
     setTrainingDays(trainingDays.filter((_, i) => i !== index));
   };
 
-  const updateTrainingDay = (index: number, field: keyof TrainingDay, value: any) => {
+  const updateTrainingDay = (
+    index: number,
+    field: keyof TrainingDay,
+    value: string | Date | boolean | Exercise[]
+  ) => {
     const updated = [...trainingDays];
     updated[index] = { ...updated[index], [field]: value };
     setTrainingDays(updated);
   };
 
   const toggleAchievement = (achievementId: string) => {
-    setSelectedAchievements(prev => 
-      prev.includes(achievementId) 
-        ? prev.filter(id => id !== achievementId)
+    setSelectedAchievements((prev) =>
+      prev.includes(achievementId)
+        ? prev.filter((id) => id !== achievementId)
         : [...prev, achievementId]
     );
   };
@@ -390,7 +467,7 @@ const EditChallenge = () => {
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-white text-xl mb-4">Challenge not found</h2>
-          <Button onClick={() => navigate('/challenges')} variant="outline">
+          <Button onClick={() => navigate("/challenges")} variant="outline">
             Back to Challenges
           </Button>
         </div>
@@ -403,9 +480,9 @@ const EditChallenge = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate('/challenges')}
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/challenges")}
             className="mr-4 text-white hover:bg-white/10"
           >
             <ArrowLeft className="w-5 h-5 mr-2" />
@@ -413,7 +490,9 @@ const EditChallenge = () => {
           </Button>
           <div>
             <h1 className="text-3xl font-bold text-white">Edit Challenge</h1>
-            <p className="text-muted-foreground">Make changes to your challenge</p>
+            <p className="text-muted-foreground">
+              Make changes to your challenge
+            </p>
           </div>
         </div>
 
@@ -444,7 +523,10 @@ const EditChallenge = () => {
 
             <div className="space-y-2">
               <Label htmlFor="difficulty">Difficulty Level</Label>
-              <Select value={difficultyLevel} onValueChange={setDifficultyLevel}>
+              <Select
+                value={difficultyLevel}
+                onValueChange={setDifficultyLevel}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select difficulty level" />
                 </SelectTrigger>
@@ -510,14 +592,18 @@ const EditChallenge = () => {
                   className="cursor-pointer"
                 />
                 <div className="text-xs text-muted-foreground">
-                  {imageFile ? `Selected: ${imageFile.name}` : imageUrl ? 'Current image uploaded' : 'No file selected'}
+                  {imageFile
+                    ? `Selected: ${imageFile.name}`
+                    : imageUrl
+                    ? "Current image uploaded"
+                    : "No file selected"}
                 </div>
               </div>
               {imageUrl && (
                 <div className="mt-2">
-                  <img 
-                    src={imageUrl} 
-                    alt="Challenge preview" 
+                  <img
+                    src={imageUrl}
+                    alt="Challenge preview"
                     className="w-32 h-20 object-cover rounded-md border"
                   />
                 </div>
@@ -537,7 +623,11 @@ const EditChallenge = () => {
                       )}
                     >
                       <Calendar className="mr-2 h-4 w-4" />
-                      {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                      {startDate ? (
+                        format(startDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -565,7 +655,11 @@ const EditChallenge = () => {
                       )}
                     >
                       <Calendar className="mr-2 h-4 w-4" />
-                      {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                      {endDate ? (
+                        format(endDate, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -586,17 +680,22 @@ const EditChallenge = () => {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Award className="w-5 h-5 text-purple-400" />
-                <Label className="text-lg font-semibold">Challenge Achievements</Label>
+                <Label className="text-lg font-semibold">
+                  Challenge Achievements
+                </Label>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-40 overflow-y-auto border rounded-lg p-4">
                 {achievements.map((achievement) => (
-                  <div key={achievement.id} className="flex items-center space-x-3">
+                  <div
+                    key={achievement.id}
+                    className="flex items-center space-x-3"
+                  >
                     <Checkbox
                       id={achievement.id}
                       checked={selectedAchievements.includes(achievement.id)}
                       onCheckedChange={() => toggleAchievement(achievement.id)}
                     />
-                    <Label 
+                    <Label
                       htmlFor={achievement.id}
                       className="flex-1 text-sm cursor-pointer"
                     >
@@ -604,7 +703,9 @@ const EditChallenge = () => {
                         <span>{achievement.icon}</span>
                         <div>
                           <div className="font-medium">{achievement.name}</div>
-                          <div className="text-xs text-muted-foreground">{achievement.points} points</div>
+                          <div className="text-xs text-muted-foreground">
+                            {achievement.points} points
+                          </div>
                         </div>
                       </div>
                     </Label>
@@ -631,10 +732,13 @@ const EditChallenge = () => {
                   Add Day
                 </Button>
               </div>
-              
+
               <div className="space-y-4 max-h-[400px] overflow-y-auto">
                 {trainingDays.map((day, index) => (
-                  <div key={index} className="border rounded-lg overflow-hidden animate-fade-in">
+                  <div
+                    key={index}
+                    className="border rounded-lg overflow-hidden animate-fade-in"
+                  >
                     {/* Day Header */}
                     <div className="bg-muted/30 p-4 border-b">
                       <div className="flex items-center justify-between mb-3">
@@ -642,7 +746,9 @@ const EditChallenge = () => {
                           <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold">
                             {index + 1}
                           </div>
-                          <Label className="text-base font-semibold">Day {index + 1}</Label>
+                          <Label className="text-base font-semibold">
+                            Day {index + 1}
+                          </Label>
                           {day.isRestDay && (
                             <Badge variant="secondary" className="text-xs">
                               <span className="mr-1">😴</span> Rest Day
@@ -659,7 +765,7 @@ const EditChallenge = () => {
                           <X className="w-4 h-4" />
                         </Button>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label className="text-sm font-medium">Date</Label>
@@ -673,65 +779,93 @@ const EditChallenge = () => {
                                 )}
                               >
                                 <Calendar className="mr-2 h-4 w-4" />
-                                {day.date ? format(day.date, "MMM dd") : <span>Pick date</span>}
+                                {day.date ? (
+                                  format(day.date, "MMM dd")
+                                ) : (
+                                  <span>Pick date</span>
+                                )}
                               </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
                               <CalendarComponent
                                 mode="single"
                                 selected={day.date}
-                                onSelect={(date) => date && updateTrainingDay(index, 'date', date)}
-                                disabled={(date) => startDate ? date < startDate : date < new Date()}
+                                onSelect={(date) =>
+                                  date && updateTrainingDay(index, "date", date)
+                                }
+                                disabled={(date) =>
+                                  startDate
+                                    ? date < startDate
+                                    : date < new Date()
+                                }
                                 initialFocus
                                 className="p-3 pointer-events-auto"
                               />
                             </PopoverContent>
                           </Popover>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <Label className="text-sm font-medium">Title</Label>
                           <Input
                             placeholder="e.g., Upper Body Focus"
                             value={day.title}
-                            onChange={(e) => updateTrainingDay(index, 'title', e.target.value)}
+                            onChange={(e) =>
+                              updateTrainingDay(index, "title", e.target.value)
+                            }
                             className="h-9"
                           />
                         </div>
                       </div>
-                      
+
                       <div className="mt-4 space-y-2">
-                        <Label className="text-sm font-medium">Description</Label>
+                        <Label className="text-sm font-medium">
+                          Description
+                        </Label>
                         <Textarea
                           placeholder="Describe what this training day focuses on..."
                           value={day.description}
-                          onChange={(e) => updateTrainingDay(index, 'description', e.target.value)}
+                          onChange={(e) =>
+                            updateTrainingDay(
+                              index,
+                              "description",
+                              e.target.value
+                            )
+                          }
                           rows={2}
                           className="resize-none"
                         />
                       </div>
-                      
+
                       <div className="mt-4 flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                          <Label className="text-sm font-medium">Day Type:</Label>
+                          <Label className="text-sm font-medium">
+                            Day Type:
+                          </Label>
                           <div className="flex items-center space-x-2">
                             <Switch
                               checked={day.isRestDay || false}
-                              onCheckedChange={(checked) => updateTrainingDay(index, 'isRestDay', checked)}
+                              onCheckedChange={(checked) =>
+                                updateTrainingDay(index, "isRestDay", checked)
+                              }
                             />
                             <span className="text-sm">
-                              {day.isRestDay ? 'Rest Day' : 'Training Day'}
+                              {day.isRestDay ? "Rest Day" : "Training Day"}
                             </span>
                           </div>
                         </div>
                         {!day.isRestDay && (
                           <Badge variant="outline" className="text-xs">
-                            {day.exercises?.length || 0} exercise{(day.exercises?.length || 0) !== 1 ? 's' : ''}
+                            {day.exercises?.length || 0} exercise
+                            {(day.exercises?.length || 0) !== 1 ? "s" : ""}
                           </Badge>
                         )}
                       </div>
                     </div>
-                    
+
                     {/* Day Content */}
                     <div className="p-4">
                       {day.isRestDay ? (
@@ -739,19 +873,27 @@ const EditChallenge = () => {
                           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center">
                             <span className="text-2xl">😴</span>
                           </div>
-                          <p className="font-medium text-base">Rest & Recovery Day</p>
-                          <p className="text-sm mt-1">No exercises needed - time to let your body recover!</p>
+                          <p className="font-medium text-base">
+                            Rest & Recovery Day
+                          </p>
+                          <p className="text-sm mt-1">
+                            No exercises needed - time to let your body recover!
+                          </p>
                         </div>
                       ) : (
                         <div className="space-y-3">
                           <div className="flex items-center gap-2 pb-2 border-b">
                             <CalendarDays className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-medium">Exercises for this day</span>
+                            <span className="text-sm font-medium">
+                              Exercises for this day
+                            </span>
                           </div>
                           <ExerciseManagement
                             trainingDayId={day.id || `temp-${index}`}
                             exercises={day.exercises}
-                            onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
+                            onExercisesChange={(exercises) =>
+                              updateTrainingDay(index, "exercises", exercises)
+                            }
                             canEdit={true}
                           />
                         </div>
@@ -759,22 +901,24 @@ const EditChallenge = () => {
                     </div>
                   </div>
                 ))}
-                
+
                 {trainingDays.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                     <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p>No training days added yet</p>
-                    <p className="text-sm">Click "Add Day" to create training sessions</p>
+                    <p className="text-sm">
+                      Click "Add Day" to create training sessions
+                    </p>
                   </div>
                 )}
               </div>
             </div>
 
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => navigate('/challenges')}>
+              <Button variant="outline" onClick={() => navigate("/challenges")}>
                 Cancel
               </Button>
-              
+
               <Button
                 onClick={saveChallenge}
                 disabled={isLoading}
