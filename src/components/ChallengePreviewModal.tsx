@@ -313,9 +313,9 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               Close
             </Button>
             <Button 
-              variant="prmiary"
               className="flex-1"
-              onClick={() => {
+              variant="primary"
+               onClick={() => {
                 if (challenge.status === 'published') {
                   setIsDetailsModalOpen(true);
                 }
