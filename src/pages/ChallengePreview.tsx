@@ -171,6 +171,8 @@ const ChallengePreview = () => {
     }
   };
 
+  const [failedDays, setFailedDays] = useState<Set<string>>(new Set());
+
   const loadProgress = async () => {
     if (!challengeId || !user?.id) return;
 
@@ -178,22 +180,28 @@ const ChallengePreview = () => {
       // Load actual progress data from database
       const { data: progressData, error: progressError } = await supabase
         .from("challenge_day_progress")
-        .select("training_day_id, exercises_completed, total_exercises")
+        .select("training_day_id, exercises_completed, total_exercises, status")
         .eq("user_id", user.id)
         .eq("challenge_id", challengeId);
 
       if (!progressError && progressData) {
         const completed = new Set<string>();
+        const failed = new Set<string>();
         progressData.forEach((progress) => {
-          // Mark day as completed if all exercises are done
+          // Mark day as completed if status is completed or rest
           if (
-            progress.exercises_completed === progress.total_exercises &&
-            progress.total_exercises > 0
+            progress.status === 'completed' || 
+            progress.status === 'rest' ||
+            (progress.exercises_completed === progress.total_exercises &&
+             progress.total_exercises > 0)
           ) {
             completed.add(progress.training_day_id);
+          } else if (progress.status === 'failed') {
+            failed.add(progress.training_day_id);
           }
         });
         setCompletedDays(completed);
+        setFailedDays(failed);
       }
     } catch (error) {
       console.error("Error loading progress:", error);
@@ -260,11 +268,45 @@ const ChallengePreview = () => {
     }
   };
 
-  const startFirstDay = () => {
-    if (!challenge?.training_days?.[0]) return;
+  const startTodaysChallenge = async () => {
+    if (!challengeId || !user?.id) return;
 
-    const firstDay = challenge.training_days[0];
-    navigate(`/challenge/${challengeId}/day/${firstDay.id}`);
+    try {
+      // Get the next training day (could be failed day for retry or next in sequence)
+      const { data: nextDayData, error } = await supabase.rpc(
+        'get_next_training_day',
+        {
+          p_user_id: user.id,
+          p_challenge_id: challengeId
+        }
+      );
+
+      if (error) throw error;
+
+      if (nextDayData && nextDayData.length > 0) {
+        const nextDay = nextDayData[0];
+        if (nextDay.should_retry) {
+          toast({
+            title: "Retrying Failed Day",
+            description: `You're retrying Day ${nextDay.next_day_number}. You can do it!`,
+          });
+        }
+        navigate(`/challenge/${challengeId}/day/${nextDay.next_day_id}`);
+      } else {
+        // Fallback to first day if no next day found
+        const firstDay = challenge?.training_days?.[0];
+        if (firstDay) {
+          navigate(`/challenge/${challengeId}/day/${firstDay.id}`);
+        }
+      }
+    } catch (error) {
+      console.error("Error getting next training day:", error);
+      // Fallback to first day
+      const firstDay = challenge?.training_days?.[0];
+      if (firstDay) {
+        navigate(`/challenge/${challengeId}/day/${firstDay.id}`);
+      }
+    }
   };
 
   const calculateDuration = () => {
@@ -377,6 +419,7 @@ const ChallengePreview = () => {
         return {
           trainingDay,
           isCompleted: completedDays.has(trainingDay.id),
+          isFailed: failedDays.has(trainingDay.id),
           isToday: isSameDay(date, new Date()),
           isPast: isBefore(date, new Date()),
           isAccessible: userParticipant && (
@@ -384,7 +427,8 @@ const ChallengePreview = () => {
             (challenge.training_days && 
              challenge.training_days.find(td => td.day_number === trainingDay.day_number - 1) &&
              completedDays.has(challenge.training_days.find(td => td.day_number === trainingDay.day_number - 1)!.id)) ||
-            completedDays.has(trainingDay.id)
+            completedDays.has(trainingDay.id) ||
+            failedDays.has(trainingDay.id) // Failed days are also accessible for retry
           )
         };
       }
@@ -500,7 +544,7 @@ const ChallengePreview = () => {
                 ) : (
                   <>
                     <Button
-                      onClick={startFirstDay}
+                      onClick={startTodaysChallenge}
                       className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white w-full sm:flex-1"
                     >
                       <Play className="w-4 h-4 mr-2" />
@@ -720,13 +764,15 @@ const ChallengePreview = () => {
                           return <span className="text-muted-foreground">{dayNumber}</span>;
                         }
 
-                        const { trainingDay, isCompleted, isToday, isAccessible } = dayInfo;
+                        const { trainingDay, isCompleted, isFailed, isToday, isAccessible } = dayInfo;
                         
                         return (
                           <div className={`
                             w-full h-full rounded-lg border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-1 p-2
                             ${isCompleted 
                               ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg' 
+                              : isFailed 
+                              ? 'bg-red-500/30 border-red-500/50 text-red-400 hover:bg-red-500/40 animate-pulse'
                               : isToday 
                               ? 'bg-purple-500 border-purple-400 text-white shadow-lg animate-pulse' 
                               : trainingDay.is_rest_day 
@@ -738,12 +784,15 @@ const ChallengePreview = () => {
                           `}>
                             <div className="text-xs font-bold">{dayNumber}</div>
                             <div className="text-lg">
-                              {isCompleted ? '✅' : trainingDay.is_rest_day ? '🌴' : '💪'}
+                              {isCompleted ? '✅' : isFailed ? '❌' : trainingDay.is_rest_day ? '🌴' : '💪'}
                             </div>
                             <div className="text-xs text-center leading-tight">
                               Day {trainingDay.day_number}
                             </div>
-                            {!isAccessible && !isCompleted && (
+                            {isFailed && (
+                              <div className="text-xs">🔄</div>
+                            )}
+                            {!isAccessible && !isCompleted && !isFailed && (
                               <div className="text-xs">🔒</div>
                             )}
                           </div>
@@ -772,6 +821,10 @@ const ChallengePreview = () => {
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-emerald-500 rounded"></div>
                       <span className="text-emerald-400">Completed</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500/30 rounded border border-red-500/50"></div>
+                      <span className="text-red-400">Failed (Retry)</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-purple-500 rounded"></div>

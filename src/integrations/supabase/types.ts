@@ -99,36 +99,45 @@ export type Database = {
       }
       challenge_day_progress: {
         Row: {
+          attempt_number: number
           challenge_id: string
           completed_at: string
           created_at: string
           exercises_completed: number | null
           id: string
           notes: string | null
+          scheduled_date: string | null
+          status: string
           total_exercises: number | null
           training_day_id: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          attempt_number?: number
           challenge_id: string
           completed_at?: string
           created_at?: string
           exercises_completed?: number | null
           id?: string
           notes?: string | null
+          scheduled_date?: string | null
+          status?: string
           total_exercises?: number | null
           training_day_id: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          attempt_number?: number
           challenge_id?: string
           completed_at?: string
           created_at?: string
           exercises_completed?: number | null
           id?: string
           notes?: string | null
+          scheduled_date?: string | null
+          status?: string
           total_exercises?: number | null
           training_day_id?: string
           updated_at?: string
@@ -1222,6 +1231,16 @@ export type Database = {
       friendship_user_pair: {
         Args: { user1_id: string; user2_id: string }
         Returns: string[]
+      }
+      get_next_training_day: {
+        Args: { p_user_id: string; p_challenge_id: string }
+        Returns: {
+          next_day_id: string
+          next_day_number: number
+          is_rest_day: boolean
+          should_retry: boolean
+          last_failed_day_id: string
+        }[]
       }
       update_user_login_tracking: {
         Args: { user_id: string }
