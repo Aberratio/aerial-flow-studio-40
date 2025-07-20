@@ -55,11 +55,13 @@ const ChallengePreview = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
+  const [completedDays, setCompletedDays] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (challengeId) {
       fetchChallengeDetails();
       checkParticipation();
+      loadProgress();
     }
   }, [challengeId]);
 
@@ -134,6 +136,34 @@ const ChallengePreview = () => {
     } catch (error) {
       // User is not a participant
     }
+  };
+
+  const loadProgress = async () => {
+    if (!challengeId || !user?.id) return;
+
+    try {
+      // For now, simulate some completed days - this would be replaced with actual progress tracking
+      const completed = new Set<string>();
+      // You can implement actual progress loading here
+      setCompletedDays(completed);
+    } catch (error) {
+      console.error('Error loading progress:', error);
+    }
+  };
+
+  const calculateDayEstimatedTime = (trainingDay: any) => {
+    if (challenge?.type !== 'timer' || !trainingDay.exercises) return null;
+    
+    let totalTime = 0;
+    trainingDay.exercises.forEach((exercise: any) => {
+      const holdTime = exercise.hold_time_seconds || 30;
+      const restTime = exercise.rest_time_seconds || 15;
+      const sets = exercise.sets || 1;
+      totalTime += (holdTime + restTime) * sets;
+    });
+    
+    const minutes = Math.ceil(totalTime / 60);
+    return `~${minutes}min`;
   };
 
   const joinChallenge = async () => {
@@ -375,55 +405,147 @@ const ChallengePreview = () => {
           </div>
         </div>
         
-        {/* Challenge Calendar */}
+        {/* Challenge Training Schedule */}
         <Card className="glass-effect border-white/10 mb-8">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Training Schedule
+              Challenge Training Schedule
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-7 gap-3">
-              {calendarDays.map((day, index) => (
+          <CardContent className="space-y-4">
+            {challenge.training_days?.map((trainingDay, index) => {
+              const dayDate = addDays(parseISO(challenge.start_date), index);
+              const isCompleted = completedDays.has(trainingDay.id);
+              const isToday = format(dayDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
+              const isPast = dayDate < new Date();
+              const isAccessible = isParticipant && (index === 0 || completedDays.has(challenge.training_days[index - 1]?.id));
+              const estimatedTime = calculateDayEstimatedTime(trainingDay);
+              
+              return (
                 <div
-                  key={index}
+                  key={trainingDay.id}
                   className={`
-                    relative p-3 rounded-lg border transition-all
-                    ${day.isToday 
-                      ? 'border-purple-500 bg-purple-500/20' 
-                      : day.isPast 
-                        ? 'border-gray-600 bg-gray-500/10' 
-                        : 'border-white/20 bg-white/5 hover:bg-white/10'
+                    relative p-6 rounded-lg border transition-all cursor-pointer group
+                    ${isCompleted 
+                      ? 'border-green-500/50 bg-green-500/10' 
+                      : isToday 
+                        ? 'border-purple-500/50 bg-purple-500/10' 
+                        : isAccessible
+                          ? 'border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30'
+                          : 'border-gray-600/30 bg-gray-500/5 opacity-60'
                     }
                   `}
+                  onClick={isAccessible ? () => navigate(`/challenge/${challengeId}/day/${trainingDay.id}`) : undefined}
                 >
-                  <div className="text-center">
-                    <div className="text-xs text-muted-foreground mb-1">
-                      {format(day.date, 'EEE')}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {/* Day Number Circle */}
+                      <div className={`
+                        w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg relative
+                        ${isCompleted 
+                          ? 'bg-green-500 text-white' 
+                          : isToday 
+                            ? 'bg-purple-500 text-white' 
+                            : isAccessible
+                              ? 'bg-white/10 text-white border-2 border-white/20'
+                              : 'bg-gray-500/20 text-gray-400 border-2 border-gray-500/20'
+                        }
+                      `}>
+                        {isCompleted ? (
+                          <Trophy className="w-5 h-5" />
+                        ) : trainingDay.is_rest_day ? (
+                          '☀️'
+                        ) : (
+                          index + 1
+                        )}
+                        {isToday && !isCompleted && (
+                          <div className="absolute -top-1 -right-1 w-4 h-4 bg-purple-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                      
+                      {/* Day Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className={`font-semibold ${isAccessible ? 'text-white' : 'text-gray-400'}`}>
+                            {trainingDay.title || `Day ${index + 1}`}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs py-0 px-2 ${
+                                trainingDay.is_rest_day 
+                                  ? 'border-blue-500/30 text-blue-400' 
+                                  : 'border-green-500/30 text-green-400'
+                              }`}
+                            >
+                              {trainingDay.is_rest_day ? 'Rest Day' : 'Training'}
+                            </Badge>
+                            {challenge.type === 'timer' && estimatedTime && !trainingDay.is_rest_day && (
+                              <Badge variant="outline" className="text-xs py-0 px-2 border-purple-500/30 text-purple-400">
+                                <Clock className="w-3 h-3 mr-1" />
+                                {estimatedTime}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <p className={`text-sm ${isAccessible ? 'text-muted-foreground' : 'text-gray-500'}`}>
+                          {format(dayDate, 'EEEE, MMMM d')} • 
+                          {trainingDay.is_rest_day 
+                            ? ' Recovery and stretching'
+                            : ` ${trainingDay.exercises?.length || 0} exercises`
+                          }
+                        </p>
+                        {trainingDay.description && (
+                          <p className={`text-xs mt-1 ${isAccessible ? 'text-gray-300' : 'text-gray-500'}`}>
+                            {trainingDay.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="text-sm font-semibold text-white mb-2">
-                      {format(day.date, 'd')}
-                    </div>
-                    <div className="text-xs">
-                      {day.trainingDay.is_rest_day ? (
-                        <Badge variant="outline" className="text-xs py-0 px-2 border-blue-500/30 text-blue-400">
-                          Rest
-                        </Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-xs py-0 px-2 border-green-500/30 text-green-400">
-                          Day {day.day}
-                        </Badge>
+                    
+                    {/* Status Indicators */}
+                    <div className="flex items-center gap-2">
+                      {isCompleted && (
+                        <div className="flex items-center gap-1 text-green-400 text-sm">
+                          <Trophy className="w-4 h-4" />
+                          <span>Completed</span>
+                        </div>
+                      )}
+                      {isToday && !isCompleted && isParticipant && (
+                        <div className="flex items-center gap-1 text-purple-400 text-sm">
+                          <Play className="w-4 h-4" />
+                          <span>Start Now</span>
+                        </div>
+                      )}
+                      {!isAccessible && isParticipant && (
+                        <div className="text-gray-500 text-sm">
+                          Locked
+                        </div>
                       )}
                     </div>
                   </div>
                   
-                  {day.isToday && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full"></div>
+                  {/* Progress Bar for Training Days */}
+                  {!trainingDay.is_rest_day && trainingDay.exercises && trainingDay.exercises.length > 0 && (
+                    <div className="mt-4 pt-3 border-t border-white/10">
+                      <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                        <span>Exercises</span>
+                        <span>{isCompleted ? trainingDay.exercises.length : 0} of {trainingDay.exercises.length}</span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            isCompleted ? 'bg-green-500' : 'bg-gray-600'
+                          }`}
+                          style={{ width: isCompleted ? '100%' : '0%' }}
+                        ></div>
+                      </div>
+                    </div>
                   )}
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </CardContent>
         </Card>
         
