@@ -117,23 +117,33 @@ const Challenges = () => {
         const startDate = new Date(challenge.start_date);
         const endDate = new Date(challenge.end_date);
         const userParticipating = userParticipation[challenge.id];
+        const progress = userProgress[challenge.id] || 0;
+        
         let status;
         if (userParticipating) {
-          // User is participating - status based on their participation
-          if (userParticipating === 'completed') {
+          // User is participating - status based on their progress
+          if (progress === 100) {
             status = 'completed';
-          } else if (userParticipating === 'failed') {
-            status = 'failed';
-          } else if (now >= startDate && now <= endDate) {
-            status = 'active';
-          } else if (now > endDate) {
-            status = 'completed';
+          } else if (progress > 0) {
+            // Challenge is past end date but user didn't complete it
+            if (now > endDate) {
+              status = 'failed';
+            } else {
+              status = 'active';
+            }
           } else {
-            status = 'not-started';
+            // User joined but hasn't started yet
+            if (now > endDate) {
+              status = 'failed';
+            } else {
+              status = 'active';
+            }
           }
         } else {
           // User not participating - status based on dates
-          if (now < startDate) {
+          if (now > endDate) {
+            status = 'done'; // Challenge is finished but user never joined
+          } else if (now < startDate) {
             status = 'not-started';
           } else if (now >= startDate && now <= endDate) {
             status = 'not-started'; // Available to join
@@ -166,7 +176,15 @@ const Challenges = () => {
       } else if (activeTab === 'completed') {
         transformedData = transformedData.filter(c => c.status === 'completed' || c.status === 'failed');
       } else if (activeTab === 'not-started') {
-        transformedData = transformedData.filter(c => c.status === 'not-started');
+        transformedData = transformedData.filter(c => c.status === 'not-started' || c.status === 'available');
+      } else if (activeTab === 'all') {
+        // Show all challenges for the "all" tab
+        transformedData = transformedData.filter(c => c.status !== 'done' || c.userParticipating);
+      }
+
+      // For the "done" tab, show challenges with "done" status
+      if (activeTab === 'done') {
+        transformedData = transformedData.filter(c => c.status === 'done');
       }
       setChallenges(transformedData);
     } catch (error) {
@@ -261,6 +279,7 @@ const Challenges = () => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'not-started':
+      case 'available':
         return 'bg-blue-500/90 text-blue-100 border-blue-500/30';
       case 'active':
         return 'bg-yellow-500/90 text-yellow-100 border-yellow-500/30';
@@ -268,6 +287,8 @@ const Challenges = () => {
         return 'bg-green-500/90 text-green-100 border-green-500/30';
       case 'failed':
         return 'bg-red-500/90 text-red-100 border-red-500/30';
+      case 'done':
+        return 'bg-purple-500/90 text-purple-100 border-purple-500/30';
       default:
         return 'bg-gray-500/90 text-gray-100 border-gray-500/30';
     }
@@ -287,10 +308,15 @@ const Challenges = () => {
   const getButtonText = (status: string) => {
     switch (status) {
       case 'not-started':
+      case 'available':
         return 'Join Challenge';
       case 'active':
         return 'Continue';
       case 'completed':
+        return 'View Results';
+      case 'failed':
+        return 'View Results';
+      case 'done':
         return 'View Results';
       default:
         return 'View';

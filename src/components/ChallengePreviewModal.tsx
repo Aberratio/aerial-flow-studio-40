@@ -1,17 +1,19 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Trophy, Users, Clock, ChevronRight, X } from 'lucide-react';
+import { Calendar, Trophy, Users, Clock, ChevronRight, X, Play } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ChallengeDetailsModal } from '@/components/ChallengeDetailsModal';
+import RetakeChallengeModal from '@/components/RetakeChallengeModal';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useNavigate } from 'react-router-dom';
 import { Edit2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface Challenge {
   id: string;
@@ -62,9 +64,12 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 }) => {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isRetakeModalOpen, setIsRetakeModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRetaking, setIsRetaking] = useState(false);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
+  const { toast } = useToast();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -162,10 +167,64 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   };
 
   const getButtonText = (status: string) => {
+    const challengeStatus = initialChallenge?.status;
+    
+    if (challengeStatus === 'done' || challengeStatus === 'completed' || challengeStatus === 'failed') {
+      return 'Retake Challenge';
+    }
+    
     switch (status) {
       case 'published': return 'Start Challenge';
       case 'draft': return 'Preview Draft';
       default: return 'View Challenge';
+    }
+  };
+
+  const handleRetakeChallenge = async () => {
+    if (!user || !challenge) return;
+    
+    setIsRetaking(true);
+    try {
+      // Delete all progress for this challenge
+      const { error: progressError } = await supabase
+        .from('challenge_day_progress')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('challenge_id', challenge.id);
+
+      if (progressError) throw progressError;
+
+      // Reset participant status to active
+      const { error: participantError } = await supabase
+        .from('challenge_participants')
+        .update({ 
+          status: 'active',
+          updated_at: new Date().toISOString()
+        })
+        .eq('challenge_id', challenge.id)
+        .eq('user_id', user.id);
+
+      if (participantError) throw participantError;
+
+      toast({
+        title: "Challenge Reset!",
+        description: "Your progress has been reset. You can now start the challenge from the beginning.",
+      });
+      
+      setIsRetakeModalOpen(false);
+      onClose();
+      
+      // Navigate to challenge preview page
+      navigate(`/challenges/${challenge.id}`);
+    } catch (error) {
+      console.error('Error retaking challenge:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset challenge progress. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsRetaking(false);
     }
   };
 
@@ -312,20 +371,41 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             >
               Close
             </Button>
-            <Button 
-              className="flex-1"
-              variant="primary"
-               onClick={() => {
-                if (challenge.status === 'published') {
-                  onClose();
-                  navigate(`/challenges/${challenge.id}`);
-                }
-              }}
-              disabled={challenge.status !== 'published'}
-            >
-              {getButtonText(challenge.status)}
-              <ChevronRight className="ml-2 w-4 h-4" />
-            </Button>
+            
+            {/* Dynamic Action Button */}
+            {(() => {
+              const challengeStatus = initialChallenge?.status;
+              
+              if (challengeStatus === 'done' || challengeStatus === 'completed' || challengeStatus === 'failed') {
+                return (
+                  <Button 
+                    onClick={() => setIsRetakeModalOpen(true)}
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+                  >
+                    Retake Challenge
+                    <ChevronRight className="ml-2 w-4 h-4" />
+                  </Button>
+                );
+              }
+              
+              return (
+                <Button 
+                  className="flex-1"
+                  variant="primary"
+                  onClick={() => {
+                    if (challenge.status === 'published') {
+                      onClose();
+                      navigate(`/challenges/${challenge.id}`);
+                    }
+                  }}
+                  disabled={challenge.status !== 'published'}
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  {getButtonText(challenge.status)}
+                  <ChevronRight className="ml-2 w-4 h-4" />
+                </Button>
+              );
+            })()}
           </div>
         </div>
       </DialogContent>
@@ -366,6 +446,15 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
           }}
         />
       )}
+
+      {/* Retake Challenge Confirmation Modal */}
+      <RetakeChallengeModal
+        isOpen={isRetakeModalOpen}
+        onClose={() => setIsRetakeModalOpen(false)}
+        onConfirm={handleRetakeChallenge}
+        challengeTitle={challenge?.title || ''}
+        isLoading={isRetaking}
+      />
     </Dialog>
   );
 };
