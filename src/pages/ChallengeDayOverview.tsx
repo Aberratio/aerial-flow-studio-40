@@ -484,7 +484,8 @@ const ChallengeDayOverview = () => {
           <Button 
             onClick={handleStartDay}
             disabled={trainingDay.exercises.length === 0}
-            className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 disabled:opacity-50"
+            className="flex-1 disabled:opacity-50"
+            varinat="premiumm"
           >
             <Play className="w-4 h-4 mr-2" />
             Start Day {dayNumber}
