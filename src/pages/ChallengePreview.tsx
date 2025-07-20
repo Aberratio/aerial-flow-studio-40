@@ -707,40 +707,48 @@ const ChallengePreview = () => {
             {isParticipant && userParticipant?.user_started_at && (
               <div className="mb-6">
                 <h3 className="text-white font-semibold mb-4">Calendar View</h3>
-                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <div className="bg-white/5 rounded-lg p-6 border border-white/10">
                   <Calendar
                     mode="single"
-                    className="pointer-events-auto"
-                    modifiers={{
-                      training: (date) => {
+                    className="pointer-events-auto w-full [&_.react-flow\_\_node]:!h-20 [&_.react-flow\_\_node]:!w-20 [&_.react-flow\_\_node]:!min-h-0 [&_.react-flow\_\_node]:!min-w-0 [&_td]:!h-20 [&_th]:!h-12 [&_td]:!w-20 [&_tbody_td]:!p-0 [&_th]:!text-base [&_button]:!h-20 [&_button]:!w-20 [&_button]:!text-sm [&_button]:!flex [&_button]:!flex-col [&_button]:!items-center [&_button]:!justify-center [&_button]:!gap-1 [&_button]:!p-2"
+                    components={{
+                      DayContent: ({ date }) => {
                         const dayInfo = getCalendarDayInfo(date);
-                        return dayInfo && !dayInfo.trainingDay.is_rest_day;
-                      },
-                      rest: (date) => {
-                        const dayInfo = getCalendarDayInfo(date);
-                        return dayInfo && dayInfo.trainingDay.is_rest_day;
-                      },
-                      completed: (date) => {
-                        const dayInfo = getCalendarDayInfo(date);
-                        return dayInfo?.isCompleted || false;
-                      },
-                      today: (date) => {
-                        const dayInfo = getCalendarDayInfo(date);
-                        return dayInfo?.isToday || false;
-                      },
-                      locked: (date) => {
-                        const dayInfo = getCalendarDayInfo(date);
-                        return dayInfo && !dayInfo.isAccessible;
-                      },
-                      future: (date) => isAfter(date, new Date())
-                    }}
-                    modifiersClassNames={{
-                      training: "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
-                      rest: "bg-green-500/20 text-green-400 hover:bg-green-500/30", 
-                      completed: "bg-emerald-500 text-white hover:bg-emerald-600",
-                      today: "bg-purple-500 text-white hover:bg-purple-600",
-                      locked: "opacity-40 cursor-not-allowed",
-                      future: "opacity-30 cursor-not-allowed"
+                        const dayNumber = date.getDate();
+                        
+                        if (!dayInfo) {
+                          return <span className="text-muted-foreground">{dayNumber}</span>;
+                        }
+
+                        const { trainingDay, isCompleted, isToday, isAccessible } = dayInfo;
+                        
+                        return (
+                          <div className={`
+                            w-full h-full rounded-lg border-2 transition-all cursor-pointer flex flex-col items-center justify-center gap-1 p-2
+                            ${isCompleted 
+                              ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg' 
+                              : isToday 
+                              ? 'bg-purple-500 border-purple-400 text-white shadow-lg animate-pulse' 
+                              : trainingDay.is_rest_day 
+                              ? 'bg-green-500/20 border-green-500/40 text-green-400 hover:bg-green-500/30' 
+                              : isAccessible
+                              ? 'bg-blue-500/20 border-blue-500/40 text-blue-400 hover:bg-blue-500/30'
+                              : 'bg-gray-500/20 border-gray-500/30 text-gray-500 opacity-50 cursor-not-allowed'
+                            }
+                          `}>
+                            <div className="text-xs font-bold">{dayNumber}</div>
+                            <div className="text-lg">
+                              {isCompleted ? '✅' : trainingDay.is_rest_day ? '🌴' : '💪'}
+                            </div>
+                            <div className="text-xs text-center leading-tight">
+                              Day {trainingDay.day_number}
+                            </div>
+                            {!isAccessible && !isCompleted && (
+                              <div className="text-xs">🔒</div>
+                            )}
+                          </div>
+                        );
+                      }
                     }}
                     onDayClick={handleCalendarDayClick}
                     disabled={(date) => {
@@ -778,196 +786,6 @@ const ChallengePreview = () => {
               </div>
             )}
 
-            {/* Training Days List */}
-            <div className="space-y-4">
-            {challenge.training_days?.map((trainingDay, index) => {
-              console.log(trainingDay);
-              // For participants, calculate days based on their start date
-              const dayDate = userParticipant?.user_started_at
-                ? addDays(
-                    parseISO(userParticipant.user_started_at),
-                    trainingDay.day_number - 1
-                  )
-                : addDays(parseISO(challenge.start_date), index);
-              const isCompleted = completedDays.has(trainingDay.id);
-              const isToday =
-                format(dayDate, "yyyy-MM-dd") ===
-                format(new Date(), "yyyy-MM-dd");
-              const isPast = dayDate < new Date();
-              const isAccessible =
-                isParticipant &&
-                (trainingDay.day_number === 1 ||
-                  (challenge.training_days &&
-                    challenge.training_days[index - 1] &&
-                    completedDays.has(challenge.training_days[index - 1].id)) ||
-                  completedDays.has(trainingDay.id));
-              const estimatedTime = calculateDayEstimatedTime(trainingDay);
-
-              return (
-                <div
-                  key={trainingDay.id}
-                  className={`
-                    relative p-4 md:p-6 rounded-lg border transition-all cursor-pointer group
-                    ${
-                      isCompleted
-                        ? "border-green-500/50 bg-green-500/10"
-                        : isToday
-                        ? "border-purple-500/50 bg-purple-500/10"
-                        : isAccessible
-                        ? "border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30"
-                        : "border-gray-600/30 bg-gray-500/5 opacity-60"
-                    }
-                  `}
-                  onClick={
-                    isAccessible
-                      ? () =>
-                          navigate(
-                            `/challenge/${challengeId}/day/${trainingDay.id}`
-                          )
-                      : undefined
-                  }
-                >
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      {/* Day Number Circle */}
-                      <div
-                        className={`
-                        w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-lg relative flex-shrink-0
-                        ${
-                          isCompleted
-                            ? "bg-green-500 text-white"
-                            : isToday
-                            ? "bg-purple-500 text-white"
-                            : isAccessible
-                            ? "bg-white/10 text-white border-2 border-white/20"
-                            : "bg-gray-500/20 text-gray-400 border-2 border-gray-500/20"
-                        }
-                      `}
-                      >
-                        {isCompleted ? (
-                          <Trophy className="w-4 h-4 md:w-5 md:h-5" />
-                        ) : trainingDay.is_rest_day ? (
-                          "☀️"
-                        ) : (
-                          index + 1
-                        )}
-                        {isToday && !isCompleted && (
-                          <div className="absolute -top-1 -right-1 w-3 h-3 md:w-4 md:h-4 bg-purple-400 rounded-full animate-pulse"></div>
-                        )}
-                      </div>
-
-                      {/* Day Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-1">
-                          <h3
-                            className={`font-semibold text-sm sm:text-base truncate ${
-                              isAccessible ? "text-white" : "text-gray-400"
-                            }`}
-                          >
-                            {trainingDay.title || `Day ${index + 1}`}
-                          </h3>
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <Badge
-                              variant="outline"
-                              className={`text-xs py-0 px-2 ${
-                                trainingDay.is_rest_day
-                                  ? "border-blue-500/30 text-blue-400"
-                                  : "border-green-500/30 text-green-400"
-                              }`}
-                            >
-                              {trainingDay.is_rest_day
-                                ? "Rest Day"
-                                : "Training"}
-                            </Badge>
-                            {challenge.type === "timer" &&
-                              estimatedTime &&
-                              !trainingDay.is_rest_day && (
-                                <Badge
-                                  variant="outline"
-                                  className="text-xs py-0 px-2 border-purple-500/30 text-purple-400"
-                                >
-                                  <Clock className="w-3 h-3 mr-1" />
-                                  {estimatedTime}
-                                </Badge>
-                              )}
-                          </div>
-                        </div>
-                        <p
-                          className={`text-xs sm:text-sm ${
-                            isAccessible
-                              ? "text-muted-foreground"
-                              : "text-gray-500"
-                          }`}
-                        >
-                          {format(dayDate, "EEEE, MMM d")} •
-                          {trainingDay.is_rest_day
-                            ? " Recovery and stretching"
-                            : ` ${
-                                trainingDay.exercises?.length || 0
-                              } exercises`}
-                        </p>
-                        {trainingDay.description && (
-                          <p
-                            className={`text-xs mt-1 line-clamp-2 ${
-                              isAccessible ? "text-gray-300" : "text-gray-500"
-                            }`}
-                          >
-                            {trainingDay.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Status Indicators */}
-                    <div className="flex items-center gap-2 self-start sm:self-center">
-                      {isCompleted && (
-                        <div className="flex items-center gap-1 text-green-400 text-xs sm:text-sm">
-                          <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
-                          <span className="hidden sm:inline">Completed</span>
-                          <span className="sm:hidden">✓</span>
-                        </div>
-                      )}
-                      {isToday && !isCompleted && isParticipant && (
-                        <div className="flex items-center gap-1 text-purple-400 text-xs sm:text-sm">
-                          <Play className="w-3 h-3 sm:w-4 sm:h-4" />
-                          <span className="hidden sm:inline">Start Now</span>
-                          <span className="sm:hidden">Start</span>
-                        </div>
-                      )}
-                      {!isAccessible && isParticipant && (
-                        <div className="text-gray-500 text-xs sm:text-sm">
-                          Locked
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Progress Bar for Training Days */}
-                  {!trainingDay.is_rest_day &&
-                    trainingDay.exercises &&
-                    trainingDay.exercises.length > 0 && (
-                      <div className="mt-4 pt-3 border-t border-white/10">
-                        <div className="flex justify-between text-xs text-muted-foreground mb-1">
-                          <span>Exercises</span>
-                          <span>
-                            {isCompleted ? trainingDay.exercises.length : 0} of{" "}
-                            {trainingDay.exercises.length}
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-700 rounded-full h-1.5 sm:h-2">
-                          <div
-                            className={`h-1.5 sm:h-2 rounded-full transition-all duration-300 ${
-                              isCompleted ? "bg-green-500" : "bg-gray-600"
-                            }`}
-                            style={{ width: isCompleted ? "100%" : "0%" }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-                </div>
-                 );
-               })}
-             </div>
            </CardContent>
          </Card>
 
