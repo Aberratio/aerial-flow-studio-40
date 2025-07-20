@@ -454,7 +454,7 @@ const ChallengePreview = () => {
                       className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white w-full sm:flex-1"
                     >
                       <Play className="w-4 h-4 mr-2" />
-                      Start today's challenge
+                      Start Today's Challenge
                     </Button>
 
                     {/* Reset Progress Button */}
