@@ -320,7 +320,7 @@ const Challenges = () => {
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Challenges</h1>
               <p className="text-muted-foreground text-sm sm:text-base">Push your limits with structured training programs</p>
             </div>
-            {canCreateChallenges && <Button onClick={() => setIsCreateModalOpen(true)} className="bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 w-full sm:w-auto">
+            {canCreateChallenges && <Button  onClick={() => setIsCreateModalOpen(true)} variant="primary">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Challenge
               </Button>}
