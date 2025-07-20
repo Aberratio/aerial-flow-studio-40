@@ -12,6 +12,7 @@ interface Exercise {
   rest_time_seconds?: number;
   figure: {
     name: string;
+    image_url?: string;
   };
 }
 
@@ -201,6 +202,24 @@ const ChallengeTimer = ({ exercises, isAudioEnabled, onComplete }: ChallengeTime
           <div className="text-sm text-muted-foreground mb-1">
             {currentSegment.type === 'exercise' ? 'Exercise' : 'Rest'}
           </div>
+          
+          {/* Exercise Image */}
+          {currentSegment.type === 'exercise' && (
+            <div className="w-24 h-24 mx-auto mb-4 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20">
+              {exercises[currentSegment.exerciseIndex]?.figure.image_url ? (
+                <img 
+                  src={exercises[currentSegment.exerciseIndex].figure.image_url} 
+                  alt={currentSegment.exerciseName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span className="text-3xl">💪</span>
+                </div>
+              )}
+            </div>
+          )}
+          
           <h3 className="text-xl font-bold text-white mb-2">
             {currentSegment.exerciseName}
           </h3>

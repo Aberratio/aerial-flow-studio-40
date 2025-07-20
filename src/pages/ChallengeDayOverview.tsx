@@ -251,12 +251,53 @@ const ChallengeDayOverview = () => {
     });
     return totalMinutes > 0 ? `~${Math.ceil(totalMinutes)} minutes` : '30-45 minutes';
   };
-  const handleTimerComplete = () => {
+  const handleTimerComplete = async () => {
+    if (!user) return;
+    
+    try {
+      // Save day progress when timer completes
+      const { error: progressError } = await supabase
+        .from('challenge_day_progress')
+        .upsert({
+          user_id: user.id,
+          challenge_id: challengeId!,
+          training_day_id: dayId!,
+          exercises_completed: trainingDay!.exercises.length,
+          total_exercises: trainingDay!.exercises.length,
+          completed_at: new Date().toISOString()
+        });
+
+      if (progressError) throw progressError;
+
+      // Create activity entry for points
+      const { error: activityError } = await supabase
+        .rpc('create_activity_with_points', {
+          user_id: user.id,
+          activity_type: 'challenge_day_completed',
+          activity_data: {
+            challenge_id: challengeId,
+            training_day_id: dayId,
+            exercises_completed: trainingDay!.exercises.length
+          },
+          points: 25 // Award 25 points for completing a challenge day
+        });
+
+      if (activityError) console.error('Error creating activity:', activityError);
+
+      toast({
+        title: "Workout Complete!",
+        description: `Great job! You've completed all ${trainingDay!.exercises.length} exercises and earned 25 points!`
+      });
+    } catch (error) {
+      console.error('Error saving progress:', error);
+      toast({
+        title: "Workout Complete!",
+        description: "Great job completing your training session!",
+        variant: "default"
+      });
+    }
+    
     setShowTimer(false);
-    toast({
-      title: "Workout Complete!",
-      description: "Great job completing your training session!"
-    });
   };
   return <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
@@ -278,6 +319,43 @@ const ChallengeDayOverview = () => {
               Edit Challenge
             </Button>}
         </div>
+
+        {/* Day Timeline */}
+        <Card className="glass-effect border-white/10 mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white font-medium">Challenge Timeline</h3>
+              <span className="text-muted-foreground text-sm">Day {dayNumber} of {totalDays}</span>
+            </div>
+            <div className="flex items-center space-x-2">
+              {Array.from({ length: totalDays }, (_, i) => {
+                const dayNum = i + 1;
+                const isCurrentDay = dayNum === dayNumber;
+                const isPastDay = dayNum < dayNumber;
+                
+                return (
+                  <div key={i} className="flex items-center">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
+                      isCurrentDay 
+                        ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white' 
+                        : isPastDay 
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
+                          : 'bg-white/10 text-white/50 border border-white/20'
+                    }`}>
+                      {isPastDay ? <CheckCircle className="w-4 h-4" /> : dayNum}
+                    </div>
+                    {i < totalDays - 1 && (
+                      <div className={`w-4 h-0.5 ${
+                        isPastDay ? 'bg-green-500/30' : 'bg-white/20'
+                      }`} />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <Progress value={(dayNumber / totalDays) * 100} className="h-1 mt-4" />
+          </CardContent>
+        </Card>
 
         {/* Day Overview */}
         <Card className="glass-effect border-white/10 mb-6">
