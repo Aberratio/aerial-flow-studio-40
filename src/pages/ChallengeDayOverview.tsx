@@ -157,27 +157,9 @@ const ChallengeDayOverview = () => {
         if (!progressError && progressData) {
           setDayProgress(progressData);
           
-          // If day is completed or failed, prevent re-access
+          // If day is completed or failed, mark it but don't redirect
           if (progressData.status === 'completed' || progressData.status === 'failed') {
             setIsDayCompleted(true);
-            
-            if (progressData.status === 'completed') {
-              toast({
-                title: "Day Already Completed",
-                description: `You completed this training day on ${new Date(progressData.completed_at).toLocaleDateString()}. Great job!`,
-              });
-            } else if (progressData.status === 'failed') {
-              toast({
-                title: "Day Previously Failed",
-                description: "This day was marked as failed. You can retry it from the challenge overview.",
-              });
-            }
-            
-            // Redirect back to challenge overview after showing the message
-            setTimeout(() => {
-              navigate(`/challenges/${challengeId}`);
-            }, 3000);
-            return;
           }
         }
 
@@ -349,27 +331,7 @@ const ChallengeDayOverview = () => {
     );
   }
 
-  // Show message if day is already completed/failed
-  if (isDayCompleted && dayProgress) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-center max-w-md">
-          <h2 className="text-white text-2xl mb-4">
-            {dayProgress.status === 'completed' ? '✅ Day Already Completed!' : '❌ Day Previously Failed'}
-          </h2>
-          <p className="text-muted-foreground mb-4">
-            {dayProgress.status === 'completed' 
-              ? `You completed this training day on ${new Date(dayProgress.completed_at).toLocaleDateString()}. Great job!`
-              : 'This day was marked as failed. You can retry it from the challenge overview.'
-            }
-          </p>
-          <Button onClick={() => navigate(`/challenges/${challengeId}`)} variant="outline">
-            Back to Challenge Overview
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // Remove the blocking screen for completed days - show preview instead
   const calculateDuration = () => {
     if (!trainingDay.exercises.length) return "No duration set";
     let totalMinutes = 0;
@@ -517,7 +479,47 @@ const ChallengeDayOverview = () => {
           )}
         </div>
 
-        {/* Day Timeline */}
+        {/* Status Info Box for Completed/Failed Days */}
+        {isDayCompleted && dayProgress && (
+          <Card className="glass-effect border-white/10 mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-start space-x-4">
+                <div className="flex-shrink-0">
+                  {dayProgress.status === 'completed' ? (
+                    <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-green-400" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                      <AlertTriangle className="w-6 h-6 text-red-400" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-white font-semibold mb-2">
+                    {dayProgress.status === 'completed' ? 'Day Already Completed! 🎉' : 'Day Previously Failed'}
+                  </h3>
+                  <p className="text-muted-foreground mb-3">
+                    {dayProgress.status === 'completed' 
+                      ? `Great job! You completed this training day on ${new Date(dayProgress.completed_at).toLocaleDateString()}. You're viewing this day for reference only.`
+                      : 'This day was marked as failed and can be retried. You\'re viewing this day for reference only.'
+                    }
+                  </p>
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium">Status:</span> {dayProgress.status === 'completed' ? 'Completed' : 'Failed'} • 
+                    <span className="font-medium ml-2">Date:</span> {new Date(dayProgress.completed_at).toLocaleDateString()}
+                    {dayProgress.attempt_number > 1 && (
+                      <>
+                        <span className="font-medium ml-2">Attempt:</span> {dayProgress.attempt_number}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <Card className="glass-effect border-white/10 mb-6">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
@@ -811,177 +813,193 @@ const ChallengeDayOverview = () => {
           </Card>
         )}
 
-        {/* Action Buttons */}
-        <div className="space-y-4">
-          {/* Primary Action Button */}
-          <div className="flex space-x-3">
-            {!trainingDay.is_rest_day ? (
+        {/* Action Buttons - Only show if day is not completed/failed */}
+        {!isDayCompleted && (
+          <div className="space-y-4">
+            {/* Primary Action Button */}
+            <div className="flex space-x-3">
+              {!trainingDay.is_rest_day ? (
+                <Button
+                  onClick={handleStartDay}
+                  disabled={trainingDay.exercises.length === 0}
+                  className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 disabled:opacity-50"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  Start Day {dayNumber}
+                </Button>
+              ) : (
+                <Button
+                  onClick={async () => {
+                    if (!user) return;
+                    try {
+                      // Mark rest day as completed
+                      const { error: progressError } = await supabase
+                        .from("challenge_day_progress")
+                        .upsert({
+                          user_id: user.id,
+                          challenge_id: challengeId!,
+                          training_day_id: dayId!,
+                          exercises_completed: 0,
+                          total_exercises: 0,
+                          completed_at: new Date().toISOString(),
+                          status: 'rest',
+                          scheduled_date: new Date().toISOString(),
+                        });
+
+                      if (progressError) throw progressError;
+
+                      // Award points for rest day completion
+                      const { error: activityError } = await supabase.rpc(
+                        "create_activity_with_points",
+                        {
+                          user_id: user.id,
+                          activity_type: "challenge_day_completed",
+                          activity_data: {
+                            challenge_id: challengeId,
+                            training_day_id: dayId,
+                            exercises_completed: 0,
+                          },
+                          points: 10, // Award 10 points for completing a rest day
+                        }
+                      );
+
+                      if (activityError)
+                        console.error("Error creating activity:", activityError);
+
+                      toast({
+                        title: "Rest Day Complete!",
+                        description:
+                          "Great job taking time to recover! You earned 10 points.",
+                      });
+
+                      // Refresh to update progress
+                      window.location.reload();
+                    } catch (error) {
+                      console.error("Error completing rest day:", error);
+                      toast({
+                        title: "Error",
+                        description:
+                          "Failed to mark rest day as complete. Please try again.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Complete Rest Day
+                </Button>
+              )}
+
               <Button
-                onClick={handleStartDay}
-                disabled={trainingDay.exercises.length === 0}
-                className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 disabled:opacity-50"
+                variant="outline"
+                onClick={() => navigate(`/challenges/${challengeId}`)}
+                className="border-white/20 text-white hover:bg-white/10"
               >
-                <Play className="w-4 h-4 mr-2" />
-                Start Day {dayNumber}
+                Back to Challenge
               </Button>
-            ) : (
+            </div>
+
+
+            {/* Additional Action Buttons */}
+            <div className="flex space-x-3">
               <Button
+                variant="outline"
                 onClick={async () => {
                   if (!user) return;
                   try {
-                    // Mark rest day as completed
-                    const { error: progressError } = await supabase
+                    const { error } = await supabase
                       .from("challenge_day_progress")
                       .upsert({
                         user_id: user.id,
                         challenge_id: challengeId!,
                         training_day_id: dayId!,
                         exercises_completed: 0,
-                        total_exercises: 0,
-                        completed_at: new Date().toISOString(),
+                        total_exercises: trainingDay.exercises.length,
                         status: 'rest',
                         scheduled_date: new Date().toISOString(),
+                        notes: 'User set additional rest day',
                       });
 
-                    if (progressError) throw progressError;
-
-                    // Award points for rest day completion
-                    const { error: activityError } = await supabase.rpc(
-                      "create_activity_with_points",
-                      {
-                        user_id: user.id,
-                        activity_type: "challenge_day_completed",
-                        activity_data: {
-                          challenge_id: challengeId,
-                          training_day_id: dayId,
-                          exercises_completed: 0,
-                        },
-                        points: 10, // Award 10 points for completing a rest day
-                      }
-                    );
-
-                    if (activityError)
-                      console.error("Error creating activity:", activityError);
+                    if (error) throw error;
 
                     toast({
-                      title: "Rest Day Complete!",
-                      description:
-                        "Great job taking time to recover! You earned 10 points.",
+                      title: "Rest Day Set",
+                      description: "Today has been marked as a rest day. Take time to recover!",
                     });
 
-                    // Refresh to update progress
                     window.location.reload();
                   } catch (error) {
-                    console.error("Error completing rest day:", error);
+                    console.error("Error setting rest day:", error);
                     toast({
                       title: "Error",
-                      description:
-                        "Failed to mark rest day as complete. Please try again.",
+                      description: "Failed to set rest day. Please try again.",
                       variant: "destructive",
                     });
                   }
                 }}
-                className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600"
+                className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
               >
-                <CheckCircle className="w-4 h-4 mr-2" />
-                Complete Rest Day
+                <Pause className="w-4 h-4 mr-2" />
+                Set Rest Day
               </Button>
-            )}
 
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (!user) return;
+                  try {
+                    const { error } = await supabase
+                      .from("challenge_day_progress")
+                      .upsert({
+                        user_id: user.id,
+                        challenge_id: challengeId!,
+                        training_day_id: dayId!,
+                        exercises_completed: 0,
+                        total_exercises: trainingDay.exercises.length,
+                        status: 'failed',
+                        scheduled_date: new Date().toISOString(),
+                        notes: 'User marked day as failed - needs retry',
+                      });
+
+                    if (error) throw error;
+
+                    toast({
+                      title: "Day Marked as Failed",
+                      description: "This day will be retried tomorrow. Don't give up!",
+                    });
+
+                    window.location.reload();
+                  } catch (error) {
+                    console.error("Error marking day as failed:", error);
+                    toast({
+                      title: "Error",
+                      description: "Failed to mark day as failed. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
+              >
+                <AlertTriangle className="w-4 h-4 mr-2" />
+                Mark as Failed
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Back to Challenge Button - Always show for completed days */}
+        {isDayCompleted && (
+          <div className="flex justify-center mt-6">
             <Button
               variant="outline"
               onClick={() => navigate(`/challenges/${challengeId}`)}
               className="border-white/20 text-white hover:bg-white/10"
             >
-              Back to Challenge
+              Back to Challenge Overview
             </Button>
           </div>
-
-          {/* Additional Action Buttons */}
-          <div className="flex space-x-3">
-            <Button
-              variant="outline"
-              onClick={async () => {
-                if (!user) return;
-                try {
-                  const { error } = await supabase
-                    .from("challenge_day_progress")
-                    .upsert({
-                      user_id: user.id,
-                      challenge_id: challengeId!,
-                      training_day_id: dayId!,
-                      exercises_completed: 0,
-                      total_exercises: trainingDay.exercises.length,
-                      status: 'rest',
-                      scheduled_date: new Date().toISOString(),
-                      notes: 'User set additional rest day',
-                    });
-
-                  if (error) throw error;
-
-                  toast({
-                    title: "Rest Day Set",
-                    description: "Today has been marked as a rest day. Take time to recover!",
-                  });
-
-                  window.location.reload();
-                } catch (error) {
-                  console.error("Error setting rest day:", error);
-                  toast({
-                    title: "Error",
-                    description: "Failed to set rest day. Please try again.",
-                    variant: "destructive",
-                  });
-                }
-              }}
-              className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
-            >
-              <Pause className="w-4 h-4 mr-2" />
-              Set Rest Day
-            </Button>
-
-            <Button
-              variant="outline"
-              onClick={async () => {
-                if (!user) return;
-                try {
-                  const { error } = await supabase
-                    .from("challenge_day_progress")
-                    .upsert({
-                      user_id: user.id,
-                      challenge_id: challengeId!,
-                      training_day_id: dayId!,
-                      exercises_completed: 0,
-                      total_exercises: trainingDay.exercises.length,
-                      status: 'failed',
-                      scheduled_date: new Date().toISOString(),
-                      notes: 'User marked day as failed - needs retry',
-                    });
-
-                  if (error) throw error;
-
-                  toast({
-                    title: "Day Marked as Failed",
-                    description: "This day will be retried tomorrow. Don't give up!",
-                  });
-
-                  window.location.reload();
-                } catch (error) {
-                  console.error("Error marking day as failed:", error);
-                  toast({
-                    title: "Error",
-                    description: "Failed to mark day as failed. Please try again.",
-                    variant: "destructive",
-                  });
-                }
-              }}
-              className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
-            >
-              <AlertTriangle className="w-4 h-4 mr-2" />
-              Mark as Failed
-            </Button>
-          </div>
-        </div>
+        )}
 
         {/* Start Date Picker Modal */}
         {showStartDatePicker && (
