@@ -317,7 +317,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               variant="primary"
                onClick={() => {
                 if (challenge.status === 'published') {
-                  setIsDetailsModalOpen(true);
+                  onClose();
+                  navigate(`/challenges/${challenge.id}`);
                 }
               }}
               disabled={challenge.status !== 'published'}
