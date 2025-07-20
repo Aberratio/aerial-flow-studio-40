@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   Trophy,
   Users,
   Clock,
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Calendar } from "@/components/ui/calendar";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +31,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { format, parseISO, addDays } from "date-fns";
+import { format, parseISO, addDays, isSameDay, startOfMonth, endOfMonth, isAfter, isBefore } from "date-fns";
 
 interface Challenge {
   id: string;
@@ -363,6 +364,55 @@ const ChallengePreview = () => {
     }
   };
 
+  // Calendar functionality
+  const getCalendarDayInfo = (date: Date) => {
+    if (!challenge?.training_days || !userParticipant?.user_started_at) return null;
+
+    const startDate = parseISO(userParticipant.user_started_at);
+    
+    // Find the training day that matches this date
+    for (const trainingDay of challenge.training_days) {
+      const dayDate = addDays(startDate, trainingDay.day_number - 1);
+      if (isSameDay(date, dayDate)) {
+        return {
+          trainingDay,
+          isCompleted: completedDays.has(trainingDay.id),
+          isToday: isSameDay(date, new Date()),
+          isPast: isBefore(date, new Date()),
+          isAccessible: userParticipant && (
+            trainingDay.day_number === 1 ||
+            (challenge.training_days && 
+             challenge.training_days.find(td => td.day_number === trainingDay.day_number - 1) &&
+             completedDays.has(challenge.training_days.find(td => td.day_number === trainingDay.day_number - 1)!.id)) ||
+            completedDays.has(trainingDay.id)
+          )
+        };
+      }
+    }
+    return null;
+  };
+
+  const handleCalendarDayClick = (date: Date) => {
+    const dayInfo = getCalendarDayInfo(date);
+    if (dayInfo && dayInfo.isAccessible) {
+      navigate(`/challenge/${challengeId}/day/${dayInfo.trainingDay.id}`);
+    }
+  };
+
+  const getCalendarStartMonth = () => {
+    if (!userParticipant?.user_started_at) return new Date();
+    return startOfMonth(parseISO(userParticipant.user_started_at));
+  };
+
+  const getCalendarEndMonth = () => {
+    if (!challenge?.training_days || !userParticipant?.user_started_at) return new Date();
+    
+    const startDate = parseISO(userParticipant.user_started_at);
+    const lastDay = challenge.training_days[challenge.training_days.length - 1];
+    const lastDate = addDays(startDate, lastDay.day_number - 1);
+    return endOfMonth(lastDate);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
@@ -648,11 +698,88 @@ const ChallengePreview = () => {
         <Card className="glass-effect border-white/10 mb-8">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
+              <CalendarIcon className="w-5 h-5" />
               Challenge Training Schedule
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
+            {/* Calendar View for Participants */}
+            {isParticipant && userParticipant?.user_started_at && (
+              <div className="mb-6">
+                <h3 className="text-white font-semibold mb-4">Calendar View</h3>
+                <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                  <Calendar
+                    mode="single"
+                    className="pointer-events-auto"
+                    modifiers={{
+                      training: (date) => {
+                        const dayInfo = getCalendarDayInfo(date);
+                        return dayInfo && !dayInfo.trainingDay.is_rest_day;
+                      },
+                      rest: (date) => {
+                        const dayInfo = getCalendarDayInfo(date);
+                        return dayInfo && dayInfo.trainingDay.is_rest_day;
+                      },
+                      completed: (date) => {
+                        const dayInfo = getCalendarDayInfo(date);
+                        return dayInfo?.isCompleted || false;
+                      },
+                      today: (date) => {
+                        const dayInfo = getCalendarDayInfo(date);
+                        return dayInfo?.isToday || false;
+                      },
+                      locked: (date) => {
+                        const dayInfo = getCalendarDayInfo(date);
+                        return dayInfo && !dayInfo.isAccessible;
+                      },
+                      future: (date) => isAfter(date, new Date())
+                    }}
+                    modifiersClassNames={{
+                      training: "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
+                      rest: "bg-green-500/20 text-green-400 hover:bg-green-500/30", 
+                      completed: "bg-emerald-500 text-white hover:bg-emerald-600",
+                      today: "bg-purple-500 text-white hover:bg-purple-600",
+                      locked: "opacity-40 cursor-not-allowed",
+                      future: "opacity-30 cursor-not-allowed"
+                    }}
+                    onDayClick={handleCalendarDayClick}
+                    disabled={(date) => {
+                      const dayInfo = getCalendarDayInfo(date);
+                      return !dayInfo || !dayInfo.isAccessible || isAfter(date, new Date());
+                    }}
+                    fromMonth={getCalendarStartMonth()}
+                    toMonth={getCalendarEndMonth()}
+                  />
+                  
+                  {/* Calendar Legend */}
+                  <div className="mt-4 flex flex-wrap gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-blue-500/30 rounded border border-blue-500/50"></div>
+                      <span className="text-blue-400">Training Day</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500/30 rounded border border-green-500/50"></div>
+                      <span className="text-green-400">Rest Day</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded"></div>
+                      <span className="text-emerald-400">Completed</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-purple-500 rounded"></div>
+                      <span className="text-purple-400">Today</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-gray-500/30 rounded border border-gray-500/50"></div>
+                      <span className="text-gray-400">Locked/Future</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Training Days List */}
+            <div className="space-y-4">
             {challenge.training_days?.map((trainingDay, index) => {
               console.log(trainingDay);
               // For participants, calculate days based on their start date
@@ -838,10 +965,11 @@ const ChallengePreview = () => {
                       </div>
                     )}
                 </div>
-              );
-            })}
-          </CardContent>
-        </Card>
+                 );
+               })}
+             </div>
+           </CardContent>
+         </Card>
 
         {/* Achievements */}
         {challenge.achievements && challenge.achievements.length > 0 && (
