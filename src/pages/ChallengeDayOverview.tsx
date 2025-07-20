@@ -188,6 +188,7 @@ const ChallengeDayOverview = () => {
   };
 
   const handleExerciseClick = (exercise: Exercise) => {
+    console.log('Exercise clicked:', exercise.figure.name, exercise.figure.id);
     setSelectedExercise(exercise);
     navigate(`/exercise/${exercise.figure.id}`);
   };
