@@ -59,7 +59,7 @@ const Challenges = () => {
       if (user) {
         const {
           data: participationData
-        } = await supabase.from('challenge_participants').select('challenge_id, status').eq('user_id', user.id);
+        } = await supabase.from('challenge_participants').select('challenge_id, status, user_started_at').eq('user_id', user.id);
         userParticipation = participationData?.reduce((acc, p) => {
           acc[p.challenge_id] = p.status;
           return acc;

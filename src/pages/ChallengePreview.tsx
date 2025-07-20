@@ -28,7 +28,7 @@ interface Challenge {
   }>;
   training_days?: Array<{
     id: string;
-    day_date: string;
+    day_number: number;
     title: string;
     description: string;
     is_rest_day?: boolean;
@@ -56,6 +56,7 @@ const ChallengePreview = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
+  const [userParticipant, setUserParticipant] = useState<any>(null);
   const [completedDays, setCompletedDays] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -81,7 +82,7 @@ const ChallengePreview = () => {
             )
           ),
           challenge_training_days (
-            id, day_date, title, description, is_rest_day,
+            id, day_number, title, description, is_rest_day,
             training_day_exercises (
               id, sets, reps, hold_time_seconds, rest_time_seconds,
               figure:figures (
@@ -104,7 +105,7 @@ const ChallengePreview = () => {
         ...challengeData,
         achievements: challengeData.challenge_achievements?.map((ca: any) => ca.achievement) || [],
         training_days: challengeData.challenge_training_days?.sort((a: any, b: any) => 
-          new Date(a.day_date).getTime() - new Date(b.day_date).getTime()
+          a.day_number - b.day_number
         ) || [],
         participants_count: participantsCount || 0
       });
@@ -126,13 +127,14 @@ const ChallengePreview = () => {
     try {
       const { data, error } = await supabase
         .from('challenge_participants')
-        .select('id')
+        .select('*')
         .eq('challenge_id', challengeId)
         .eq('user_id', user.id)
         .single();
 
       if (!error && data) {
         setIsParticipant(true);
+        setUserParticipant(data);
       }
     } catch (error) {
       // User is not a participant
@@ -185,17 +187,21 @@ const ChallengePreview = () => {
 
     setIsJoining(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('challenge_participants')
         .insert({
           challenge_id: challengeId,
           user_id: user.id,
-          status: 'active'
-        });
+          status: 'active',
+          user_started_at: new Date().toISOString()
+        })
+        .select()
+        .single();
 
       if (error) throw error;
 
       setIsParticipant(true);
+      setUserParticipant(data);
       setChallenge(prev => prev ? {
         ...prev,
         participants_count: (prev.participants_count || 0) + 1
@@ -243,21 +249,24 @@ const ChallengePreview = () => {
   };
 
   const generateCalendarDays = () => {
-    if (!challenge?.training_days) return [];
+    if (!challenge?.training_days || !userParticipant?.user_started_at) return [];
     
+    const startDate = parseISO(userParticipant.user_started_at);
     const days = [];
     
-    challenge.training_days.forEach((trainingDay, index) => {
-      const dayDate = parseISO(trainingDay.day_date);
-      
-      days.push({
-        date: dayDate,
-        day: index + 1,
-        trainingDay,
-        isToday: format(dayDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'),
-        isPast: dayDate < new Date()
+    challenge.training_days
+      .sort((a, b) => a.day_number - b.day_number)
+      .forEach((trainingDay) => {
+        const dayDate = addDays(startDate, trainingDay.day_number - 1);
+        
+        days.push({
+          date: dayDate,
+          day: trainingDay.day_number,
+          trainingDay,
+          isToday: format(dayDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd'),
+          isPast: dayDate < new Date()
+        });
       });
-    });
     
     return days;
   };
@@ -456,11 +465,14 @@ const ChallengePreview = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             {challenge.training_days?.map((trainingDay, index) => {
-              const dayDate = addDays(parseISO(challenge.start_date), index);
+              // For participants, calculate days based on their start date
+              const dayDate = userParticipant?.user_started_at 
+                ? addDays(parseISO(userParticipant.user_started_at), trainingDay.day_number - 1)
+                : addDays(parseISO(challenge.start_date), index);
               const isCompleted = completedDays.has(trainingDay.id);
               const isToday = format(dayDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               const isPast = dayDate < new Date();
-              const isAccessible = isParticipant && (index === 0 || completedDays.has(challenge.training_days[index - 1]?.id));
+              const isAccessible = isParticipant && (trainingDay.day_number === 1 || completedDays.has(challenge.training_days[index - 1]?.id));
               const estimatedTime = calculateDayEstimatedTime(trainingDay);
               
               return (

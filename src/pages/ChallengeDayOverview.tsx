@@ -32,7 +32,7 @@ interface Exercise {
 }
 interface TrainingDay {
   id: string;
-  day_date: string;
+  day_number: number;
   title: string;
   description: string;
   exercises: Exercise[];
@@ -103,11 +103,11 @@ const ChallengeDayOverview = () => {
       const {
         data: allDays,
         error: allDaysError
-      } = await supabase.from('challenge_training_days').select('id, day_date').eq('challenge_id', challengeId).order('day_date');
+      } = await supabase.from('challenge_training_days').select('id, day_number').eq('challenge_id', challengeId).order('day_number');
       if (allDaysError) throw allDaysError;
       setTotalDays(allDays?.length || 0);
-      const currentDayIndex = allDays?.findIndex(day => day.id === dayId) || 0;
-      setDayNumber(currentDayIndex + 1);
+      const currentDay = allDays?.find(day => day.id === dayId);
+      setDayNumber(currentDay?.day_number || 1);
 
       // Fetch specific training day with exercises
       const {

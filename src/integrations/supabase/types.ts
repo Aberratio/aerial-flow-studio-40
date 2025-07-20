@@ -144,6 +144,7 @@ export type Database = {
           joined_at: string | null
           status: string | null
           user_id: string
+          user_started_at: string | null
         }
         Insert: {
           challenge_id: string
@@ -152,6 +153,7 @@ export type Database = {
           joined_at?: string | null
           status?: string | null
           user_id: string
+          user_started_at?: string | null
         }
         Update: {
           challenge_id?: string
@@ -160,6 +162,7 @@ export type Database = {
           joined_at?: string | null
           status?: string | null
           user_id?: string
+          user_started_at?: string | null
         }
         Relationships: [
           {
@@ -182,7 +185,7 @@ export type Database = {
         Row: {
           challenge_id: string
           created_at: string
-          day_date: string
+          day_number: number
           description: string | null
           id: string
           is_rest_day: boolean | null
@@ -191,7 +194,7 @@ export type Database = {
         Insert: {
           challenge_id: string
           created_at?: string
-          day_date: string
+          day_number?: number
           description?: string | null
           id?: string
           is_rest_day?: boolean | null
@@ -200,7 +203,7 @@ export type Database = {
         Update: {
           challenge_id?: string
           created_at?: string
-          day_date?: string
+          day_number?: number
           description?: string | null
           id?: string
           is_rest_day?: boolean | null

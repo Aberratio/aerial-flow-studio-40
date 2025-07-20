@@ -33,7 +33,7 @@ interface Challenge {
   }>;
   training_days?: Array<{
     id: string;
-    day_date: string;
+    day_number: number;
     title: string;
     description: string;
     is_rest_day?: boolean;
@@ -92,7 +92,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             )
           ),
           challenge_training_days (
-            id, day_date, title, description, is_rest_day,
+            id, day_number, title, description, is_rest_day,
             training_day_exercises (
               id, sets, reps, hold_time_seconds,
               figure:figures (
@@ -194,11 +194,13 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
       if (progressError) throw progressError;
 
-      // Reset participant status to active
+      // Reset participant status to active with new start time
       const { error: participantError } = await supabase
         .from('challenge_participants')
         .update({ 
           status: 'active',
+          completed: false,
+          user_started_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         })
         .eq('challenge_id', challenge.id)
