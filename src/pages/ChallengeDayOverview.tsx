@@ -35,6 +35,7 @@ interface TrainingDay {
   day_number: number;
   title: string;
   description: string;
+  is_rest_day?: boolean;
   exercises: Exercise[];
 }
 interface Challenge {
@@ -103,9 +104,10 @@ const ChallengeDayOverview = () => {
       const {
         data: allDays,
         error: allDaysError
-      } = await supabase.from('challenge_training_days').select('id, day_number').eq('challenge_id', challengeId).order('day_number');
+      } = await supabase.from('challenge_training_days').select('id, day_number, is_rest_day').eq('challenge_id', challengeId).order('day_number');
       if (allDaysError) throw allDaysError;
       setTotalDays(allDays?.length || 0);
+      setAllDays(allDays || []);
       const currentDay = allDays?.find(day => day.id === dayId);
       setDayNumber(currentDay?.day_number || 1);
 
@@ -299,14 +301,16 @@ const ChallengeDayOverview = () => {
     
     setShowTimer(false);
   };
+  const [allDays, setAllDays] = useState<any[]>([]);
+
   return <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center">
-            <Button variant="ghost" onClick={() => navigate('/challenges')} className="mr-4 text-white hover:bg-white/10">
+            <Button variant="ghost" onClick={() => navigate(`/challenges/${challengeId}`)} className="mr-4 text-white hover:bg-white/10">
               <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Challenges
+              Back to Challenge
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-white">Day {dayNumber}</h1>
@@ -332,6 +336,8 @@ const ChallengeDayOverview = () => {
                 const dayNum = i + 1;
                 const isCurrentDay = dayNum === dayNumber;
                 const isPastDay = dayNum < dayNumber;
+                const dayInfo = allDays?.find(d => d.day_number === dayNum);
+                const isRestDay = dayInfo?.is_rest_day;
                 
                 return (
                   <div key={i} className="flex items-center">
@@ -342,7 +348,13 @@ const ChallengeDayOverview = () => {
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                           : 'bg-white/10 text-white/50 border border-white/20'
                     }`}>
-                      {isPastDay ? <CheckCircle className="w-4 h-4" /> : dayNum}
+                      {isPastDay ? (
+                        <CheckCircle className="w-4 h-4" />
+                      ) : isRestDay ? (
+                        <span className="text-sm">🌿</span>
+                      ) : (
+                        dayNum
+                      )}
                     </div>
                     {i < totalDays - 1 && (
                       <div className={`w-4 h-0.5 ${
@@ -410,7 +422,41 @@ const ChallengeDayOverview = () => {
           </CardContent>
         </Card>
 
-        {/* Exercises */}
+        {/* Exercises or Rest Day Content */}
+        {trainingDay.is_rest_day ? (
+          <Card className="glass-effect border-white/10 mb-6">
+            <CardContent className="p-8 text-center">
+              <div className="space-y-6">
+                <div className="w-24 h-24 mx-auto bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-full flex items-center justify-center">
+                  <span className="text-4xl">🌿</span>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-2">Rest Day</h3>
+                  <p className="text-muted-foreground text-lg mb-4">
+                    Recovery is just as important as training
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <span className="text-2xl mb-2 block">💤</span>
+                    <h4 className="text-white font-medium">Rest</h4>
+                    <p className="text-sm text-muted-foreground">Get quality sleep</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <span className="text-2xl mb-2 block">🥗</span>
+                    <h4 className="text-white font-medium">Nutrition</h4>
+                    <p className="text-sm text-muted-foreground">Eat nutrient-rich foods</p>
+                  </div>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <span className="text-2xl mb-2 block">🧘</span>
+                    <h4 className="text-white font-medium">Mindfulness</h4>
+                    <p className="text-sm text-muted-foreground">Practice meditation</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
         <Card className="glass-effect border-white/10 mb-6">
           <CardHeader>
             <CardTitle className="text-white">Exercises</CardTitle>
@@ -484,15 +530,70 @@ const ChallengeDayOverview = () => {
             </div>
           </CardContent>
         </Card>
+        )}
 
         {/* Action Buttons */}
         <div className="flex space-x-3">
-          <Button onClick={handleStartDay} disabled={trainingDay.exercises.length === 0} className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 disabled:opacity-50">
-            <Play className="w-4 h-4 mr-2" />
-            Start Day {dayNumber}
-          </Button>
+          {!trainingDay.is_rest_day ? (
+            <Button onClick={handleStartDay} disabled={trainingDay.exercises.length === 0} className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 disabled:opacity-50">
+              <Play className="w-4 h-4 mr-2" />
+              Start Day {dayNumber}
+            </Button>
+          ) : (
+            <Button onClick={async () => {
+              if (!user) return;
+              try {
+                // Mark rest day as completed
+                const { error: progressError } = await supabase
+                  .from('challenge_day_progress')
+                  .upsert({
+                    user_id: user.id,
+                    challenge_id: challengeId!,
+                    training_day_id: dayId!,
+                    exercises_completed: 0,
+                    total_exercises: 0,
+                    completed_at: new Date().toISOString()
+                  });
+
+                if (progressError) throw progressError;
+
+                // Award points for rest day completion
+                const { error: activityError } = await supabase
+                  .rpc('create_activity_with_points', {
+                    user_id: user.id,
+                    activity_type: 'challenge_day_completed',
+                    activity_data: {
+                      challenge_id: challengeId,
+                      training_day_id: dayId,
+                      exercises_completed: 0
+                    },
+                    points: 10 // Award 10 points for completing a rest day
+                  });
+
+                if (activityError) console.error('Error creating activity:', activityError);
+
+                toast({
+                  title: "Rest Day Complete!",
+                  description: "Great job taking time to recover! You earned 10 points."
+                });
+
+                // Refresh to update progress
+                window.location.reload();
+              } catch (error) {
+                console.error('Error completing rest day:', error);
+                toast({
+                  title: "Error",
+                  description: "Failed to mark rest day as complete. Please try again.",
+                  variant: "destructive"
+                });
+              }
+            }} className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Complete Rest Day
+            </Button>
+          )}
           
-          <Button variant="outline" onClick={() => navigate('/challenges')} className="border-white/20 text-white hover:bg-white/10">
+          <Button variant="outline" onClick={() => navigate(`/challenges/${challengeId}`)} className="border-white/20 text-white hover:bg-white/10">
             Back to Challenge
           </Button>
         </div>
