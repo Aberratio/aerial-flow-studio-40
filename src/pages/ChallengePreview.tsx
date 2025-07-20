@@ -341,20 +341,42 @@ const ChallengePreview = () => {
 
     const startDate = parseISO(userParticipant.user_started_at);
     const days = [];
+    let currentCalendarDay = 0;
 
     challenge.training_days
       .sort((a, b) => a.day_number - b.day_number)
       .forEach((trainingDay) => {
-        const dayDate = addDays(startDate, trainingDay.day_number - 1);
-
+        const originalDayDate = addDays(startDate, currentCalendarDay);
+        
+        // Add the original training day
         days.push({
-          date: dayDate,
+          date: originalDayDate,
           day: trainingDay.day_number,
           trainingDay,
           isToday:
-            format(dayDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd"),
-          isPast: dayDate < new Date(),
+            format(originalDayDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd"),
+          isPast: originalDayDate < new Date(),
+          isFailedRepetition: false,
         });
+        
+        currentCalendarDay++;
+
+        // If this day is failed and not completed, add repetition days
+        if (failedDays.has(trainingDay.id) && !completedDays.has(trainingDay.id)) {
+          const repetitionDate = addDays(startDate, currentCalendarDay);
+          
+          days.push({
+            date: repetitionDate,
+            day: trainingDay.day_number,
+            trainingDay,
+            isToday:
+              format(repetitionDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd"),
+            isPast: repetitionDate < new Date(),
+            isFailedRepetition: true,
+          });
+          
+          currentCalendarDay++;
+        }
       });
 
     return days;
@@ -414,28 +436,27 @@ const ChallengePreview = () => {
   const getCalendarDayInfo = (date: Date) => {
     if (!challenge?.training_days || !userParticipant?.user_started_at) return null;
 
-    const startDate = parseISO(userParticipant.user_started_at);
+    // Check the generated calendar days instead of just training days
+    const calendarDays = generateCalendarDays();
+    const dayInfo = calendarDays.find(day => isSameDay(day.date, date));
     
-    // Find the training day that matches this date
-    for (const trainingDay of challenge.training_days) {
-      const dayDate = addDays(startDate, trainingDay.day_number - 1);
-      if (isSameDay(date, dayDate)) {
-        return {
-          trainingDay,
-          isCompleted: completedDays.has(trainingDay.id),
-          isFailed: failedDays.has(trainingDay.id),
-          isToday: isSameDay(date, new Date()),
-          isPast: isBefore(date, new Date()),
-          isAccessible: userParticipant && (
-            trainingDay.day_number === 1 ||
-            (challenge.training_days && 
-             challenge.training_days.find(td => td.day_number === trainingDay.day_number - 1) &&
-             completedDays.has(challenge.training_days.find(td => td.day_number === trainingDay.day_number - 1)!.id)) ||
-            completedDays.has(trainingDay.id) ||
-            failedDays.has(trainingDay.id) // Failed days are also accessible for retry
-          )
-        };
-      }
+    if (dayInfo) {
+      return {
+        trainingDay: dayInfo.trainingDay,
+        isCompleted: completedDays.has(dayInfo.trainingDay.id),
+        isFailed: failedDays.has(dayInfo.trainingDay.id),
+        isToday: isSameDay(date, new Date()),
+        isPast: isBefore(date, new Date()),
+        isFailedRepetition: dayInfo.isFailedRepetition,
+        isAccessible: userParticipant && (
+          dayInfo.trainingDay.day_number === 1 ||
+          (challenge.training_days && 
+           challenge.training_days.find(td => td.day_number === dayInfo.trainingDay.day_number - 1) &&
+           completedDays.has(challenge.training_days.find(td => td.day_number === dayInfo.trainingDay.day_number - 1)!.id)) ||
+          completedDays.has(dayInfo.trainingDay.id) ||
+          failedDays.has(dayInfo.trainingDay.id) // Failed days are also accessible for retry
+        )
+      };
     }
     return null;
   };

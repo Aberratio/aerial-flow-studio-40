@@ -412,6 +412,7 @@ const ChallengeDayOverview = () => {
             training_day_id: dayId,
             exercises_completed: trainingDay!.exercises.length,
           },
+          target_user_id: null,
           points: 25, // Award 25 points for completing a challenge day
         }
       );
@@ -980,7 +981,7 @@ const ChallengeDayOverview = () => {
 
         {/* Start Date Picker Modal */}
         {showStartDatePicker && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
             <Card className="glass-effect border-white/10 max-w-md w-full">
               <CardHeader>
                 <CardTitle className="text-white flex items-center">
