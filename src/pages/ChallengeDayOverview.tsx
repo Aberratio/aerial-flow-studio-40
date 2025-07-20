@@ -152,13 +152,14 @@ const ChallengeDayOverview = () => {
           .eq("user_id", user.id)
           .eq("challenge_id", challengeId)
           .eq("training_day_id", dayId)
-          .single();
+          .maybeSingle();
 
         if (!progressError && progressData) {
           setDayProgress(progressData);
           
-          // If day is completed or failed, mark it but don't redirect
-          if (progressData.status === 'completed' || progressData.status === 'failed') {
+          // Only mark as completed if it's actually completed, not failed
+          // Failed days should be treated as fresh attempts
+          if (progressData.status === 'completed') {
             setIsDayCompleted(true);
           }
         }
