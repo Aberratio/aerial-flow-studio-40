@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, Trophy, Users, Clock, Play, ChevronLeft, CalendarDays, Target } from 'lucide-react';
+import { Calendar, Trophy, Users, Clock, Play, ChevronLeft, CalendarDays, Target, RotateCcw, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -58,6 +59,7 @@ const ChallengePreview = () => {
   const [isParticipant, setIsParticipant] = useState(false);
   const [userParticipant, setUserParticipant] = useState<any>(null);
   const [completedDays, setCompletedDays] = useState<Set<string>>(new Set());
+  const [isResettingProgress, setIsResettingProgress] = useState(false);
 
   useEffect(() => {
     if (challengeId) {
@@ -271,6 +273,56 @@ const ChallengePreview = () => {
     return days;
   };
 
+  const resetChallengeProgress = async () => {
+    if (!challengeId || !user?.id) return;
+
+    setIsResettingProgress(true);
+    try {
+      // Delete all progress for this challenge
+      const { error: progressError } = await supabase
+        .from('challenge_day_progress')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('challenge_id', challengeId);
+
+      if (progressError) throw progressError;
+
+      // Reset participant status to active with new start time
+      const { error: participantError } = await supabase
+        .from('challenge_participants')
+        .update({
+          status: 'active',
+          user_started_at: new Date().toISOString(),
+          completed: false
+        })
+        .eq('challenge_id', challengeId)
+        .eq('user_id', user.id);
+
+      if (participantError) throw participantError;
+
+      // Clear local state
+      setCompletedDays(new Set());
+      
+      // Reload data
+      await checkParticipation();
+      await loadProgress();
+
+      toast({
+        title: "Progress Reset",
+        description: "Your challenge progress has been reset successfully!"
+      });
+    } catch (error) {
+      console.error('Error resetting progress:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset challenge progress. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsResettingProgress(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
@@ -336,24 +388,64 @@ const ChallengePreview = () => {
                 {challenge.description}
               </p>
               
-              {/* Action Button */}
-              <div className="flex gap-4">
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3">
                 {!isParticipant ? (
                   <Button 
                     onClick={joinChallenge}
                     disabled={isJoining}
-                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white w-full sm:w-auto"
+                    className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white w-full sm:flex-1"
                   >
                     {isJoining ? 'Joining...' : 'Join Challenge'}
                   </Button>
                 ) : (
-                  <Button 
-                    onClick={startFirstDay}
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white w-full sm:w-auto"
-                  >
-                    <Play className="w-4 h-4 mr-2" />
-                    Start Training
-                  </Button>
+                  <>
+                    <Button 
+                      onClick={startFirstDay}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white w-full sm:flex-1"
+                    >
+                      <Play className="w-4 h-4 mr-2" />
+                      Start Training
+                    </Button>
+                    
+                    {/* Reset Progress Button */}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          className="border-red-500/30 text-red-400 hover:bg-red-500/10 hover:border-red-500/50"
+                        >
+                          <RotateCcw className="w-4 h-4 mr-2" />
+                          Reset Progress
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="glass-effect border-white/10">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-white flex items-center gap-2">
+                            <AlertTriangle className="w-5 h-5 text-red-400" />
+                            Reset Challenge Progress
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-muted-foreground">
+                            This action will permanently delete all your progress for this challenge. 
+                            You will start from day 1 again and lose all completed day records.
+                            This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="border-white/20 text-white hover:bg-white/10">
+                            Cancel
+                          </AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={resetChallengeProgress}
+                            disabled={isResettingProgress}
+                            className="bg-red-600 hover:bg-red-700 text-white"
+                          >
+                            {isResettingProgress ? 'Resetting...' : 'Reset Progress'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
                 )}
               </div>
             </div>
@@ -472,7 +564,11 @@ const ChallengePreview = () => {
               const isCompleted = completedDays.has(trainingDay.id);
               const isToday = format(dayDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
               const isPast = dayDate < new Date();
-              const isAccessible = isParticipant && (trainingDay.day_number === 1 || completedDays.has(challenge.training_days[index - 1]?.id));
+              const isAccessible = isParticipant && (
+                trainingDay.day_number === 1 || 
+                (challenge.training_days && challenge.training_days[index - 1] && completedDays.has(challenge.training_days[index - 1].id)) ||
+                completedDays.has(trainingDay.id)
+              );
               const estimatedTime = calculateDayEstimatedTime(trainingDay);
               
               return (
