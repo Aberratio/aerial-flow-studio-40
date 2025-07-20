@@ -183,7 +183,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl glass-effect border-white/10 text-white">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="text-2xl gradient-text">{challenge.title}</DialogTitle>

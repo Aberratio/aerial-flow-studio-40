@@ -60,6 +60,7 @@ const ChallengeDayOverview = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [participationStatus, setParticipationStatus] = useState<string>('active');
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
   const { toast } = useToast();
@@ -184,6 +185,11 @@ const ChallengeDayOverview = () => {
     if (!trainingDay || trainingDay.exercises.length === 0) return;
     
     setIsExerciseModalOpen(true);
+  };
+
+  const handleExerciseClick = (exercise: Exercise) => {
+    setSelectedExercise(exercise);
+    navigate(`/exercise/${exercise.figure.id}`);
   };
 
   const canEditChallenge = () => {
@@ -364,7 +370,8 @@ const ChallengeDayOverview = () => {
                 trainingDay.exercises.map((exercise, index) => (
                   <div 
                     key={exercise.id}
-                    className="p-4 rounded-lg border bg-white/5 border-white/10"
+                    className="p-4 rounded-lg border bg-white/5 border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
+                    onClick={() => handleExerciseClick(exercise)}
                   >
                     <div className="flex items-start space-x-4">
                       <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">

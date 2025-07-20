@@ -117,6 +117,7 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white">
+        <div className="max-h-[85vh] overflow-y-auto pr-2">
         <DialogHeader>
           <DialogTitle className="text-2xl gradient-text">Day {dayNumber} Exercises</DialogTitle>
         </DialogHeader>
@@ -289,6 +290,7 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
               {isLoading ? 'Saving...' : 'Finish Day'}
             </Button>
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>
