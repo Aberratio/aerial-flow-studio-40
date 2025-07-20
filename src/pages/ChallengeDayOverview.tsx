@@ -382,12 +382,13 @@ const ChallengeDayOverview = () => {
         total_exercises: trainingDay!.exercises.length,
         changed_status_at: new Date().toISOString(),
         status: 'completed',
+        attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
       };
 
-      // Save day progress
+      // Always create a new entry for each attempt
       const { error: progressError } = await supabase
         .from("challenge_day_progress")
-        .upsert(completionData);
+        .insert(completionData);
 
       if (progressError) throw progressError;
 
@@ -813,7 +814,7 @@ const ChallengeDayOverview = () => {
                       // Mark rest day as completed
                       const { error: progressError } = await supabase
                         .from("challenge_day_progress")
-                        .upsert({
+                        .insert({
                           user_id: user.id,
                           challenge_id: challengeId!,
                           training_day_id: dayId!,
@@ -821,6 +822,7 @@ const ChallengeDayOverview = () => {
                           total_exercises: 0,
                           changed_status_at: new Date().toISOString(),
                           status: 'rest',
+                          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
                         });
 
                       if (progressError) throw progressError;
@@ -888,7 +890,7 @@ const ChallengeDayOverview = () => {
                     try {
                       const { error } = await supabase
                         .from("challenge_day_progress")
-                        .upsert({
+                        .insert({
                           user_id: user.id,
                           challenge_id: challengeId!,
                           training_day_id: dayId!,
@@ -897,6 +899,7 @@ const ChallengeDayOverview = () => {
                           status: 'rest',
                           changed_status_at: new Date().toISOString(),
                           notes: 'User set additional rest day',
+                          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
                         });
 
                       if (error) throw error;
@@ -929,7 +932,7 @@ const ChallengeDayOverview = () => {
                     try {
                       const { error } = await supabase
                         .from("challenge_day_progress")
-                        .upsert({
+                        .insert({
                           user_id: user.id,
                           challenge_id: challengeId!,
                           training_day_id: dayId!,
@@ -938,6 +941,7 @@ const ChallengeDayOverview = () => {
                           status: 'failed',
                           changed_status_at: new Date().toISOString(),
                           notes: 'User marked day as failed - needs retry',
+                          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
                         });
 
                       if (error) throw error;

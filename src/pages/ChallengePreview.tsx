@@ -181,17 +181,28 @@ const ChallengePreview = () => {
     if (!challengeId || !user?.id) return;
 
     try {
-      // Load actual progress data from database
+      // Load actual progress data from database, ordered by attempt_number to get latest attempts
       const { data: progressData, error: progressError } = await supabase
         .from("challenge_day_progress")
-        .select("training_day_id, exercises_completed, total_exercises, status")
+        .select("training_day_id, exercises_completed, total_exercises, status, attempt_number, created_at")
         .eq("user_id", user.id)
-        .eq("challenge_id", challengeId);
+        .eq("challenge_id", challengeId)
+        .order("created_at", { ascending: false });
 
       if (!progressError && progressData) {
         const completed = new Set<string>();
         const failed = new Set<string>();
+        
+        // Create a map to store only the latest attempt for each training day
+        const latestAttempts = new Map();
         progressData.forEach((progress) => {
+          if (!latestAttempts.has(progress.training_day_id)) {
+            latestAttempts.set(progress.training_day_id, progress);
+          }
+        });
+
+        // Process only the latest attempts
+        latestAttempts.forEach((progress) => {
           // Mark day as completed if status is completed or rest
           if (
             progress.status === 'completed' || 
@@ -204,6 +215,7 @@ const ChallengePreview = () => {
             failed.add(progress.training_day_id);
           }
         });
+        
         setCompletedDays(completed);
         setFailedDays(failed);
       }
