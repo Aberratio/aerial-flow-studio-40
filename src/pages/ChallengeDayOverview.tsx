@@ -59,6 +59,8 @@ const ChallengeDayOverview = () => {
   const [trainingDay, setTrainingDay] = useState<TrainingDay | null>(null);
   const [dayNumber, setDayNumber] = useState<number>(0);
   const [totalDays, setTotalDays] = useState<number>(0);
+  const [allTrainingDays, setAllTrainingDays] = useState<any[]>([]);
+  const [completedDays, setCompletedDays] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [participationStatus, setParticipationStatus] = useState<string>('active');
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
@@ -105,15 +107,33 @@ const ChallengeDayOverview = () => {
       // Fetch all training days for this challenge to determine day number
       const { data: allDays, error: allDaysError } = await supabase
         .from('challenge_training_days')
-        .select('id, day_date')
+        .select(`
+          id, 
+          day_date, 
+          title, 
+          is_rest_day,
+          training_day_exercises (
+            id,
+            figure:figures (name)
+          )
+        `)
         .eq('challenge_id', challengeId)
         .order('day_date');
 
       if (allDaysError) throw allDaysError;
       
+      setAllTrainingDays(allDays || []);
       setTotalDays(allDays?.length || 0);
       const currentDayIndex = allDays?.findIndex(day => day.id === dayId) || 0;
       setDayNumber(currentDayIndex + 1);
+
+      // Load progress for all days
+      if (user) {
+        // For now, simulate some progress - this would be replaced with actual progress tracking
+        const completed = new Set<string>();
+        // You can implement actual progress loading here based on user completion data
+        setCompletedDays(completed);
+      }
 
       // Fetch specific training day with exercises
       const { data: dayData, error: dayError } = await supabase
@@ -309,6 +329,128 @@ const ChallengeDayOverview = () => {
               Edit Challenge
             </Button>
           )}
+        </div>
+
+        {/* Challenge Timeline */}
+        <div className="mb-6">
+          <div className="flex flex-col space-y-4">
+            {/* Timeline for larger screens */}
+            <div className="hidden md:block">
+              <div className="flex items-center space-x-2 overflow-x-auto pb-2">
+                {allTrainingDays.map((day, index) => {
+                  const isCurrentDay = day.id === dayId;
+                  const isCompleted = completedDays.has(day.id);
+                  const isPast = index < dayNumber - 1;
+                  const isAccessible = index <= dayNumber - 1;
+                  
+                  return (
+                    <div key={day.id} className="flex items-center flex-shrink-0">
+                      <div 
+                        className={`
+                          relative w-10 h-10 rounded-full flex items-center justify-center cursor-pointer transition-all
+                          ${isCurrentDay 
+                            ? 'bg-purple-500 text-white ring-4 ring-purple-500/30' 
+                            : isCompleted 
+                              ? 'bg-green-500 text-white' 
+                              : isAccessible
+                                ? 'bg-white/20 text-white border-2 border-white/40 hover:bg-white/30'
+                                : 'bg-gray-500/20 text-gray-400 border-2 border-gray-500/20'
+                          }
+                        `}
+                        onClick={() => isAccessible && navigate(`/challenge/${challengeId}/day/${day.id}`)}
+                      >
+                        {isCompleted ? (
+                          <CheckCircle className="w-5 h-5" />
+                        ) : day.is_rest_day ? (
+                          '🛌'
+                        ) : (
+                          index + 1
+                        )}
+                        {isCurrentDay && (
+                          <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+                        )}
+                      </div>
+                      
+                      {/* Connection line */}
+                      {index < allTrainingDays.length - 1 && (
+                        <div className={`
+                          w-8 h-0.5 mx-1
+                          ${isPast || isCompleted ? 'bg-green-400' : 'bg-gray-600'}
+                        `} />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* Day labels */}
+              <div className="flex items-center space-x-2 mt-2 overflow-x-auto">
+                {allTrainingDays.map((day, index) => (
+                  <div key={`label-${day.id}`} className="flex items-center flex-shrink-0">
+                    <div className="w-10 text-center">
+                      <div className="text-xs text-muted-foreground truncate">
+                        {day.is_rest_day ? 'Rest' : `Day ${index + 1}`}
+                      </div>
+                    </div>
+                    {index < allTrainingDays.length - 1 && <div className="w-8" />}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile timeline */}
+            <div className="md:hidden">
+              <div className="bg-white/5 rounded-lg p-4 border border-white/10">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-white font-semibold">Challenge Progress</h3>
+                  <Badge className="bg-purple-500/20 text-purple-400">
+                    {dayNumber} of {totalDays}
+                  </Badge>
+                </div>
+                
+                <div className="mb-3">
+                  <div className="flex justify-between text-sm text-muted-foreground mb-1">
+                    <span>Overall Progress</span>
+                    <span>{Math.round((completedDays.size / totalDays) * 100)}%</span>
+                  </div>
+                  <Progress value={(completedDays.size / totalDays) * 100} className="h-2" />
+                </div>
+                
+                <div className="grid grid-cols-5 gap-2">
+                  {allTrainingDays.slice(0, 10).map((day, index) => {
+                    const isCurrentDay = day.id === dayId;
+                    const isCompleted = completedDays.has(day.id);
+                    const isAccessible = index <= dayNumber - 1;
+                    
+                    return (
+                      <div
+                        key={day.id}
+                        className={`
+                          aspect-square rounded-lg flex items-center justify-center text-xs font-medium cursor-pointer transition-all
+                          ${isCurrentDay 
+                            ? 'bg-purple-500 text-white' 
+                            : isCompleted 
+                              ? 'bg-green-500 text-white' 
+                              : isAccessible
+                                ? 'bg-white/20 text-white'
+                                : 'bg-gray-500/20 text-gray-400'
+                          }
+                        `}
+                        onClick={() => isAccessible && navigate(`/challenge/${challengeId}/day/${day.id}`)}
+                      >
+                        {isCompleted ? '✓' : day.is_rest_day ? '💤' : index + 1}
+                      </div>
+                    );
+                  })}
+                  {allTrainingDays.length > 10 && (
+                    <div className="aspect-square rounded-lg flex items-center justify-center text-xs font-medium bg-white/10 text-white">
+                      +{allTrainingDays.length - 10}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Day Overview */}
