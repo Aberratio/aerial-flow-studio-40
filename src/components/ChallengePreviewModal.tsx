@@ -313,7 +313,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               Close
             </Button>
             <Button 
-              className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+              variant="prmiary"
+              className="flex-1"
               onClick={() => {
                 if (challenge.status === 'published') {
                   setIsDetailsModalOpen(true);
