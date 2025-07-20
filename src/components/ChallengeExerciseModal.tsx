@@ -59,11 +59,29 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
 
   const loadCompletedExercises = async () => {
     try {
-      // This would typically load from user progress tracking
-      // For now, we'll start with empty set
-      setCompletedExercises(new Set());
+      // Load user's progress for this specific day
+      const { data, error } = await supabase
+        .from('challenge_day_progress')
+        .select('exercises_completed, total_exercises')
+        .eq('user_id', user?.id)
+        .eq('challenge_id', challengeId)
+        .eq('training_day_id', dayId)
+        .single();
+
+      if (!error && data) {
+        // For now, we'll mark all exercises as completed if the day was completed
+        // In a more advanced implementation, you could store individual exercise completion
+        if (data.exercises_completed === data.total_exercises) {
+          const allCompleted = new Set(exercises.map(ex => ex.id));
+          setCompletedExercises(allCompleted);
+        }
+      } else {
+        // No previous progress found, start fresh
+        setCompletedExercises(new Set());
+      }
     } catch (error) {
       console.error('Error loading completed exercises:', error);
+      setCompletedExercises(new Set());
     }
   };
 
@@ -85,23 +103,66 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
     
     setIsLoading(true);
     try {
-      // Update user's challenge progress
-      const { error } = await supabase
-        .from('challenge_participants')
-        .update({ 
-          status: completionPercentage === 100 ? 'active' : 'active' // Keep as active for now
-        })
-        .eq('challenge_id', challengeId)
-        .eq('user_id', user.id);
+      // Save individual day progress
+      const { error: progressError } = await supabase
+        .from('challenge_day_progress')
+        .upsert({
+          user_id: user.id,
+          challenge_id: challengeId,
+          training_day_id: dayId,
+          exercises_completed: completedExercises.size,
+          total_exercises: exercises.length,
+          completed_at: new Date().toISOString()
+        });
 
-      if (error) throw error;
+      if (progressError) throw progressError;
+
+      // Check if day is fully completed
+      const isFullyCompleted = completionPercentage === 100;
+      
+      if (isFullyCompleted) {
+        // Update challenge participant status if day is fully completed
+        const { error: participantError } = await supabase
+          .from('challenge_participants')
+          .update({ 
+            status: 'active', // Keep as active, they can continue to next day
+            updated_at: new Date().toISOString()
+          })
+          .eq('challenge_id', challengeId)
+          .eq('user_id', user.id);
+
+        if (participantError) throw participantError;
+
+        // Create activity entry for points
+        const { error: activityError } = await supabase
+          .rpc('create_activity_with_points', {
+            user_id: user.id,
+            activity_type: 'challenge_day_completed',
+            activity_data: {
+              challenge_id: challengeId,
+              training_day_id: dayId,
+              exercises_completed: completedExercises.size
+            },
+            points: 25 // Award 25 points for completing a challenge day
+          });
+
+        if (activityError) console.error('Error creating activity:', activityError);
+      }
 
       toast({
-        title: "Day Completed!",
-        description: `You've completed ${completedExercises.size} out of ${exercises.length} exercises.`
+        title: isFullyCompleted ? "Day Completed!" : "Progress Saved!",
+        description: isFullyCompleted 
+          ? `Congratulations! You've completed all ${exercises.length} exercises and earned 25 points!`
+          : `Progress saved: ${completedExercises.size} out of ${exercises.length} exercises completed.`
       });
       
       onClose();
+      
+      // If day is completed, navigate to next day or back to challenge
+      if (isFullyCompleted) {
+        // Refresh the page to update progress display
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Error finishing day:', error);
       toast({

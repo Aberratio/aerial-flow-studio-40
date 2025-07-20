@@ -97,6 +97,45 @@ export type Database = {
           },
         ]
       }
+      challenge_day_progress: {
+        Row: {
+          challenge_id: string
+          completed_at: string
+          created_at: string
+          exercises_completed: number | null
+          id: string
+          notes: string | null
+          total_exercises: number | null
+          training_day_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          completed_at?: string
+          created_at?: string
+          exercises_completed?: number | null
+          id?: string
+          notes?: string | null
+          total_exercises?: number | null
+          training_day_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          completed_at?: string
+          created_at?: string
+          exercises_completed?: number | null
+          id?: string
+          notes?: string | null
+          total_exercises?: number | null
+          training_day_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       challenge_participants: {
         Row: {
           challenge_id: string

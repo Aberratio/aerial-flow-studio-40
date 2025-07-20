@@ -129,10 +129,22 @@ const ChallengeDayOverview = () => {
 
       // Load progress for all days
       if (user) {
-        // For now, simulate some progress - this would be replaced with actual progress tracking
-        const completed = new Set<string>();
-        // You can implement actual progress loading here based on user completion data
-        setCompletedDays(completed);
+        const { data: progressData, error: progressError } = await supabase
+          .from('challenge_day_progress')
+          .select('training_day_id, exercises_completed, total_exercises')
+          .eq('user_id', user.id)
+          .eq('challenge_id', challengeId);
+
+        if (!progressError && progressData) {
+          const completed = new Set<string>();
+          progressData.forEach(progress => {
+            // Mark day as completed if all exercises are done
+            if (progress.exercises_completed === progress.total_exercises && progress.total_exercises > 0) {
+              completed.add(progress.training_day_id);
+            }
+          });
+          setCompletedDays(completed);
+        }
       }
 
       // Fetch specific training day with exercises
@@ -291,12 +303,62 @@ const ChallengeDayOverview = () => {
     return totalMinutes > 0 ? `~${Math.ceil(totalMinutes)} minutes` : '30-45 minutes';
   };
 
-  const handleTimerComplete = () => {
+  const handleTimerComplete = async () => {
     setShowTimer(false);
-    toast({
-      title: "Workout Complete!",
-      description: "Great job completing your training session!",
-    });
+    
+    // Save progress when timer is completed
+    if (user && challengeId && dayId && trainingDay) {
+      try {
+        const { error: progressError } = await supabase
+          .from('challenge_day_progress')
+          .upsert({
+            user_id: user.id,
+            challenge_id: challengeId,
+            training_day_id: dayId,
+            exercises_completed: trainingDay.exercises.length,
+            total_exercises: trainingDay.exercises.length,
+            completed_at: new Date().toISOString()
+          });
+
+        if (progressError) throw progressError;
+
+        // Create activity entry for points
+        const { error: activityError } = await supabase
+          .rpc('create_activity_with_points', {
+            user_id: user.id,
+            activity_type: 'challenge_day_completed',
+            activity_data: {
+              challenge_id: challengeId,
+              training_day_id: dayId,
+              exercises_completed: trainingDay.exercises.length
+            },
+            points: 25 // Award 25 points for completing a challenge day
+          });
+
+        if (activityError) console.error('Error creating activity:', activityError);
+
+        toast({
+          title: "Workout Complete!",
+          description: "Great job completing your training session! You earned 25 points!",
+        });
+
+        // Refresh the page to update progress display
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } catch (error) {
+        console.error('Error saving timer completion:', error);
+        toast({
+          title: "Workout Complete!",
+          description: "Great job completing your training session!",
+        });
+      }
+    } else {
+      toast({
+        title: "Workout Complete!",
+        description: "Great job completing your training session!",
+      });
+    }
   };
 
   return (
