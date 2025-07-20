@@ -55,6 +55,7 @@ const Challenges = () => {
 
       // Get user's participation data if logged in
       let userParticipation = {};
+      let userProgress = {};
       if (user) {
         const {
           data: participationData
@@ -63,6 +64,41 @@ const Challenges = () => {
           acc[p.challenge_id] = p.status;
           return acc;
         }, {}) || {};
+
+        // Get user's progress data for challenges they're participating in
+        const participatingChallengeIds = participationData?.map(p => p.challenge_id) || [];
+        if (participatingChallengeIds.length > 0) {
+          const { data: progressData } = await supabase
+            .from('challenge_day_progress')
+            .select('challenge_id, training_day_id, exercises_completed, total_exercises')
+            .eq('user_id', user.id)
+            .in('challenge_id', participatingChallengeIds);
+
+          // Get total training days for each challenge
+          const { data: trainingDaysData } = await supabase
+            .from('challenge_training_days')
+            .select('challenge_id, id')
+            .in('challenge_id', participatingChallengeIds);
+
+          // Calculate progress percentage for each challenge
+          const challengeTrainingDays = trainingDaysData?.reduce((acc, day) => {
+            acc[day.challenge_id] = (acc[day.challenge_id] || 0) + 1;
+            return acc;
+          }, {}) || {};
+
+          const challengeCompletedDays = progressData?.reduce((acc, progress) => {
+            if (progress.exercises_completed === progress.total_exercises && progress.total_exercises > 0) {
+              acc[progress.challenge_id] = (acc[progress.challenge_id] || 0) + 1;
+            }
+            return acc;
+          }, {}) || {};
+
+          participatingChallengeIds.forEach(challengeId => {
+            const completedDays = challengeCompletedDays[challengeId] || 0;
+            const totalDays = challengeTrainingDays[challengeId] || 1;
+            userProgress[challengeId] = Math.round((completedDays / totalDays) * 100);
+          });
+        }
       }
 
       // Get participant counts for each challenge
@@ -116,8 +152,7 @@ const Challenges = () => {
           duration: calculateDuration(challenge.start_date, challenge.end_date),
           participants: participantCounts[challenge.id] || 0,
           difficulty: challenge.difficulty_level ? challenge.difficulty_level.charAt(0).toUpperCase() + challenge.difficulty_level.slice(1) : 'Intermediate',
-          progress: 0,
-          // Will be calculated based on user participation
+          userProgress: userProgress[challenge.id] || 0,
           image: challenge.image_url || 'https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=400&h=200&fit=crop',
           category: 'General',
           // Default for now
@@ -410,13 +445,15 @@ const Challenges = () => {
 
                     <CardContent className="space-y-4">
                       {/* Progress Bar (only show for in-progress challenges) */}
-                      {challenge.status === 'active' && <div className="space-y-2">
+                      {challenge.status === 'active' && challenge.userProgress !== undefined && (
+                        <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span className="text-white">Progress</span>
-                            <span className="text-muted-foreground">{challenge.progress}% complete</span>
+                            <span className="text-muted-foreground">{challenge.userProgress}% complete</span>
                           </div>
-                          <Progress value={challenge.progress} className="h-2" />
-                        </div>}
+                          <Progress value={challenge.userProgress} className="h-2" />
+                        </div>
+                      )}
 
                       {/* Challenge Details */}
                       <div className="flex items-center justify-between text-sm">
