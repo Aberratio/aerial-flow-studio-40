@@ -76,6 +76,7 @@ const EditChallenge = () => {
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [difficultyLevel, setDifficultyLevel] = useState('intermediate');
+  const [type, setType] = useState('manual');
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
   const [trainingDays, setTrainingDays] = useState<TrainingDay[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
@@ -126,6 +127,7 @@ const EditChallenge = () => {
       setStartDate(new Date(challengeData.start_date));
       setEndDate(new Date(challengeData.end_date));
       setDifficultyLevel(challengeData.difficulty_level || 'intermediate');
+      setType(challengeData.type || 'manual');
       setImageUrl(challengeData.image_url || '');
       
       // Set selected achievements
@@ -243,6 +245,7 @@ const EditChallenge = () => {
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
           difficulty_level: difficultyLevel,
+          type: type,
           image_url: uploadedImageUrl || null,
         })
         .eq('id', challengeId);
@@ -462,6 +465,29 @@ const EditChallenge = () => {
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-red-500"></div>
                       Advanced
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="type">Challenge Type</Label>
+              <Select value={type} onValueChange={setType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select challenge type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="manual">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      Manual
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="timer">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                      Timer
                     </div>
                   </SelectItem>
                 </SelectContent>

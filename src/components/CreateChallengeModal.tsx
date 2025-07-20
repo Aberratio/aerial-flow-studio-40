@@ -61,6 +61,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [difficultyLevel, setDifficultyLevel] = useState('intermediate');
+  const [type, setType] = useState('manual');
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
@@ -97,6 +98,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
     setTitle('');
     setDescription('');
     setDifficultyLevel('intermediate');
+    setType('manual');
     setStartDate(undefined);
     setEndDate(undefined);
     setSelectedAchievements([]);
@@ -166,6 +168,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
         title: title.trim(),
         description: description.trim() || null,
         difficulty_level: difficultyLevel,
+        type: type,
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
         created_by: user.id,
@@ -435,6 +438,19 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
               <option value="beginner">Beginner</option>
               <option value="intermediate">Intermediate</option>
               <option value="advanced">Advanced</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="type">Challenge Type</Label>
+            <select
+              id="type"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full p-2 rounded-md border border-input bg-background text-foreground"
+            >
+              <option value="manual">Manual</option>
+              <option value="timer">Timer</option>
             </select>
           </div>
 

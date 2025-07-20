@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import ChallengeExerciseModal from '@/components/ChallengeExerciseModal';
+import ChallengeTimer from '@/components/ChallengeTimer';
 
 interface Exercise {
   id: string;
@@ -47,6 +48,7 @@ interface Challenge {
   end_date: string;
   status: string;
   created_by: string;
+  type?: string;
 }
 
 const ChallengeDayOverview = () => {
@@ -61,6 +63,7 @@ const ChallengeDayOverview = () => {
   const [participationStatus, setParticipationStatus] = useState<string>('active');
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [showTimer, setShowTimer] = useState(false);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
   const { toast } = useToast();
@@ -184,7 +187,11 @@ const ChallengeDayOverview = () => {
   const handleStartDay = () => {
     if (!trainingDay || trainingDay.exercises.length === 0) return;
     
-    setIsExerciseModalOpen(true);
+    if (challenge?.type === 'timer') {
+      setShowTimer(true);
+    } else {
+      setIsExerciseModalOpen(true);
+    }
   };
 
   const handleExerciseClick = (exercise: Exercise) => {
@@ -262,6 +269,14 @@ const ChallengeDayOverview = () => {
     });
     
     return totalMinutes > 0 ? `~${Math.ceil(totalMinutes)} minutes` : '30-45 minutes';
+  };
+
+  const handleTimerComplete = () => {
+    setShowTimer(false);
+    toast({
+      title: "Workout Complete!",
+      description: "Great job completing your training session!",
+    });
   };
 
   return (
@@ -483,6 +498,26 @@ const ChallengeDayOverview = () => {
             Back to Challenge
           </Button>
         </div>
+
+        {/* Timer Mode */}
+        {showTimer && trainingDay && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="relative max-w-2xl w-full">
+              <Button
+                variant="ghost"
+                onClick={() => setShowTimer(false)}
+                className="absolute -top-12 right-0 text-white hover:bg-white/10"
+              >
+                ✕ Close Timer
+              </Button>
+              <ChallengeTimer 
+                exercises={trainingDay.exercises}
+                isAudioEnabled={isAudioEnabled}
+                onComplete={handleTimerComplete}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Exercise Modal */}
         {trainingDay && (
