@@ -515,7 +515,7 @@ const Challenges = () => {
             {
               label: "Completed",
               value: stats.completedChallenges.toString(),
-              icon: Calendar,
+              icon: CalendarIcon,
             },
             {
               label: "Total Participants",
@@ -731,6 +731,7 @@ const Challenges = () => {
         challenge={selectedChallenge}
         isOpen={isModalOpen}
         onClose={closeChallengeModal}
+        ctaMessage={getButtonText(selectedChallenge?.status)}
       />
 
       {/* Create Challenge Modal */}
@@ -784,9 +785,10 @@ const Challenges = () => {
                 </Popover>
                 <div className="flex space-x-2">
                   <Button
+                    variant="primary"
                     onClick={handleStartDateConfirm}
                     disabled={!selectedStartDate}
-                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    className="flex-1"
                   >
                     Confirm & Start Challenge
                   </Button>
