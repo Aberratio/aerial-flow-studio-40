@@ -134,7 +134,7 @@ const ChallengeDayOverview = () => {
 
         // Check if user has already completed or failed this specific day
         if (user) {
-          // Get the latest progress for this training day (ordered by attempt_number desc)
+          // Get the latest progress attempt for this training day
           const { data: progressData, error: progressError } = await supabase
             .from("challenge_day_progress")
             .select("*")
@@ -142,6 +142,7 @@ const ChallengeDayOverview = () => {
             .eq("challenge_id", challengeId)
             .eq("training_day_id", dayId)
             .order("attempt_number", { ascending: false })
+            .order("created_at", { ascending: false })
             .limit(1)
             .maybeSingle();
 
@@ -149,7 +150,7 @@ const ChallengeDayOverview = () => {
             setDayProgress(progressData);
 
             // Only mark as completed if the LATEST attempt is actually completed or rest
-            // Failed attempts should allow retry
+            // Failed attempts should allow retry by creating a new attempt
             if (progressData.status === "completed" || progressData.status === "rest") {
               setIsDayCompleted(true);
             }
@@ -364,6 +365,19 @@ const ChallengeDayOverview = () => {
     if (!user) return;
 
     try {
+      // Get the current attempt number for this training day
+      const { data: existingProgress } = await supabase
+        .from("challenge_day_progress")
+        .select("attempt_number")
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId!)
+        .eq("training_day_id", dayId!)
+        .order("attempt_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+
       const completionData = {
         user_id: user.id,
         challenge_id: challengeId!,
@@ -372,7 +386,7 @@ const ChallengeDayOverview = () => {
         total_exercises: trainingDay!.exercises.length,
         changed_status_at: new Date().toISOString(),
         status: "completed",
-        attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
+        attempt_number: nextAttemptNumber,
       };
 
       // Always create a new entry for each attempt
@@ -443,6 +457,19 @@ const ChallengeDayOverview = () => {
 
       if (participantError) throw participantError;
 
+      // Get the current attempt number for this training day
+      const { data: existingProgress } = await supabase
+        .from("challenge_day_progress")
+        .select("attempt_number")
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId!)
+        .eq("training_day_id", dayId!)
+        .order("attempt_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+
       // Mark rest day as completed
       const { error: progressError } = await supabase
         .from("challenge_day_progress")
@@ -454,7 +481,7 @@ const ChallengeDayOverview = () => {
           total_exercises: 0,
           changed_status_at: new Date().toISOString(),
           status: "rest",
-          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
+          attempt_number: nextAttemptNumber,
         });
 
       if (progressError) throw progressError;
@@ -488,6 +515,19 @@ const ChallengeDayOverview = () => {
 
       if (participantError) throw participantError;
 
+      // Get the current attempt number for this training day
+      const { data: existingProgress } = await supabase
+        .from("challenge_day_progress")
+        .select("attempt_number")
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId!)
+        .eq("training_day_id", dayId!)
+        .order("attempt_number", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+
       // Mark day as failed
       const { error: progressError } = await supabase
         .from("challenge_day_progress")
@@ -500,7 +540,7 @@ const ChallengeDayOverview = () => {
           status: "failed",
           changed_status_at: new Date().toISOString(),
           notes: "User marked day as failed - needs retry",
-          attempt_number: dayProgress ? dayProgress.attempt_number + 1 : 1,
+          attempt_number: nextAttemptNumber,
         });
 
       if (progressError) throw progressError;
@@ -554,12 +594,12 @@ const ChallengeDayOverview = () => {
         </div>
 
         {/* Status Info Box for Completed/Failed Days */}
-        {isDayCompleted && dayProgress && (
+        {dayProgress && (dayProgress.status === "completed" || dayProgress.status === "rest" || dayProgress.status === "failed") && (
           <Card className="glass-effect border-white/10 mb-6">
             <CardContent className="p-6">
               <div className="flex items-start space-x-4">
                 <div className="flex-shrink-0">
-                  {dayProgress.status === "completed" ? (
+                  {dayProgress.status === "completed" || dayProgress.status === "rest" ? (
                     <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
                       <CheckCircle className="w-6 h-6 text-green-400" />
                     </div>
@@ -572,7 +612,9 @@ const ChallengeDayOverview = () => {
                 <div className="flex-1">
                   <h3 className="text-white font-semibold mb-2">
                     {dayProgress.status === "completed"
-                      ? "Day Already Completed! 🎉"
+                      ? "Day Completed! 🎉"
+                      : dayProgress.status === "rest"
+                      ? "Rest Day Completed! 🌿"
                       : "Day Previously Failed"}
                   </h3>
                   <p className="text-muted-foreground mb-3">
@@ -580,12 +622,18 @@ const ChallengeDayOverview = () => {
                       ? `Great job! You completed this training day on ${new Date(
                           dayProgress.changed_status_at
                         ).toLocaleDateString()}. You're viewing this day for reference only.`
-                      : "This day was marked as failed and can be retried. You're viewing this day for reference only."}
+                      : dayProgress.status === "rest"
+                      ? `Well done! You completed this rest day on ${new Date(
+                          dayProgress.changed_status_at
+                        ).toLocaleDateString()}. Recovery is important for progress.`
+                      : "This day was marked as failed and can be retried. Start a new attempt below."}
                   </p>
                   <div className="text-sm text-muted-foreground">
                     <span className="font-medium">Status:</span>{" "}
                     {dayProgress.status === "completed"
                       ? "Completed"
+                      : dayProgress.status === "rest"
+                      ? "Rest Day Completed"
                       : "Failed"}{" "}
                     •<span className="font-medium ml-2">Date:</span>{" "}
                     {new Date(
@@ -897,6 +945,19 @@ const ChallengeDayOverview = () => {
                     if (!user) return;
 
                     try {
+                      // Get the current attempt number for this training day
+                      const { data: existingProgress } = await supabase
+                        .from("challenge_day_progress")
+                        .select("attempt_number")
+                        .eq("user_id", user.id)
+                        .eq("challenge_id", challengeId!)
+                        .eq("training_day_id", dayId!)
+                        .order("attempt_number", { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+
                       // Mark rest day as completed
                       const { error: progressError } = await supabase
                         .from("challenge_day_progress")
@@ -908,9 +969,7 @@ const ChallengeDayOverview = () => {
                           total_exercises: 0,
                           changed_status_at: new Date().toISOString(),
                           status: "rest",
-                          attempt_number: dayProgress
-                            ? dayProgress.attempt_number + 1
-                            : 1,
+                          attempt_number: nextAttemptNumber,
                         });
 
                       if (progressError) throw progressError;
@@ -979,6 +1038,19 @@ const ChallengeDayOverview = () => {
                     if (!user) return;
 
                     try {
+                      // Get the current attempt number for this training day
+                      const { data: existingProgress } = await supabase
+                        .from("challenge_day_progress")
+                        .select("attempt_number")
+                        .eq("user_id", user.id)
+                        .eq("challenge_id", challengeId!)
+                        .eq("training_day_id", dayId!)
+                        .order("attempt_number", { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+
                       const { error } = await supabase
                         .from("challenge_day_progress")
                         .insert({
@@ -990,9 +1062,7 @@ const ChallengeDayOverview = () => {
                           status: "rest",
                           changed_status_at: new Date().toISOString(),
                           notes: "User set additional rest day",
-                          attempt_number: dayProgress
-                            ? dayProgress.attempt_number + 1
-                            : 1,
+                          attempt_number: nextAttemptNumber,
                         });
 
                       if (error) throw error;
@@ -1026,6 +1096,19 @@ const ChallengeDayOverview = () => {
                     if (!user) return;
 
                     try {
+                      // Get the current attempt number for this training day
+                      const { data: existingProgress } = await supabase
+                        .from("challenge_day_progress")
+                        .select("attempt_number")
+                        .eq("user_id", user.id)
+                        .eq("challenge_id", challengeId!)
+                        .eq("training_day_id", dayId!)
+                        .order("attempt_number", { ascending: false })
+                        .limit(1)
+                        .maybeSingle();
+
+                      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+
                       const { error } = await supabase
                         .from("challenge_day_progress")
                         .insert({
@@ -1037,9 +1120,7 @@ const ChallengeDayOverview = () => {
                           status: "failed",
                           changed_status_at: new Date().toISOString(),
                           notes: "User marked day as failed - needs retry",
-                          attempt_number: dayProgress
-                            ? dayProgress.attempt_number + 1
-                            : 1,
+                          attempt_number: nextAttemptNumber,
                         });
 
                       if (error) throw error;
