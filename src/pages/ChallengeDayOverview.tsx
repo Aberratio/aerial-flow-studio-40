@@ -13,32 +13,18 @@ import {
   Pause,
   X,
   AlertTriangle,
-  Calendar as CalendarIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import ChallengeExerciseModal from "@/components/ChallengeExerciseModal";
 import ChallengeTimer from "@/components/ChallengeTimer";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format, subMonths } from "date-fns";
+
 interface Exercise {
   id: string;
   sets?: number;
@@ -358,11 +344,11 @@ const ChallengeDayOverview = () => {
       ? `~${Math.ceil(totalMinutes)} minutes`
       : "30-45 minutes";
   };
+
   const handleTimerComplete = async () => {
     if (!user) return;
 
     try {
-      // For non-first days, proceed with normal completion
       await completeDay();
     } catch (error) {
       console.error("Error handling timer complete:", error);
@@ -392,6 +378,8 @@ const ChallengeDayOverview = () => {
         .insert(completionData);
 
       if (progressError) throw progressError;
+
+      setIsDayCompleted(true);
 
       // If start date was provided, update the user's started_at date
       if (startDate) {
@@ -886,15 +874,16 @@ const ChallengeDayOverview = () => {
         )}
 
         {/* Action Buttons - Only show if day has no status */}
-        {!dayProgress && (
+        {!dayProgress && !isDayCompleted && (
           <div className="space-y-4">
             {/* Primary Action Button */}
             <div className="flex space-x-3">
               {!trainingDay.is_rest_day ? (
                 <Button
+                  variant="primary"
                   onClick={handleStartDay}
                   disabled={trainingDay.exercises.length === 0}
-                  className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 disabled:opacity-50"
+                  className="flex-1 disabled:opacity-50"
                 >
                   <Play className="w-4 h-4 mr-2" />
                   Start Day {dayNumber}

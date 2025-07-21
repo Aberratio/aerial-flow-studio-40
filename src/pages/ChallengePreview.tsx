@@ -33,7 +33,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
-import { format, parseISO, addDays, isSameDay, startOfMonth, endOfMonth, isAfter, isBefore } from "date-fns";
+import {
+  format,
+  parseISO,
+  addDays,
+  isSameDay,
+  startOfMonth,
+  endOfMonth,
+  isAfter,
+  isBefore,
+} from "date-fns";
 
 interface Challenge {
   id: string;
@@ -184,7 +193,9 @@ const ChallengePreview = () => {
       // Load actual progress data from database, ordered by attempt_number to get latest attempts
       const { data: progressData, error: progressError } = await supabase
         .from("challenge_day_progress")
-        .select("training_day_id, exercises_completed, total_exercises, status, attempt_number, created_at")
+        .select(
+          "training_day_id, exercises_completed, total_exercises, status, attempt_number, created_at"
+        )
         .eq("user_id", user.id)
         .eq("challenge_id", challengeId)
         .order("created_at", { ascending: false });
@@ -192,7 +203,7 @@ const ChallengePreview = () => {
       if (!progressError && progressData) {
         const completed = new Set<string>();
         const failed = new Set<string>();
-        
+
         // Create a map to store only the latest attempt for each training day
         const latestAttempts = new Map();
         progressData.forEach((progress) => {
@@ -205,17 +216,17 @@ const ChallengePreview = () => {
         latestAttempts.forEach((progress) => {
           // Mark day as completed if status is completed or rest
           if (
-            progress.status === 'completed' || 
-            progress.status === 'rest' ||
+            progress.status === "completed" ||
+            progress.status === "rest" ||
             (progress.exercises_completed === progress.total_exercises &&
-             progress.total_exercises > 0)
+              progress.total_exercises > 0)
           ) {
             completed.add(progress.training_day_id);
-          } else if (progress.status === 'failed') {
+          } else if (progress.status === "failed") {
             failed.add(progress.training_day_id);
           }
         });
-        
+
         setCompletedDays(completed);
         setFailedDays(failed);
       }
@@ -290,10 +301,10 @@ const ChallengePreview = () => {
     try {
       // Get the next training day (could be failed day for retry or next in sequence)
       const { data: nextDayData, error } = await supabase.rpc(
-        'get_next_training_day',
+        "get_next_training_day",
         {
           p_user_id: user.id,
-          p_challenge_id: challengeId
+          p_challenge_id: challengeId,
         }
       );
 
@@ -359,34 +370,39 @@ const ChallengePreview = () => {
       .sort((a, b) => a.day_number - b.day_number)
       .forEach((trainingDay) => {
         const originalDayDate = addDays(startDate, currentCalendarDay);
-        
+
         // Add the original training day
         days.push({
           date: originalDayDate,
           day: trainingDay.day_number,
           trainingDay,
           isToday:
-            format(originalDayDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd"),
+            format(originalDayDate, "yyyy-MM-dd") ===
+            format(new Date(), "yyyy-MM-dd"),
           isPast: originalDayDate < new Date(),
           isFailedRepetition: false,
         });
-        
+
         currentCalendarDay++;
 
         // If this day is failed and not completed, add repetition days
-        if (failedDays.has(trainingDay.id) && !completedDays.has(trainingDay.id)) {
+        if (
+          failedDays.has(trainingDay.id) &&
+          !completedDays.has(trainingDay.id)
+        ) {
           const repetitionDate = addDays(startDate, currentCalendarDay);
-          
+
           days.push({
             date: repetitionDate,
             day: trainingDay.day_number,
             trainingDay,
             isToday:
-              format(repetitionDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd"),
+              format(repetitionDate, "yyyy-MM-dd") ===
+              format(new Date(), "yyyy-MM-dd"),
             isPast: repetitionDate < new Date(),
             isFailedRepetition: true,
           });
-          
+
           currentCalendarDay++;
         }
       });
@@ -447,30 +463,41 @@ const ChallengePreview = () => {
 
   // Calendar functionality
   const getCalendarDayInfo = (date: Date) => {
-    if (!challenge?.training_days || !userParticipant?.user_started_at) return null;
+    if (!challenge?.training_days || !userParticipant?.user_started_at)
+      return null;
 
     // Check the generated calendar days instead of just training days
     const calendarDays = generateCalendarDays();
-    const dayInfo = calendarDays.find(day => isSameDay(day.date, date));
-    
+    const dayInfo = calendarDays.find((day) => isSameDay(day.date, date));
+
     if (dayInfo) {
       return {
         trainingDay: dayInfo.trainingDay,
         // For failed repetitions, reset status - show as fresh attempt
-        isCompleted: dayInfo.isFailedRepetition ? false : completedDays.has(dayInfo.trainingDay.id),
-        isFailed: dayInfo.isFailedRepetition ? false : failedDays.has(dayInfo.trainingDay.id),
+        isCompleted: dayInfo.isFailedRepetition
+          ? false
+          : completedDays.has(dayInfo.trainingDay.id),
+        isFailed: dayInfo.isFailedRepetition
+          ? false
+          : failedDays.has(dayInfo.trainingDay.id),
         isToday: isSameDay(date, new Date()),
         isPast: isBefore(date, new Date()),
         isFailedRepetition: dayInfo.isFailedRepetition,
-        isAccessible: userParticipant && (
-          dayInfo.trainingDay.day_number === 1 ||
-          (challenge.training_days && 
-           challenge.training_days.find(td => td.day_number === dayInfo.trainingDay.day_number - 1) &&
-           completedDays.has(challenge.training_days.find(td => td.day_number === dayInfo.trainingDay.day_number - 1)!.id)) ||
-          completedDays.has(dayInfo.trainingDay.id) ||
-          failedDays.has(dayInfo.trainingDay.id) || // Failed days are also accessible for retry
-          dayInfo.isFailedRepetition // Failed repetitions are always accessible
-        )
+        isAccessible:
+          userParticipant &&
+          (dayInfo.trainingDay.day_number === 1 ||
+            (challenge.training_days &&
+              challenge.training_days.find(
+                (td) => td.day_number === dayInfo.trainingDay.day_number - 1
+              ) &&
+              completedDays.has(
+                challenge.training_days.find(
+                  (td) => td.day_number === dayInfo.trainingDay.day_number - 1
+                )!.id
+              )) ||
+            completedDays.has(dayInfo.trainingDay.id) ||
+            failedDays.has(dayInfo.trainingDay.id) || // Failed days are also accessible for retry
+            dayInfo.isFailedRepetition), // Failed repetitions are always accessible
       };
     }
     return null;
@@ -489,8 +516,9 @@ const ChallengePreview = () => {
   };
 
   const getCalendarEndMonth = () => {
-    if (!challenge?.training_days || !userParticipant?.user_started_at) return new Date();
-    
+    if (!challenge?.training_days || !userParticipant?.user_started_at)
+      return new Date();
+
     const startDate = parseISO(userParticipant.user_started_at);
     const lastDay = challenge.training_days[challenge.training_days.length - 1];
     const lastDate = addDays(startDate, lastDay.day_number - 1);
@@ -536,17 +564,19 @@ const ChallengePreview = () => {
               <ChevronLeft className="w-4 h-4 mr-2" />
               Back to Challenges
             </Button>
-            
-            {canCreateChallenges && (user?.role === "admin" || challenge?.created_by === user?.id) && (
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/challenges/${challengeId}/edit`)}
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                <Edit className="w-4 h-4 mr-2" />
-                Edit Challenge
-              </Button>
-            )}
+
+            {canCreateChallenges &&
+              (user?.role === "admin" ||
+                challenge?.created_by === user?.id) && (
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/challenges/${challengeId}/edit`)}
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Challenge
+                </Button>
+              )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
@@ -597,8 +627,9 @@ const ChallengePreview = () => {
                 ) : (
                   <>
                     <Button
+                      variant="primary"
                       onClick={startTodaysChallenge}
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white w-full sm:flex-1"
+                      className="w-full sm:flex-1"
                     >
                       <Play className="w-4 h-4 mr-2" />
                       Start Today's Challenge
@@ -812,57 +843,87 @@ const ChallengePreview = () => {
                       DayContent: ({ date }) => {
                         const dayInfo = getCalendarDayInfo(date);
                         const dayNumber = date.getDate();
-                        
+
                         if (!dayInfo) {
-                          return <span className="text-muted-foreground">{dayNumber}</span>;
+                          return (
+                            <span className="text-muted-foreground">
+                              {dayNumber}
+                            </span>
+                          );
                         }
 
-                        const { trainingDay, isCompleted, isFailed, isToday, isAccessible, isFailedRepetition } = dayInfo;
-                        
+                        const {
+                          trainingDay,
+                          isCompleted,
+                          isFailed,
+                          isToday,
+                          isAccessible,
+                          isFailedRepetition,
+                        } = dayInfo;
+
                         return (
-                          <div className={`
+                          <div
+                            className={`
                             relative w-full h-full rounded-lg border-2 transition-all cursor-pointer flex flex-col p-2
-                            ${isCompleted 
-                              ? 'bg-emerald-500 border-emerald-400 text-white shadow-lg' 
-                              : isFailed 
-                              ? 'bg-red-500/30 border-red-500/50 text-red-400 hover:bg-red-500/40'
-                              : isToday 
-                              ? 'bg-purple-500 border-purple-400 text-white shadow-lg animate-pulse' 
-                              : trainingDay.is_rest_day 
-                              ? 'bg-green-500/20 border-green-500/40 text-green-400 hover:bg-green-500/30' 
-                              : isAccessible
-                              ? 'bg-blue-500/20 border-blue-500/40 text-blue-400 hover:bg-blue-500/30'
-                              : 'bg-gray-500/20 border-gray-500/30 text-gray-500 opacity-50 cursor-not-allowed'
+                            ${
+                              isCompleted
+                                ? "bg-emerald-500 border-emerald-400 text-white shadow-lg"
+                                : isFailed
+                                ? "bg-red-500/30 border-red-500/50 text-red-400 hover:bg-red-500/40"
+                                : isToday
+                                ? "bg-purple-500 border-purple-400 text-white shadow-lg animate-pulse"
+                                : trainingDay.is_rest_day
+                                ? "bg-green-500/20 border-green-500/40 text-green-400 hover:bg-green-500/30"
+                                : isAccessible
+                                ? "bg-blue-500/20 border-blue-500/40 text-blue-400 hover:bg-blue-500/30"
+                                : "bg-gray-500/20 border-gray-500/30 text-gray-500 opacity-50 cursor-not-allowed"
                             }
-                          `}>
-                            <div className="absolute top-1 left-1 text-xs font-bold">{dayNumber}</div>
+                          `}
+                          >
+                            <div className="absolute top-1 left-1 text-xs font-bold">
+                              {dayNumber}
+                            </div>
                             <div className="flex-1 flex items-center justify-center">
                               <div className="text-2xl">
-                                {isCompleted ? '✅' : isFailed ? '❌' : trainingDay.is_rest_day ? '🌴' : '💪'}
+                                {isCompleted
+                                  ? "✅"
+                                  : isFailed
+                                  ? "❌"
+                                  : trainingDay.is_rest_day
+                                  ? "🌴"
+                                  : "💪"}
                               </div>
                             </div>
                             <div className="text-xs text-center leading-tight mt-auto">
                               Day {trainingDay.day_number}
                             </div>
                             {isFailedRepetition && (
-                              <div className="absolute top-1 right-1 text-xs">🔄</div>
+                              <div className="absolute top-1 right-1 text-xs">
+                                🔄
+                              </div>
                             )}
                             {!isAccessible && !isCompleted && !isFailed && (
-                              <div className="absolute bottom-1 right-1 text-xs">🔒</div>
+                              <div className="absolute bottom-1 right-1 text-xs">
+                                🔒
+                              </div>
                             )}
                           </div>
                         );
-                      }
+                      },
                     }}
                     onDayClick={handleCalendarDayClick}
                     disabled={(date) => {
                       const dayInfo = getCalendarDayInfo(date);
-                      return !dayInfo || !dayInfo.isAccessible || isAfter(date, new Date());
+                      return (
+                        !dayInfo ||
+                        !dayInfo.isAccessible ||
+                        isAfter(date, new Date())
+                      );
                     }}
                     fromMonth={getCalendarStartMonth()}
                     toMonth={getCalendarEndMonth()}
                   />
-                  
+
                   {/* Calendar Legend */}
                   <div className="mt-4 flex flex-wrap gap-4 text-sm">
                     <div className="flex items-center gap-2">
@@ -893,9 +954,8 @@ const ChallengePreview = () => {
                 </div>
               </div>
             )}
-
-           </CardContent>
-         </Card>
+          </CardContent>
+        </Card>
 
         {/* Achievements */}
         {challenge.achievements && challenge.achievements.length > 0 && (
