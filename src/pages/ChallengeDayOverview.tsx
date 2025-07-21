@@ -132,25 +132,28 @@ const ChallengeDayOverview = () => {
       if (challengeError) throw challengeError;
       setChallenge(challengeData);
 
-      // Check if user has already completed or failed this specific day
-      if (user) {
-        const { data: progressData, error: progressError } = await supabase
-          .from("challenge_day_progress")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("challenge_id", challengeId)
-          .eq("training_day_id", dayId)
-          .maybeSingle();
+        // Check if user has already completed or failed this specific day
+        if (user) {
+          // Get the latest progress for this training day (ordered by attempt_number desc)
+          const { data: progressData, error: progressError } = await supabase
+            .from("challenge_day_progress")
+            .select("*")
+            .eq("user_id", user.id)
+            .eq("challenge_id", challengeId)
+            .eq("training_day_id", dayId)
+            .order("attempt_number", { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-        if (!progressError && progressData) {
-          setDayProgress(progressData);
+          if (!progressError && progressData) {
+            setDayProgress(progressData);
 
-          // Only mark as completed if it's actually completed, not failed
-          // Failed days should be treated as fresh attempts
-          if (progressData.status === "completed") {
-            setIsDayCompleted(true);
+            // Only mark as completed if the LATEST attempt is actually completed or rest
+            // Failed attempts should allow retry
+            if (progressData.status === "completed" || progressData.status === "rest") {
+              setIsDayCompleted(true);
+            }
           }
-        }
 
         // Fetch user's participation status
         const { data: participationData } = await supabase
@@ -873,8 +876,8 @@ const ChallengeDayOverview = () => {
           </Card>
         )}
 
-        {/* Action Buttons - Only show if day has no status */}
-        {!dayProgress && !isDayCompleted && (
+        {/* Action Buttons - Show if no progress OR if latest attempt failed */}
+        {(!dayProgress || (dayProgress && dayProgress.status === "failed")) && !isDayCompleted && (
           <div className="space-y-4">
             {/* Primary Action Button */}
             <div className="flex space-x-3">
