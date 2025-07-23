@@ -1216,7 +1216,7 @@ const ExerciseDetail = () => {
               >
                 <div
                   className={`w-2 h-2 rounded-full animate-bounce ${
-                    ['bg-yellow-400', 'bg-green-400', 'bg-purple-400', 'bg-blue-400', 'bg-pink-400'][i % 5]
+                    ['bg-purple-300', 'bg-purple-400', 'bg-purple-500', 'bg-purple-600', 'bg-purple-700'][i % 5]
                   }`}
                   style={{
                     animationDelay: `${Math.random() * 1}s`,
@@ -1227,14 +1227,22 @@ const ExerciseDetail = () => {
             ))}
             
             {/* Main congratulations content */}
-            <div className="bg-gradient-to-br from-purple-600/50 to-teal-700/50 rounded-xl p-8 text-center max-w-md mx-auto animate-scale-in shadow-2xl border border-white/20">
-              <div className="text-6xl mb-4 animate-bounce">🎉</div>
+            <div className="bg-gradient-to-br from-purple-600/90 to-purple-800/90 rounded-xl p-8 text-center max-w-md mx-auto animate-scale-in shadow-2xl border border-purple-400/30">
+              {/* Iguana Logo */}
+              <div className="w-16 h-16 mx-auto mb-4 animate-bounce">
+                <img 
+                  src="/src/assets/iguana-logo.svg" 
+                  alt="Iguana" 
+                  className="w-full h-full"
+                />
+              </div>
+              
               <h2 className="text-2xl font-bold text-white mb-2">Congratulations!</h2>
-              <p className="text-white/80 mb-4">You've completed this exercise!</p>
+              <p className="text-white/90 mb-4">You've completed this exercise!</p>
               <div className="flex justify-center space-x-2">
-                <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
+                <div className="w-2 h-2 bg-purple-300 rounded-full animate-pulse"></div>
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
               </div>
             </div>
           </div>
