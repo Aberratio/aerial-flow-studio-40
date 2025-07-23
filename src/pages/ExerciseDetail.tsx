@@ -36,6 +36,7 @@ import { ShareExerciseModal } from "@/components/ShareExerciseModal";
 import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PricingModal } from "@/components/PricingModal";
+import IguanaLogo from "@/assets/iguana-logo.svg";
 
 const ExerciseDetail = () => {
   const { exerciseId } = useParams();
@@ -1412,8 +1413,8 @@ const ExerciseDetail = () => {
               {/* Iguana Logo */}
               <div className="w-16 h-16 mx-auto mb-4 animate-bounce">
                 <img
-                  src="/src/assets/iguana-logo.svg"
-                  alt="Iguana"
+                  src={IguanaLogo}
+                  alt="IguanaFlow Logo"
                   className="w-full h-full"
                 />
               </div>
