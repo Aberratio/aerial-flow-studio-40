@@ -197,10 +197,6 @@ const ExerciseDetail = () => {
       if (status === 'completed') {
         setShowCongrats(true);
         setTimeout(() => setShowCongrats(false), 3000);
-        toast({
-          title: "🎉 Congratulations!",
-          description: "You've completed this exercise! Great job!"
-        });
       } else {
         toast({
           title: "Progress Updated",
