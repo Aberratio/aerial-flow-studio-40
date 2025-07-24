@@ -170,23 +170,10 @@ const Challenges = () => {
 
           let status;
           if (userParticipating) {
-            // User is participating - status based on their progress
             if (progress === 100) {
               status = "completed";
-            } else if (progress > 0) {
-              // Challenge is past end date but user didn't complete it
-              if (now > endDate) {
-                status = "failed";
-              } else {
-                status = "active";
-              }
             } else {
-              // User joined but hasn't started yet
-              if (now > endDate) {
-                status = "failed";
-              } else {
-                status = "active";
-              }
+              status = "active";
             }
           } else {
             status = "not-started"; // Challenge hasn't started yet
