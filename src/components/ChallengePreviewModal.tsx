@@ -224,19 +224,28 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
       if (progressError) throw progressError;
 
-      // Reset participant status to active with new start time
-      const { error: participantError } = await supabase
+      // Remove the existing challenge participant row
+      const { error: deleteParticipantError } = await supabase
         .from("challenge_participants")
-        .update({
-          status: "active",
-          completed: false,
-          user_started_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
+        .delete()
         .eq("challenge_id", challenge.id)
         .eq("user_id", user.id);
 
-      if (participantError) throw participantError;
+      if (deleteParticipantError) throw deleteParticipantError;
+
+      // Re-insert the participant to start fresh
+      const { error: insertParticipantError } = await supabase
+        .from("challenge_participants")
+        .insert({
+          user_id: user.id,
+          challenge_id: challenge.id,
+          status: "active",
+          completed: false,
+          user_started_at: new Date().toISOString(),
+          joined_at: new Date().toISOString(),
+        });
+
+      if (insertParticipantError) throw insertParticipantError;
 
       toast({
         title: "Challenge Reset!",
