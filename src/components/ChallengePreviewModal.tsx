@@ -224,28 +224,25 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
       if (progressError) throw progressError;
 
-      // Remove the existing challenge participant row
-      const { error: deleteParticipantError } = await supabase
+      // Use upsert to update the existing participant record instead of delete + insert
+      // This avoids the unique constraint violation race condition
+      const { error: upsertParticipantError } = await supabase
         .from("challenge_participants")
-        .delete()
-        .eq("challenge_id", challenge.id)
-        .eq("user_id", user.id);
+        .upsert(
+          {
+            user_id: user.id,
+            challenge_id: challenge.id,
+            status: "active",
+            completed: false,
+            user_started_at: new Date().toISOString(),
+            joined_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "challenge_id,user_id",
+          }
+        );
 
-      if (deleteParticipantError) throw deleteParticipantError;
-
-      // Re-insert the participant to start fresh
-      const { error: insertParticipantError } = await supabase
-        .from("challenge_participants")
-        .insert({
-          user_id: user.id,
-          challenge_id: challenge.id,
-          status: "active",
-          completed: false,
-          user_started_at: new Date().toISOString(),
-          joined_at: new Date().toISOString(),
-        });
-
-      if (insertParticipantError) throw insertParticipantError;
+      if (upsertParticipantError) throw upsertParticipantError;
 
       toast({
         title: "Challenge Reset!",
