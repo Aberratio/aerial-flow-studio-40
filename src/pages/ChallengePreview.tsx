@@ -323,27 +323,22 @@ const ChallengePreview = () => {
 
       if (calendarError) throw calendarError;
 
-      // Reset participant status and remove start date so user can set it again
+      // Remove the participant record entirely
       const { error: participantError } = await supabase
         .from("challenge_participants")
-        .update({
-          status: "active",
-          user_started_at: null, // Clear the start date so user can set it again
-          completed: false,
-        })
+        .delete()
         .eq("challenge_id", challengeId)
         .eq("user_id", user.id);
 
       if (participantError) throw participantError;
 
-      // Reload data
-      await checkParticipation();
-      await loadCalendar();
-
       toast({
         title: "Progress Reset",
         description: "Your challenge progress has been reset successfully!",
       });
+
+      // Navigate to challenges page
+      navigate("/challenges");
     } catch (error) {
       console.error("Error resetting progress:", error);
       toast({
