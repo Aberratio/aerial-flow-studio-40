@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Calendar as CalendarIcon,
   Trophy,
@@ -100,12 +100,18 @@ const Challenges = () => {
             return acc;
           }, {}) || {};
 
+        // Debug logging
+        console.log("User Participation Data:", {
+          userParticipation: userParticipation,
+          userProgress: userProgress,
+        });
+
         // Get user's progress data for challenges they're participating in
         const participatingChallengeIds =
           participationData?.map((p) => p.challenge_id) || [];
         if (participatingChallengeIds.length > 0) {
           const { data: progressData } = await supabase
-            .from("challenge_day_progress")
+            .from("user_challenge_calendar_days")
             .select(
               "challenge_id, training_day_id, exercises_completed, total_exercises"
             )
@@ -162,9 +168,6 @@ const Challenges = () => {
       // Transform and filter data based on user participation and active tab
       let transformedData =
         allChallenges?.map((challenge) => {
-          const now = new Date();
-          const startDate = new Date(challenge.start_date);
-          const endDate = new Date(challenge.end_date);
           const userParticipating = userParticipation[challenge.id];
           const progress = userProgress[challenge.id] || 0;
 
@@ -290,14 +293,6 @@ const Challenges = () => {
     } catch (error) {
       console.error("Error fetching stats:", error);
     }
-  };
-  const getChallengeStatus = (startDate: string, endDate: string) => {
-    const now = new Date();
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (start > now) return "not-started";
-    if (start <= now && end >= now) return "active";
-    return "completed";
   };
   const calculateDuration = (startDate: string, endDate: string) => {
     const start = new Date(startDate);
@@ -708,7 +703,8 @@ const Challenges = () => {
 
                       {/* Action Buttons */}
                       {challenge.status === "not-started" ||
-                      challenge.status === "available" ? (
+                      challenge.status === "available" ||
+                      challenge.status === "active" ? (
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             variant="outline"
@@ -725,10 +721,14 @@ const Challenges = () => {
                             className="flex-1"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleJoinChallenge(challenge.id);
+                              if (challenge.status === "active") {
+                                navigate(`/challenges/${challenge.id}`);
+                              } else {
+                                handleJoinChallenge(challenge.id);
+                              }
                             }}
                           >
-                            Join Challenge
+                            {getButtonText(challenge.status)}
                           </Button>
                         </div>
                       ) : (
