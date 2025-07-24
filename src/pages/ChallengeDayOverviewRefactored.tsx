@@ -22,7 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
-import { ChallengeExerciseModal } from "@/components/ChallengeExerciseModal";
+import ChallengeExerciseModal from "@/components/ChallengeExerciseModal";
 import { format, parseISO } from "date-fns";
 
 interface TrainingDay {
@@ -37,6 +37,7 @@ interface TrainingDay {
       id: string;
       name: string;
       difficulty_level: string;
+      category: string;
       image_url?: string;
       video_url?: string;
       instructions?: string;
@@ -116,7 +117,7 @@ const ChallengeDayOverviewRefactored = () => {
           training_day_exercises (
             *,
             figure:figures (
-              id, name, difficulty_level, image_url, video_url, instructions
+              id, name, difficulty_level, category, image_url, video_url, instructions
             )
           )
         `
@@ -588,11 +589,12 @@ const ChallengeDayOverviewRefactored = () => {
       {/* Exercise Timer Modal */}
       {showExerciseModal && trainingDay && (
         <ChallengeExerciseModal
+          isOpen={showExerciseModal}
+          onClose={() => setShowExerciseModal(false)}
           challengeId={challengeId!}
           dayId={dayId!}
+          dayNumber={trainingDay.day_number}
           exercises={trainingDay.exercises}
-          onClose={() => setShowExerciseModal(false)}
-          onComplete={handleTimerComplete}
         />
       )}
     </div>

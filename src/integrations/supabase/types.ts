@@ -1139,6 +1139,84 @@ export type Database = {
         }
         Relationships: []
       }
+      user_challenge_calendar_days: {
+        Row: {
+          attempt_number: number | null
+          calendar_date: string
+          challenge_id: string
+          completed_at: string | null
+          created_at: string
+          day_number: number
+          description: string | null
+          exercises_completed: number | null
+          id: string
+          is_rest_day: boolean | null
+          is_retry: boolean | null
+          notes: string | null
+          status: string
+          title: string | null
+          total_exercises: number | null
+          training_day_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempt_number?: number | null
+          calendar_date: string
+          challenge_id: string
+          completed_at?: string | null
+          created_at?: string
+          day_number: number
+          description?: string | null
+          exercises_completed?: number | null
+          id?: string
+          is_rest_day?: boolean | null
+          is_retry?: boolean | null
+          notes?: string | null
+          status?: string
+          title?: string | null
+          total_exercises?: number | null
+          training_day_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number | null
+          calendar_date?: string
+          challenge_id?: string
+          completed_at?: string | null
+          created_at?: string
+          day_number?: number
+          description?: string | null
+          exercises_completed?: number | null
+          id?: string
+          is_rest_day?: boolean | null
+          is_retry?: boolean | null
+          notes?: string | null
+          status?: string
+          title?: string | null
+          total_exercises?: number | null
+          training_day_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenge_calendar_days_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_challenge_calendar_days_training_day_id_fkey"
+            columns: ["training_day_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_training_days"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_follows: {
         Row: {
           created_at: string | null
@@ -1215,6 +1293,14 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
       }
+      can_access_challenge_day: {
+        Args: {
+          p_user_id: string
+          p_challenge_id: string
+          p_calendar_date: string
+        }
+        Returns: boolean
+      }
       create_activity_with_points: {
         Args: {
           user_id: string
@@ -1229,6 +1315,26 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: string[]
       }
+      generate_user_challenge_calendar: {
+        Args: {
+          p_user_id: string
+          p_challenge_id: string
+          p_start_date: string
+        }
+        Returns: undefined
+      }
+      get_next_available_challenge_day: {
+        Args: { p_user_id: string; p_challenge_id: string }
+        Returns: {
+          calendar_date: string
+          training_day_id: string
+          day_number: number
+          is_rest_day: boolean
+          is_retry: boolean
+          attempt_number: number
+          total_exercises: number
+        }[]
+      }
       get_next_training_day: {
         Args: { p_user_id: string; p_challenge_id: string }
         Returns: {
@@ -1238,6 +1344,45 @@ export type Database = {
           should_retry: boolean
           last_failed_day_id: string
         }[]
+      }
+      get_user_challenge_calendar: {
+        Args: { p_user_id: string; p_challenge_id: string }
+        Returns: {
+          calendar_date: string
+          training_day_id: string
+          day_number: number
+          title: string
+          description: string
+          is_rest_day: boolean
+          status: string
+          is_retry: boolean
+          attempt_number: number
+          exercises_completed: number
+          total_exercises: number
+          notes: string
+          completed_at: string
+          is_today: boolean
+          is_past: boolean
+          is_accessible: boolean
+        }[]
+      }
+      handle_challenge_day_status_change: {
+        Args: {
+          p_user_id: string
+          p_challenge_id: string
+          p_calendar_date: string
+          p_new_status: string
+          p_notes?: string
+        }
+        Returns: undefined
+      }
+      reset_user_challenge_progress: {
+        Args: {
+          p_user_id: string
+          p_challenge_id: string
+          p_new_start_date: string
+        }
+        Returns: undefined
       }
       update_user_login_tracking: {
         Args: { user_id: string }

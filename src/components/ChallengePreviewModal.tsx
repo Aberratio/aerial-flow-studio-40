@@ -210,44 +210,26 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     return ctaMessage;
   };
 
-  const handleRetakeChallenge = async () => {
+  const handleRetakeChallenge = async (startDate: Date) => {
     if (!user || !challenge) return;
 
     setIsRetaking(true);
     try {
-      // Delete all progress for this challenge
-      const { error: progressError } = await supabase
-        .from("challenge_day_progress")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("challenge_id", challenge.id);
+      // Use the new reset function to properly reset all challenge data
+      const { error: resetError } = await supabase.rpc(
+        "reset_user_challenge_progress",
+        {
+          p_user_id: user.id,
+          p_challenge_id: challenge.id,
+          p_new_start_date: startDate.toISOString().split("T")[0],
+        }
+      );
 
-      if (progressError) throw progressError;
-
-      // Use upsert to update the existing participant record instead of delete + insert
-      // This avoids the unique constraint violation race condition
-      const { error: upsertParticipantError } = await supabase
-        .from("challenge_participants")
-        .upsert(
-          {
-            user_id: user.id,
-            challenge_id: challenge.id,
-            status: "active",
-            completed: false,
-            user_started_at: new Date().toISOString(),
-            joined_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "challenge_id,user_id",
-          }
-        );
-
-      if (upsertParticipantError) throw upsertParticipantError;
+      if (resetError) throw resetError;
 
       toast({
         title: "Challenge Reset!",
-        description:
-          "Your progress has been reset. You can now start the challenge from the beginning.",
+        description: `Your progress has been reset. The challenge will start on ${startDate.toLocaleDateString()}.`,
       });
 
       setIsRetakeModalOpen(false);

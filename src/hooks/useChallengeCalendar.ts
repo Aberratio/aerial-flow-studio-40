@@ -10,7 +10,7 @@ export interface CalendarDay {
   title: string | null;
   description: string | null;
   is_rest_day: boolean;
-  status: "pending" | "completed" | "failed" | "rest" | "skipped";
+  status: string;
   is_retry: boolean;
   attempt_number: number;
   exercises_completed: number;
