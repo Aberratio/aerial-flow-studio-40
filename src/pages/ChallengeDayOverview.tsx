@@ -182,12 +182,21 @@ const ChallengeDayOverview = () => {
     try {
       setIsLoading(true);
 
+      console.log("dayId", dayId);
+      console.log("challengeId", challengeId);
+      console.log("user?.id", user?.id);
+      console.log("userChallengeCalendar", userChallengeCalendar);
+      console.log("userParticipant", userParticipant);
+
       // Fetch challenge details
       const { data: challengeData, error: challengeError } = await supabase
         .from("challenges")
         .select("*")
         .eq("id", challengeId)
         .single();
+
+      console.log("challengeData", challengeData);
+
       if (challengeError) throw challengeError;
       setChallenge(challengeData);
 
@@ -218,7 +227,7 @@ const ChallengeDayOverview = () => {
           )
         `
         )
-        .eq("id", userChallengeCalendar.id)
+        .eq("id", userChallengeCalendarData.training_day_id)
         .single();
       if (trainingDayError) throw trainingDayError;
 
@@ -271,7 +280,7 @@ const ChallengeDayOverview = () => {
   };
 
   useEffect(() => {
-    if (challengeId && dayId) {
+    if (challengeId && dayId && user?.id) {
       fetchChallengeAndDay();
     }
   }, [challengeId, dayId]);
