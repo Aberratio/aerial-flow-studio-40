@@ -462,8 +462,9 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               ) {
                 return (
                   <Button
+                    variant="destructive"
                     onClick={() => setIsRetakeModalOpen(true)}
-                    className="flex-1 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
+                    className="flex-1"
                   >
                     Retake Challenge
                     <ChevronRight className="ml-2 w-4 h-4" />
