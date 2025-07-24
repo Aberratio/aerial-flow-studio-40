@@ -273,13 +273,17 @@ const ChallengePreviewRefactored = () => {
       await generateCalendar(startDate);
 
       setIsParticipant(true);
+      
+      // Reload participation data
+      await checkParticipation();
+      
+      // Force reload of calendar data
+      await loadCalendar();
+
       toast({
         title: "Challenge Joined!",
         description: `You've successfully joined this challenge! Starting ${startDate.toLocaleDateString()}`,
       });
-
-      // Reload participation data
-      await checkParticipation();
     } catch (error) {
       console.error("Error joining challenge:", error);
       toast({
