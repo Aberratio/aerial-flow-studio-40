@@ -42,7 +42,7 @@ Instead of complex logic to generate calendar days on-the-fly, the new system:
 
 - **Pre-generates** all calendar days when a user joins a challenge
 - **Dynamically inserts** retry days when a user fails a day
-- **Automatically shifts** subsequent days when a rest day is inserted
+- **Automatically shifts** subsequent days when a retry or rest day is inserted
 - **Maintains clear relationships** between calendar dates and training days
 
 ### 3. **Improved Day Status Management**
@@ -50,17 +50,18 @@ Instead of complex logic to generate calendar days on-the-fly, the new system:
 The new system provides clear, atomic operations for changing day status:
 
 - **Completed**: Day is marked as done, next day is unlocked
-- **Failed**: Day is marked as failed, a retry day is automatically inserted
-- **Rest**: Day is marked as rest, subsequent training days are shifted
+- **Failed**: Day is marked as failed, a retry day is automatically inserted on the next day
+- **Rest**: Day is marked as rest, a rest day is inserted on the next day
 
-### 4. **Better Retry Logic**
+### 4. **Better Retry and Rest Logic**
 
-Failed days are now handled much more intuitively:
+Failed days and rest days are now handled much more intuitively:
 
-- When a day is marked as failed, a new calendar day is automatically inserted
-- The retry day has the same training day content but a new calendar date
-- Retry attempts are clearly tracked with incrementing attempt numbers
-- Users can see which days are retries in the UI
+- **Failed Day**: When a day is marked as failed, a new calendar day is automatically inserted on the next day
+- **Rest Day**: When a day is marked as rest, a rest day is inserted on the next day
+- **Day Shifting**: All subsequent days are shifted forward by one day to accommodate the new day
+- **Retry attempts** are clearly tracked with incrementing attempt numbers
+- **Users can see** which days are retries in the UI
 
 ## Database Functions
 
@@ -72,7 +73,7 @@ Generates the initial calendar for a user when they join a challenge.
 
 #### `handle_challenge_day_status_change(p_user_id, p_challenge_id, p_calendar_date, p_new_status, p_notes)`
 
-Handles day status changes and manages retries/rest day insertions.
+Handles day status changes and manages retries/rest day insertions with day shifting.
 
 #### `get_user_challenge_calendar(p_user_id, p_challenge_id)`
 
@@ -150,12 +151,14 @@ const handleCompleteDay = async (calendarDate: string) => {
 
 const handleFailDay = async (calendarDate: string) => {
   await changeDayStatus(calendarDate, "failed");
-  // Day is marked as failed, retry day is automatically inserted
+  // Day is marked as failed, retry day is automatically inserted on next day
+  // All subsequent days are shifted forward by one day
 };
 
 const handleRestDay = async (calendarDate: string) => {
   await changeDayStatus(calendarDate, "rest");
-  // Day is marked as rest, subsequent days are shifted
+  // Day is marked as rest, rest day is inserted on next day
+  // All subsequent days are shifted forward by one day
 };
 ```
 
@@ -193,9 +196,9 @@ Day 4 (July 8): 💪 Pending (Workout Day 3)
 ```
 Day 1 (July 5): ✅ Completed (Workout Day 1)
 Day 2 (July 6): ❌ Failed (Workout Day 2)
-Day 3 (July 7): 🔄 Retry (Workout Day 2 clone)
-Day 4 (July 8): 🌴 Pending (Rest Day)
-Day 5 (July 9): 💪 Pending (Workout Day 3)
+Day 3 (July 7): 🔄 Retry (Workout Day 2 clone) - NEW DAY
+Day 4 (July 8): 🌴 Pending (Rest Day) - SHIFTED FROM July 7
+Day 5 (July 9): 💪 Pending (Workout Day 3) - SHIFTED FROM July 8
 ```
 
 ### After Setting Day 2 as Rest
@@ -203,9 +206,9 @@ Day 5 (July 9): 💪 Pending (Workout Day 3)
 ```
 Day 1 (July 5): ✅ Completed (Workout Day 1)
 Day 2 (July 6): 🌿 Rest (Workout Day 2 converted)
-Day 3 (July 7): 🔄 Retry (Workout Day 2 clone)
-Day 4 (July 8): 🌴 Pending (Rest Day)
-Day 5 (July 9): 💪 Pending (Workout Day 3)
+Day 3 (July 7): 🌴 Rest Day - NEW DAY
+Day 4 (July 8): 💪 Pending (Workout Day 3) - SHIFTED FROM July 7
+Day 5 (July 9): 💪 Pending (Workout Day 4) - SHIFTED FROM July 8
 ```
 
 ## Migration Guide

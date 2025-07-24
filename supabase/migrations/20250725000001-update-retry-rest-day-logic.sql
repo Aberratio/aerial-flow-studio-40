@@ -1,4 +1,6 @@
--- Fix retry day calculation logic in handle_challenge_day_status_change function
+-- Update retry and rest day logic in handle_challenge_day_status_change function
+-- This migration modifies the function to create retry/rest days on the next day and shift all subsequent days forward
+
 CREATE OR REPLACE FUNCTION public.handle_challenge_day_status_change(
   p_user_id uuid,
   p_challenge_id uuid,
