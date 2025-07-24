@@ -34,6 +34,10 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import {
+  useChallengeCalendar,
+  CalendarDay,
+} from "@/hooks/useChallengeCalendar";
+import {
   format,
   parseISO,
   addDays,
@@ -93,14 +97,30 @@ const ChallengePreview = () => {
   const [isJoining, setIsJoining] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [userParticipant, setUserParticipant] = useState<any>(null);
-  const [completedDays, setCompletedDays] = useState<Set<string>>(new Set());
   const [isResettingProgress, setIsResettingProgress] = useState(false);
+
+  // Use the new refactored challenge calendar hook
+  const {
+    calendarDays,
+    nextAvailableDay,
+    isLoading: calendarLoading,
+    generateCalendar,
+    changeDayStatus,
+    canAccessDay,
+    getCalendarDay,
+    getCompletedDays,
+    getFailedDays,
+    getRestDays,
+    getPendingDays,
+    getTodayCalendarDay,
+    loadCalendar,
+  } = useChallengeCalendar(challengeId || "");
 
   useEffect(() => {
     if (challengeId) {
       fetchChallengeDetails();
       checkParticipation();
-      loadProgress();
+      loadCalendar();
     }
   }, [challengeId]);
 
@@ -184,56 +204,7 @@ const ChallengePreview = () => {
     }
   };
 
-  const [failedDays, setFailedDays] = useState<Set<string>>(new Set());
-
-  const loadProgress = async () => {
-    if (!challengeId || !user?.id) return;
-
-    try {
-      // Load actual progress data from database, ordered by attempt_number to get latest attempts
-      const { data: progressData, error: progressError } = await supabase
-        .from("challenge_day_progress")
-        .select(
-          "training_day_id, exercises_completed, total_exercises, status, attempt_number, created_at"
-        )
-        .eq("user_id", user.id)
-        .eq("challenge_id", challengeId)
-        .order("created_at", { ascending: false });
-
-      if (!progressError && progressData) {
-        const completed = new Set<string>();
-        const failed = new Set<string>();
-
-        // Create a map to store only the latest attempt for each training day
-        const latestAttempts = new Map();
-        progressData.forEach((progress) => {
-          if (!latestAttempts.has(progress.training_day_id)) {
-            latestAttempts.set(progress.training_day_id, progress);
-          }
-        });
-
-        // Process only the latest attempts
-        latestAttempts.forEach((progress) => {
-          // Mark day as completed if status is completed or rest
-          if (
-            progress.status === "completed" ||
-            progress.status === "rest" ||
-            (progress.exercises_completed === progress.total_exercises &&
-              progress.total_exercises > 0)
-          ) {
-            completed.add(progress.training_day_id);
-          } else if (progress.status === "failed") {
-            failed.add(progress.training_day_id);
-          }
-        });
-
-        setCompletedDays(completed);
-        setFailedDays(failed);
-      }
-    } catch (error) {
-      console.error("Error loading progress:", error);
-    }
-  };
+  // Remove old progress loading logic - now handled by the hook
 
   const calculateDayEstimatedTime = (trainingDay: any) => {
     if (challenge?.type !== "timer" || !trainingDay.exercises) return null;
@@ -358,71 +329,21 @@ const ChallengePreview = () => {
     }
   };
 
-  const generateCalendarDays = () => {
-    if (!challenge?.training_days || !userParticipant?.user_started_at)
-      return [];
-
-    const startDate = parseISO(userParticipant.user_started_at);
-    const days = [];
-    let currentCalendarDay = 0;
-
-    challenge.training_days
-      .sort((a, b) => a.day_number - b.day_number)
-      .forEach((trainingDay) => {
-        const originalDayDate = addDays(startDate, currentCalendarDay);
-
-        // Add the original training day
-        days.push({
-          date: originalDayDate,
-          day: trainingDay.day_number,
-          trainingDay,
-          isToday:
-            format(originalDayDate, "yyyy-MM-dd") ===
-            format(new Date(), "yyyy-MM-dd"),
-          isPast: originalDayDate < new Date(),
-          isFailedRepetition: false,
-        });
-
-        currentCalendarDay++;
-
-        // If this day is failed and not completed, add repetition days
-        if (
-          failedDays.has(trainingDay.id) &&
-          !completedDays.has(trainingDay.id)
-        ) {
-          const repetitionDate = addDays(startDate, currentCalendarDay);
-
-          days.push({
-            date: repetitionDate,
-            day: trainingDay.day_number,
-            trainingDay,
-            isToday:
-              format(repetitionDate, "yyyy-MM-dd") ===
-              format(new Date(), "yyyy-MM-dd"),
-            isPast: repetitionDate < new Date(),
-            isFailedRepetition: true,
-          });
-
-          currentCalendarDay++;
-        }
-      });
-
-    return days;
-  };
+  // Remove old calendar generation logic - now handled by the hook
 
   const resetChallengeProgress = async () => {
     if (!challengeId || !user?.id) return;
 
     setIsResettingProgress(true);
     try {
-      // Delete all progress for this challenge
-      const { error: progressError } = await supabase
-        .from("challenge_day_progress")
+      // Delete all calendar days for this challenge
+      const { error: calendarError } = await supabase
+        .from("user_challenge_calendar_days")
         .delete()
         .eq("user_id", user.id)
         .eq("challenge_id", challengeId);
 
-      if (progressError) throw progressError;
+      if (calendarError) throw calendarError;
 
       // Reset participant status and remove start date so user can set it again
       const { error: participantError } = await supabase
@@ -437,13 +358,9 @@ const ChallengePreview = () => {
 
       if (participantError) throw participantError;
 
-      // Clear local state
-      setCompletedDays(new Set());
-      setFailedDays(new Set());
-
       // Reload data
       await checkParticipation();
-      await loadProgress();
+      await loadCalendar();
 
       toast({
         title: "Progress Reset",
@@ -467,37 +384,27 @@ const ChallengePreview = () => {
       return null;
 
     // Check the generated calendar days instead of just training days
-    const calendarDays = generateCalendarDays();
-    const dayInfo = calendarDays.find((day) => isSameDay(day.date, date));
+    const dateString = format(date, "yyyy-MM-dd");
+    const dayInfo = calendarDays.find(
+      (day) => day.calendar_date === dateString
+    );
 
     if (dayInfo) {
+      const trainingDay = challenge.training_days?.find(
+        (td) => td.id === dayInfo.training_day_id
+      );
+
+      if (!trainingDay) return null;
+
       return {
-        trainingDay: dayInfo.trainingDay,
+        trainingDay,
         // For failed repetitions, reset status - show as fresh attempt
-        isCompleted: dayInfo.isFailedRepetition
-          ? false
-          : completedDays.has(dayInfo.trainingDay.id),
-        isFailed: dayInfo.isFailedRepetition
-          ? false
-          : failedDays.has(dayInfo.trainingDay.id),
-        isToday: isSameDay(date, new Date()),
-        isPast: isBefore(date, new Date()),
-        isFailedRepetition: dayInfo.isFailedRepetition,
-        isAccessible:
-          userParticipant &&
-          (dayInfo.trainingDay.day_number === 1 ||
-            (challenge.training_days &&
-              challenge.training_days.find(
-                (td) => td.day_number === dayInfo.trainingDay.day_number - 1
-              ) &&
-              completedDays.has(
-                challenge.training_days.find(
-                  (td) => td.day_number === dayInfo.trainingDay.day_number - 1
-                )!.id
-              )) ||
-            completedDays.has(dayInfo.trainingDay.id) ||
-            failedDays.has(dayInfo.trainingDay.id) || // Failed days are also accessible for retry
-            dayInfo.isFailedRepetition), // Failed repetitions are always accessible
+        isCompleted: dayInfo.is_retry ? false : dayInfo.status === "completed",
+        isFailed: dayInfo.is_retry ? false : dayInfo.status === "failed",
+        isToday: dayInfo.is_today,
+        isPast: dayInfo.is_past,
+        isFailedRepetition: dayInfo.is_retry,
+        isAccessible: dayInfo.is_accessible,
       };
     }
     return null;
@@ -547,8 +454,6 @@ const ChallengePreview = () => {
       </div>
     );
   }
-
-  const calendarDays = generateCalendarDays();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white">
@@ -746,7 +651,7 @@ const ChallengePreview = () => {
                         Your Progress
                       </h3>
                       <Badge className="bg-purple-500/20 text-purple-400">
-                        {completedDays.size} of{" "}
+                        {getCompletedDays().length} of{" "}
                         {challenge.training_days?.length || 0}
                       </Badge>
                     </div>
@@ -755,7 +660,7 @@ const ChallengePreview = () => {
                         <span>Days Completed</span>
                         <span>
                           {Math.round(
-                            (completedDays.size /
+                            (getCompletedDays().length /
                               (challenge.training_days?.length || 1)) *
                               100
                           )}
@@ -764,7 +669,7 @@ const ChallengePreview = () => {
                       </div>
                       <Progress
                         value={
-                          (completedDays.size /
+                          (getCompletedDays().length /
                             (challenge.training_days?.length || 1)) *
                           100
                         }
@@ -772,9 +677,10 @@ const ChallengePreview = () => {
                       />
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {completedDays.size === 0
+                      {getCompletedDays().length === 0
                         ? "Ready to start your journey!"
-                        : completedDays.size === challenge.training_days?.length
+                        : getCompletedDays().length ===
+                          challenge.training_days?.length
                         ? "🎉 Challenge completed! Amazing work!"
                         : "Keep going, you're doing great!"}
                     </div>

@@ -34,7 +34,7 @@ const Challenges = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [challenges, setChallenges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("active");
+  const [activeTab, setActiveTab] = useState("all");
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [selectedStartDate, setSelectedStartDate] = useState<
     Date | undefined
@@ -54,6 +54,14 @@ const Challenges = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
+  // Debug logging
+  console.log("Challenges Debug:", {
+    user: user?.id,
+    isAdmin,
+    roleLoading,
+    canCreateChallenges,
+  });
+
   useEffect(() => {
     fetchChallenges();
     fetchStats();
@@ -71,6 +79,12 @@ const Challenges = () => {
           ascending: false,
         });
       if (error) throw error;
+
+      // Debug logging
+      console.log("Challenges Data:", {
+        allChallenges: allChallenges?.length || 0,
+        challenges: allChallenges,
+      });
 
       // Get user's participation data if logged in
       let userParticipation = {};
@@ -175,16 +189,7 @@ const Challenges = () => {
               }
             }
           } else {
-            // User not participating - status based on dates
-            if (now > endDate) {
-              status = "done"; // Challenge is finished but user never joined
-            } else if (now < startDate) {
-              status = "not-started";
-            } else if (now >= startDate && now <= endDate) {
-              status = "not-started"; // Available to join
-            } else {
-              status = "completed"; // Challenge ended
-            }
+            status = "not-started"; // Challenge hasn't started yet
           }
           return {
             id: challenge.id,
@@ -213,6 +218,18 @@ const Challenges = () => {
           };
         }) || [];
 
+      // Debug logging for transformed data
+      console.log("Transformed Data:", {
+        transformedData: transformedData?.length || 0,
+        activeTab,
+        challenges: transformedData?.map((c) => ({
+          id: c.id,
+          title: c.title,
+          status: c.status,
+          userParticipating: c.userParticipating,
+        })),
+      });
+
       // Filter based on active tab
       if (activeTab === "active") {
         transformedData = transformedData.filter((c) => c.status === "active");
@@ -225,16 +242,23 @@ const Challenges = () => {
           (c) => c.status === "not-started" || c.status === "available"
         );
       } else if (activeTab === "all") {
-        // Show all challenges for the "all" tab
-        transformedData = transformedData.filter(
-          (c) => c.status !== "done" || c.userParticipating
-        );
+        // Show all challenges for the "all" tab - don't filter by status
+        // transformedData = transformedData.filter(
+        //   (c) => c.status !== "done" || c.userParticipating
+        // );
       }
 
       // For the "done" tab, show challenges with "done" status
       if (activeTab === "done") {
         transformedData = transformedData.filter((c) => c.status === "done");
       }
+
+      // Debug logging for final filtered data
+      console.log("Final Filtered Data:", {
+        finalCount: transformedData?.length || 0,
+        finalChallenges: transformedData,
+      });
+
       setChallenges(transformedData);
     } catch (error) {
       console.error("Error fetching challenges:", error);
@@ -428,6 +452,13 @@ const Challenges = () => {
     }
   };
 
+  // Debug logging for admin check
+  console.log("Admin Check:", {
+    roleLoading,
+    isAdmin,
+    shouldShowAdminMessage: !roleLoading && !isAdmin,
+  });
+
   // Show admin-only access message for non-admin users
   if (!roleLoading && !isAdmin) {
     return (
@@ -574,6 +605,14 @@ const Challenges = () => {
 
           <TabsContent value={activeTab} className="mt-4 sm:mt-6">
             {/* Challenges Grid */}
+            {(() => {
+              console.log("Rendering challenges:", {
+                isLoading,
+                challengesCount: challenges.length,
+                challenges,
+              });
+              return null;
+            })()}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {isLoading ? (
                 Array.from({
@@ -681,7 +720,8 @@ const Challenges = () => {
                       </div>
 
                       {/* Action Buttons */}
-                      {challenge.status === "not-started" ? (
+                      {challenge.status === "not-started" ||
+                      challenge.status === "available" ? (
                         <div className="flex flex-col sm:flex-row gap-2">
                           <Button
                             variant="outline"

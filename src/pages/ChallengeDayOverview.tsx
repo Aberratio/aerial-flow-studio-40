@@ -1,27 +1,52 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  ArrowLeft,
-  Play,
-  Clock,
+  Calendar as CalendarIcon,
   Trophy,
+  Users,
+  Clock,
+  Play,
+  ChevronLeft,
+  CalendarDays,
+  Target,
+  RotateCcw,
+  AlertTriangle,
+  Edit,
   CheckCircle,
+  Pause,
   Star,
   Volume2,
-  VolumeX,
-  Edit2,
-  Pause,
-  X,
-  AlertTriangle,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import {
+  format,
+  parseISO,
+  addDays,
+  isSameDay,
+  startOfMonth,
+  endOfMonth,
+  isAfter,
+  isBefore,
+} from "date-fns";
 import ChallengeExerciseModal from "@/components/ChallengeExerciseModal";
 import ChallengeTimer from "@/components/ChallengeTimer";
 
@@ -43,6 +68,7 @@ interface Exercise {
     image_url?: string;
   };
 }
+
 interface TrainingDay {
   id: string;
   day_number: number;
@@ -51,6 +77,7 @@ interface TrainingDay {
   is_rest_day?: boolean;
   exercises: Exercise[];
 }
+
 interface Challenge {
   id: string;
   title: string;
@@ -86,32 +113,81 @@ interface TrainingDayExercise {
     image_url?: string;
   };
 }
+
 const ChallengeDayOverview = () => {
-  const { challengeId, dayId } = useParams();
+  const { challengeId, dayId } = useParams<{
+    challengeId: string;
+    dayId: string;
+  }>();
   const navigate = useNavigate();
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [trainingDay, setTrainingDay] = useState<TrainingDay | null>(null);
-  const [dayNumber, setDayNumber] = useState<number>(0);
-  const [totalDays, setTotalDays] = useState<number>(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [participationStatus, setParticipationStatus] =
-    useState<string>("active");
-  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(
-    null
-  );
-  const [showTimer, setShowTimer] = useState(false);
-  const [allDays, setAllDays] = useState<TrainingDayBasic[]>([]);
+  const [dayNumber, setDayNumber] = useState(1);
+  const [totalDays, setTotalDays] = useState(0);
 
-  const [dayProgress, setDayProgress] = useState<any>(null);
+  const [allDays, setAllDays] = useState<TrainingDayBasic[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDayCompleted, setIsDayCompleted] = useState(false);
+  const [dayProgress, setDayProgress] = useState<any>(null);
+  const [participationStatus, setParticipationStatus] = useState<string>("");
   const [userParticipant, setUserParticipant] = useState<any>(null);
+  const [showStartDateModal, setShowStartDateModal] = useState(false);
   const [restDayAction, setRestDayAction] = useState(false);
   const [failedDayAction, setFailedDayAction] = useState(false);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
   const { toast } = useToast();
+
+  // Helper function to get the next attempt number
+  const getNextAttemptNumber = async (
+    userId: string,
+    challengeId: string,
+    dayId: string
+  ): Promise<number> => {
+    const { data: existingProgress } = await supabase
+      .from("challenge_day_progress")
+      .select("attempt_number")
+      .eq("user_id", userId)
+      .eq("challenge_id", challengeId)
+      .eq("training_day_id", dayId)
+      .order("attempt_number", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    return existingProgress ? existingProgress.attempt_number + 1 : 1;
+  };
+
+  // Helper function to check if this is a retry attempt
+  const isRetryAttempt = (): boolean => {
+    return dayProgress && dayProgress.attempt_number > 1;
+  };
+
+  // Helper function to check if this attempt is completed
+  const isAttemptCompleted = (): boolean => {
+    return (
+      dayProgress &&
+      (dayProgress.status === "completed" || dayProgress.status === "rest")
+    );
+  };
+
+  // Helper function to check if this attempt is failed
+  const isAttemptFailed = (): boolean => {
+    return dayProgress && dayProgress.status === "failed";
+  };
+
+  // Helper function to check if we should show action buttons
+  const shouldShowActionButtons = (): boolean => {
+    // Show action buttons if:
+    // 1. No progress exists (first attempt)
+    // 2. Latest attempt failed (allow retry)
+    // 3. This is a retry attempt and not completed
+    return (
+      !dayProgress ||
+      isAttemptFailed() ||
+      (isRetryAttempt() && !isAttemptCompleted())
+    );
+  };
+
   useEffect(() => {
     console.log("challengeId", challengeId);
     console.log("dayId", dayId);
@@ -119,6 +195,7 @@ const ChallengeDayOverview = () => {
       fetchChallengeAndDay();
     }
   }, [challengeId, dayId]);
+
   const fetchChallengeAndDay = async () => {
     try {
       setIsLoading(true);
@@ -132,29 +209,32 @@ const ChallengeDayOverview = () => {
       if (challengeError) throw challengeError;
       setChallenge(challengeData);
 
-        // Check if user has already completed or failed this specific day
-        if (user) {
-          // Get the latest progress attempt for this training day
-          const { data: progressData, error: progressError } = await supabase
-            .from("challenge_day_progress")
-            .select("*")
-            .eq("user_id", user.id)
-            .eq("challenge_id", challengeId)
-            .eq("training_day_id", dayId)
-            .order("attempt_number", { ascending: false })
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .maybeSingle();
+      // Check if user has already completed or failed this specific day
+      if (user) {
+        // Get the latest progress attempt for this training day
+        const { data: progressData, error: progressError } = await supabase
+          .from("challenge_day_progress")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("challenge_id", challengeId)
+          .eq("training_day_id", dayId)
+          .order("attempt_number", { ascending: false })
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
 
-          if (!progressError && progressData) {
-            setDayProgress(progressData);
+        if (!progressError && progressData) {
+          setDayProgress(progressData);
 
-            // Only mark as completed if the LATEST attempt is actually completed or rest
-            // Failed attempts should allow retry by creating a new attempt
-            if (progressData.status === "completed" || progressData.status === "rest") {
-              setIsDayCompleted(true);
-            }
+          // Only mark as completed if the LATEST attempt is actually completed or rest
+          // Failed attempts should allow retry by creating a new attempt
+          if (
+            progressData.status === "completed" ||
+            progressData.status === "rest"
+          ) {
+            setIsDayCompleted(true);
           }
+        }
 
         // Fetch user's participation status
         const { data: participationData } = await supabase
@@ -220,6 +300,7 @@ const ChallengeDayOverview = () => {
       setIsLoading(false);
     }
   };
+
   const getExerciseIcon = (category: string) => {
     switch (category?.toLowerCase()) {
       case "warmup":
@@ -236,7 +317,21 @@ const ChallengeDayOverview = () => {
         return "📋";
     }
   };
+
   const getExerciseColor = (difficulty: string) => {
+    switch (difficulty?.toLowerCase()) {
+      case "beginner":
+        return "border-green-500/30 text-green-400";
+      case "intermediate":
+        return "border-yellow-500/30 text-yellow-400";
+      case "advanced":
+        return "border-red-500/30 text-red-400";
+      default:
+        return "border-gray-500/30 text-gray-400";
+    }
+  };
+
+  const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case "beginner":
         return "bg-green-500/20 text-green-400 border-green-500/30";
@@ -248,135 +343,94 @@ const ChallengeDayOverview = () => {
         return "bg-gray-500/20 text-gray-400 border-gray-500/30";
     }
   };
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty?.toLowerCase()) {
-      case "beginner":
-        return "bg-green-500/20 text-green-400";
-      case "intermediate":
-        return "bg-yellow-500/20 text-yellow-400";
-      case "advanced":
-        return "bg-red-500/20 text-red-400";
-      default:
-        return "bg-gray-500/20 text-gray-400";
-    }
-  };
+
   const handleStartDay = () => {
-    if (!trainingDay || !user) return;
-
-    // Check if this is the first challenge day and if the user hasn't set a start date yet
-    const isFirstDay = dayNumber === 1;
-    const hasStartDate = userParticipant?.user_started_at;
-
-    // For timer-based challenges, show the timer
     if (challenge?.type === "timer") {
-      setShowTimer(true);
+      navigate(`/challenge/${challengeId}/day/${dayId}/timer`);
     } else {
-      // For manual challenges, show exercise modal
-      setIsExerciseModalOpen(true);
+      navigate(`/challenge/${challengeId}/day/${dayId}/manual`);
     }
   };
+
   const handleExerciseClick = (exercise: Exercise) => {
-    console.log("Exercise clicked:", exercise.figure.name, exercise.figure.id);
-    setSelectedExercise(exercise);
-    navigate(`/exercise/${exercise.figure.id}`);
+    // Handle exercise click - could open exercise details modal
+    console.log("Exercise clicked:", exercise);
   };
+
   const canEditChallenge = () => {
     return (
       canCreateChallenges &&
-      challenge &&
-      (user?.id === challenge.created_by || user?.role === "admin")
+      (user?.role === "admin" || challenge?.created_by === user?.id)
     );
   };
+
   const handleStatusChange = async (newStatus: string) => {
-    if (!user || !challengeId) return;
+    if (!user) return;
+
     try {
-      const { error } = await supabase
-        .from("challenge_participants")
-        .update({
-          status: newStatus,
-        })
-        .eq("challenge_id", challengeId)
-        .eq("user_id", user.id);
-      if (error) throw error;
-      setParticipationStatus(newStatus);
-      toast({
-        title: "Status Updated",
-        description: `Challenge status changed to ${newStatus}`,
+      // Get the next attempt number for this training day
+      const nextAttemptNumber = await getNextAttemptNumber(
+        user.id,
+        challengeId!,
+        dayId!
+      );
+
+      const { error } = await supabase.from("challenge_day_progress").insert({
+        user_id: user.id,
+        challenge_id: challengeId!,
+        training_day_id: dayId!,
+        exercises_completed: 0,
+        total_exercises: trainingDay!.exercises.length,
+        status: newStatus,
+        changed_status_at: new Date().toISOString(),
+        notes: `User marked day as ${newStatus}`,
+        attempt_number: nextAttemptNumber,
       });
+
+      if (error) throw error;
+
+      toast({
+        title: `Day Marked as ${
+          newStatus.charAt(0).toUpperCase() + newStatus.slice(1)
+        }`,
+        description: `This day has been marked as ${newStatus}.`,
+      });
+
+      window.location.reload();
     } catch (error) {
-      console.error("Error updating status:", error);
+      console.error("Error changing status:", error);
       toast({
         title: "Error",
-        description: "Failed to update status. Please try again.",
+        description: "Failed to change day status. Please try again.",
         variant: "destructive",
       });
     }
   };
-  if (isLoading) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-white">Loading challenge day...</div>
-      </div>
-    );
-  }
-  if (!challenge || !trainingDay) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-white text-xl mb-4">Challenge day not found</h2>
-          <Button onClick={() => navigate("/challenges")} variant="outline">
-            Back to Challenges
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
-  // Remove the blocking screen for completed days - show preview instead
   const calculateDuration = () => {
-    if (!trainingDay.exercises.length) return "No duration set";
-    let totalMinutes = 0;
-    trainingDay.exercises.forEach((exercise) => {
-      if (exercise.sets && exercise.hold_time_seconds) {
-        totalMinutes += (exercise.sets * exercise.hold_time_seconds) / 60;
-      }
-      if (exercise.rest_time_seconds && exercise.sets && exercise.sets > 1) {
-        totalMinutes += ((exercise.sets - 1) * exercise.rest_time_seconds) / 60;
-      }
-    });
-    return totalMinutes > 0
-      ? `~${Math.ceil(totalMinutes)} minutes`
-      : "30-45 minutes";
+    if (!challenge) return "";
+    const start = new Date(challenge.start_date);
+    const end = new Date(challenge.end_date);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return `${diffDays} days`;
   };
 
   const handleTimerComplete = async () => {
     if (!user) return;
-
-    try {
-      await completeDay();
-    } catch (error) {
-      console.error("Error handling timer complete:", error);
-    }
-
-    setShowTimer(false);
+    await completeDay();
   };
 
   const completeDay = async (startDate?: Date) => {
     if (!user) return;
 
     try {
-      // Get the current attempt number for this training day
-      const { data: existingProgress } = await supabase
-        .from("challenge_day_progress")
-        .select("attempt_number")
-        .eq("user_id", user.id)
-        .eq("challenge_id", challengeId!)
-        .eq("training_day_id", dayId!)
-        .order("attempt_number", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+      // Get the next attempt number for this training day
+      const nextAttemptNumber = await getNextAttemptNumber(
+        user.id,
+        challengeId!,
+        dayId!
+      );
 
       const completionData = {
         user_id: user.id,
@@ -457,18 +511,12 @@ const ChallengeDayOverview = () => {
 
       if (participantError) throw participantError;
 
-      // Get the current attempt number for this training day
-      const { data: existingProgress } = await supabase
-        .from("challenge_day_progress")
-        .select("attempt_number")
-        .eq("user_id", user.id)
-        .eq("challenge_id", challengeId!)
-        .eq("training_day_id", dayId!)
-        .order("attempt_number", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+      // Get the next attempt number for this training day
+      const nextAttemptNumber = await getNextAttemptNumber(
+        user.id,
+        challengeId!,
+        dayId!
+      );
 
       // Mark rest day as completed
       const { error: progressError } = await supabase
@@ -515,18 +563,12 @@ const ChallengeDayOverview = () => {
 
       if (participantError) throw participantError;
 
-      // Get the current attempt number for this training day
-      const { data: existingProgress } = await supabase
-        .from("challenge_day_progress")
-        .select("attempt_number")
-        .eq("user_id", user.id)
-        .eq("challenge_id", challengeId!)
-        .eq("training_day_id", dayId!)
-        .order("attempt_number", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+      // Get the next attempt number for this training day
+      const nextAttemptNumber = await getNextAttemptNumber(
+        user.id,
+        challengeId!,
+        dayId!
+      );
 
       // Mark day as failed
       const { error: progressError } = await supabase
@@ -561,96 +603,119 @@ const ChallengeDayOverview = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
+
+  if (!challenge || !trainingDay) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Challenge day not found
+          </h2>
+          <Button onClick={() => navigate("/challenges")} variant="outline">
+            Back to Challenges
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white">
+      <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center">
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
             <Button
               variant="ghost"
               onClick={() => navigate(`/challenges/${challengeId}`)}
-              className="mr-4 text-white hover:bg-white/10"
+              className="text-white hover:bg-white/10"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <ChevronLeft className="w-4 h-4 mr-2" />
               Back to Challenge
             </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-white">Day {dayNumber}</h1>
-              <p className="text-muted-foreground">{challenge.title}</p>
-            </div>
+
+            {canEditChallenge() && (
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/challenges/${challengeId}/edit`)}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Edit Challenge
+              </Button>
+            )}
           </div>
 
-          {canEditChallenge() && (
-            <Button
-              variant="outline"
-              onClick={() => navigate(`/challenges/${challengeId}/edit`)}
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              <Edit2 className="w-4 h-4 mr-2" />
-              Edit Challenge
-            </Button>
-          )}
-        </div>
-
-        {/* Status Info Box for Completed/Failed Days */}
-        {dayProgress && (dayProgress.status === "completed" || dayProgress.status === "rest" || dayProgress.status === "failed") && (
-          <Card className="glass-effect border-white/10 mb-6">
-            <CardContent className="p-6">
-              <div className="flex items-start space-x-4">
-                <div className="flex-shrink-0">
-                  {dayProgress.status === "completed" || dayProgress.status === "rest" ? (
-                    <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
-                      <CheckCircle className="w-6 h-6 text-green-400" />
+          {/* Status Info Box for Completed/Failed Days */}
+          {dayProgress &&
+            (dayProgress.status === "completed" ||
+              dayProgress.status === "rest" ||
+              dayProgress.status === "failed") && (
+              <Card className="glass-effect border-white/10 mb-6">
+                <CardContent className="p-6">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      {dayProgress.status === "completed" ||
+                      dayProgress.status === "rest" ? (
+                        <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center">
+                          <CheckCircle className="w-6 h-6 text-green-400" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
+                          <AlertTriangle className="w-6 h-6 text-red-400" />
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
-                      <AlertTriangle className="w-6 h-6 text-red-400" />
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold mb-2">
+                        {dayProgress.status === "completed"
+                          ? "Day Completed! 🎉"
+                          : dayProgress.status === "rest"
+                          ? "Rest Day Completed! 🌿"
+                          : "Day Previously Failed"}
+                      </h3>
+                      <p className="text-muted-foreground mb-3">
+                        {dayProgress.status === "completed"
+                          ? `Great job! You completed this training day on ${new Date(
+                              dayProgress.changed_status_at
+                            ).toLocaleDateString()}. You're viewing this day for reference only.`
+                          : dayProgress.status === "rest"
+                          ? `Well done! You completed this rest day on ${new Date(
+                              dayProgress.changed_status_at
+                            ).toLocaleDateString()}. Recovery is important for progress.`
+                          : "This day was marked as failed and can be retried. Start a new attempt below."}
+                      </p>
+                      <div className="text-sm text-muted-foreground">
+                        <span className="font-medium">Status:</span>{" "}
+                        {dayProgress.status === "completed"
+                          ? "Completed"
+                          : dayProgress.status === "rest"
+                          ? "Rest Day Completed"
+                          : "Failed"}{" "}
+                        •<span className="font-medium ml-2">Date:</span>{" "}
+                        {new Date(
+                          dayProgress.changed_status_at
+                        ).toLocaleDateString()}
+                        {dayProgress.attempt_number > 1 && (
+                          <>
+                            <span className="font-medium ml-2">Attempt:</span>{" "}
+                            {dayProgress.attempt_number}
+                          </>
+                        )}
+                      </div>
                     </div>
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-white font-semibold mb-2">
-                    {dayProgress.status === "completed"
-                      ? "Day Completed! 🎉"
-                      : dayProgress.status === "rest"
-                      ? "Rest Day Completed! 🌿"
-                      : "Day Previously Failed"}
-                  </h3>
-                  <p className="text-muted-foreground mb-3">
-                    {dayProgress.status === "completed"
-                      ? `Great job! You completed this training day on ${new Date(
-                          dayProgress.changed_status_at
-                        ).toLocaleDateString()}. You're viewing this day for reference only.`
-                      : dayProgress.status === "rest"
-                      ? `Well done! You completed this rest day on ${new Date(
-                          dayProgress.changed_status_at
-                        ).toLocaleDateString()}. Recovery is important for progress.`
-                      : "This day was marked as failed and can be retried. Start a new attempt below."}
-                  </p>
-                  <div className="text-sm text-muted-foreground">
-                    <span className="font-medium">Status:</span>{" "}
-                    {dayProgress.status === "completed"
-                      ? "Completed"
-                      : dayProgress.status === "rest"
-                      ? "Rest Day Completed"
-                      : "Failed"}{" "}
-                    •<span className="font-medium ml-2">Date:</span>{" "}
-                    {new Date(
-                      dayProgress.changed_status_at
-                    ).toLocaleDateString()}
-                    {dayProgress.attempt_number > 1 && (
-                      <>
-                        <span className="font-medium ml-2">Attempt:</span>{" "}
-                        {dayProgress.attempt_number}
-                      </>
-                    )}
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                </CardContent>
+              </Card>
+            )}
+        </div>
 
         <Card className="glass-effect border-white/10 mb-6">
           <CardContent className="p-6">
@@ -698,234 +763,185 @@ const ChallengeDayOverview = () => {
                 );
               })}
             </div>
-            <Progress
-              value={(dayNumber / totalDays) * 100}
-              className="h-1 mt-4"
-            />
           </CardContent>
         </Card>
 
-        {/* Day Overview */}
+        {/* Challenge Day Content */}
         <Card className="glass-effect border-white/10 mb-6">
           <CardHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <CardTitle className="text-white text-2xl mb-2">
-                  {trainingDay.title}
-                </CardTitle>
-                <p className="text-muted-foreground mb-4">
-                  {trainingDay.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                      Day {dayNumber} of {totalDays}
-                    </Badge>
-                    <div className="flex items-center text-muted-foreground">
-                      <Clock className="w-4 h-4 mr-1" />
-                      {calculateDuration()}
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      <Trophy className="w-4 h-4 mr-1" />
-                      {trainingDay.exercises.length} exercises
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => setIsAudioEnabled(!isAudioEnabled)}
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                {isAudioEnabled ? (
-                  <Volume2 className="w-4 h-4" />
-                ) : (
-                  <VolumeX className="w-4 h-4" />
-                )}
-              </Button>
-            </div>
+            <CardTitle className="text-white flex items-center gap-2">
+              <CalendarIcon className="w-5 h-5" />
+              Day {dayNumber}: {trainingDay.title}
+              {isRetryAttempt() && (
+                <Badge
+                  variant="outline"
+                  className="ml-2 border-orange-500/30 text-orange-400"
+                >
+                  Attempt {dayProgress?.attempt_number}
+                </Badge>
+              )}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {trainingDay.exercises.map((exercise, index) => (
-                <Badge
-                  key={index}
-                  variant="outline"
-                  className="border-white/20 text-white/70"
-                >
-                  {exercise.figure.name}
-                </Badge>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+            <p className="text-muted-foreground mb-6">
+              {trainingDay.description}
+            </p>
 
-        {/* Exercises or Rest Day Content */}
-        {trainingDay.is_rest_day ? (
-          <Card className="glass-effect border-white/10 mb-6">
-            <CardContent className="p-8 text-center">
-              <div className="space-y-6">
-                <div className="w-24 h-24 mx-auto bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-full flex items-center justify-center">
-                  <span className="text-4xl">🌿</span>
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold text-white mb-2">
-                    Rest Day
-                  </h3>
-                  <p className="text-muted-foreground text-lg mb-4">
-                    Recovery is just as important as training
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
-                  <div className="bg-white/5 rounded-lg p-4">
-                    <span className="text-2xl mb-2 block">💤</span>
-                    <h4 className="text-white font-medium">Rest</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Get quality sleep
-                    </p>
-                  </div>
-                  <div className="bg-white/5 rounded-lg p-4">
-                    <span className="text-2xl mb-2 block">🥗</span>
-                    <h4 className="text-white font-medium">Nutrition</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Eat nutrient-rich foods
-                    </p>
-                  </div>
-                  <div className="bg-white/5 rounded-lg p-4">
-                    <span className="text-2xl mb-2 block">🧘</span>
-                    <h4 className="text-white font-medium">Mindfulness</h4>
-                    <p className="text-sm text-muted-foreground">
-                      Practice meditation
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="glass-effect border-white/10 mb-6">
-            <CardHeader>
-              <CardTitle className="text-white">Exercises</CardTitle>
-            </CardHeader>
-            <CardContent>
+            {/* Exercises List */}
+            {trainingDay.exercises.length > 0 ? (
               <div className="space-y-4">
-                {trainingDay.exercises.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Trophy className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                    <p>No exercises added to this training day yet.</p>
-                  </div>
-                ) : (
-                  trainingDay.exercises.map((exercise, index) => (
-                    <div
-                      key={exercise.id}
-                      className="p-4 rounded-lg border bg-white/5 border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
-                      onClick={() => handleExerciseClick(exercise)}
-                    >
-                      <div className="flex items-start space-x-4">
-                        <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
-                          {exercise.figure.image_url ? (
-                            <img
-                              src={exercise.figure.image_url}
-                              alt={exercise.figure.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <span className="text-2xl py-[10px]">
+                <h4 className="text-white font-medium mb-3">Exercises</h4>
+                {trainingDay.exercises.map((exercise, index) => (
+                  <div
+                    key={exercise.id}
+                    className="p-4 rounded-lg border bg-white/5 border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
+                    onClick={() => handleExerciseClick(exercise)}
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+                        {exercise.figure.image_url ? (
+                          <img
+                            src={exercise.figure.image_url}
+                            alt={exercise.figure.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-2xl py-[10px]">
+                            {getExerciseIcon(exercise.figure.category)}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-white font-semibold flex items-center">
+                            <span className="text-lg mr-2">
                               {getExerciseIcon(exercise.figure.category)}
                             </span>
-                          )}
+                            {exercise.figure.name}
+                          </h3>
+                          <Badge
+                            className={getDifficultyColor(
+                              exercise.figure.difficulty_level
+                            )}
+                          >
+                            {exercise.figure.difficulty_level}
+                          </Badge>
                         </div>
 
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-white font-semibold flex items-center">
-                              <span className="text-lg mr-2">
-                                {getExerciseIcon(exercise.figure.category)}
-                              </span>
-                              {exercise.figure.name}
-                            </h3>
-                            <Badge
-                              className={getDifficultyColor(
-                                exercise.figure.difficulty_level
-                              )}
-                            >
-                              {exercise.figure.difficulty_level}
-                            </Badge>
-                          </div>
+                        {exercise.figure.instructions && (
+                          <p className="text-muted-foreground text-sm mb-2">
+                            {exercise.figure.instructions}
+                          </p>
+                        )}
 
-                          {exercise.figure.instructions && (
-                            <p className="text-muted-foreground text-sm mb-2">
-                              {exercise.figure.instructions}
-                            </p>
+                        {/* Exercise Parameters */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-2">
+                          {exercise.sets && (
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-purple-400 rounded-full" />
+                              <span>{exercise.sets} sets</span>
+                            </div>
                           )}
-
-                          {/* Exercise Parameters */}
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs mb-2">
-                            {exercise.sets && (
-                              <div className="flex items-center gap-1">
-                                <span className="w-2 h-2 bg-purple-400 rounded-full" />
-                                <span>{exercise.sets} sets</span>
-                              </div>
-                            )}
-                            {exercise.reps && (
-                              <div className="flex items-center gap-1">
-                                <span className="w-2 h-2 bg-blue-400 rounded-full" />
-                                <span>{exercise.reps} reps</span>
-                              </div>
-                            )}
-                            {exercise.hold_time_seconds && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-3 h-3 text-green-400" />
-                                <span>{exercise.hold_time_seconds}s hold</span>
-                              </div>
-                            )}
-                            {exercise.rest_time_seconds && (
-                              <div className="flex items-center gap-1">
-                                <span className="w-2 h-2 bg-yellow-400 rounded-full" />
-                                <span>{exercise.rest_time_seconds}s rest</span>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Media and Notes */}
-                          <div className="flex flex-wrap gap-2 mb-2">
-                            {exercise.video_url && (
-                              <Badge variant="outline" className="text-xs">
-                                <Play className="w-3 h-3 mr-1" />
-                                Video
-                              </Badge>
-                            )}
-                            {exercise.audio_url && (
-                              <Badge variant="outline" className="text-xs">
-                                <Volume2 className="w-3 h-3 mr-1" />
-                                Audio
-                              </Badge>
-                            )}
-                          </div>
-
-                          {exercise.notes && (
-                            <div className="bg-white/5 rounded-lg p-3">
-                              <div className="flex items-center text-purple-400 text-sm mb-1">
-                                <Star className="w-3 h-3 mr-1" />
-                                Notes
-                              </div>
-                              <p className="text-white text-sm">
-                                {exercise.notes}
-                              </p>
+                          {exercise.reps && (
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-blue-400 rounded-full" />
+                              <span>{exercise.reps} reps</span>
+                            </div>
+                          )}
+                          {exercise.hold_time_seconds && (
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-green-400" />
+                              <span>{exercise.hold_time_seconds}s hold</span>
+                            </div>
+                          )}
+                          {exercise.rest_time_seconds && (
+                            <div className="flex items-center gap-1">
+                              <span className="w-2 h-2 bg-yellow-400 rounded-full" />
+                              <span>{exercise.rest_time_seconds}s rest</span>
                             </div>
                           )}
                         </div>
+
+                        {/* Media and Notes */}
+                        <div className="flex flex-wrap gap-2 mb-2">
+                          {exercise.video_url && (
+                            <Badge variant="outline" className="text-xs">
+                              <Play className="w-3 h-3 mr-1" />
+                              Video
+                            </Badge>
+                          )}
+                          {exercise.audio_url && (
+                            <Badge variant="outline" className="text-xs">
+                              <Volume2 className="w-3 h-3 mr-1" />
+                              Audio
+                            </Badge>
+                          )}
+                        </div>
+
+                        {exercise.notes && (
+                          <div className="bg-white/5 rounded-lg p-3">
+                            <div className="flex items-center text-purple-400 text-sm mb-1">
+                              <Star className="w-3 h-3 mr-1" />
+                              Notes
+                            </div>
+                            <p className="text-white text-sm">
+                              {exercise.notes}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
-                  ))
-                )}
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            ) : (
+              <Card className="glass-effect border-white/10 mb-6">
+                <CardContent className="p-8 text-center">
+                  <div className="space-y-6">
+                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-green-500/20 to-blue-500/20 rounded-full flex items-center justify-center">
+                      <span className="text-4xl">🌿</span>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white mb-2">
+                        Rest Day
+                      </h3>
+                      <p className="text-muted-foreground text-lg mb-4">
+                        Recovery is just as important as training
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <span className="text-2xl mb-2 block">💤</span>
+                        <h4 className="text-white font-medium">Rest</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Get quality sleep
+                        </p>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <span className="text-2xl mb-2 block">🥗</span>
+                        <h4 className="text-white font-medium">Nutrition</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Eat nutrient-rich foods
+                        </p>
+                      </div>
+                      <div className="bg-white/5 rounded-lg p-4">
+                        <span className="text-2xl mb-2 block">🧘</span>
+                        <h4 className="text-white font-medium">Mindfulness</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Practice meditation
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </CardContent>
+        </Card>
 
-        {/* Action Buttons - Show if no progress OR if latest attempt failed */}
-        {(!dayProgress || (dayProgress && dayProgress.status === "failed")) && !isDayCompleted && (
+        {/* Action Buttons - Show based on attempt status */}
+        {shouldShowActionButtons() && (
           <div className="space-y-4">
             {/* Primary Action Button */}
             <div className="flex space-x-3">
@@ -937,7 +953,9 @@ const ChallengeDayOverview = () => {
                   className="flex-1 disabled:opacity-50"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  Start Day {dayNumber}
+                  {isRetryAttempt()
+                    ? `Retry Day ${dayNumber}`
+                    : `Start Day ${dayNumber}`}
                 </Button>
               ) : (
                 <Button
@@ -945,18 +963,12 @@ const ChallengeDayOverview = () => {
                     if (!user) return;
 
                     try {
-                      // Get the current attempt number for this training day
-                      const { data: existingProgress } = await supabase
-                        .from("challenge_day_progress")
-                        .select("attempt_number")
-                        .eq("user_id", user.id)
-                        .eq("challenge_id", challengeId!)
-                        .eq("training_day_id", dayId!)
-                        .order("attempt_number", { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
-
-                      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+                      // Get the next attempt number for this training day
+                      const nextAttemptNumber = await getNextAttemptNumber(
+                        user.id,
+                        challengeId!,
+                        dayId!
+                      );
 
                       // Mark rest day as completed
                       const { error: progressError } = await supabase
@@ -1038,18 +1050,12 @@ const ChallengeDayOverview = () => {
                     if (!user) return;
 
                     try {
-                      // Get the current attempt number for this training day
-                      const { data: existingProgress } = await supabase
-                        .from("challenge_day_progress")
-                        .select("attempt_number")
-                        .eq("user_id", user.id)
-                        .eq("challenge_id", challengeId!)
-                        .eq("training_day_id", dayId!)
-                        .order("attempt_number", { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
-
-                      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+                      // Get the next attempt number for this training day
+                      const nextAttemptNumber = await getNextAttemptNumber(
+                        user.id,
+                        challengeId!,
+                        dayId!
+                      );
 
                       const { error } = await supabase
                         .from("challenge_day_progress")
@@ -1096,18 +1102,12 @@ const ChallengeDayOverview = () => {
                     if (!user) return;
 
                     try {
-                      // Get the current attempt number for this training day
-                      const { data: existingProgress } = await supabase
-                        .from("challenge_day_progress")
-                        .select("attempt_number")
-                        .eq("user_id", user.id)
-                        .eq("challenge_id", challengeId!)
-                        .eq("training_day_id", dayId!)
-                        .order("attempt_number", { ascending: false })
-                        .limit(1)
-                        .maybeSingle();
-
-                      const nextAttemptNumber = existingProgress ? existingProgress.attempt_number + 1 : 1;
+                      // Get the next attempt number for this training day
+                      const nextAttemptNumber = await getNextAttemptNumber(
+                        user.id,
+                        challengeId!,
+                        dayId!
+                      );
 
                       const { error } = await supabase
                         .from("challenge_day_progress")
@@ -1153,7 +1153,7 @@ const ChallengeDayOverview = () => {
         )}
 
         {/* Back to Challenge Button - Always show for completed days */}
-        {isDayCompleted && (
+        {isAttemptCompleted() && (
           <div className="flex justify-center mt-6">
             <Button
               variant="outline"
@@ -1164,40 +1164,9 @@ const ChallengeDayOverview = () => {
             </Button>
           </div>
         )}
-
-        {/* Timer Mode */}
-        {showTimer && trainingDay && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="relative max-w-2xl w-full">
-              <Button
-                variant="ghost"
-                onClick={() => setShowTimer(false)}
-                className="absolute -top-12 right-0 text-white hover:bg-white/10"
-              >
-                ✕ Close Timer
-              </Button>
-              <ChallengeTimer
-                exercises={trainingDay.exercises}
-                isAudioEnabled={isAudioEnabled}
-                onComplete={handleTimerComplete}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Exercise Modal */}
-        {trainingDay && (
-          <ChallengeExerciseModal
-            isOpen={isExerciseModalOpen}
-            onClose={() => setIsExerciseModalOpen(false)}
-            challengeId={challengeId!}
-            dayId={dayId!}
-            dayNumber={dayNumber}
-            exercises={trainingDay.exercises}
-          />
-        )}
       </div>
     </div>
   );
 };
+
 export default ChallengeDayOverview;
