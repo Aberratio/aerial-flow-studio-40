@@ -415,6 +415,7 @@ const ChallengePreview = () => {
         isPast: dayInfo.is_past,
         isFailedRepetition: dayInfo.is_retry,
         isAccessible: dayInfo.is_accessible,
+        id: dayInfo.id,
       };
     }
     return null;
@@ -423,7 +424,7 @@ const ChallengePreview = () => {
   const handleCalendarDayClick = (date: Date) => {
     const dayInfo = getCalendarDayInfo(date);
     if (dayInfo && dayInfo.isAccessible) {
-      navigate(`/challenge/${challengeId}/day/${dayInfo.trainingDay.id}`);
+      navigate(`/challenge/${challengeId}/day/${dayInfo.id}`);
     }
   };
 

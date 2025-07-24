@@ -281,8 +281,8 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <PremiumRoute>
-              {/* <ChallengeDayOverview /> */}
-              <ChallengeDayOverviewRefactored />
+              <ChallengeDayOverview />
+              {/* <ChallengeDayOverviewRefactored /> */}
             </PremiumRoute>
           </ProtectedRoute>
         }

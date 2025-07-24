@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "./use-toast";
 
 export interface CalendarDay {
+  id: string;
   calendar_date: string;
   training_day_id: string;
   day_number: number;
