@@ -161,6 +161,9 @@ export const useChallengeCalendar = (challengeId: string) => {
           }
         );
 
+        // The handle_challenge_day_status_change function already handles failed status logic
+        // by creating a retry day when a day is marked as failed
+
         if (statusError) throw statusError;
 
         // Reload calendar and next available day

@@ -36,13 +36,20 @@ import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
 import PremiumRoute from "@/components/PremiumRoute";
 import IntroductionModal from "@/components/IntroductionModal";
+import ChallengeDayOverviewRefactored from "./pages/ChallengeDayOverviewRefactored";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const { user, isLoading, showIntroModal, setShowIntroModal, markIntroAsComplete } = useAuth();
+  const {
+    user,
+    isLoading,
+    showIntroModal,
+    setShowIntroModal,
+    markIntroAsComplete,
+  } = useAuth();
 
   if (isLoading) {
     return (
@@ -86,8 +93,16 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return <>{children}</>;
 };
 
-const ConditionalLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user, isLoading, showIntroModal, setShowIntroModal, markIntroAsComplete } = useAuth();
+const ConditionalLayout: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const {
+    user,
+    isLoading,
+    showIntroModal,
+    setShowIntroModal,
+    markIntroAsComplete,
+  } = useAuth();
 
   if (isLoading) {
     return (
@@ -157,13 +172,13 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route 
-        path="/exercise/:exerciseId" 
+      <Route
+        path="/exercise/:exerciseId"
         element={
           <ConditionalLayout>
             <ExerciseDetail />
           </ConditionalLayout>
-        } 
+        }
       />
       <Route
         path="/pricing"
@@ -266,7 +281,8 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <PremiumRoute>
-              <ChallengeDayOverview />
+              {/* <ChallengeDayOverview /> */}
+              <ChallengeDayOverviewRefactored />
             </PremiumRoute>
           </ProtectedRoute>
         }
