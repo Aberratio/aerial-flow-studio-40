@@ -124,6 +124,38 @@ const ChallengePreviewRefactored = () => {
     }
   }, [challengeId]);
 
+  // Check if participant needs calendar generation
+  useEffect(() => {
+    const checkAndGenerateCalendar = async () => {
+      if (!isParticipant || !userParticipant || calendarDays.length > 0) return;
+      
+      // If user is a participant but has no calendar days, generate them
+      console.log("Participant found but no calendar days, generating calendar...");
+      
+      // Use today as start date if no start date is set
+      const startDate = userParticipant.user_started_at 
+        ? new Date(userParticipant.user_started_at) 
+        : new Date();
+      
+      // Update participant with start date if not set
+      if (!userParticipant.user_started_at) {
+        await supabase
+          .from("challenge_participants")
+          .update({ user_started_at: startDate.toISOString() })
+          .eq("challenge_id", challengeId)
+          .eq("user_id", user?.id);
+      }
+      
+      // Generate calendar
+      await generateCalendar(startDate);
+      
+      // Reload participation data
+      await checkParticipation();
+    };
+
+    checkAndGenerateCalendar();
+  }, [isParticipant, userParticipant, calendarDays.length, challengeId, user?.id, generateCalendar]);
+
   const fetchChallengeDetails = async () => {
     if (!challengeId) return;
 
@@ -224,18 +256,26 @@ const ChallengePreviewRefactored = () => {
 
     setIsJoining(true);
     try {
+      // Set start date to today
+      const startDate = new Date();
+      const startDateString = startDate.toISOString().split("T")[0];
+
       const { error } = await supabase.from("challenge_participants").insert({
         challenge_id: challengeId,
         user_id: user.id,
         status: "active",
+        user_started_at: startDate.toISOString(),
       });
 
       if (error) throw error;
 
+      // Generate the calendar days for the user
+      await generateCalendar(startDate);
+
       setIsParticipant(true);
       toast({
         title: "Challenge Joined!",
-        description: "You've successfully joined this challenge!",
+        description: `You've successfully joined this challenge! Starting ${startDate.toLocaleDateString()}`,
       });
 
       // Reload participation data
