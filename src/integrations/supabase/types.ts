@@ -1348,6 +1348,7 @@ export type Database = {
       get_user_challenge_calendar: {
         Args: { p_user_id: string; p_challenge_id: string }
         Returns: {
+          id: string
           calendar_date: string
           training_day_id: string
           day_number: number
