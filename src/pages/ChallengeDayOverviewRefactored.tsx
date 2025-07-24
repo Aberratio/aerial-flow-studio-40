@@ -195,7 +195,7 @@ const ChallengeDayOverviewRefactored = () => {
       await changeDayStatus(calendarDay.calendar_date, newStatus);
 
       // Navigate back to challenge preview
-      navigate(`/challenge/${challengeId}`);
+      navigate(`/challenges/${challengeId}`);
     } catch (error) {
       console.error("Error changing status:", error);
       toast({
@@ -265,7 +265,7 @@ const ChallengeDayOverviewRefactored = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(`/challenge/${challengeId}`)}
+              onClick={() => navigate(`/challenges/${challengeId}`)}
               className="text-white hover:bg-white/10"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />

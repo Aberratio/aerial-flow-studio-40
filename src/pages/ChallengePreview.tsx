@@ -97,27 +97,64 @@ const ChallengePreview = () => {
   // Use the new refactored challenge calendar hook
   const {
     calendarDays,
-    nextAvailableDay,
     isLoading: calendarLoading,
     generateCalendar,
-    changeDayStatus,
-    canAccessDay,
-    getCalendarDay,
     getCompletedDays,
-    getFailedDays,
-    getRestDays,
-    getPendingDays,
-    getTodayCalendarDay,
-    loadCalendar,
   } = useChallengeCalendar(challengeId || "");
 
   useEffect(() => {
     if (challengeId) {
       fetchChallengeDetails();
       checkParticipation();
-      loadCalendar();
     }
   }, [challengeId]);
+
+  // Check if participant needs calendar generation
+  useEffect(() => {
+    const checkAndGenerateCalendar = async () => {
+      if (
+        calendarLoading ||
+        !isParticipant ||
+        !userParticipant ||
+        calendarDays.length > 0
+      )
+        return;
+
+      // If user is a participant but has no calendar days, generate them
+      console.log(
+        "Participant found but no calendar days, generating calendar..."
+      );
+
+      // Use today as start date if no start date is set
+      const startDate = userParticipant.user_started_at
+        ? new Date(userParticipant.user_started_at)
+        : new Date();
+
+      // Update participant with start date if not set
+      if (!userParticipant.user_started_at) {
+        await supabase
+          .from("challenge_participants")
+          .update({ user_started_at: startDate.toISOString() })
+          .eq("challenge_id", challengeId)
+          .eq("user_id", user?.id);
+      }
+
+      // Generate calendar
+      await generateCalendar(startDate);
+
+      // Reload participation data
+      await checkParticipation();
+    };
+
+    checkAndGenerateCalendar();
+  }, [
+    isParticipant,
+    userParticipant,
+    calendarDays.length,
+    challengeId,
+    user?.id,
+    generateCalendar,
+  ]);
 
   const fetchChallengeDetails = async () => {
     if (!challengeId) return;
