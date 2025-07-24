@@ -33,19 +33,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
-import {
-  useChallengeCalendar,
-  CalendarDay,
-} from "@/hooks/useChallengeCalendar";
+import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import {
   format,
   parseISO,
   addDays,
-  isSameDay,
   startOfMonth,
   endOfMonth,
   isAfter,
-  isBefore,
 } from "date-fns";
 
 interface Challenge {
@@ -202,23 +197,6 @@ const ChallengePreview = () => {
     } catch (error) {
       // User is not a participant
     }
-  };
-
-  // Remove old progress loading logic - now handled by the hook
-
-  const calculateDayEstimatedTime = (trainingDay: any) => {
-    if (challenge?.type !== "timer" || !trainingDay.exercises) return null;
-
-    let totalTime = 0;
-    trainingDay.exercises.forEach((exercise: any) => {
-      const holdTime = exercise.hold_time_seconds || 30;
-      const restTime = exercise.rest_time_seconds || 15;
-      const sets = exercise.sets || 1;
-      totalTime += (holdTime + restTime) * sets;
-    });
-
-    const minutes = Math.ceil(totalTime / 60);
-    return `~${minutes}min`;
   };
 
   const joinChallenge = async () => {
