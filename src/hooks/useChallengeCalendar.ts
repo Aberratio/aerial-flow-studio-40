@@ -234,11 +234,8 @@ export const useChallengeCalendar = (challengeId: string) => {
 
   // Get calendar day by training day ID
   const getCalendarDayByTrainingDay = useCallback(
-    (trainingDayId: string): CalendarDay | null => {
-      return (
-        calendarDays.find((day) => day.training_day_id === trainingDayId) ||
-        null
-      );
+    (id: string): CalendarDay | null => {
+      return calendarDays.find((day) => day.id === id) || null;
     },
     [calendarDays]
   );

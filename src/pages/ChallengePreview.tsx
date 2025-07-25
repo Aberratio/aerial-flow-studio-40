@@ -409,8 +409,9 @@ const ChallengePreview = () => {
       return {
         trainingDay,
         // For failed repetitions, reset status - show as fresh attempt
-        isCompleted: dayInfo.is_retry ? false : dayInfo.status === "completed",
-        isFailed: dayInfo.is_retry ? false : dayInfo.status === "failed",
+        isCompleted: dayInfo.status === "completed",
+        isFailed: dayInfo.status === "failed",
+        isRest: dayInfo.status === "rest",
         isToday: dayInfo.is_today,
         isPast: dayInfo.is_past,
         isFailedRepetition: dayInfo.is_retry,
@@ -773,6 +774,7 @@ const ChallengePreview = () => {
                           trainingDay,
                           isCompleted,
                           isFailed,
+                          isRest,
                           isToday,
                           isAccessible,
                           isFailedRepetition,
@@ -806,7 +808,7 @@ const ChallengePreview = () => {
                                   ? "✅"
                                   : isFailed
                                   ? "❌"
-                                  : trainingDay.is_rest_day
+                                  : trainingDay.is_rest_day || isRest
                                   ? "🌴"
                                   : "💪"}
                               </div>

@@ -233,7 +233,7 @@ const ChallengeDayOverview = () => {
 
       // Transform the data to match our interface
       const transformedTrainingDay: TrainingDay = {
-        id: trainingDayData.id,
+        id: userChallengeCalendarData.id,
         day_number: trainingDayData.day_number,
         title: trainingDayData.title || `Day ${trainingDayData.day_number}`,
         description: trainingDayData.description || "",
@@ -340,9 +340,14 @@ const ChallengeDayOverview = () => {
   ) => {
     if (!user || !challengeId || !trainingDay) return;
 
+    console.log("trainingDay", trainingDay);
     try {
       // Find the calendar day for this training day
       const calendarDay = getCalendarDayByTrainingDay(trainingDay.id);
+
+      console.log("calendarDay", calendarDay);
+      console.log("newStatus", newStatus);
+
       if (!calendarDay) {
         toast({
           title: "Error",
