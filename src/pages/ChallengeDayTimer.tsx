@@ -52,7 +52,6 @@ const ChallengeDayTimer = () => {
     return saved !== null ? JSON.parse(saved) : true;
   });
   const [hasAnnouncedSegment, setHasAnnouncedSegment] = useState(false);
-  const [hasAnnouncedCountdown, setHasAnnouncedCountdown] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [trainingDayId, setTrainingDayId] = useState<string>("");
@@ -156,16 +155,15 @@ const ChallengeDayTimer = () => {
     }
   }, [exercises]);
 
-  // Timer logic with enhanced voice announcements
+  // Timer logic with enhanced voice announcements for both exercise and rest
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isRunning && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
-          // Countdown for last 5 seconds of exercise
-          const currentSegment = segments[currentSegmentIndex];
-          if (currentSegment?.type === 'exercise' && prev <= 5 && prev > 1 && !hasAnnouncedCountdown) {
+          // Countdown for last 5 seconds of both exercise AND rest periods
+          if (prev <= 5 && prev > 0) {
             speak(prev.toString());
           }
           
@@ -179,7 +177,7 @@ const ChallengeDayTimer = () => {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, timeRemaining, currentSegmentIndex, segments, hasAnnouncedCountdown]);
+  }, [isRunning, timeRemaining, currentSegmentIndex, segments]);
 
   // Announce segment changes
   useEffect(() => {
@@ -189,7 +187,6 @@ const ChallengeDayTimer = () => {
     
     if (!hasAnnouncedSegment) {
       setHasAnnouncedSegment(true);
-      setHasAnnouncedCountdown(false);
       
       if (currentSegment.type === 'exercise') {
         const duration = formatTime(currentSegment.duration);
@@ -198,26 +195,36 @@ const ChallengeDayTimer = () => {
         speak("Rest time");
       }
     }
-
-    // Set up countdown announcement
-    if (currentSegment.type === 'exercise' && timeRemaining === 5 && !hasAnnouncedCountdown) {
-      setHasAnnouncedCountdown(true);
-      speak("5");
-    }
-  }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, timeRemaining, segments]);
+  }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, segments]);
 
   // Reset announcement flags when segment changes
   useEffect(() => {
     setHasAnnouncedSegment(false);
-    setHasAnnouncedCountdown(false);
   }, [currentSegmentIndex]);
 
-  // Voice announcements
+  // Voice announcements with male English voice
   const speak = (text: string) => {
     if (!isAudioEnabled || !('speechSynthesis' in window)) return;
     
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.8;
+    utterance.pitch = 0.9;
+    utterance.volume = 1;
+    
+    // Force male English voice
+    const voices = speechSynthesis.getVoices();
+    const maleEnglishVoice = voices.find(voice => 
+      voice.lang.startsWith('en') && 
+      (voice.name.toLowerCase().includes('male') || 
+       voice.name.toLowerCase().includes('david') ||
+       voice.name.toLowerCase().includes('mark') ||
+       voice.name.toLowerCase().includes('daniel'))
+    ) || voices.find(voice => voice.lang.startsWith('en-US') || voice.lang.startsWith('en-GB'));
+    
+    if (maleEnglishVoice) {
+      utterance.voice = maleEnglishVoice;
+    }
+    
     speechSynthesis.speak(utterance);
   };
 
