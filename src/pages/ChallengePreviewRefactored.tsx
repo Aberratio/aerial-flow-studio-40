@@ -13,6 +13,7 @@ import {
   AlertTriangle,
   Edit,
   Trash2,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -48,6 +49,7 @@ import {
   isAfter,
   isBefore,
 } from "date-fns";
+import { isDayLocked } from "@/lib/utils";
 
 interface Challenge {
   id: string;
@@ -383,7 +385,10 @@ const ChallengePreviewRefactored = () => {
   const handleCalendarDayClick = (date: Date) => {
     const dayInfo = getCalendarDayInfo(date);
     if (dayInfo && dayInfo.is_accessible) {
-      navigate(`/challenge/${challengeId}/day/${dayInfo.training_day_id}`);
+      const trainingDay = challenge?.training_days?.find(td => td.id === dayInfo.training_day_id);
+      if (trainingDay && !isDayLocked(trainingDay.day_number, calendarDays)) {
+        navigate(`/challenge/${challengeId}/day/${dayInfo.training_day_id}`);
+      }
     }
   };
 
