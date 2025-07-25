@@ -47,7 +47,12 @@ const ChallengeDayTimer = () => {
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [isAudioEnabled, setIsAudioEnabled] = useState(() => {
+    const saved = localStorage.getItem('challengeTimerVoice');
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+  const [hasAnnouncedSegment, setHasAnnouncedSegment] = useState(false);
+  const [hasAnnouncedCountdown, setHasAnnouncedCountdown] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [trainingDayId, setTrainingDayId] = useState<string>("");
@@ -151,13 +156,19 @@ const ChallengeDayTimer = () => {
     }
   }, [exercises]);
 
-  // Timer logic
+  // Timer logic with enhanced voice announcements
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isRunning && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
+          // Countdown for last 5 seconds of exercise
+          const currentSegment = segments[currentSegmentIndex];
+          if (currentSegment?.type === 'exercise' && prev <= 5 && prev > 1 && !hasAnnouncedCountdown) {
+            speak(prev.toString());
+          }
+          
           if (prev <= 1) {
             handleSegmentComplete();
             return 0;
@@ -168,7 +179,38 @@ const ChallengeDayTimer = () => {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, timeRemaining]);
+  }, [isRunning, timeRemaining, currentSegmentIndex, segments, hasAnnouncedCountdown]);
+
+  // Announce segment changes
+  useEffect(() => {
+    if (!isRunning || !segments[currentSegmentIndex]) return;
+
+    const currentSegment = segments[currentSegmentIndex];
+    
+    if (!hasAnnouncedSegment) {
+      setHasAnnouncedSegment(true);
+      setHasAnnouncedCountdown(false);
+      
+      if (currentSegment.type === 'exercise') {
+        const duration = formatTime(currentSegment.duration);
+        speak(`${currentSegment.exerciseName}, ${duration}`);
+      } else {
+        speak("Rest time");
+      }
+    }
+
+    // Set up countdown announcement
+    if (currentSegment.type === 'exercise' && timeRemaining === 5 && !hasAnnouncedCountdown) {
+      setHasAnnouncedCountdown(true);
+      speak("5");
+    }
+  }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, timeRemaining, segments]);
+
+  // Reset announcement flags when segment changes
+  useEffect(() => {
+    setHasAnnouncedSegment(false);
+    setHasAnnouncedCountdown(false);
+  }, [currentSegmentIndex]);
 
   // Voice announcements
   const speak = (text: string) => {
@@ -298,8 +340,12 @@ const ChallengeDayTimer = () => {
           
           <Button
             variant="ghost"
-            onClick={() => setIsAudioEnabled(!isAudioEnabled)}
-            className="text-white hover:bg-white/10"
+            onClick={() => {
+              const newValue = !isAudioEnabled;
+              setIsAudioEnabled(newValue);
+              localStorage.setItem('challengeTimerVoice', JSON.stringify(newValue));
+            }}
+            className={`text-white hover:bg-white/10 ${isAudioEnabled ? 'bg-white/20' : ''}`}
           >
             {isAudioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
           </Button>
@@ -331,21 +377,21 @@ const ChallengeDayTimer = () => {
                   {currentSegment.type === 'exercise' ? 'Exercise' : 'Rest'}
                 </Badge>
                 
-                {/* Exercise Image - Responsive */}
+                {/* Exercise Image - Bigger for all views */}
                 <div className="mb-6">
                   {currentSegment.type === 'exercise' && currentSegment.exerciseImage ? (
                     <img
                       src={currentSegment.exerciseImage}
                       alt={currentSegment.exerciseName}
-                      className="w-48 h-48 md:w-64 md:h-64 object-cover rounded-lg mx-auto"
+                      className="w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 object-cover rounded-lg mx-auto"
                     />
                   ) : currentSegment.type === 'rest' ? (
-                    <div className="w-48 h-48 md:w-64 md:h-64 bg-green-500/20 rounded-lg mx-auto flex items-center justify-center">
-                      <Hand className="w-24 h-24 md:w-32 md:h-32 text-green-400" />
+                    <div className="w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-green-500/20 rounded-lg mx-auto flex items-center justify-center">
+                      <Hand className="w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 text-green-400" />
                     </div>
                   ) : (
-                    <div className="w-48 h-48 md:w-64 md:h-64 bg-gray-500/20 rounded-lg mx-auto flex items-center justify-center">
-                      <span className="text-3xl md:text-4xl">🏃‍♂️</span>
+                    <div className="w-72 h-72 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gray-500/20 rounded-lg mx-auto flex items-center justify-center">
+                      <span className="text-4xl md:text-5xl lg:text-6xl">🏃‍♂️</span>
                     </div>
                   )}
                 </div>
