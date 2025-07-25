@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
+import { useSpeech } from "@/hooks/useSpeech";
 
 interface Exercise {
   id: string;
@@ -24,7 +25,7 @@ interface Exercise {
 }
 
 interface TimerSegment {
-  type: 'exercise' | 'rest';
+  type: "exercise" | "rest";
   exerciseIndex: number;
   setIndex: number;
   duration: number;
@@ -40,7 +41,9 @@ const ChallengeDayTimer = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { changeDayStatus, getCalendarDayByTrainingDay } = useChallengeCalendar(challengeId || "");
+  const { changeDayStatus, getCalendarDayByTrainingDay } = useChallengeCalendar(
+    challengeId || ""
+  );
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [segments, setSegments] = useState<TimerSegment[]>([]);
@@ -48,13 +51,15 @@ const ChallengeDayTimer = () => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [isAudioEnabled, setIsAudioEnabled] = useState(() => {
-    const saved = localStorage.getItem('challengeTimerVoice');
+    const saved = localStorage.getItem("challengeTimerVoice");
     return saved !== null ? JSON.parse(saved) : true;
   });
   const [hasAnnouncedSegment, setHasAnnouncedSegment] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [trainingDayId, setTrainingDayId] = useState<string>("");
+
+  const { speak } = useSpeech(isAudioEnabled);
 
   // Fetch exercises data
   useEffect(() => {
@@ -76,29 +81,33 @@ const ChallengeDayTimer = () => {
         setTrainingDayId(calendarDay.training_day_id);
 
         // Fetch training day exercises
-        const { data: trainingDayData, error: trainingDayError } = await supabase
-          .from("challenge_training_days")
-          .select(`
+        const { data: trainingDayData, error: trainingDayError } =
+          await supabase
+            .from("challenge_training_days")
+            .select(
+              `
             training_day_exercises (
               *,
               figure:figures (
                 id, name, image_url
               )
             )
-          `)
-          .eq("id", calendarDay.training_day_id)
-          .single();
+          `
+            )
+            .eq("id", calendarDay.training_day_id)
+            .single();
 
         if (trainingDayError) throw trainingDayError;
 
-        const exercisesData = trainingDayData.training_day_exercises?.map((exercise: any) => ({
-          id: exercise.id,
-          sets: exercise.sets || 1,
-          reps: exercise.reps,
-          hold_time_seconds: exercise.hold_time_seconds || 30,
-          rest_time_seconds: exercise.rest_time_seconds || 15,
-          figure: exercise.figure,
-        })) || [];
+        const exercisesData =
+          trainingDayData.training_day_exercises?.map((exercise: any) => ({
+            id: exercise.id,
+            sets: exercise.sets || 1,
+            reps: exercise.reps,
+            hold_time_seconds: exercise.hold_time_seconds || 30,
+            rest_time_seconds: exercise.rest_time_seconds || 15,
+            figure: exercise.figure,
+          })) || [];
 
         setExercises(exercisesData);
       } catch (error) {
@@ -124,11 +133,11 @@ const ChallengeDayTimer = () => {
 
     exercises.forEach((exercise, exerciseIndex) => {
       const sets = exercise.sets || 1;
-      
+
       for (let setIndex = 0; setIndex < sets; setIndex++) {
         // Add exercise segment
         newSegments.push({
-          type: 'exercise',
+          type: "exercise",
           exerciseIndex,
           setIndex,
           duration: exercise.hold_time_seconds || 30,
@@ -137,13 +146,15 @@ const ChallengeDayTimer = () => {
         });
 
         // Add rest segment (except after the last set of the last exercise)
-        if (!(exerciseIndex === exercises.length - 1 && setIndex === sets - 1)) {
+        if (
+          !(exerciseIndex === exercises.length - 1 && setIndex === sets - 1)
+        ) {
           newSegments.push({
-            type: 'rest',
+            type: "rest",
             exerciseIndex,
             setIndex,
             duration: exercise.rest_time_seconds || 15,
-            exerciseName: 'Rest',
+            exerciseName: "Rest",
           });
         }
       }
@@ -163,10 +174,10 @@ const ChallengeDayTimer = () => {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
           // Speak countdown BEFORE decrementing to fix synchronization
-          if (prev <= 6 && prev > 1) {
-            speak((prev - 1).toString());
+          if (prev <= 7 && prev > 1) {
+            speak((prev - 2).toString());
           }
-          
+
           if (prev <= 1) {
             handleSegmentComplete();
             return 0;
@@ -184,11 +195,11 @@ const ChallengeDayTimer = () => {
     if (!isRunning || !segments[currentSegmentIndex]) return;
 
     const currentSegment = segments[currentSegmentIndex];
-    
+
     if (!hasAnnouncedSegment) {
       setHasAnnouncedSegment(true);
-      
-      if (currentSegment.type === 'exercise') {
+
+      if (currentSegment.type === "exercise") {
         const duration = formatTimeNatural(currentSegment.duration);
         speak(`${currentSegment.exerciseName}, ${duration}`);
       } else {
@@ -203,40 +214,11 @@ const ChallengeDayTimer = () => {
     setHasAnnouncedSegment(false);
   }, [currentSegmentIndex]);
 
-  // Voice announcements with different male English voice
-  const speak = (text: string) => {
-    if (!isAudioEnabled || !('speechSynthesis' in window)) return;
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.8;
-    utterance.pitch = 0.8;
-    utterance.volume = 1;
-    
-    // Choose a different male English voice - prefer Alex, Tom, or other male voices
-    const voices = speechSynthesis.getVoices();
-    const maleEnglishVoice = voices.find(voice => 
-      voice.lang.startsWith('en') && 
-      (voice.name.toLowerCase().includes('alex') || 
-       voice.name.toLowerCase().includes('tom') ||
-       voice.name.toLowerCase().includes('james') ||
-       voice.name.toLowerCase().includes('michael') ||
-       voice.name.toLowerCase().includes('robert'))
-    ) || voices.find(voice => 
-      voice.lang.startsWith('en') && voice.name.toLowerCase().includes('male')
-    ) || voices.find(voice => voice.lang.startsWith('en-US'));
-    
-    if (maleEnglishVoice) {
-      utterance.voice = maleEnglishVoice;
-    }
-    
-    speechSynthesis.speak(utterance);
-  };
-
   // Format time in natural language
   const formatTimeNatural = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    
+
     if (mins === 0) {
       return `${secs} seconds`;
     } else if (mins === 1 && secs === 0) {
@@ -252,7 +234,7 @@ const ChallengeDayTimer = () => {
 
   const handleSegmentComplete = () => {
     const currentSegment = segments[currentSegmentIndex];
-    
+
     if (currentSegmentIndex >= segments.length - 1) {
       // Timer completed
       setIsCompleted(true);
@@ -265,16 +247,9 @@ const ChallengeDayTimer = () => {
     // Move to next segment
     const nextIndex = currentSegmentIndex + 1;
     const nextSegment = segments[nextIndex];
-    
+
     setCurrentSegmentIndex(nextIndex);
     setTimeRemaining(nextSegment.duration);
-    
-    // Voice announcement for next segment
-    if (nextSegment.type === 'exercise') {
-      speak(`Next exercise: ${nextSegment.exerciseName}`);
-    } else {
-      speak("Rest time");
-    }
   };
 
   const handleWorkoutComplete = async () => {
@@ -286,7 +261,8 @@ const ChallengeDayTimer = () => {
         await changeDayStatus(calendarDay.calendar_date, "completed");
         toast({
           title: "Workout Completed!",
-          description: "Great job! This training day has been marked as completed.",
+          description:
+            "Great job! This training day has been marked as completed.",
         });
         navigate(`/challenges/${challengeId}`);
       }
@@ -302,9 +278,6 @@ const ChallengeDayTimer = () => {
 
   const handlePlayPause = () => {
     setIsRunning(!isRunning);
-    if (!isRunning && currentSegmentIndex === 0 && timeRemaining === segments[0]?.duration) {
-      speak(`Starting workout. First exercise: ${segments[0]?.exerciseName}`);
-    }
   };
 
   const handleSkip = () => {
@@ -314,15 +287,21 @@ const ChallengeDayTimer = () => {
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   const calculateProgress = (): number => {
     if (segments.length === 0) return 0;
-    const totalDuration = segments.reduce((sum, segment) => sum + segment.duration, 0);
-    const completedDuration = segments.slice(0, currentSegmentIndex).reduce((sum, segment) => sum + segment.duration, 0);
-    const currentSegmentProgress = segments[currentSegmentIndex] ? 
-      (segments[currentSegmentIndex].duration - timeRemaining) : 0;
+    const totalDuration = segments.reduce(
+      (sum, segment) => sum + segment.duration,
+      0
+    );
+    const completedDuration = segments
+      .slice(0, currentSegmentIndex)
+      .reduce((sum, segment) => sum + segment.duration, 0);
+    const currentSegmentProgress = segments[currentSegmentIndex]
+      ? segments[currentSegmentIndex].duration - timeRemaining
+      : 0;
     return ((completedDuration + currentSegmentProgress) / totalDuration) * 100;
   };
 
@@ -341,8 +320,13 @@ const ChallengeDayTimer = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-white mb-2">No exercises found</h2>
-          <Button onClick={() => navigate(`/challenge/${challengeId}/day/${dayId}`)} variant="outline">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            No exercises found
+          </h2>
+          <Button
+            onClick={() => navigate(`/challenge/${challengeId}/day/${dayId}`)}
+            variant="outline"
+          >
             Back to Day Overview
           </Button>
         </div>
@@ -367,26 +351,35 @@ const ChallengeDayTimer = () => {
               <ChevronLeft className="w-5 h-5" />
               <span className="hidden sm:inline">Back to Overview</span>
             </Button>
-            
+
             <div className="flex items-center gap-3">
               {/* Progress indicator */}
               <div className="hidden sm:flex items-center gap-2 text-sm text-white/70">
-                <span>{currentSegmentIndex + 1} / {segments.length}</span>
+                <span>
+                  {currentSegmentIndex + 1} / {segments.length}
+                </span>
               </div>
-              
+
               {/* Voice toggle */}
               <Button
                 variant="ghost"
                 onClick={() => {
                   const newValue = !isAudioEnabled;
                   setIsAudioEnabled(newValue);
-                  localStorage.setItem('challengeTimerVoice', JSON.stringify(newValue));
+                  localStorage.setItem(
+                    "challengeTimerVoice",
+                    JSON.stringify(newValue)
+                  );
                 }}
                 className={`text-white hover:bg-white/10 transition-all ${
-                  isAudioEnabled ? 'bg-primary/20 text-primary' : 'bg-white/5'
+                  isAudioEnabled ? "bg-primary/20 text-primary" : "bg-white/5"
                 }`}
               >
-                {isAudioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+                {isAudioEnabled ? (
+                  <Volume2 className="w-5 h-5" />
+                ) : (
+                  <VolumeX className="w-5 h-5" />
+                )}
               </Button>
             </div>
           </div>
@@ -397,15 +390,19 @@ const ChallengeDayTimer = () => {
         {/* Main Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between items-center mb-3">
-            <h1 className="text-xl font-semibold text-white">Workout Session</h1>
+            <h1 className="text-xl font-semibold text-white">
+              Workout Session
+            </h1>
             <span className="text-sm text-white/60">
               {Math.round(calculateProgress())}% Complete
             </span>
           </div>
           <div className="relative">
             <Progress value={calculateProgress()} className="h-3 bg-white/10" />
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary rounded-full opacity-30" 
-                 style={{ width: `${calculateProgress()}%` }} />
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary rounded-full opacity-30"
+              style={{ width: `${calculateProgress()}%` }}
+            />
           </div>
         </div>
 
@@ -418,13 +415,14 @@ const ChallengeDayTimer = () => {
                   {/* Exercise Image - Very Large */}
                   <div className="relative">
                     <div className="aspect-square max-w-2xl mx-auto">
-                      {currentSegment.type === 'exercise' && currentSegment.exerciseImage ? (
+                      {currentSegment.type === "exercise" &&
+                      currentSegment.exerciseImage ? (
                         <img
                           src={currentSegment.exerciseImage}
                           alt={currentSegment.exerciseName}
                           className="w-full h-full object-cover"
                         />
-                      ) : currentSegment.type === 'rest' ? (
+                      ) : currentSegment.type === "rest" ? (
                         <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
                           <Hand className="w-32 h-32 md:w-40 md:h-40 text-green-400" />
                         </div>
@@ -434,17 +432,19 @@ const ChallengeDayTimer = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Overlay with exercise type */}
                     <div className="absolute top-4 left-4">
-                      <Badge 
+                      <Badge
                         className={`text-sm font-medium ${
-                          currentSegment.type === 'exercise' 
-                            ? 'bg-blue-500/90 text-white border-0' 
-                            : 'bg-green-500/90 text-white border-0'
+                          currentSegment.type === "exercise"
+                            ? "bg-blue-500/90 text-white border-0"
+                            : "bg-green-500/90 text-white border-0"
                         }`}
                       >
-                        {currentSegment.type === 'exercise' ? 'Exercise' : 'Rest Period'}
+                        {currentSegment.type === "exercise"
+                          ? "Exercise"
+                          : "Rest Period"}
                       </Badge>
                     </div>
                   </div>
@@ -454,15 +454,15 @@ const ChallengeDayTimer = () => {
                     <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">
                       {currentSegment.exerciseName}
                     </h2>
-                    
+
                     {/* Large Timer Display */}
                     <div className="relative mb-6">
                       <div className="text-6xl md:text-8xl font-mono font-bold text-primary mb-2">
                         {formatTime(timeRemaining)}
                       </div>
-                      <div className="text-sm text-white/60">
+                      {/* <div className="text-sm text-white/60">
                         {formatTimeNatural(timeRemaining)} remaining
-                      </div>
+                      </div> */}
                     </div>
 
                     {/* Controls */}
@@ -484,7 +484,7 @@ const ChallengeDayTimer = () => {
                           </>
                         )}
                       </Button>
-                      
+
                       {!isCompleted && (
                         <Button
                           onClick={handleSkip}
@@ -506,24 +506,37 @@ const ChallengeDayTimer = () => {
               {/* Current Exercise Details */}
               <Card className="glass-effect border-white/10">
                 <CardContent className="p-4">
-                  <h3 className="text-lg font-semibold text-white mb-3">Current</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Current
+                  </h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-white/70">Type:</span>
-                      <span className="text-white">{currentSegment.type === 'exercise' ? 'Exercise' : 'Rest'}</span>
+                      <span className="text-white">
+                        {currentSegment.type === "exercise"
+                          ? "Exercise"
+                          : "Rest"}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/70">Duration:</span>
-                      <span className="text-white">{formatTimeNatural(currentSegment.duration)}</span>
+                      <span className="text-white">
+                        {formatTimeNatural(currentSegment.duration)}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/70">Exercise:</span>
-                      <span className="text-white font-medium">{currentSegment.exerciseIndex + 1} of {exercises.length}</span>
+                      <span className="text-white font-medium">
+                        {currentSegment.exerciseIndex + 1} of {exercises.length}
+                      </span>
                     </div>
-                    {currentSegment.type === 'exercise' && (
+                    {currentSegment.type === "exercise" && (
                       <div className="flex justify-between">
                         <span className="text-white/70">Set:</span>
-                        <span className="text-white">{currentSegment.setIndex + 1} of {exercises[currentSegment.exerciseIndex]?.sets || 1}</span>
+                        <span className="text-white">
+                          {currentSegment.setIndex + 1} of{" "}
+                          {exercises[currentSegment.exerciseIndex]?.sets || 1}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -534,15 +547,18 @@ const ChallengeDayTimer = () => {
               {nextSegment && (
                 <Card className="glass-effect border-white/10">
                   <CardContent className="p-4">
-                    <h3 className="text-lg font-semibold text-white mb-3">Up Next</h3>
+                    <h3 className="text-lg font-semibold text-white mb-3">
+                      Up Next
+                    </h3>
                     <div className="flex items-center space-x-3">
-                      {nextSegment.type === 'exercise' && nextSegment.exerciseImage ? (
+                      {nextSegment.type === "exercise" &&
+                      nextSegment.exerciseImage ? (
                         <img
                           src={nextSegment.exerciseImage}
                           alt={nextSegment.exerciseName}
                           className="w-12 h-12 object-cover rounded-lg"
                         />
-                      ) : nextSegment.type === 'rest' ? (
+                      ) : nextSegment.type === "rest" ? (
                         <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
                           <Hand className="w-6 h-6 text-green-400" />
                         </div>
@@ -552,7 +568,9 @@ const ChallengeDayTimer = () => {
                         </div>
                       )}
                       <div className="flex-1">
-                        <div className="font-medium text-white">{nextSegment.exerciseName}</div>
+                        <div className="font-medium text-white">
+                          {nextSegment.exerciseName}
+                        </div>
                         <div className="text-sm text-white/60">
                           {formatTimeNatural(nextSegment.duration)}
                         </div>
@@ -565,7 +583,9 @@ const ChallengeDayTimer = () => {
               {/* Workout Stats */}
               <Card className="glass-effect border-white/10">
                 <CardContent className="p-4">
-                  <h3 className="text-lg font-semibold text-white mb-3">Stats</h3>
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Stats
+                  </h3>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-white/70">Total Exercises:</span>
@@ -573,11 +593,15 @@ const ChallengeDayTimer = () => {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/70">Total Sets:</span>
-                      <span className="text-white">{segments.filter(s => s.type === 'exercise').length}</span>
+                      <span className="text-white">
+                        {segments.filter((s) => s.type === "exercise").length}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-white/70">Completed:</span>
-                      <span className="text-white">{currentSegmentIndex} / {segments.length}</span>
+                      <span className="text-white">
+                        {currentSegmentIndex} / {segments.length}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -594,13 +618,20 @@ const ChallengeDayTimer = () => {
                 <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
                   <span className="text-4xl">🎉</span>
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-3">Workout Complete!</h2>
+                <h2 className="text-3xl font-bold text-white mb-3">
+                  Workout Complete!
+                </h2>
                 <p className="text-white/70 mb-6 text-lg">
-                  Fantastic work! You've successfully completed this training session.
+                  Fantastic work! You've successfully completed this training
+                  session.
                 </p>
                 <div className="bg-white/10 rounded-lg p-4 mb-6">
-                  <div className="text-sm text-white/60 mb-1">Session Stats</div>
-                  <div className="text-white font-semibold">{exercises.length} exercises completed</div>
+                  <div className="text-sm text-white/60 mb-1">
+                    Session Stats
+                  </div>
+                  <div className="text-white font-semibold">
+                    {exercises.length} exercises completed
+                  </div>
                 </div>
                 <Button
                   onClick={() => navigate(`/challenges/${challengeId}`)}
