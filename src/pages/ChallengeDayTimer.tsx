@@ -337,10 +337,71 @@ const ChallengeDayTimer = () => {
   const currentSegment = getCurrentSegment();
   const nextSegment = getNextSegment();
 
+  const ProgressBar = ({ className }: { className: string }) => {
+    return (
+      <div className={`my-2 ${className}`}>
+        <div className="flex justify-between items-center mb-3">
+          <h1 className="text-xl font-semibold text-white">Workout Session</h1>
+          <span className="text-sm text-white/60">
+            {Math.round(calculateProgress())}% Complete
+          </span>
+        </div>
+        <div className="relative">
+          <Progress value={calculateProgress()} className="h-3 bg-white/10" />
+          <div
+            className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary rounded-full opacity-30"
+            style={{ width: `${calculateProgress()}%` }}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const NextUp = ({ className }: { className: string }) => {
+    return (
+      <div className={`${className}`}>
+        {/* Next Up */}
+        {nextSegment && (
+          <Card className="glass-effect border-white/10">
+            <CardContent className="p-4">
+              <h3 className="text-lg font-semibold text-white mb-3">Up Next</h3>
+              <div className="flex items-center space-x-3">
+                {nextSegment.type === "exercise" &&
+                nextSegment.exerciseImage ? (
+                  <img
+                    src={nextSegment.exerciseImage}
+                    alt={nextSegment.exerciseName}
+                    className="w-12 h-12 object-cover rounded-lg"
+                  />
+                ) : nextSegment.type === "rest" ? (
+                  <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                    <Hand className="w-6 h-6 text-green-400" />
+                  </div>
+                ) : (
+                  <div className="w-12 h-12 bg-gray-500/20 rounded-lg flex items-center justify-center">
+                    <span className="text-xl">🏃‍♂️</span>
+                  </div>
+                )}
+                <div className="flex-1">
+                  <div className="font-medium text-white">
+                    {nextSegment.exerciseName}
+                  </div>
+                  <div className="text-sm text-white/60">
+                    {formatTimeNatural(nextSegment.duration)}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
       {/* Modern Header */}
-      <div className="sticky top-0 z-40 bg-black/20 backdrop-blur-lg border-b border-white/10">
+      <div>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -350,6 +411,7 @@ const ChallengeDayTimer = () => {
             >
               <ChevronLeft className="w-5 h-5" />
               <span className="hidden sm:inline">Back to Overview</span>
+              <span className="sm:hidden">Back</span>
             </Button>
 
             <div className="flex items-center gap-3">
@@ -386,28 +448,10 @@ const ChallengeDayTimer = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Main Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-3">
-            <h1 className="text-xl font-semibold text-white">
-              Workout Session
-            </h1>
-            <span className="text-sm text-white/60">
-              {Math.round(calculateProgress())}% Complete
-            </span>
-          </div>
-          <div className="relative">
-            <Progress value={calculateProgress()} className="h-3 bg-white/10" />
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary rounded-full opacity-30"
-              style={{ width: `${calculateProgress()}%` }}
-            />
-          </div>
-        </div>
-
+      <div className="container mx-auto px-4 py-1 max-w-4xl">
+        <ProgressBar className="hidden sm:block mb-8" />
         {currentSegment && (
-          <div className="grid lg:grid-cols-3 gap-6">
+          <div className="grid lg:grid-cols-3 gap-4">
             {/* Main Exercise Display */}
             <div className="lg:col-span-2">
               <Card className="glass-effect border-white/10 overflow-hidden">
@@ -456,31 +500,28 @@ const ChallengeDayTimer = () => {
                     </h2>
 
                     {/* Large Timer Display */}
-                    <div className="relative mb-6">
-                      <div className="text-6xl md:text-8xl font-mono font-bold text-primary mb-2">
+                    <div className="relative mb-4 sm:mb-6">
+                      <div className="text-5xl sm:text-6xl md:text-8xl font-mono font-bold text-primary mb-2">
                         {formatTime(timeRemaining)}
                       </div>
-                      {/* <div className="text-sm text-white/60">
-                        {formatTimeNatural(timeRemaining)} remaining
-                      </div> */}
                     </div>
 
                     {/* Controls */}
-                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                    <div className="flex flex-row justify-center gap-4">
                       <Button
                         onClick={handlePlayPause}
                         size="lg"
-                        className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-4 text-lg shadow-lg"
+                        variant="primary"
                       >
                         {isRunning ? (
                           <>
                             <Pause className="w-6 h-6 mr-3" />
-                            Pause Timer
+                            Pause
                           </>
                         ) : (
                           <>
                             <Play className="w-6 h-6 mr-3" />
-                            Start Timer
+                            Start
                           </>
                         )}
                       </Button>
@@ -490,9 +531,8 @@ const ChallengeDayTimer = () => {
                           onClick={handleSkip}
                           variant="outline"
                           size="lg"
-                          className="border-white/30 text-white hover:bg-white/10 font-semibold px-8 py-4 text-lg"
                         >
-                          Skip →
+                          Skip
                         </Button>
                       )}
                     </div>
@@ -500,6 +540,9 @@ const ChallengeDayTimer = () => {
                 </CardContent>
               </Card>
             </div>
+
+            <NextUp className="block sm:hidden" />
+            <ProgressBar className="block sm:hidden" />
 
             {/* Sidebar Info */}
             <div className="space-y-4">
@@ -543,42 +586,7 @@ const ChallengeDayTimer = () => {
                 </CardContent>
               </Card>
 
-              {/* Next Up */}
-              {nextSegment && (
-                <Card className="glass-effect border-white/10">
-                  <CardContent className="p-4">
-                    <h3 className="text-lg font-semibold text-white mb-3">
-                      Up Next
-                    </h3>
-                    <div className="flex items-center space-x-3">
-                      {nextSegment.type === "exercise" &&
-                      nextSegment.exerciseImage ? (
-                        <img
-                          src={nextSegment.exerciseImage}
-                          alt={nextSegment.exerciseName}
-                          className="w-12 h-12 object-cover rounded-lg"
-                        />
-                      ) : nextSegment.type === "rest" ? (
-                        <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                          <Hand className="w-6 h-6 text-green-400" />
-                        </div>
-                      ) : (
-                        <div className="w-12 h-12 bg-gray-500/20 rounded-lg flex items-center justify-center">
-                          <span className="text-xl">🏃‍♂️</span>
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <div className="font-medium text-white">
-                          {nextSegment.exerciseName}
-                        </div>
-                        <div className="text-sm text-white/60">
-                          {formatTimeNatural(nextSegment.duration)}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+              <NextUp className="hidden sm:block" />
 
               {/* Workout Stats */}
               <Card className="glass-effect border-white/10">
