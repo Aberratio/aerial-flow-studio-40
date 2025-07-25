@@ -26,6 +26,7 @@ import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
 import MyJourney from "@/pages/MyJourney";
 import EditChallenge from "@/pages/EditChallenge";
 import ChallengeDayOverview from "@/pages/ChallengeDayOverview";
+import ChallengeDayTimer from "@/pages/ChallengeDayTimer";
 import ChallengePreview from "@/pages/ChallengePreview";
 import PostDetail from "@/pages/PostDetail";
 import ExerciseDetail from "@/pages/ExerciseDetail";
@@ -283,6 +284,16 @@ const AppRoutes = () => {
             <PremiumRoute>
               <ChallengeDayOverview />
               {/* <ChallengeDayOverviewRefactored /> */}
+            </PremiumRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/challenge/:challengeId/day/:dayId/timer"
+        element={
+          <ProtectedRoute>
+            <PremiumRoute>
+              <ChallengeDayTimer />
             </PremiumRoute>
           </ProtectedRoute>
         }
