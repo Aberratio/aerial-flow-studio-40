@@ -795,7 +795,7 @@ const Challenges = () => {
                         : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[70]" align="start">
+                  <PopoverContent className="w-auto p-0 z-[70] max-w-[90vw]" align="start">
                     <Calendar
                       mode="single"
                       selected={selectedStartDate}
@@ -806,7 +806,7 @@ const Challenges = () => {
                         date > new Date() || date < subMonths(new Date(), 1)
                       }
                       initialFocus
-                      className="p-3 pointer-events-auto"
+                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
