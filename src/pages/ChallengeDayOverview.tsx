@@ -340,13 +340,9 @@ const ChallengeDayOverview = () => {
   ) => {
     if (!user || !challengeId || !trainingDay) return;
 
-    console.log("trainingDay", trainingDay);
     try {
       // Find the calendar day for this training day
       const calendarDay = getCalendarDayByTrainingDay(trainingDay.id);
-
-      console.log("calendarDay", calendarDay);
-      console.log("newStatus", newStatus);
 
       if (!calendarDay) {
         toast({
@@ -722,20 +718,30 @@ const ChallengeDayOverview = () => {
             {/* Primary Action Button */}
             <div className="flex space-x-3">
               {!trainingDay.is_rest_day ? (
-                <Button
-                  variant="primary"
-                  onClick={handleStartDay}
-                  disabled={trainingDay.exercises.length === 0}
-                  className="flex-1 disabled:opacity-50"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {isRetryAttempt()
-                    ? `Retry Day ${dayNumber}`
-                    : `Start Day ${dayNumber}`}
-                </Button>
+                <>
+                  <Button
+                    variant="primary"
+                    onClick={handleStartDay}
+                    disabled={trainingDay.exercises.length === 0}
+                    className="flex-1 disabled:opacity-50"
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    {isRetryAttempt()
+                      ? `Retry Day ${dayNumber}`
+                      : `Start Day ${dayNumber}`}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleStatusChange("completed")}
+                    className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Complete Day
+                  </Button>
+                </>
               ) : (
                 <Button
-                  onClick={() => handleStatusChange("rest")}
+                  onClick={() => handleStatusChange("completed")}
                   className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />

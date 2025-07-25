@@ -821,6 +821,11 @@ const ChallengePreview = () => {
                                 🔄
                               </div>
                             )}
+                            {isCompleted && trainingDay.is_rest_day && (
+                              <div className="absolute top-1 right-1 text-xs">
+                                🌴
+                              </div>
+                            )}
                             {!isAccessible && !isCompleted && !isFailed && (
                               <div className="absolute bottom-1 right-1 text-xs">
                                 🔒
