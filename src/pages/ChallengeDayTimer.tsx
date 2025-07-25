@@ -386,181 +386,228 @@ const ChallengeDayTimer = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6 max-w-6xl h-[calc(100vh-120px)] flex flex-col">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Main Progress Bar */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-3">
+            <h1 className="text-xl font-semibold text-white">
+              Workout Session
+            </h1>
+            <span className="text-sm text-white/60">
+              {Math.round(calculateProgress())}% Complete
+            </span>
+          </div>
+          <div className="relative">
+            <Progress value={calculateProgress()} className="h-3 bg-white/10" />
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary rounded-full opacity-30"
+              style={{ width: `${calculateProgress()}%` }}
+            />
+          </div>
+        </div>
+
         {currentSegment && (
-          <>
-            {/* Main Content - Current Exercise, Timer, Next Exercise in one view */}
-            <div className="flex-1 grid lg:grid-cols-5 gap-6 min-h-0">
-              {/* Current Exercise */}
-              <div className="lg:col-span-2 flex flex-col">
-                <h3 className="text-lg font-semibold text-white mb-3 text-center">Current</h3>
-                <Card className="glass-effect border-white/10 overflow-hidden flex-1">
-                  <CardContent className="p-0 h-full flex flex-col">
-                    <div className="relative flex-1">
-                      <div className="h-full">
-                        {currentSegment.type === "exercise" && currentSegment.exerciseImage ? (
-                          <img
-                            src={currentSegment.exerciseImage}
-                            alt={currentSegment.exerciseName}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : currentSegment.type === "rest" ? (
-                          <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
-                            <Hand className="w-20 h-20 text-green-400" />
-                          </div>
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
-                            <span className="text-4xl">🏃‍♂️</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="absolute top-3 left-3">
-                        <Badge
-                          className={`text-xs font-medium ${
-                            currentSegment.type === "exercise"
-                              ? "bg-blue-500/90 text-white border-0"
-                              : "bg-green-500/90 text-white border-0"
-                          }`}
-                        >
-                          {currentSegment.type === "exercise" ? "Exercise" : "Rest"}
-                        </Badge>
-                      </div>
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Main Exercise Display */}
+            <div className="lg:col-span-2">
+              <Card className="glass-effect border-white/10 overflow-hidden">
+                <CardContent className="p-0">
+                  {/* Exercise Image - Very Large */}
+                  <div className="relative">
+                    <div className="aspect-square max-w-2xl mx-auto">
+                      {currentSegment.type === "exercise" &&
+                      currentSegment.exerciseImage ? (
+                        <img
+                          src={currentSegment.exerciseImage}
+                          alt={currentSegment.exerciseName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : currentSegment.type === "rest" ? (
+                        <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
+                          <Hand className="w-32 h-32 md:w-40 md:h-40 text-green-400" />
+                        </div>
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
+                          <span className="text-6xl md:text-8xl">🏃‍♂️</span>
+                        </div>
+                      )}
                     </div>
-                    <div className="p-4 text-center bg-gradient-to-t from-black/30 to-transparent">
-                      <h4 className="text-lg font-bold text-white truncate">
-                        {currentSegment.exerciseName}
-                      </h4>
+
+                    {/* Overlay with exercise type */}
+                    <div className="absolute top-4 left-4">
+                      <Badge
+                        className={`text-sm font-medium ${
+                          currentSegment.type === "exercise"
+                            ? "bg-blue-500/90 text-white border-0"
+                            : "bg-green-500/90 text-white border-0"
+                        }`}
+                      >
+                        {currentSegment.type === "exercise"
+                          ? "Exercise"
+                          : "Rest Period"}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Exercise Info */}
+                  <div className="p-6 text-center bg-gradient-to-t from-black/30 to-transparent">
+                    <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">
+                      {currentSegment.exerciseName}
+                    </h2>
+
+                    {/* Large Timer Display */}
+                    <div className="relative mb-6">
+                      <div className="text-6xl md:text-8xl font-mono font-bold text-primary mb-2">
+                        {formatTime(timeRemaining)}
+                      </div>
+                      {/* <div className="text-sm text-white/60">
+                        {formatTimeNatural(timeRemaining)} remaining
+                      </div> */}
+                    </div>
+
+                    {/* Controls */}
+                    <div className="flex flex-col sm:flex-row justify-center gap-4">
+                      <Button
+                        onClick={handlePlayPause}
+                        size="lg"
+                        className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-4 text-lg shadow-lg"
+                      >
+                        {isRunning ? (
+                          <>
+                            <Pause className="w-6 h-6 mr-3" />
+                            Pause Timer
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-6 h-6 mr-3" />
+                            Start Timer
+                          </>
+                        )}
+                      </Button>
+
+                      {!isCompleted && (
+                        <Button
+                          onClick={handleSkip}
+                          variant="outline"
+                          size="lg"
+                          className="border-white/30 text-white hover:bg-white/10 font-semibold px-8 py-4 text-lg"
+                        >
+                          Skip →
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Sidebar Info */}
+            <div className="space-y-4">
+              {/* Current Exercise Details */}
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Current
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-white/70">Type:</span>
+                      <span className="text-white">
+                        {currentSegment.type === "exercise"
+                          ? "Exercise"
+                          : "Rest"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/70">Duration:</span>
+                      <span className="text-white">
+                        {formatTimeNatural(currentSegment.duration)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/70">Exercise:</span>
+                      <span className="text-white font-medium">
+                        {currentSegment.exerciseIndex + 1} of {exercises.length}
+                      </span>
+                    </div>
+                    {currentSegment.type === "exercise" && (
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Set:</span>
+                        <span className="text-white">
+                          {currentSegment.setIndex + 1} of{" "}
+                          {exercises[currentSegment.exerciseIndex]?.sets || 1}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Next Up */}
+              {nextSegment && (
+                <Card className="glass-effect border-white/10">
+                  <CardContent className="p-4">
+                    <h3 className="text-lg font-semibold text-white mb-3">
+                      Up Next
+                    </h3>
+                    <div className="flex items-center space-x-3">
+                      {nextSegment.type === "exercise" &&
+                      nextSegment.exerciseImage ? (
+                        <img
+                          src={nextSegment.exerciseImage}
+                          alt={nextSegment.exerciseName}
+                          className="w-12 h-12 object-cover rounded-lg"
+                        />
+                      ) : nextSegment.type === "rest" ? (
+                        <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
+                          <Hand className="w-6 h-6 text-green-400" />
+                        </div>
+                      ) : (
+                        <div className="w-12 h-12 bg-gray-500/20 rounded-lg flex items-center justify-center">
+                          <span className="text-xl">🏃‍♂️</span>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <div className="font-medium text-white">
+                          {nextSegment.exerciseName}
+                        </div>
+                        <div className="text-sm text-white/60">
+                          {formatTimeNatural(nextSegment.duration)}
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
-              </div>
+              )}
 
-              {/* Timer */}
-              <div className="lg:col-span-1 flex flex-col justify-center items-center">
-                <div className="text-center">
-                  <div className="text-4xl md:text-6xl font-mono font-bold text-primary mb-4">
-                    {formatTime(timeRemaining)}
+              {/* Workout Stats */}
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <h3 className="text-lg font-semibold text-white mb-3">
+                    Stats
+                  </h3>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-white/70">Total Exercises:</span>
+                      <span className="text-white">{exercises.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/70">Total Sets:</span>
+                      <span className="text-white">
+                        {segments.filter((s) => s.type === "exercise").length}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-white/70">Completed:</span>
+                      <span className="text-white">
+                        {currentSegmentIndex} / {segments.length}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-3">
-                    <Button
-                      onClick={handlePlayPause}
-                      size="lg"
-                      className="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3"
-                    >
-                      {isRunning ? (
-                        <>
-                          <Pause className="w-5 h-5 mr-2" />
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-5 h-5 mr-2" />
-                          Start
-                        </>
-                      )}
-                    </Button>
-                    {!isCompleted && (
-                      <Button
-                        onClick={handleSkip}
-                        variant="outline"
-                        size="sm"
-                        className="border-white/30 text-white hover:bg-white/10"
-                      >
-                        Skip
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Next Exercise */}
-              <div className="lg:col-span-2 flex flex-col">
-                <h3 className="text-lg font-semibold text-white mb-3 text-center">Next</h3>
-                {nextSegment ? (
-                  <Card className="glass-effect border-white/10 overflow-hidden flex-1 opacity-70">
-                    <CardContent className="p-0 h-full flex flex-col">
-                      <div className="relative flex-1">
-                        <div className="h-full">
-                          {nextSegment.type === "exercise" && nextSegment.exerciseImage ? (
-                            <img
-                              src={nextSegment.exerciseImage}
-                              alt={nextSegment.exerciseName}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : nextSegment.type === "rest" ? (
-                            <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
-                              <Hand className="w-20 h-20 text-green-400" />
-                            </div>
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
-                              <span className="text-4xl">🏃‍♂️</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="absolute top-3 left-3">
-                          <Badge
-                            className={`text-xs font-medium ${
-                              nextSegment.type === "exercise"
-                                ? "bg-blue-500/90 text-white border-0"
-                                : "bg-green-500/90 text-white border-0"
-                            }`}
-                          >
-                            {nextSegment.type === "exercise" ? "Exercise" : "Rest"}
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="p-4 text-center bg-gradient-to-t from-black/30 to-transparent">
-                        <h4 className="text-lg font-bold text-white truncate">
-                          {nextSegment.exerciseName}
-                        </h4>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card className="glass-effect border-white/10 overflow-hidden flex-1 opacity-50">
-                    <CardContent className="p-6 h-full flex items-center justify-center">
-                      <div className="text-center">
-                        <div className="text-4xl mb-2">🎉</div>
-                        <p className="text-white/70 font-medium">Workout Complete!</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
+                </CardContent>
+              </Card>
             </div>
-
-            {/* Progress & Sound Button - Below main content */}
-            <div className="mt-6 pt-4 border-t border-white/10">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-4">
-                  <h2 className="text-lg font-semibold text-white">Workout Progress</h2>
-                  <span className="text-sm text-white/60">
-                    {currentSegmentIndex + 1} / {segments.length} - {Math.round(calculateProgress())}% Complete
-                  </span>
-                </div>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    const newValue = !isAudioEnabled;
-                    setIsAudioEnabled(newValue);
-                    localStorage.setItem("challengeTimerVoice", JSON.stringify(newValue));
-                  }}
-                  className={`text-white hover:bg-white/10 transition-all ${
-                    isAudioEnabled ? "bg-primary/20 text-primary" : "bg-white/5"
-                  }`}
-                >
-                  {isAudioEnabled ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
-                </Button>
-              </div>
-              <div className="relative">
-                <Progress value={calculateProgress()} className="h-2 bg-white/10" />
-                <div
-                  className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary rounded-full opacity-30"
-                  style={{ width: `${calculateProgress()}%` }}
-                />
-              </div>
-            </div>
-          </>
+          </div>
         )}
 
         {/* Completion Modal */}
