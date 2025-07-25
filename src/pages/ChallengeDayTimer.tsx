@@ -155,16 +155,16 @@ const ChallengeDayTimer = () => {
     }
   }, [exercises]);
 
-  // Timer logic with enhanced voice announcements for both exercise and rest
+  // Timer logic with synchronized countdown
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isRunning && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
-          // Countdown for last 5 seconds of both exercise AND rest periods
-          if (prev <= 5 && prev > 0) {
-            speak(prev.toString());
+          // Speak countdown BEFORE decrementing to fix synchronization
+          if (prev <= 6 && prev > 1) {
+            speak((prev - 1).toString());
           }
           
           if (prev <= 1) {
@@ -189,10 +189,11 @@ const ChallengeDayTimer = () => {
       setHasAnnouncedSegment(true);
       
       if (currentSegment.type === 'exercise') {
-        const duration = formatTime(currentSegment.duration);
+        const duration = formatTimeNatural(currentSegment.duration);
         speak(`${currentSegment.exerciseName}, ${duration}`);
       } else {
-        speak("Rest time");
+        const duration = formatTimeNatural(currentSegment.duration);
+        speak(`Rest time, ${duration}`);
       }
     }
   }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, segments]);
@@ -202,30 +203,51 @@ const ChallengeDayTimer = () => {
     setHasAnnouncedSegment(false);
   }, [currentSegmentIndex]);
 
-  // Voice announcements with male English voice
+  // Voice announcements with different male English voice
   const speak = (text: string) => {
     if (!isAudioEnabled || !('speechSynthesis' in window)) return;
     
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.8;
-    utterance.pitch = 0.9;
+    utterance.pitch = 0.8;
     utterance.volume = 1;
     
-    // Force male English voice
+    // Choose a different male English voice - prefer Alex, Tom, or other male voices
     const voices = speechSynthesis.getVoices();
     const maleEnglishVoice = voices.find(voice => 
       voice.lang.startsWith('en') && 
-      (voice.name.toLowerCase().includes('male') || 
-       voice.name.toLowerCase().includes('david') ||
-       voice.name.toLowerCase().includes('mark') ||
-       voice.name.toLowerCase().includes('daniel'))
-    ) || voices.find(voice => voice.lang.startsWith('en-US') || voice.lang.startsWith('en-GB'));
+      (voice.name.toLowerCase().includes('alex') || 
+       voice.name.toLowerCase().includes('tom') ||
+       voice.name.toLowerCase().includes('james') ||
+       voice.name.toLowerCase().includes('michael') ||
+       voice.name.toLowerCase().includes('robert'))
+    ) || voices.find(voice => 
+      voice.lang.startsWith('en') && voice.name.toLowerCase().includes('male')
+    ) || voices.find(voice => voice.lang.startsWith('en-US'));
     
     if (maleEnglishVoice) {
       utterance.voice = maleEnglishVoice;
     }
     
     speechSynthesis.speak(utterance);
+  };
+
+  // Format time in natural language
+  const formatTimeNatural = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    
+    if (mins === 0) {
+      return `${secs} seconds`;
+    } else if (mins === 1 && secs === 0) {
+      return "1 minute";
+    } else if (mins === 1) {
+      return `1 minute and ${secs} seconds`;
+    } else if (secs === 0) {
+      return `${mins} minutes`;
+    } else {
+      return `${mins} minutes and ${secs} seconds`;
+    }
   };
 
   const handleSegmentComplete = () => {
