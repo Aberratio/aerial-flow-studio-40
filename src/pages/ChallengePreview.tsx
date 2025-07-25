@@ -543,15 +543,6 @@ const ChallengePreview = () => {
                   </Button>
                 ) : (
                   <>
-                    <Button
-                      variant="primary"
-                      onClick={startTodaysChallenge}
-                      className="w-full sm:flex-1"
-                    >
-                      <Play className="w-4 h-4 mr-2" />
-                      Start Today's Challenge
-                    </Button>
-
                     {/* Reset Progress Button */}
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
