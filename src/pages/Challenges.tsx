@@ -6,6 +6,7 @@ import {
   Clock,
   ChevronRight,
   Plus,
+  ChevronDown,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,8 +25,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { format, subMonths } from "date-fns";
+import { format, subMonths, subDays, subWeeks } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Challenges = () => {
   const navigate = useNavigate();
@@ -53,6 +55,7 @@ const Challenges = () => {
   } = useUserRole();
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   // Debug logging
   console.log("Challenges Debug:", {
@@ -434,6 +437,21 @@ const Challenges = () => {
     }
   };
 
+  // Mobile date options for quick selection
+  const getMobileDateOptions = () => {
+    const today = new Date();
+    const oneMonthAgo = subMonths(today, 1);
+    
+    return [
+      { label: "Today", value: today, description: "Start your challenge today" },
+      { label: "Yesterday", value: subDays(today, 1), description: "Catch up from yesterday" },
+      { label: "3 days ago", value: subDays(today, 3), description: "Get back on track" },
+      { label: "1 week ago", value: subWeeks(today, 1), description: "Start from last week" },
+      { label: "2 weeks ago", value: subWeeks(today, 2), description: "Begin from 2 weeks back" },
+      { label: "1 month ago", value: oneMonthAgo, description: "Maximum allowed start date" },
+    ];
+  };
+
   // Debug logging for admin check
   console.log("Admin Check:", {
     roleLoading,
@@ -773,51 +791,116 @@ const Challenges = () => {
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <Card className="glass-effect border-white/10 max-w-md w-full">
             <CardHeader>
-              <CardTitle className="text-white flex items-center">
+              <CardTitle className="text-white flex items-center text-lg sm:text-xl">
                 <CalendarIcon className="w-5 h-5 mr-2" />
                 Choose Challenge Start Date
               </CardTitle>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-sm sm:text-base">
                 Select when you want to start this challenge (up to 1 month ago)
               </p>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-left font-normal border-white/20 bg-black/20"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedStartDate
-                        ? format(selectedStartDate, "PPP")
-                        : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 z-[70] max-w-[90vw]" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedStartDate}
-                      onSelect={(date) => {
-                        setSelectedStartDate(date);
-                      }}
-                      disabled={(date) =>
-                        date > new Date() || date < subMonths(new Date(), 1)
-                      }
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                <div className="flex space-x-2">
+                {isMobile ? (
+                  /* Mobile-friendly date selection */
+                  <div className="space-y-3">
+                    <div className="text-sm text-muted-foreground mb-3">
+                      Choose when to start your challenge:
+                    </div>
+                    {getMobileDateOptions().map((option, index) => (
+                      <Button
+                        key={index}
+                        variant={selectedStartDate?.toDateString() === option.value.toDateString() ? "primary" : "outline"}
+                        onClick={() => setSelectedStartDate(option.value)}
+                        className={`w-full p-4 h-auto flex flex-col items-start justify-start text-left ${
+                          selectedStartDate?.toDateString() === option.value.toDateString() 
+                            ? "border-primary bg-primary/10" 
+                            : "border-white/20 bg-black/20 hover:bg-white/10"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className="font-medium text-base">{option.label}</span>
+                          <span className="text-xs opacity-70">
+                            {format(option.value, "MMM d")}
+                          </span>
+                        </div>
+                        <span className="text-xs text-muted-foreground mt-1">
+                          {option.description}
+                        </span>
+                      </Button>
+                    ))}
+                    
+                    {/* Alternative: Show calendar option */}
+                    <div className="pt-2 border-t border-white/10">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-between text-left font-normal border-white/20 bg-black/20 hover:bg-white/10"
+                          >
+                            <span className="flex items-center">
+                              <CalendarIcon className="mr-2 h-4 w-4" />
+                              Choose a specific date
+                            </span>
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 z-[70] max-w-[90vw]" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={selectedStartDate}
+                            onSelect={(date) => {
+                              setSelectedStartDate(date);
+                            }}
+                            disabled={(date) =>
+                              date > new Date() || date < subMonths(new Date(), 1)
+                            }
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                ) : (
+                  /* Desktop/tablet calendar */
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal border-white/20 bg-black/20"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedStartDate
+                          ? format(selectedStartDate, "PPP")
+                          : "Pick a date"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 z-[70] max-w-[90vw]" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedStartDate}
+                        onSelect={(date) => {
+                          setSelectedStartDate(date);
+                        }}
+                        disabled={(date) =>
+                          date > new Date() || date < subMonths(new Date(), 1)
+                        }
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                )}
+                
+                <div className="flex space-x-2 pt-2">
                   <Button
                     variant="primary"
                     onClick={handleStartDateConfirm}
                     disabled={!selectedStartDate}
                     className="flex-1"
                   >
-                    Confirm & Start Challenge
+                    {isMobile ? "Start Challenge" : "Confirm & Start Challenge"}
                   </Button>
                   <Button
                     variant="outline"
