@@ -276,7 +276,6 @@ const ChallengeDayTimer = () => {
       setIsCompleted(true);
       setIsRunning(false);
       speak("Workout completed! Great job!");
-      handleWorkoutComplete();
       return;
     }
 
@@ -715,8 +714,7 @@ const ChallengeDayTimer = () => {
                   Workout Complete!
                 </h2>
                 <p className="text-white/70 mb-6 text-lg">
-                  Fantastic work! You've successfully completed this training
-                  session.
+                  How did your workout go?
                 </p>
                 <div className="bg-white/10 rounded-lg p-4 mb-6">
                   <div className="text-sm text-white/60 mb-1">
@@ -726,12 +724,51 @@ const ChallengeDayTimer = () => {
                     {exercises.length} exercises completed
                   </div>
                 </div>
-                <Button
-                  onClick={() => navigate(`/challenges/${challengeId}`)}
-                  className="bg-primary hover:bg-primary/90 text-white font-semibold px-8 py-3 text-lg w-full"
-                >
-                  Continue to Challenge
-                </Button>
+                
+                {/* Status Selection Buttons */}
+                <div className="space-y-3 mb-6">
+                  <Button
+                    onClick={handleWorkoutComplete}
+                    className="bg-green-600 hover:bg-green-700 text-white font-semibold w-full py-3 text-lg"
+                  >
+                    ✅ Completed Successfully
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      // Mark as failed but still navigate back
+                      toast({
+                        title: "Workout Status Updated",
+                        description: "This workout has been marked as not completed.",
+                      });
+                      navigate(`/challenges/${challengeId}`);
+                    }}
+                    variant="outline"
+                    className="border-red-500/50 text-red-400 hover:bg-red-500/10 w-full py-3 text-lg"
+                  >
+                    ❌ Could Not Complete
+                  </Button>
+                </div>
+                
+                {/* Navigation Options */}
+                <div className="space-y-2 pt-4 border-t border-white/10">
+                  <p className="text-sm text-white/60 mb-3">Or continue without marking status:</p>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => navigate(`/challenge/${challengeId}/day/${dayId}`)}
+                      variant="ghost"
+                      className="text-white/70 hover:text-white hover:bg-white/10 flex-1"
+                    >
+                      Back to Day
+                    </Button>
+                    <Button
+                      onClick={() => setIsCompleted(false)}
+                      variant="ghost"
+                      className="text-white/70 hover:text-white hover:bg-white/10 flex-1"
+                    >
+                      Retry Timer
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
