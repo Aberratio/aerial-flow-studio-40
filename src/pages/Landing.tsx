@@ -1,13 +1,33 @@
 import { useState, useEffect } from "react";
-import { Zap, Users, Trophy, BookOpen, ArrowRight, Crown, Check } from "lucide-react";
+import {
+  Zap,
+  Users,
+  Trophy,
+  BookOpen,
+  ArrowRight,
+  Crown,
+  Check,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import AuthModal from "@/components/Auth/AuthModal";
 import CookiesBanner from "@/components/CookiesBanner";
 import { supabase } from "@/integrations/supabase/client";
 import IguanaLogo from "@/assets/iguana-logo.svg";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@radix-ui/react-select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@radix-ui/react-select";
 import { Badge } from "@/components/ui/badge";
 interface PricingPlan {
   id: string;
@@ -47,9 +67,11 @@ const Landing = () => {
   }, [heroImage, pricingPlans]);
   const loadHeroImage = async () => {
     try {
-      const {
-        data: heroSection
-      } = await supabase.from("landing_page_sections").select("image_url").eq("section_key", "hero").single();
+      const { data: heroSection } = await supabase
+        .from("landing_page_sections")
+        .select("image_url")
+        .eq("section_key", "hero")
+        .single();
       if (heroSection?.image_url) {
         setHeroImage(heroSection.image_url);
       }
@@ -59,23 +81,28 @@ const Landing = () => {
   };
   const loadPricingPlans = async () => {
     try {
-      const {
-        data: plansData
-      } = await supabase.from("pricing_plans").select(`
+      const { data: plansData } = await supabase
+        .from("pricing_plans")
+        .select(
+          `
           *,
           pricing_plan_features (
             feature_key,
             is_included,
             display_order
           )
-        `).order("display_order");
+        `
+        )
+        .order("display_order");
       if (plansData) {
-        const plansWithFeatures = plansData.map(plan => ({
+        const plansWithFeatures = plansData.map((plan) => ({
           ...plan,
-          features: plan.pricing_plan_features.map((feature: any) => ({
-            ...feature,
-            feature_text: getFeatureText(feature.feature_key)
-          })).sort((a, b) => a.display_order - b.display_order)
+          features: plan.pricing_plan_features
+            .map((feature: any) => ({
+              ...feature,
+              feature_text: getFeatureText(feature.feature_key),
+            }))
+            .sort((a, b) => a.display_order - b.display_order),
         }));
         setPricingPlans(plansWithFeatures);
       }
@@ -96,76 +123,107 @@ const Landing = () => {
       training_sessions: "Training sessions",
       custom_training_sessions: "Custom training sessions",
       exclusive_content: "Exclusive content",
-      priority_support: "Priority support"
+      priority_support: "Priority support",
     };
     return featureTexts[featureKey] || featureKey;
   };
-  const features = [{
-    icon: Users,
-    title: "Connect & Share",
-    description: "Follow other aerial athletes, share your progress, and get inspired by the community.",
-    accent: "tropical"
-  }, {
-    icon: BookOpen,
-    title: "Comprehensive Library",
-    description: "Access hundreds of aerial figures with detailed instructions and progressions.",
-    accent: "primary"
-  }, {
-    icon: Trophy,
-    title: "Take on Challenges",
-    description: "Join structured training programs and track your improvement over time.",
-    accent: "tropical"
-  }, {
-    icon: Zap,
-    title: "Track Progress",
-    description: "Log your training sessions and see your aerial journey unfold.",
-    accent: "primary"
-  }];
+  const features = [
+    {
+      icon: Users,
+      title: "Connect & Share",
+      description:
+        "Follow other aerial athletes, share your progress, and get inspired by the community.",
+      accent: "tropical",
+    },
+    {
+      icon: BookOpen,
+      title: "Comprehensive Library",
+      description:
+        "Access hundreds of aerial figures with detailed instructions and progressions.",
+      accent: "primary",
+    },
+    {
+      icon: Trophy,
+      title: "Take on Challenges",
+      description:
+        "Join structured training programs and track your improvement over time.",
+      accent: "tropical",
+    },
+    {
+      icon: Zap,
+      title: "Track Progress",
+      description:
+        "Log your training sessions and see your aerial journey unfold.",
+      accent: "primary",
+    },
+  ];
   const stats = [
-  // {
-  //   value: "10K+",
-  //   label: "Active Athletes",
-  // },
-  // {
-  //   value: "500+",
-  //   label: "Aerial Figures",
-  // },
-  // {
-  //   value: "50+",
-  //   label: "Awesome Challenges",
-  // },
-  // {
-  //   value: "95%",
-  //   label: "Success Rate",
-  // },
-  {
-    value: "99+",
-    label: "signups ready to fly"
-  }, {
-    value: "∞",
-    label: "possibilities to explore"
-  }, {
-    value: "100%",
-    label: "unlocked potential"
-  }, {
-    value: "0",
-    label: "excuses left"
-  }];
-  const freeFeatures = ["Post updates to your feed", "Invite and follow friends", "View community posts", "Basic profile customization"];
-  const premiumFeatures = ["All Free features", "Access to figure library", "Create training sessions", "Join challenges", "Track your progress", "Advanced analytics", "Priority support"];
+    // {
+    //   value: "10K+",
+    //   label: "Active Athletes",
+    // },
+    // {
+    //   value: "500+",
+    //   label: "Aerial Figures",
+    // },
+    // {
+    //   value: "50+",
+    //   label: "Awesome Challenges",
+    // },
+    // {
+    //   value: "95%",
+    //   label: "Success Rate",
+    // },
+    {
+      value: "99+",
+      label: "signups ready to fly",
+    },
+    {
+      value: "∞",
+      label: "possibilities to explore",
+    },
+    {
+      value: "100%",
+      label: "unlocked potential",
+    },
+    {
+      value: "0",
+      label: "excuses left",
+    },
+  ];
+  const freeFeatures = [
+    "Post updates to your feed",
+    "Invite and follow friends",
+    "View community posts",
+    "Basic profile customization",
+  ];
+  const premiumFeatures = [
+    "All Free features",
+    "Access to figure library",
+    "Create training sessions",
+    "Join challenges",
+    "Track your progress",
+    "Advanced analytics",
+    "Priority support",
+  ];
   const openAuth = (mode: "login" | "register" = "login") => {
     setAuthMode(mode);
     setAuthModalOpen(true);
   };
   if (!allDataLoaded) {
-    return <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
         <div className="text-center space-y-6">
           <div className="relative">
             <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto"></div>
             <div className="absolute inset-0 w-16 h-16 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin animation-delay-200 mx-auto"></div>
           </div>
           <div className="flex items-center space-x-2">
-            <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-8 h-8 animate-pulse" />
+            <img
+              src={IguanaLogo}
+              alt="IguanaFlow Logo"
+              className="w-8 h-8 animate-pulse"
+            />
             <span className="font-bold text-2xl">
               <span className="text-white">Iguana</span>
               <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
@@ -177,9 +235,11 @@ const Landing = () => {
             Loading your aerial journey...
           </p>
         </div>
-      </div>;
+      </div>
+    );
   }
-  return <div className="min-h-screen relative overflow-hidden parallax-bg">
+  return (
+    <div className="min-h-screen relative overflow-hidden parallax-bg">
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="hero-particle"></div>
@@ -206,9 +266,17 @@ const Landing = () => {
 
       {/* Header */}
       <header className="relative z-10 px-4 sm:px-6 py-4">
-        <nav className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-1000 ${isLoaded ? "animate-fade-in-up" : "opacity-0"}`}>
+        <nav
+          className={`max-w-7xl mx-auto flex items-center justify-between transition-all duration-1000 ${
+            isLoaded ? "animate-fade-in-up" : "opacity-0"
+          }`}
+        >
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-6 h-6 sm:w-8 sm:h-8" />
+            <img
+              src={IguanaLogo}
+              alt="IguanaFlow Logo"
+              className="w-6 h-6 sm:w-8 sm:h-8"
+            />
             <span className="font-bold text-xl sm:text-2xl">
               <span className="text-white">Iguana</span>
               <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
@@ -218,10 +286,18 @@ const Landing = () => {
           </div>
 
           <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-4">
-            <Button variant="ghost" onClick={() => openAuth("login")} className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-2 sm:px-4 transition-all duration-300 border-0">
+            <Button
+              variant="ghost"
+              onClick={() => openAuth("login")}
+              className="text-white hover:text-purple-300 text-xs sm:text-sm md:text-base px-2 sm:px-4 transition-all duration-300 border-0"
+            >
               <span>Sign In</span>
             </Button>
-            <Button variant="primary" onClick={() => openAuth("register")} className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4">
+            <Button
+              variant="default"
+              onClick={() => openAuth("register")}
+              className="text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4"
+            >
               <span>Sign up</span>
             </Button>
           </div>
@@ -234,42 +310,76 @@ const Landing = () => {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
               <div className="space-y-4 sm:space-y-6">
-                <h1 className={`text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight transition-all duration-1000 ${isLoaded ? "animate-fade-in-up" : "opacity-0 translate-y-10"}`}>
+                <h1
+                  className={`text-3xl sm:text-5xl lg:text-7xl font-bold leading-tight transition-all duration-1000 ${
+                    isLoaded ? "animate-fade-in-up" : "opacity-0 translate-y-10"
+                  }`}
+                >
                   Master Your{" "}
                   <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
                     Aerial
                   </span>{" "}
                   Journey
                 </h1>
-                <p className={`text-base sm:text-xl text-gray-400 leading-relaxed transition-all duration-1000 animation-delay-400 ${isLoaded ? "animate-fade-in-up" : "opacity-0 translate-y-10"}`}>
+                <p
+                  className={`text-base sm:text-xl text-gray-400 leading-relaxed transition-all duration-1000 animation-delay-400 ${
+                    isLoaded ? "animate-fade-in-up" : "opacity-0 translate-y-10"
+                  }`}
+                >
                   Connect with aerial athletes worldwide, track your progress,
                   and push your limits with structured challenges and a
                   comprehensive pose library.
                 </p>
               </div>
 
-              <div className={`flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0 transition-all duration-1000 animation-delay-600 ${isLoaded ? "animate-bounce-in" : "opacity-0 scale-75"}`}>
-                <Button variant="primary" size="lg" onClick={() => openAuth("register")} className="text-base sm:text-lg px-6 sm:px-8">
+              <div
+                className={`flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0 transition-all duration-1000 animation-delay-600 ${
+                  isLoaded ? "animate-bounce-in" : "opacity-0 scale-75"
+                }`}
+              >
+                <Button
+                  variant="default"
+                  size="lg"
+                  onClick={() => openAuth("register")}
+                  className="text-base sm:text-lg px-6 sm:px-8"
+                >
                   Start Training Free
                   <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
               </div>
 
-              <div className={`grid grid-cols-2 sm:flex sm:items-center sm:space-x-8 gap-4 sm:gap-0 pt-6 sm:pt-8 max-w-sm mx-auto lg:mx-0 transition-all duration-1000 animation-delay-800 ${isLoaded ? "animate-scale-in" : "opacity-0 scale-90"}`}>
-                {stats.map((stat, index) => <div key={index} className="text-center card-hover-effect">
+              <div
+                className={`grid grid-cols-2 sm:flex sm:items-center sm:space-x-8 gap-4 sm:gap-0 pt-6 sm:pt-8 max-w-sm mx-auto lg:mx-0 transition-all duration-1000 animation-delay-800 ${
+                  isLoaded ? "animate-scale-in" : "opacity-0 scale-90"
+                }`}
+              >
+                {stats.map((stat, index) => (
+                  <div key={index} className="text-center card-hover-effect">
                     <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-2xl sm:text-3xl font-bold">
                       {stat.value}
                     </div>
                     <div className="text-gray-400 text-xs sm:text-sm">
                       {stat.label}
                     </div>
-                  </div>)}
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className={`relative order-first lg:order-last transition-all duration-1000 animation-delay-1000 ${isLoaded ? "animate-scale-in floating" : "opacity-0 scale-75"}`}>
+            <div
+              className={`relative order-first lg:order-last transition-all duration-1000 animation-delay-1000 ${
+                isLoaded ? "animate-scale-in floating" : "opacity-0 scale-75"
+              }`}
+            >
               <div className="relative z-10">
-                <img src={heroImage || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"} alt="Aerial athlete performing on silks" className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense  " />
+                <img
+                  src={
+                    heroImage ||
+                    "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"
+                  }
+                  alt="Aerial athlete performing on silks"
+                  className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense  "
+                />
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
 
@@ -299,10 +409,18 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {features.map((feature, index) => <Card key={index} className={`glass-effect border-white/10 transition-all duration-300 animation-delay-${(index + 1) * 200} animate-scale-in`}>
+            {features.map((feature, index) => (
+              <Card
+                key={index}
+                className={`glass-effect border-white/10 transition-all duration-300 animation-delay-${
+                  (index + 1) * 200
+                } animate-scale-in`}
+              >
                 <CardContent className="p-6 flex flex-col items-center justify-center">
-                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600/50 to-teal-700/50 
-                     flex items-center justify-center mb-6 `}>
+                  <div
+                    className={`w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-600/50 to-teal-700/50 
+                     flex items-center justify-center mb-6 `}
+                  >
                     <feature.icon className="w-7 h-7 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-3 text-center">
@@ -312,7 +430,8 @@ const Landing = () => {
                     {feature.description}
                   </p>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -353,7 +472,12 @@ const Landing = () => {
                     Find the perfect plan for your aerial journey
                   </p>
 
-                  <Button variant="primary" size="lg" className="w-full font-bold lg:mt-auto mt-10" onClick={() => openAuth("register")}>
+                  <Button
+                    variant="default"
+                    size="lg"
+                    className="w-full font-bold lg:mt-auto mt-10"
+                    onClick={() => openAuth("register")}
+                  >
                     GET STARTED
                   </Button>
                 </CardContent>
@@ -382,10 +506,15 @@ const Landing = () => {
                 </CardHeader>
                 <CardContent className="space-y-4 p-6 mx-auto w-fit">
                   <ul className="space-y-3">
-                    {freeFeatures.map((feature, index) => <li key={index} className="flex items-center text-white/80 text-sm sm:text-base">
+                    {freeFeatures.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center text-white/80 text-sm sm:text-base"
+                      >
                         <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
                         {feature}
-                      </li>)}
+                      </li>
+                    ))}
                   </ul>
                 </CardContent>
               </Card>
@@ -416,10 +545,15 @@ const Landing = () => {
                 </CardHeader>
                 <CardContent className="space-y-4 p-6 mx-auto w-fit">
                   <ul className="space-y-3">
-                    {premiumFeatures.map((feature, index) => <li key={index} className="flex items-center text-white/80 text-sm sm:text-base">
+                    {premiumFeatures.map((feature, index) => (
+                      <li
+                        key={index}
+                        className="flex items-center text-white/80 text-sm sm:text-base"
+                      >
                         <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 mr-3 flex-shrink-0" />
                         {feature}
-                      </li>)}
+                      </li>
+                    ))}
                   </ul>
                 </CardContent>
               </Card>
@@ -454,7 +588,12 @@ const Landing = () => {
                   elevate their practice. Start your journey today.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <Button variant="primary" size="lg" onClick={() => openAuth("register")} className="text-lg px-8 animate-bounce-in">
+                  <Button
+                    variant="default"
+                    size="lg"
+                    onClick={() => openAuth("register")}
+                    className="text-lg px-8 animate-bounce-in"
+                  >
                     Start Free Today
                   </Button>
                 </div>
@@ -465,7 +604,12 @@ const Landing = () => {
       </section>
 
       {/* Auth Modal */}
-      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} mode={authMode} onModeChange={setAuthMode} />
+      <AuthModal
+        open={authModalOpen}
+        onOpenChange={setAuthModalOpen}
+        mode={authMode}
+        onModeChange={setAuthMode}
+      />
 
       {/* Cookies Banner */}
       <CookiesBanner />
@@ -477,7 +621,11 @@ const Landing = () => {
             <div className="grid md:grid-cols-3 gap-8 mb-8">
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-8 h-8" />
+                  <img
+                    src={IguanaLogo}
+                    alt="IguanaFlow Logo"
+                    className="w-8 h-8"
+                  />
                   <span className="font-bold text-xl">
                     <span className="text-white">Iguana</span>
                     <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
@@ -496,13 +644,22 @@ const Landing = () => {
                   Quick Links
                 </h4>
                 <div className="space-y-3">
-                  <Link to="/about-us" className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200">
+                  <Link
+                    to="/about-us"
+                    className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200"
+                  >
                     About Us
                   </Link>
-                  <Link to="/privacy-policy" className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200">
+                  <Link
+                    to="/privacy-policy"
+                    className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200"
+                  >
                     Privacy Policy
                   </Link>
-                  <Link to="/terms-of-use" className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200">
+                  <Link
+                    to="/terms-of-use"
+                    className="text-gray-300 hover:text-purple-400 transition-colors text-base block hover:translate-x-1 transition-transform duration-200"
+                  >
                     Terms of Use
                   </Link>
                 </div>
@@ -529,6 +686,7 @@ const Landing = () => {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
 export default Landing;
