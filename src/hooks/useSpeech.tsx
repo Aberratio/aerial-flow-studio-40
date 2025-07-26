@@ -9,8 +9,6 @@ export const useSpeech = (isAudioEnabled: boolean) => {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
 
-      console.log(voices);
-
       const selectedVoice =
         voices.find(
           (voice) =>

@@ -60,14 +60,6 @@ const Challenges = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Debug logging
-  console.log("Challenges Debug:", {
-    user: user?.id,
-    isAdmin,
-    roleLoading,
-    canCreateChallenges,
-  });
-
   useEffect(() => {
     fetchChallenges();
     fetchStats();
@@ -90,12 +82,6 @@ const Challenges = () => {
       const { data: allChallenges, error } = await challengeQuery;
       if (error) throw error;
 
-      // Debug logging
-      console.log("Challenges Data:", {
-        allChallenges: allChallenges?.length || 0,
-        challenges: allChallenges,
-      });
-
       // Get user's participation data if logged in
       let userParticipation = {};
       const userProgress = {};
@@ -109,12 +95,6 @@ const Challenges = () => {
             acc[p.challenge_id] = p.status;
             return acc;
           }, {}) || {};
-
-        // Debug logging
-        console.log("User Participation Data:", {
-          userParticipation: userParticipation,
-          userProgress: userProgress,
-        });
 
         // Get user's progress data for challenges they're participating in
         const participatingChallengeIds =
@@ -219,18 +199,6 @@ const Challenges = () => {
           };
         }) || [];
 
-      // Debug logging for transformed data
-      console.log("Transformed Data:", {
-        transformedData: transformedData?.length || 0,
-        activeTab,
-        challenges: transformedData?.map((c) => ({
-          id: c.id,
-          title: c.title,
-          status: c.status,
-          userParticipating: c.userParticipating,
-        })),
-      });
-
       // Filter based on active tab
       if (activeTab === "active") {
         transformedData = transformedData.filter((c) => c.status === "active");
@@ -253,12 +221,6 @@ const Challenges = () => {
       if (activeTab === "done") {
         transformedData = transformedData.filter((c) => c.status === "done");
       }
-
-      // Debug logging for final filtered data
-      console.log("Final Filtered Data:", {
-        finalCount: transformedData?.length || 0,
-        finalChallenges: transformedData,
-      });
 
       setChallenges(transformedData);
     } catch (error) {
@@ -540,13 +502,6 @@ const Challenges = () => {
       },
     ];
   };
-
-  // Debug logging for admin check
-  console.log("Admin Check:", {
-    roleLoading,
-    isAdmin,
-    shouldShowAdminMessage: !roleLoading && !isAdmin,
-  });
 
   return (
     <div className="min-h-screen p-4 sm:p-6">

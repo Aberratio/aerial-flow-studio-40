@@ -125,7 +125,8 @@ const ChallengeDayOverview = () => {
     changeDayStatus,
     getCalendarDayByTrainingDay,
   } = useChallengeCalendar(challengeId || "");
-  const { newAchievement, showAchievementModal, closeAchievementModal } = useAchievementChecker();
+  const { newAchievement, showAchievementModal, closeAchievementModal } =
+    useAchievementChecker();
   const { toast } = useToast();
 
   // Helper function to check if this is a retry attempt
@@ -155,20 +156,12 @@ const ChallengeDayOverview = () => {
     try {
       setIsLoading(true);
 
-      console.log("dayId", dayId);
-      console.log("challengeId", challengeId);
-      console.log("user?.id", user?.id);
-      console.log("userChallengeCalendar", userChallengeCalendar);
-      console.log("userParticipant", userParticipant);
-
       // Fetch challenge details
       const { data: challengeData, error: challengeError } = await supabase
         .from("challenges")
         .select("*")
         .eq("id", challengeId)
         .single();
-
-      console.log("challengeData", challengeData);
 
       if (challengeError) throw challengeError;
       setChallenge(challengeData);
