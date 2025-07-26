@@ -518,7 +518,7 @@ const ChallengeDayOverview = () => {
                   variant="primary"
                   onClick={handleStartDay}
                   disabled={trainingDay.exercises.length === 0}
-                  className="w-full sm:w-auto sm:min-w-[200px] h-12 sm:h-14 text-base sm:text-lg font-semibold disabled:opacity-50"
+                  className="w-full sm:w-auto sm:min-w-[200px] disabled:opacity-50"
                 >
                   <Play className="w-5 h-5 mr-3" />
                   {isRetryAttempt()
@@ -686,19 +686,7 @@ const ChallengeDayOverview = () => {
           <div className="space-y-3">
             {/* Primary Action Button */}
             <div className="flex flex-col sm:flex-row gap-3">
-              {!trainingDay.is_rest_day ? (
-                <Button
-                  variant="primary"
-                  onClick={handleStartDay}
-                  disabled={trainingDay.exercises.length === 0}
-                  className="flex-1 disabled:opacity-50 h-12"
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  {isRetryAttempt()
-                    ? `Retry Day ${dayNumber}`
-                    : `Start Day ${dayNumber}`}
-                </Button>
-              ) : (
+              {trainingDay.is_rest_day && (
                 <Button
                   onClick={() => handleStatusChange("completed")}
                   className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600 h-12"
