@@ -17,6 +17,7 @@ interface Exercise {
   reps?: number;
   hold_time_seconds?: number;
   rest_time_seconds?: number;
+  notes?: string;
   figure: {
     id: string;
     name: string;
@@ -31,6 +32,7 @@ interface TimerSegment {
   duration: number;
   exerciseName: string;
   exerciseImage?: string;
+  exerciseNotes?: string;
 }
 
 const ChallengeDayTimer = () => {
@@ -106,6 +108,7 @@ const ChallengeDayTimer = () => {
             reps: exercise.reps,
             hold_time_seconds: exercise.hold_time_seconds || 30,
             rest_time_seconds: exercise.rest_time_seconds || 15,
+            notes: exercise.notes,
             figure: exercise.figure,
           })) || [];
 
@@ -143,6 +146,7 @@ const ChallengeDayTimer = () => {
           duration: exercise.hold_time_seconds || 30,
           exerciseName: exercise.figure.name,
           exerciseImage: exercise.figure.image_url,
+          exerciseNotes: exercise.notes,
         });
 
         // Add rest segment (except after the last set of the last exercise)
@@ -201,7 +205,8 @@ const ChallengeDayTimer = () => {
 
       if (currentSegment.type === "exercise") {
         const duration = formatTimeNatural(currentSegment.duration);
-        speak(`${currentSegment.exerciseName}, ${duration}`);
+        const notes = currentSegment.exerciseNotes ? `, ${currentSegment.exerciseNotes}` : '';
+        speak(`${currentSegment.exerciseName}, ${duration}${notes}`);
       } else {
         const duration = formatTimeNatural(currentSegment.duration);
         speak(`Rest time, ${duration}`);
@@ -389,6 +394,11 @@ const ChallengeDayTimer = () => {
                   <div className="text-sm text-white/60">
                     {formatTimeNatural(nextSegment.duration)}
                   </div>
+                  {nextSegment.type === "exercise" && nextSegment.exerciseNotes && (
+                    <div className="text-xs text-primary/80 mt-1 bg-primary/10 rounded px-2 py-1 border border-primary/20">
+                      {nextSegment.exerciseNotes}
+                    </div>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -494,14 +504,23 @@ const ChallengeDayTimer = () => {
                   </div>
 
                   {/* Exercise Info */}
-                  <div className="p-6 text-center bg-gradient-to-t from-black/30 to-transparent">
-                    <h2 className="text-2xl md:text-4xl font-bold text-white mb-4">
+                  <div className="p-4 sm:p-6 text-center bg-gradient-to-t from-black/30 to-transparent">
+                    <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
                       {currentSegment.exerciseName}
                     </h2>
 
+                    {/* Exercise Notes */}
+                    {currentSegment.type === "exercise" && currentSegment.exerciseNotes && (
+                      <div className="mb-3 sm:mb-4 px-2">
+                        <p className="text-sm sm:text-base text-primary/90 bg-primary/10 rounded-lg p-2 sm:p-3 border border-primary/20">
+                          {currentSegment.exerciseNotes}
+                        </p>
+                      </div>
+                    )}
+
                     {/* Large Timer Display */}
                     <div className="relative mb-4 sm:mb-6">
-                      <div className="text-5xl sm:text-6xl md:text-8xl font-mono font-bold text-primary mb-2">
+                      <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
                         {formatTime(timeRemaining)}
                       </div>
                     </div>
@@ -580,6 +599,14 @@ const ChallengeDayTimer = () => {
                           {currentSegment.setIndex + 1} of{" "}
                           {exercises[currentSegment.exerciseIndex]?.sets || 1}
                         </span>
+                      </div>
+                    )}
+                    {currentSegment.type === "exercise" && currentSegment.exerciseNotes && (
+                      <div className="pt-3 border-t border-white/10">
+                        <div className="text-white/70 text-xs mb-1">Notes:</div>
+                        <div className="text-white text-xs bg-primary/10 rounded p-2 border border-primary/20">
+                          {currentSegment.exerciseNotes}
+                        </div>
                       </div>
                     )}
                   </div>
