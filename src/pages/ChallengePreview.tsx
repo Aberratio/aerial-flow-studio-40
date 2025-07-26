@@ -134,11 +134,6 @@ const ChallengePreview = () => {
       )
         return;
 
-      // If user is a participant but has no calendar days, generate them
-      console.log(
-        "Participant found but no calendar days, generating calendar..."
-      );
-
       // Use today as start date if no start date is set
       const startDate = userParticipant.user_started_at
         ? new Date(userParticipant.user_started_at)
@@ -971,7 +966,7 @@ const ChallengePreview = () => {
                   </div>
                 ) : (
                   /* Desktop/tablet calendar view */
-                  <div className="bg-white/5 rounded-lg border border-white/10 w-[760px]">
+                  <div className="bg-white/5 rounded-lg border border-white/10 w-[690px] 2xl:w-[760px]">
                     {/* Month Navigation Header (only show if multiple months) */}
                     {hasMultipleMonths() && (
                       <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -1001,7 +996,7 @@ const ChallengePreview = () => {
                       </div>
                     )}
 
-                    <div className="p-6">
+                    <div className="p-2 2xl:p-6">
                       <Calendar
                         mode="single"
                         month={currentCalendarMonth}

@@ -1,15 +1,10 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Calendar as CalendarIcon,
-  Trophy,
-  Users,
   Clock,
   Play,
   ChevronLeft,
-  CalendarDays,
-  Target,
-  RotateCcw,
   AlertTriangle,
   Edit,
   CheckCircle,
@@ -20,35 +15,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
-import {
-  format,
-  parseISO,
-  addDays,
-  isSameDay,
-  startOfMonth,
-  endOfMonth,
-  isAfter,
-  isBefore,
-} from "date-fns";
-import ChallengeExerciseModal from "@/components/ChallengeExerciseModal";
-import ChallengeTimer from "@/components/ChallengeTimer";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 
 interface Exercise {
