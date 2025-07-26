@@ -400,14 +400,14 @@ const ChallengeDayOverview = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white">
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-4 sm:py-8 max-w-4xl">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <Button
               variant="ghost"
               onClick={() => navigate(`/challenges/${challengeId}`)}
-              className="text-white hover:bg-white/10"
+              className="text-white hover:bg-white/10 self-start"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
               Back to Challenge
@@ -417,10 +417,11 @@ const ChallengeDayOverview = () => {
               <Button
                 variant="outline"
                 onClick={() => navigate(`/challenges/${challengeId}/edit`)}
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-white/20 text-white hover:bg-white/10 self-start sm:self-auto"
               >
                 <Edit className="w-4 h-4 mr-2" />
-                Edit Challenge
+                <span className="hidden sm:inline">Edit Challenge</span>
+                <span className="sm:hidden">Edit</span>
               </Button>
             )}
           </div>
@@ -489,54 +490,6 @@ const ChallengeDayOverview = () => {
             )}
         </div>
 
-        <Card className="glass-effect border-white/10 mb-6">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-white font-medium">Challenge Timeline</h3>
-              <span className="text-muted-foreground text-sm">
-                Day {dayNumber} of {totalDays}
-              </span>
-            </div>
-            <div className="flex items-center space-x-2">
-              {Array.from({ length: totalDays }, (_, i) => {
-                const dayNum = i + 1;
-                const isCurrentDay = dayNum === dayNumber;
-                const isPastDay = dayNum < dayNumber;
-                const dayInfo = allDays?.find((d) => d.day_number === dayNum);
-                const isRestDay = dayInfo?.is_rest_day;
-
-                return (
-                  <div key={i} className="flex items-center">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${
-                        isCurrentDay
-                          ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white"
-                          : isPastDay
-                          ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                          : "bg-white/10 text-white/50 border border-white/20"
-                      }`}
-                    >
-                      {isPastDay ? (
-                        <CheckCircle className="w-4 h-4" />
-                      ) : isRestDay ? (
-                        <span className="text-sm">🌿</span>
-                      ) : (
-                        dayNum
-                      )}
-                    </div>
-                    {i < totalDays - 1 && (
-                      <div
-                        className={`w-4 h-0.5 ${
-                          isPastDay ? "bg-green-500/30" : "bg-white/20"
-                        }`}
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
 
         {/* Challenge Day Content */}
         <Card className="glass-effect border-white/10 mb-6">
@@ -569,8 +522,8 @@ const ChallengeDayOverview = () => {
                     className="p-4 rounded-lg border bg-white/5 border-white/10 cursor-pointer hover:bg-white/10 transition-colors"
                     onClick={() => handleExerciseClick(exercise)}
                   >
-                    <div className="flex items-start space-x-4">
-                      <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+                    <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+                      <div className="w-full sm:w-20 h-48 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
                         {exercise.figure.image_url ? (
                           <img
                             src={exercise.figure.image_url}
@@ -714,16 +667,16 @@ const ChallengeDayOverview = () => {
 
         {/* Action Buttons - Show based on attempt status */}
         {shouldShowActionButtons() && (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* Primary Action Button */}
-            <div className="flex space-x-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               {!trainingDay.is_rest_day ? (
                 <>
                   <Button
                     variant="primary"
                     onClick={handleStartDay}
                     disabled={trainingDay.exercises.length === 0}
-                    className="flex-1 disabled:opacity-50"
+                    className="flex-1 disabled:opacity-50 h-12"
                   >
                     <Play className="w-4 h-4 mr-2" />
                     {isRetryAttempt()
@@ -733,7 +686,7 @@ const ChallengeDayOverview = () => {
                   <Button
                     variant="outline"
                     onClick={() => handleStatusChange("completed")}
-                    className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                    className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 h-12"
                   >
                     <CheckCircle className="w-4 h-4 mr-2" />
                     Complete Day
@@ -742,29 +695,21 @@ const ChallengeDayOverview = () => {
               ) : (
                 <Button
                   onClick={() => handleStatusChange("completed")}
-                  className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600"
+                  className="flex-1 bg-gradient-to-r from-green-500 via-teal-500 to-blue-500 hover:from-green-600 hover:via-teal-600 hover:to-blue-600 h-12"
                 >
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Complete Rest Day
                 </Button>
               )}
-
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/challenges/${challengeId}`)}
-                className="border-white/20 text-white hover:bg-white/10"
-              >
-                Back to Challenge
-              </Button>
             </div>
 
             {/* Additional Action Buttons - Only for non-rest days */}
             {!trainingDay.is_rest_day && (
-              <div className="flex space-x-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
                   onClick={() => handleStatusChange("rest")}
-                  className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                  className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 h-12"
                 >
                   <Pause className="w-4 h-4 mr-2" />
                   Set Rest Day
@@ -773,13 +718,24 @@ const ChallengeDayOverview = () => {
                 <Button
                   variant="outline"
                   onClick={() => handleStatusChange("failed")}
-                  className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10"
+                  className="flex-1 border-red-500/30 text-red-400 hover:bg-red-500/10 h-12"
                 >
                   <AlertTriangle className="w-4 h-4 mr-2" />
                   Mark as Failed
                 </Button>
               </div>
             )}
+
+            {/* Back Button for Mobile */}
+            <div className="sm:hidden">
+              <Button
+                variant="outline"
+                onClick={() => navigate(`/challenges/${challengeId}`)}
+                className="w-full border-white/20 text-white hover:bg-white/10 h-12"
+              >
+                Back to Challenge
+              </Button>
+            </div>
           </div>
         )}
 
