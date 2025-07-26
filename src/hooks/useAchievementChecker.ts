@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Achievement {
   id: string;
@@ -13,7 +13,9 @@ interface Achievement {
 }
 
 export const useAchievementChecker = () => {
-  const [newAchievement, setNewAchievement] = useState<Achievement | null>(null);
+  const [newAchievement, setNewAchievement] = useState<Achievement | null>(
+    null
+  );
   const [showAchievementModal, setShowAchievementModal] = useState(false);
   const { user } = useAuth();
 
@@ -22,9 +24,11 @@ export const useAchievementChecker = () => {
 
     try {
       // Get achievements associated with this challenge
-      const { data: challengeAchievements, error: challengeAchievementsError } = await supabase
-        .from('challenge_achievements')
-        .select(`
+      const { data: challengeAchievements, error: challengeAchievementsError } =
+        await supabase
+          .from("challenge_achievements")
+          .select(
+            `
           achievement_id,
           achievements (
             id,
@@ -35,8 +39,9 @@ export const useAchievementChecker = () => {
             rule_type,
             rule_value
           )
-        `)
-        .eq('challenge_id', challengeId);
+        `
+          )
+          .eq("challenge_id", challengeId);
 
       if (challengeAchievementsError) throw challengeAchievementsError;
 
@@ -47,32 +52,35 @@ export const useAchievementChecker = () => {
       // Check each achievement
       for (const challengeAchievement of challengeAchievements) {
         const achievement = challengeAchievement.achievements;
-        if (!achievement || achievement.rule_type !== 'challenges_completed') continue;
+        if (!achievement || achievement.rule_type !== "challenges_completed")
+          continue;
 
         // Check if user already has this achievement
-        const { data: existingAchievement, error: existingError } = await supabase
-          .from('user_achievements')
-          .select('id')
-          .eq('user_id', user.id)
-          .eq('achievement_id', achievement.id)
-          .single();
+        const { data: existingAchievement, error: existingError } =
+          await supabase
+            .from("user_achievements")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("achievement_id", achievement.id)
+            .single();
 
-        if (existingError && existingError.code !== 'PGRST116') {
-          console.error('Error checking existing achievement:', existingError);
+        if (existingError && existingError.code !== "PGRST116") {
+          console.error("Error checking existing achievement:", existingError);
           continue;
         }
 
         // If user doesn't have this achievement, check if they've completed enough challenges
         if (!existingAchievement) {
           // Count completed challenges for this user
-          const { data: completedChallenges, error: countError } = await supabase
-            .from('challenge_participants')
-            .select('challenge_id')
-            .eq('user_id', user.id)
-            .eq('completed', true);
+          const { data: completedChallenges, error: countError } =
+            await supabase
+              .from("challenge_participants")
+              .select("challenge_id")
+              .eq("user_id", user.id)
+              .eq("completed", true);
 
           if (countError) {
-            console.error('Error counting completed challenges:', countError);
+            console.error("Error counting completed challenges:", countError);
             continue;
           }
 
@@ -82,39 +90,39 @@ export const useAchievementChecker = () => {
           if (completedCount >= achievement.rule_value) {
             // Award the achievement
             const { error: awardError } = await supabase
-              .from('user_achievements')
+              .from("user_achievements")
               .insert({
                 user_id: user.id,
-                achievement_id: achievement.id
+                achievement_id: achievement.id,
               });
 
             if (awardError) {
-              console.error('Error awarding achievement:', awardError);
+              console.error("Error awarding achievement:", awardError);
               continue;
             }
 
             // Add points to user
-            const { error: pointsError } = await supabase
-              .rpc('add_points_to_user', {
-                user_id: user.id,
-                points: achievement.points
-              });
+            // const { error: pointsError } = await supabase
+            //   .rpc('add_points_to_user', {
+            //     user_id: user.id,
+            //     points: achievement.points
+            //   });
 
-            if (pointsError) {
-              console.error('Error adding points:', pointsError);
-            }
+            // if (pointsError) {
+            //   console.error('Error adding points:', pointsError);
+            // }
 
             // Show achievement modal
             setNewAchievement(achievement);
             setShowAchievementModal(true);
-            
+
             // Only show one achievement at a time
             break;
           }
         }
       }
     } catch (error) {
-      console.error('Error checking challenge completion achievements:', error);
+      console.error("Error checking challenge completion achievements:", error);
     }
   };
 
@@ -127,6 +135,6 @@ export const useAchievementChecker = () => {
     checkChallengeCompletionAchievements,
     newAchievement,
     showAchievementModal,
-    closeAchievementModal
+    closeAchievementModal,
   };
 };

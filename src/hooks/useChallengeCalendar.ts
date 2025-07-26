@@ -146,25 +146,32 @@ export const useChallengeCalendar = (challengeId: string) => {
 
     try {
       // Check if all training days are completed
-      const totalTrainingDays = calendarDays.filter(day => !day.is_rest_day).length;
+      const totalTrainingDays = calendarDays.filter(
+        (day) => !day.is_rest_day
+      ).length;
       const completedTrainingDays = calendarDays.filter(
-        day => !day.is_rest_day && day.status === "completed"
+        (day) => !day.is_rest_day && day.status === "completed"
       ).length;
 
-      if (totalTrainingDays > 0 && completedTrainingDays === totalTrainingDays) {
+      if (
+        totalTrainingDays > 0 &&
+        completedTrainingDays + 1 >= totalTrainingDays
+      ) {
         // Mark challenge participant as completed
         const { error: completionError } = await supabase
-          .from('challenge_participants')
-          .update({ 
+          .from("challenge_participants")
+          .update({
             completed: true,
-            status: 'completed',
-            updated_at: new Date().toISOString()
+            status: "completed",
           })
-          .eq('challenge_id', challengeId)
-          .eq('user_id', user.id);
+          .eq("challenge_id", challengeId)
+          .eq("user_id", user.id);
 
         if (completionError) {
-          console.error('Error marking challenge as completed:', completionError);
+          console.error(
+            "Error marking challenge as completed:",
+            completionError
+          );
           return;
         }
 
@@ -177,9 +184,15 @@ export const useChallengeCalendar = (challengeId: string) => {
         });
       }
     } catch (error) {
-      console.error('Error checking challenge completion:', error);
+      console.error("Error checking challenge completion:", error);
     }
-  }, [user?.id, challengeId, calendarDays, checkChallengeCompletionAchievements, toast]);
+  }, [
+    user,
+    challengeId,
+    calendarDays,
+    checkChallengeCompletionAchievements,
+    toast,
+  ]);
 
   // Handle day status change (completed, failed, rest)
   const changeDayStatus = useCallback(
@@ -214,6 +227,9 @@ export const useChallengeCalendar = (challengeId: string) => {
         await loadCalendar();
         await loadNextAvailableDay();
 
+        console.log("newStatus");
+        console.log(newStatus);
+
         // Check if challenge is completed after this day completion
         if (newStatus === "completed") {
           await checkChallengeCompletion();
@@ -241,7 +257,14 @@ export const useChallengeCalendar = (challengeId: string) => {
         setIsLoading(false);
       }
     },
-    [user?.id, challengeId, loadCalendar, loadNextAvailableDay, checkChallengeCompletion, toast]
+    [
+      user?.id,
+      challengeId,
+      loadCalendar,
+      loadNextAvailableDay,
+      checkChallengeCompletion,
+      toast,
+    ]
   );
 
   // Check if user can access a specific calendar day
@@ -313,7 +336,6 @@ export const useChallengeCalendar = (challengeId: string) => {
     const today = new Date().toISOString().split("T")[0];
     return getCalendarDay(today);
   }, [getCalendarDay]);
-
 
   // Load initial data
   useEffect(() => {
