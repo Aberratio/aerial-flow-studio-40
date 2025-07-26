@@ -458,13 +458,13 @@ const ChallengeDayTimer = () => {
                 <CardContent className="p-0">
                   {/* Exercise Image - Very Large */}
                   <div className="relative">
-                    <div className="aspect-square max-w-2xl mx-auto">
+                    <div className="aspect-square max-w-2xl mx-auto bg-gray-900/50 rounded-lg overflow-hidden">
                       {currentSegment.type === "exercise" &&
                       currentSegment.exerciseImage ? (
                         <img
                           src={currentSegment.exerciseImage}
                           alt={currentSegment.exerciseName}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                       ) : currentSegment.type === "rest" ? (
                         <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
