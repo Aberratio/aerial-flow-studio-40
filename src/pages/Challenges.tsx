@@ -4,9 +4,7 @@ import {
   Trophy,
   Users,
   Clock,
-  ChevronRight,
   Plus,
-  ChevronDown,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,13 +19,7 @@ import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { format, subMonths, subDays, subWeeks } from "date-fns";
-import { Calendar } from "@/components/ui/calendar";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Challenges = () => {
@@ -81,6 +73,8 @@ const Challenges = () => {
 
       const { data: allChallenges, error } = await challengeQuery;
       if (error) throw error;
+
+      let trainingDays;
 
       // Get user's participation data if logged in
       let userParticipation = {};
@@ -180,10 +174,7 @@ const Challenges = () => {
             status,
             created_by: challenge.created_by,
             premium: challenge.premium || false,
-            duration: calculateDuration(
-              challenge.start_date,
-              challenge.end_date
-            ),
+            duration: 28,
             participants: participantCounts[challenge.id] || 0,
             difficulty: challenge.difficulty_level
               ? challenge.difficulty_level.charAt(0).toUpperCase() +
@@ -232,7 +223,7 @@ const Challenges = () => {
   const fetchStats = async () => {
     try {
       // Get stats based on user role - only count published challenges for stats
-      let statsQuery = supabase
+      const statsQuery = supabase
         .from("challenges")
         .select("id, start_date, end_date")
         .eq("status", "published");
@@ -313,13 +304,7 @@ const Challenges = () => {
       console.error("Error fetching stats:", error);
     }
   };
-  const calculateDuration = (startDate: string, endDate: string) => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return `${diffDays} days`;
-  };
+
   const openChallengeModal = (challenge) => {
     setSelectedChallenge(challenge);
     setIsModalOpen(true);
@@ -688,7 +673,8 @@ const Challenges = () => {
                             <div className="flex justify-between text-sm">
                               <span className="text-white">Progress</span>
                               <span className="text-muted-foreground">
-                                {challenge.userProgress}% complete
+                                {challenge.userProgress}% complete (nie działa
+                                jeszcze)
                               </span>
                             </div>
                             <Progress
@@ -801,112 +787,41 @@ const Challenges = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {isMobile ? (
-                  /* Mobile-friendly date selection */
-                  <div className="space-y-3">
-                    <div className="text-sm text-muted-foreground mb-3">
-                      Choose when to start your challenge:
-                    </div>
-                    {getMobileDateOptions().map((option, index) => (
-                      <Button
-                        key={index}
-                        variant={
-                          selectedStartDate?.toDateString() ===
-                          option.value.toDateString()
-                            ? "primary"
-                            : "outline"
-                        }
-                        onClick={() => setSelectedStartDate(option.value)}
-                        className={`w-full p-4 h-auto flex flex-col items-start justify-start text-left ${
-                          selectedStartDate?.toDateString() ===
-                          option.value.toDateString()
-                            ? "border-primary bg-primary/10"
-                            : "border-white/20 bg-black/20 hover:bg-white/10"
-                        }`}
-                      >
-                        <div className="flex items-center justify-between w-full">
-                          <span className="font-medium text-base">
-                            {option.label}
-                          </span>
-                          <span className="text-xs opacity-70">
-                            {format(option.value, "MMM d")}
-                          </span>
-                        </div>
-                        <span className="text-xs text-muted-foreground mt-1">
-                          {option.description}
-                        </span>
-                      </Button>
-                    ))}
-
-                    {/* Alternative: Show calendar option */}
-                    <div className="pt-2 border-t border-white/10">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-between text-left font-normal border-white/20 bg-black/20 hover:bg-white/10"
-                          >
-                            <span className="flex items-center">
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              Choose a specific date
-                            </span>
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          className="w-auto p-0 z-[70] max-w-[90vw]"
-                          align="start"
-                        >
-                          <Calendar
-                            mode="single"
-                            selected={selectedStartDate}
-                            onSelect={(date) => {
-                              setSelectedStartDate(date);
-                            }}
-                            disabled={(date) =>
-                              date > new Date() ||
-                              date < subMonths(new Date(), 1)
-                            }
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
+                <div className="space-y-3">
+                  <div className="text-sm text-muted-foreground mb-3">
+                    Choose when to start your challenge:
                   </div>
-                ) : (
-                  /* Desktop/tablet calendar */
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal border-white/20 bg-black/20"
-                      >
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {selectedStartDate
-                          ? format(selectedStartDate, "PPP")
-                          : "Pick a date"}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent
-                      className="w-auto p-0 z-[70] max-w-[90vw]"
-                      align="start"
+                  {getMobileDateOptions().map((option, index) => (
+                    <Button
+                      key={index}
+                      variant={
+                        selectedStartDate?.toDateString() ===
+                        option.value.toDateString()
+                          ? "primary"
+                          : "outline"
+                      }
+                      onClick={() => setSelectedStartDate(option.value)}
+                      className={`w-full p-4 h-auto flex flex-col items-start justify-start text-left ${
+                        selectedStartDate?.toDateString() ===
+                        option.value.toDateString()
+                          ? "border-primary bg-primary/10"
+                          : "border-white/20 bg-black/20 hover:bg-white/10"
+                      }`}
                     >
-                      <Calendar
-                        mode="single"
-                        selected={selectedStartDate}
-                        onSelect={(date) => {
-                          setSelectedStartDate(date);
-                        }}
-                        disabled={(date) =>
-                          date > new Date() || date < subMonths(new Date(), 1)
-                        }
-                        initialFocus
-                        className="pointer-events-auto"
-                      />
-                    </PopoverContent>
-                  </Popover>
-                )}
+                      <div className="flex items-center justify-between w-full">
+                        <span className="font-medium text-base">
+                          {option.label}
+                        </span>
+                        <span className="text-xs opacity-70">
+                          {format(option.value, "MMM d")}
+                        </span>
+                      </div>
+                      <span className="text-xs text-muted-foreground mt-1">
+                        {option.description}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
 
                 <div className="flex space-x-2 pt-2">
                   <Button
