@@ -60,6 +60,8 @@ const ChallengeDayTimer = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [trainingDayId, setTrainingDayId] = useState<string>("");
+  const [isPreparingToStart, setIsPreparingToStart] = useState(false);
+  const [preparationTime, setPreparationTime] = useState(5);
 
   const { speak } = useSpeech(isAudioEnabled);
 
@@ -170,11 +172,40 @@ const ChallengeDayTimer = () => {
     }
   }, [exercises]);
 
+  // Preparation countdown logic
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isPreparingToStart && preparationTime > 0) {
+      interval = setInterval(() => {
+        setPreparationTime((prev) => {
+          // Speak countdown numbers
+          if (prev > 1) {
+            speak(prev.toString());
+          } else if (prev === 1) {
+            speak("1... Begin!");
+          }
+
+          if (prev <= 1) {
+            // Preparation complete, start actual workout
+            setIsPreparingToStart(false);
+            setIsRunning(true);
+            setPreparationTime(5); // Reset for next time
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [isPreparingToStart, preparationTime]);
+
   // Timer logic with synchronized countdown
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if (isRunning && timeRemaining > 0) {
+    if (isRunning && !isPreparingToStart && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
           // Speak countdown BEFORE decrementing to fix synchronization
@@ -192,7 +223,7 @@ const ChallengeDayTimer = () => {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, timeRemaining, currentSegmentIndex, segments]);
+  }, [isRunning, isPreparingToStart, timeRemaining, currentSegmentIndex, segments]);
 
   // Announce segment changes
   useEffect(() => {
@@ -282,7 +313,19 @@ const ChallengeDayTimer = () => {
   };
 
   const handlePlayPause = () => {
-    setIsRunning(!isRunning);
+    if (!isRunning && !isPreparingToStart) {
+      // Start preparation countdown
+      setIsPreparingToStart(true);
+      setPreparationTime(5);
+      speak("Get ready! Starting in 5 seconds");
+    } else if (isPreparingToStart) {
+      // Cancel preparation
+      setIsPreparingToStart(false);
+      setPreparationTime(5);
+    } else {
+      // Pause/resume timer
+      setIsRunning(!isRunning);
+    }
   };
 
   const handleSkip = () => {
@@ -520,9 +563,19 @@ const ChallengeDayTimer = () => {
 
                     {/* Large Timer Display */}
                     <div className="relative mb-4 sm:mb-6">
-                      <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
-                        {formatTime(timeRemaining)}
-                      </div>
+                      {isPreparingToStart ? (
+                        <div className="flex flex-col items-center">
+                          <div className="text-lg sm:text-xl text-white/70 mb-2">Get Ready!</div>
+                          <div className="text-6xl sm:text-7xl md:text-9xl font-mono font-bold text-yellow-400 mb-2 animate-pulse">
+                            {preparationTime}
+                          </div>
+                          <div className="text-sm sm:text-base text-white/60">Workout starts in...</div>
+                        </div>
+                      ) : (
+                        <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
+                          {formatTime(timeRemaining)}
+                        </div>
+                      )}
                     </div>
 
                     {/* Controls */}
@@ -532,7 +585,12 @@ const ChallengeDayTimer = () => {
                         size="lg"
                         variant="primary"
                       >
-                        {isRunning ? (
+                        {isPreparingToStart ? (
+                          <>
+                            <Pause className="w-6 h-6 mr-3" />
+                            Cancel
+                          </>
+                        ) : isRunning ? (
                           <>
                             <Pause className="w-6 h-6 mr-3" />
                             Pause
