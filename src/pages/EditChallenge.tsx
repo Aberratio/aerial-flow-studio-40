@@ -9,6 +9,7 @@ import {
   Award,
   CalendarDays,
   ArrowLeft,
+  GripVertical,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -199,10 +200,11 @@ const EditChallenge = () => {
         ) || []
       );
 
-      // Set training days with exercises
+      // Set training days with exercises - sort by day_number
       const formattedTrainingDays =
-        challengeData.challenge_training_days?.map(
-          (day: ChallengeTrainingDay) => ({
+        challengeData.challenge_training_days
+          ?.sort((a: ChallengeTrainingDay, b: ChallengeTrainingDay) => a.day_number - b.day_number)
+          ?.map((day: ChallengeTrainingDay) => ({
             id: day.id,
             date: startDate
               ? new Date(
@@ -452,6 +454,31 @@ const EditChallenge = () => {
         ? prev.filter((id) => id !== achievementId)
         : [...prev, achievementId]
     );
+  };
+
+  const moveTrainingDay = (fromIndex: number, toIndex: number) => {
+    const updatedDays = [...trainingDays];
+    const [movedDay] = updatedDays.splice(fromIndex, 1);
+    updatedDays.splice(toIndex, 0, movedDay);
+    setTrainingDays(updatedDays);
+  };
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    e.dataTransfer.setData("text/plain", index.toString());
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const dragIndex = parseInt(e.dataTransfer.getData("text/plain"));
+    if (dragIndex !== dropIndex) {
+      moveTrainingDay(dragIndex, dropIndex);
+    }
   };
 
   if (isLoadingData) {
@@ -740,12 +767,19 @@ const EditChallenge = () => {
                 {trainingDays.map((day, index) => (
                   <div
                     key={index}
-                    className="bg-card/50 border-2 border-border/50 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200"
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={handleDragOver}
+                    onDrop={(e) => handleDrop(e, index)}
+                    className="bg-card/50 border-2 border-border/50 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200 cursor-move"
                   >
                     {/* Day Header */}
                     <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b border-border/50">
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                            <GripVertical className="w-5 h-5" />
+                          </div>
                           <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center">
                             <span className="text-lg font-bold text-primary">{index + 1}</span>
                           </div>
