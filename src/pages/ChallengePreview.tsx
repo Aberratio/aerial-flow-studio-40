@@ -647,7 +647,7 @@ const ChallengePreview = () => {
                       Duration
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-white">
-                      {calculateDuration()}
+                      {challenge.training_days?.length || 0}
                     </div>
                   </CardContent>
                 </Card>
@@ -688,7 +688,9 @@ const ChallengePreview = () => {
                       Training Days
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-white">
-                      {challenge.training_days?.length || 0}
+                      {challenge.training_days?.filter(
+                        (day) => !day.is_rest_day
+                      ).length || 0}
                     </div>
                   </CardContent>
                 </Card>
