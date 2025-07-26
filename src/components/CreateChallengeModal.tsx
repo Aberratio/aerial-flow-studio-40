@@ -643,12 +643,13 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                   
                   {/* Exercise Management */}
                   {!day.isRestDay && (
-                    <ExerciseManagement
-                      trainingDayId={`temp-${index}`}
-                      exercises={day.exercises}
-                      onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
-                      canEdit={true}
-                    />
+                           <ExerciseManagement
+                             trainingDayId={`temp-${index}`}
+                             exercises={day.exercises}
+                             onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
+                             canEdit={true}
+                             challengeType={type}
+                           />
                   )}
                   
                   {day.isRestDay && (

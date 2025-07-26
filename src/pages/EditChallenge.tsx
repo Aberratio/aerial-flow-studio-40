@@ -715,74 +715,91 @@ const EditChallenge = () => {
             </div>
 
             {/* Training Days Section */}
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="w-5 h-5 text-blue-400" />
-                  <Label className="text-lg font-semibold">Training Days</Label>
+                <div className="flex items-center gap-3">
+                  <CalendarDays className="w-6 h-6 text-blue-400" />
+                  <div>
+                    <Label className="text-xl font-bold">Training Days</Label>
+                    <p className="text-sm text-muted-foreground">Design your challenge schedule</p>
+                  </div>
                 </div>
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="default"
+                  size="lg"
                   onClick={addTrainingDay}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 bg-primary hover:bg-primary/90"
                 >
-                  <Plus className="w-4 h-4" />
-                  Add Day
+                  <Plus className="w-5 h-5" />
+                  Add Training Day
                 </Button>
               </div>
 
-              <div className="space-y-4 max-h-[400px] overflow-y-auto">
+              <div className="space-y-6">
                 {trainingDays.map((day, index) => (
                   <div
                     key={index}
-                    className="border rounded-lg overflow-hidden animate-fade-in"
+                    className="bg-card/50 border-2 border-border/50 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200"
                   >
                     {/* Day Header */}
-                    <div className="bg-muted/30 p-4 border-b">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-semibold">
-                            {index + 1}
+                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b border-border/50">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center">
+                            <span className="text-lg font-bold text-primary">{index + 1}</span>
                           </div>
-                          <Label className="text-base font-semibold">
-                            Day {index + 1}
-                          </Label>
+                          <div>
+                            <h3 className="text-xl font-bold">Day {index + 1}</h3>
+                            <p className="text-sm text-muted-foreground">Training session {index + 1}</p>
+                          </div>
                           {day.isRestDay && (
-                            <Badge variant="secondary" className="text-xs">
-                              <span className="mr-1">😴</span> Rest Day
+                            <Badge variant="secondary" className="text-sm px-3 py-1">
+                              <span className="mr-2">😴</span> Rest Day
                             </Badge>
                           )}
                         </div>
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
                           onClick={() => removeTrainingDay(index)}
-                          className="hover:bg-destructive/20 hover:text-destructive"
+                          className="hover:bg-destructive/20 hover:text-destructive hover:border-destructive/50"
                         >
-                          <X className="w-4 h-4" />
+                          <X className="w-4 h-4 mr-2" />
+                          Remove Day
                         </Button>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">Date</Label>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold text-foreground">Title</Label>
+                          <Input
+                            placeholder="e.g., Upper Body Focus, Core Strength"
+                            value={day.title}
+                            onChange={(e) =>
+                              updateTrainingDay(index, "title", e.target.value)
+                            }
+                            className="h-11 bg-background/50 border-border/50"
+                          />
+                        </div>
+
+                        <div className="space-y-3">
+                          <Label className="text-sm font-semibold text-foreground">Date</Label>
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button
                                 variant="outline"
                                 className={cn(
-                                  "w-full justify-start text-left font-normal h-9",
+                                  "w-full justify-start text-left font-normal h-11 bg-background/50 border-border/50",
                                   !day.date && "text-muted-foreground"
                                 )}
                               >
-                                <Calendar className="mr-2 h-4 w-4" />
+                                <Calendar className="mr-3 h-5 w-5" />
                                 {day.date ? (
-                                  format(day.date, "MMM dd")
+                                  format(day.date, "MMM dd, yyyy")
                                 ) : (
-                                  <span>Pick date</span>
+                                  <span>Select date</span>
                                 )}
                               </Button>
                             </PopoverTrigger>
@@ -807,24 +824,10 @@ const EditChallenge = () => {
                             </PopoverContent>
                           </Popover>
                         </div>
-
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium">Title</Label>
-                          <Input
-                            placeholder="e.g., Upper Body Focus"
-                            value={day.title}
-                            onChange={(e) =>
-                              updateTrainingDay(index, "title", e.target.value)
-                            }
-                            className="h-9"
-                          />
-                        </div>
                       </div>
 
-                      <div className="mt-4 space-y-2">
-                        <Label className="text-sm font-medium">
-                          Description
-                        </Label>
+                      <div className="mt-6 space-y-3">
+                        <Label className="text-sm font-semibold text-foreground">Description</Label>
                         <Textarea
                           placeholder="Describe what this training day focuses on..."
                           value={day.description}
@@ -835,30 +838,28 @@ const EditChallenge = () => {
                               e.target.value
                             )
                           }
-                          rows={2}
-                          className="resize-none"
+                          rows={3}
+                          className="resize-none bg-background/50 border-border/50"
                         />
                       </div>
 
-                      <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Label className="text-sm font-medium">
-                            Day Type:
-                          </Label>
-                          <div className="flex items-center space-x-2">
+                      <div className="mt-6 flex items-center justify-between p-4 bg-background/30 rounded-lg border border-border/30">
+                        <div className="flex items-center gap-4">
+                          <Label className="text-sm font-semibold">Day Type:</Label>
+                          <div className="flex items-center space-x-3">
                             <Switch
                               checked={day.isRestDay || false}
                               onCheckedChange={(checked) =>
                                 updateTrainingDay(index, "isRestDay", checked)
                               }
                             />
-                            <span className="text-sm">
+                            <span className="text-sm font-medium">
                               {day.isRestDay ? "Rest Day" : "Training Day"}
                             </span>
                           </div>
                         </div>
                         {!day.isRestDay && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-sm px-3 py-1">
                             {day.exercises?.length || 0} exercise
                             {(day.exercises?.length || 0) !== 1 ? "s" : ""}
                           </Badge>
@@ -867,26 +868,22 @@ const EditChallenge = () => {
                     </div>
 
                     {/* Day Content */}
-                    <div className="p-4">
+                    <div className="p-6">
                       {day.isRestDay ? (
-                        <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg bg-blue-500/5">
-                          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <span className="text-2xl">😴</span>
+                        <div className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg bg-blue-500/5">
+                          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                            <span className="text-3xl">😴</span>
                           </div>
-                          <p className="font-medium text-base">
-                            Rest & Recovery Day
-                          </p>
-                          <p className="text-sm mt-1">
-                            No exercises needed - time to let your body recover!
+                          <h4 className="font-semibold text-lg mb-2">Rest & Recovery Day</h4>
+                          <p className="text-sm">
+                            No exercises needed - time to let your body recover and rebuild!
                           </p>
                         </div>
                       ) : (
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2 pb-2 border-b">
-                            <CalendarDays className="w-4 h-4 text-primary" />
-                            <span className="text-sm font-medium">
-                              Exercises for this day
-                            </span>
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3 pb-3 border-b border-border/30">
+                            <CalendarDays className="w-5 h-5 text-primary" />
+                            <h4 className="text-lg font-semibold">Exercises for this day</h4>
                           </div>
                           <ExerciseManagement
                             trainingDayId={day.id || `temp-${index}`}
@@ -895,6 +892,7 @@ const EditChallenge = () => {
                               updateTrainingDay(index, "exercises", exercises)
                             }
                             canEdit={true}
+                            challengeType={type}
                           />
                         </div>
                       )}
@@ -903,12 +901,20 @@ const EditChallenge = () => {
                 ))}
 
                 {trainingDays.length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                    <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>No training days added yet</p>
-                    <p className="text-sm">
-                      Click "Add Day" to create training sessions
+                  <div className="text-center py-16 text-muted-foreground border-2 border-dashed border-border/50 rounded-xl bg-muted/20">
+                    <CalendarDays className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                    <h3 className="text-lg font-semibold mb-2">No training days added yet</h3>
+                    <p className="text-sm mb-6">
+                      Start building your challenge by adding training sessions
                     </p>
+                    <Button
+                      type="button"
+                      onClick={addTrainingDay}
+                      className="bg-primary hover:bg-primary/90"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Your First Training Day
+                    </Button>
                   </div>
                 )}
               </div>

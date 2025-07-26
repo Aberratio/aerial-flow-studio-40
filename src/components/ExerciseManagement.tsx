@@ -44,13 +44,15 @@ interface ExerciseManagementProps {
   exercises: Exercise[];
   onExercisesChange: (exercises: Exercise[]) => void;
   canEdit: boolean;
+  challengeType?: string;
 }
 
 const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   trainingDayId,
   exercises,
   onExercisesChange,
-  canEdit
+  canEdit,
+  challengeType
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
@@ -68,14 +70,21 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
 
   useEffect(() => {
     fetchFigures();
-  }, []);
+  }, [challengeType]);
 
   const fetchFigures = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('figures')
-        .select('id, name, difficulty_level, category, image_url')
+        .select('id, name, difficulty_level, category, image_url, type')
         .order('name');
+
+      // Filter by "core" type for timer challenges
+      if (challengeType === 'timer') {
+        query = query.eq('type', 'core');
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       setAvailableFigures(data || []);
