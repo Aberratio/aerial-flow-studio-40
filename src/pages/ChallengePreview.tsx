@@ -46,6 +46,10 @@ import {
   startOfMonth,
   endOfMonth,
   isAfter,
+  addMonths,
+  subMonths,
+  isBefore,
+  isSameMonth,
 } from "date-fns";
 
 interface Challenge {
@@ -99,6 +103,7 @@ const ChallengePreview = () => {
   const [isParticipant, setIsParticipant] = useState(false);
   const [userParticipant, setUserParticipant] = useState<any>(null);
   const [isResettingProgress, setIsResettingProgress] = useState(false);
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(new Date());
 
   // Use the new refactored challenge calendar hook
   const {
@@ -453,6 +458,50 @@ const ChallengePreview = () => {
     const lastDate = addDays(startDate, lastDay.day_number - 1);
     return endOfMonth(lastDate);
   };
+
+  // Month navigation functions
+  const hasMultipleMonths = () => {
+    const startMonth = getCalendarStartMonth();
+    const endMonth = getCalendarEndMonth();
+    return !isSameMonth(startMonth, endMonth);
+  };
+
+  const canNavigateToPreviousMonth = () => {
+    const startMonth = getCalendarStartMonth();
+    return isAfter(currentCalendarMonth, startMonth);
+  };
+
+  const canNavigateToNextMonth = () => {
+    const endMonth = getCalendarEndMonth();
+    return isBefore(currentCalendarMonth, endMonth);
+  };
+
+  const navigateToPreviousMonth = () => {
+    if (canNavigateToPreviousMonth()) {
+      setCurrentCalendarMonth(subMonths(currentCalendarMonth, 1));
+    }
+  };
+
+  const navigateToNextMonth = () => {
+    if (canNavigateToNextMonth()) {
+      setCurrentCalendarMonth(addMonths(currentCalendarMonth, 1));
+    }
+  };
+
+  const hasTrainingDaysInMonth = (month: Date) => {
+    return calendarDays.some(day => {
+      const dayDate = new Date(day.calendar_date);
+      return isSameMonth(dayDate, month);
+    });
+  };
+
+  // Set initial calendar month when user participation is loaded
+  useEffect(() => {
+    if (userParticipant?.user_started_at && calendarDays.length > 0) {
+      const startMonth = getCalendarStartMonth();
+      setCurrentCalendarMonth(startMonth);
+    }
+  }, [userParticipant?.user_started_at, calendarDays.length]);
 
   if (isLoading) {
     return (
@@ -928,142 +977,175 @@ const ChallengePreview = () => {
                   </div>
                 ) : (
                   /* Desktop/tablet calendar view */
-                  <div className="bg-white/5 rounded-lg p-6 border border-white/10">
-                    <Calendar
-                      mode="single"
-                      className="pointer-events-auto w-full [&_td]:!h-24 [&_th]:!h-12 [&_td]:!w-24 [&_tbody_td]:!p-1 [&_th]:!text-base [&_button]:!h-full [&_button]:!w-full [&_button]:!text-sm [&_button]:!flex [&_button]:!flex-col [&_button]:!items-start [&_button]:!justify-start [&_button]:!gap-1 [&_button]:!p-2"
-                      components={{
-                        DayContent: ({ date }) => {
-                          const dayInfo = getCalendarDayInfo(date);
-                          const dayNumber = date.getDate();
+                  <div className="bg-white/5 rounded-lg border border-white/10">
+                    {/* Month Navigation Header (only show if multiple months) */}
+                    {hasMultipleMonths() && (
+                      <div className="flex items-center justify-between p-4 border-b border-white/10">
+                        <h4 className="text-white font-medium">
+                          {format(currentCalendarMonth, "MMMM yyyy")}
+                        </h4>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={navigateToPreviousMonth}
+                            disabled={!canNavigateToPreviousMonth()}
+                            className="text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed h-8 w-8 p-0"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={navigateToNextMonth}
+                            disabled={!canNavigateToNextMonth()}
+                            className="text-white hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed h-8 w-8 p-0"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="p-6">
+                      <Calendar
+                        mode="single"
+                        month={currentCalendarMonth}
+                        onMonthChange={setCurrentCalendarMonth}
+                        className="pointer-events-auto w-full [&_td]:!h-24 [&_th]:!h-12 [&_td]:!w-24 [&_tbody_td]:!p-1 [&_th]:!text-base [&_button]:!h-full [&_button]:!w-full [&_button]:!text-sm [&_button]:!flex [&_button]:!flex-col [&_button]:!items-start [&_button]:!justify-start [&_button]:!gap-1 [&_button]:!p-2"
+                        components={{
+                          DayContent: ({ date }) => {
+                            const dayInfo = getCalendarDayInfo(date);
+                            const dayNumber = date.getDate();
 
-                          if (!dayInfo) {
-                            return (
-                              <span className="text-muted-foreground">
-                                {dayNumber}
-                              </span>
+                            if (!dayInfo) {
+                              return (
+                                <span className="text-muted-foreground">
+                                  {dayNumber}
+                                </span>
+                              );
+                            }
+
+                            const {
+                              trainingDay,
+                              isCompleted,
+                              isFailed,
+                              isRest,
+                              isToday,
+                              isAccessible,
+                              isFailedRepetition,
+                            } = dayInfo;
+
+                            const isLocked = isDayLocked(
+                              trainingDay.day_number,
+                              calendarDays
                             );
-                          }
 
-                          const {
-                            trainingDay,
-                            isCompleted,
-                            isFailed,
-                            isRest,
-                            isToday,
-                            isAccessible,
-                            isFailedRepetition,
-                          } = dayInfo;
-
-                          const isLocked = isDayLocked(
-                            trainingDay.day_number,
-                            calendarDays
-                          );
-
+                            return (
+                              <div
+                                className={`
+                                relative w-full h-full rounded-lg border-2 transition-all cursor-pointer flex flex-col p-2
+                                 ${
+                                   isCompleted
+                                     ? "bg-emerald-500 border-emerald-400 text-white shadow-lg"
+                                     : isFailed
+                                     ? "bg-red-500/30 border-red-500/50 text-red-400 hover:bg-red-500/40"
+                                     : isToday
+                                     ? "bg-purple-500 border-purple-400 text-white shadow-lg animate-pulse"
+                                     : trainingDay.is_rest_day
+                                     ? "bg-green-500/20 border-green-500/40 text-green-400 hover:bg-green-500/30"
+                                     : isAccessible && !isLocked
+                                     ? "bg-blue-500/20 border-blue-500/40 text-blue-400 hover:bg-blue-500/30"
+                                     : "bg-gray-500/20 border-gray-500/30 text-gray-500 opacity-50 cursor-not-allowed"
+                                 }
+                              `}
+                              >
+                                <div className="absolute top-1 left-1 text-xs font-bold">
+                                  {dayNumber}
+                                </div>
+                                <div className="flex-1 flex items-center justify-center">
+                                  <div className="text-2xl">
+                                    {isCompleted ? (
+                                      "✅"
+                                    ) : isFailed ? (
+                                      "❌"
+                                    ) : trainingDay.is_rest_day || isRest ? (
+                                      "🌴"
+                                    ) : isLocked ? (
+                                      <Lock className="w-6 h-6 text-gray-400" />
+                                    ) : (
+                                      "💪"
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-xs text-center leading-tight mt-auto">
+                                  Day {trainingDay.day_number}
+                                </div>
+                                {isFailedRepetition && (
+                                  <div className="absolute top-1 right-1 text-xs">
+                                    🔄
+                                  </div>
+                                )}
+                                {isCompleted && trainingDay.is_rest_day && (
+                                  <div className="absolute top-1 right-1 text-xs">
+                                    🌴
+                                  </div>
+                                )}
+                                {(isLocked ||
+                                  (!isAccessible &&
+                                    !isCompleted &&
+                                    !isFailed)) && (
+                                  <div className="absolute bottom-1 right-1 text-xs">
+                                    <Lock className="w-3 h-3 text-gray-400" />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          },
+                        }}
+                        onDayClick={handleCalendarDayClick}
+                        disabled={(date) => {
+                          const dayInfo = getCalendarDayInfo(date);
                           return (
-                            <div
-                              className={`
-                              relative w-full h-full rounded-lg border-2 transition-all cursor-pointer flex flex-col p-2
-                               ${
-                                 isCompleted
-                                   ? "bg-emerald-500 border-emerald-400 text-white shadow-lg"
-                                   : isFailed
-                                   ? "bg-red-500/30 border-red-500/50 text-red-400 hover:bg-red-500/40"
-                                   : isToday
-                                   ? "bg-purple-500 border-purple-400 text-white shadow-lg animate-pulse"
-                                   : trainingDay.is_rest_day
-                                   ? "bg-green-500/20 border-green-500/40 text-green-400 hover:bg-green-500/30"
-                                   : isAccessible && !isLocked
-                                   ? "bg-blue-500/20 border-blue-500/40 text-blue-400 hover:bg-blue-500/30"
-                                   : "bg-gray-500/20 border-gray-500/30 text-gray-500 opacity-50 cursor-not-allowed"
-                               }
-                            `}
-                            >
-                              <div className="absolute top-1 left-1 text-xs font-bold">
-                                {dayNumber}
-                              </div>
-                              <div className="flex-1 flex items-center justify-center">
-                                <div className="text-2xl">
-                                  {isCompleted ? (
-                                    "✅"
-                                  ) : isFailed ? (
-                                    "❌"
-                                  ) : trainingDay.is_rest_day || isRest ? (
-                                    "🌴"
-                                  ) : isLocked ? (
-                                    <Lock className="w-6 h-6 text-gray-400" />
-                                  ) : (
-                                    "💪"
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-xs text-center leading-tight mt-auto">
-                                Day {trainingDay.day_number}
-                              </div>
-                              {isFailedRepetition && (
-                                <div className="absolute top-1 right-1 text-xs">
-                                  🔄
-                                </div>
-                              )}
-                              {isCompleted && trainingDay.is_rest_day && (
-                                <div className="absolute top-1 right-1 text-xs">
-                                  🌴
-                                </div>
-                              )}
-                              {(isLocked ||
-                                (!isAccessible &&
-                                  !isCompleted &&
-                                  !isFailed)) && (
-                                <div className="absolute bottom-1 right-1 text-xs">
-                                  <Lock className="w-3 h-3 text-gray-400" />
-                                </div>
-                              )}
-                            </div>
+                            !dayInfo ||
+                            !dayInfo.isAccessible ||
+                            isAfter(date, new Date()) ||
+                            isDayLocked(
+                              dayInfo.trainingDay.day_number,
+                              calendarDays
+                            )
                           );
-                        },
-                      }}
-                      onDayClick={handleCalendarDayClick}
-                      disabled={(date) => {
-                        const dayInfo = getCalendarDayInfo(date);
-                        return (
-                          !dayInfo ||
-                          !dayInfo.isAccessible ||
-                          isAfter(date, new Date()) ||
-                          isDayLocked(
-                            dayInfo.trainingDay.day_number,
-                            calendarDays
-                          )
-                        );
-                      }}
-                      fromMonth={getCalendarStartMonth()}
-                      toMonth={getCalendarEndMonth()}
-                    />
+                        }}
+                        fromMonth={getCalendarStartMonth()}
+                        toMonth={getCalendarEndMonth()}
+                      />
 
-                    {/* Calendar Legend */}
-                    <div className="mt-4 flex flex-wrap gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-blue-500/30 rounded border border-blue-500/50"></div>
-                        <span className="text-blue-400">Training Day</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-green-500/30 rounded border border-green-500/50"></div>
-                        <span className="text-green-400">Rest Day</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-emerald-500 rounded"></div>
-                        <span className="text-emerald-400">Completed</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-red-500/30 rounded border border-red-500/50"></div>
-                        <span className="text-red-400">Failed (Retry)</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-purple-500 rounded"></div>
-                        <span className="text-purple-400">Today</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-gray-500/30 rounded border border-gray-500/50"></div>
-                        <span className="text-gray-400">Locked/Future</span>
+                      {/* Calendar Legend */}
+                      <div className="mt-4 flex flex-wrap gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-blue-500/30 rounded border border-blue-500/50"></div>
+                          <span className="text-blue-400">Training Day</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-green-500/30 rounded border border-green-500/50"></div>
+                          <span className="text-green-400">Rest Day</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-emerald-500 rounded"></div>
+                          <span className="text-emerald-400">Completed</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-red-500/30 rounded border border-red-500/50"></div>
+                          <span className="text-red-400">Failed (Retry)</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-purple-500 rounded"></div>
+                          <span className="text-purple-400">Today</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 bg-gray-500/30 rounded border border-gray-500/50"></div>
+                          <span className="text-gray-400">Locked/Future</span>
+                        </div>
                       </div>
                     </div>
                   </div>
