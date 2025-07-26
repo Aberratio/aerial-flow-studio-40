@@ -1,24 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageCircle, Users, UserPlus, Check, X, UserMinus, Share2, LogIn, UserPlus2, Eye } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { ShareProfileModal } from '@/components/ShareProfileModal';
-import { useProfilePreviewData } from '@/hooks/useProfilePreviewData';
-import { useFollowCounts } from '@/hooks/useFollowCounts';
-import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
-import { useMutualFriends } from '@/hooks/useMutualFriends';
-import { supabase } from '@/integrations/supabase/client';
-import { ProfilePreviewModal } from '@/components/ProfilePreviewModal';
-import { FriendInviteModal } from '@/components/FriendInviteModal';
-import { FriendshipActions } from '@/components/FriendshipActions';
-import AppLayout from '@/components/Layout/AppLayout';
-import { Navigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import {
+  Heart,
+  MessageCircle,
+  Users,
+  UserPlus,
+  Check,
+  X,
+  UserMinus,
+  Share2,
+  LogIn,
+  UserPlus2,
+  Eye,
+} from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { ShareProfileModal } from "@/components/ShareProfileModal";
+import { useProfilePreviewData } from "@/hooks/useProfilePreviewData";
+import { useFollowCounts } from "@/hooks/useFollowCounts";
+import { useFriendshipStatus } from "@/hooks/useFriendshipStatus";
+import { useMutualFriends } from "@/hooks/useMutualFriends";
+import { supabase } from "@/integrations/supabase/client";
+import { ProfilePreviewModal } from "@/components/ProfilePreviewModal";
+import { FriendInviteModal } from "@/components/FriendInviteModal";
+import { FriendshipActions } from "@/components/FriendshipActions";
+import AppLayout from "@/components/Layout/AppLayout";
+import { Navigate } from "react-router-dom";
 
 const FriendProfile = () => {
   const { user } = useAuth();
@@ -31,30 +49,30 @@ const FriendProfile = () => {
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState<any>(null);
   const [allPosts, setAllPosts] = useState<any[]>([]);
-  const [privacyFilter, setPrivacyFilter] = useState('all');
+  const [privacyFilter, setPrivacyFilter] = useState("all");
 
-  const { followersCount, followingCount } = useFollowCounts(id || '');
-  const { mutualCount } = useMutualFriends(user?.id || '', id || '');
-  const { 
-    isFollowing, 
-    sendFriendRequest, 
-    acceptFriendRequest, 
+  const { followersCount, followingCount } = useFollowCounts(id || "");
+  const { mutualCount } = useMutualFriends(user?.id || "", id || "");
+  const {
+    isFollowing,
+    sendFriendRequest,
+    acceptFriendRequest,
     rejectFriendRequest,
     followUser,
-    unfollowUser
-  } = useFriendshipStatus(id || '');
+    unfollowUser,
+  } = useFriendshipStatus(id || "");
 
   useEffect(() => {
     const fetchProfileData = async () => {
       if (!id) return;
-      
+
       setLoading(true);
       try {
         // Fetch profile data
         const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', id)
+          .from("profiles")
+          .select("*")
+          .eq("id", id)
           .single();
 
         if (profileError) throw profileError;
@@ -62,40 +80,42 @@ const FriendProfile = () => {
 
         // Fetch posts based on privacy filter and user relationship
         let postsQuery = supabase
-          .from('posts')
-          .select(`
+          .from("posts")
+          .select(
+            `
             *,
             profiles!posts_user_id_fkey (
               username,
               avatar_url
             )
-          `)
-          .eq('user_id', id)
-          .order('created_at', { ascending: false })
+          `
+          )
+          .eq("user_id", id)
+          .order("created_at", { ascending: false })
           .limit(20);
 
         // Apply privacy filter for own profile or public access
         if (user?.id === id) {
           // Own profile - apply privacy filter
-          if (privacyFilter === 'public') {
-            postsQuery = postsQuery.eq('privacy', 'public');
-          } else if (privacyFilter === 'friends') {
+          if (privacyFilter === "public") {
+            postsQuery = postsQuery.eq("privacy", "public");
+          } else if (privacyFilter === "friends") {
             // Friends view should show both public and friends content
-            postsQuery = postsQuery.in('privacy', ['public', 'friends']);
+            postsQuery = postsQuery.in("privacy", ["public", "friends"]);
           }
           // 'all' shows everything for own profile
         } else if (!user) {
           // Not logged in - only show public
-          postsQuery = postsQuery.eq('privacy', 'public');
+          postsQuery = postsQuery.eq("privacy", "public");
         } else {
           // Other user's profile - check friendship status
           const areFriends = await checkFriendshipStatus(user.id, id);
           if (areFriends) {
             // Friends can see public and friends posts
-            postsQuery = postsQuery.in('privacy', ['public', 'friends']);
+            postsQuery = postsQuery.in("privacy", ["public", "friends"]);
           } else {
             // Non-friends can only see public posts
-            postsQuery = postsQuery.eq('privacy', 'public');
+            postsQuery = postsQuery.eq("privacy", "public");
           }
         }
 
@@ -107,14 +127,14 @@ const FriendProfile = () => {
         const postsWithCounts = await Promise.all(
           (posts || []).map(async (post) => {
             const { count: likesCount } = await supabase
-              .from('post_likes')
-              .select('*', { count: 'exact', head: true })
-              .eq('post_id', post.id);
+              .from("post_likes")
+              .select("*", { count: "exact", head: true })
+              .eq("post_id", post.id);
 
             const { count: commentsCount } = await supabase
-              .from('post_comments')
-              .select('*', { count: 'exact', head: true })
-              .eq('post_id', post.id);
+              .from("post_comments")
+              .select("*", { count: "exact", head: true })
+              .eq("post_id", post.id);
 
             return {
               id: post.id,
@@ -127,19 +147,19 @@ const FriendProfile = () => {
               user: {
                 username: post.profiles?.username || profile.username,
                 avatar_url: post.profiles?.avatar_url || profile.avatar_url,
-                verified: true
-              }
+                verified: true,
+              },
             };
           })
         );
 
         setAllPosts(postsWithCounts);
       } catch (error) {
-        console.error('Error fetching profile data:', error);
+        console.error("Error fetching profile data:", error);
         toast({
           title: "Error",
           description: "Failed to load profile data.",
-          variant: "destructive"
+          variant: "destructive",
         });
       } finally {
         setLoading(false);
@@ -149,13 +169,13 @@ const FriendProfile = () => {
     // Helper function to check friendship status
     const checkFriendshipStatus = async (userId1: string, userId2: string) => {
       try {
-        const { data } = await supabase.rpc('are_users_friends', {
+        const { data } = await supabase.rpc("are_users_friends", {
           user1_id: userId1,
-          user2_id: userId2
+          user2_id: userId2,
         });
         return data || false;
       } catch (error) {
-        console.error('Error checking friendship status:', error);
+        console.error("Error checking friendship status:", error);
         return false;
       }
     };
@@ -168,7 +188,7 @@ const FriendProfile = () => {
     if (success) {
       toast({
         title: "Friend Request Sent",
-        description: `Your friend request has been sent to ${profileData?.username}`
+        description: `Your friend request has been sent to ${profileData?.username}`,
       });
     }
   };
@@ -178,7 +198,7 @@ const FriendProfile = () => {
     if (success) {
       toast({
         title: "Friend Request Accepted",
-        description: `You and ${profileData?.username} are now friends!`
+        description: `You and ${profileData?.username} are now friends!`,
       });
     }
   };
@@ -188,7 +208,7 @@ const FriendProfile = () => {
     if (success) {
       toast({
         title: "Friend Request Rejected",
-        description: `You rejected ${profileData?.username}'s friend request.`
+        description: `You rejected ${profileData?.username}'s friend request.`,
       });
     }
   };
@@ -198,7 +218,7 @@ const FriendProfile = () => {
     if (success) {
       toast({
         title: "Now Following",
-        description: `You are now following ${profileData?.username}.`
+        description: `You are now following ${profileData?.username}.`,
       });
     }
   };
@@ -208,7 +228,7 @@ const FriendProfile = () => {
     if (success) {
       toast({
         title: "Unfollowed",
-        description: `You are no longer following ${profileData?.username}.`
+        description: `You are no longer following ${profileData?.username}.`,
       });
     }
   };
@@ -219,7 +239,7 @@ const FriendProfile = () => {
   }
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 p-3 sm:p-6">
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 p-3 sm:p-6">
         <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
           {/* Public Profile View */}
           <Card className="glass-effect border-white/10">
@@ -227,7 +247,13 @@ const FriendProfile = () => {
               <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
                 {/* Avatar */}
                 <div className="relative">
-                  <Avatar className={`w-32 h-32 ${profileData?.role === 'trainer' ? 'ring-4 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-4 ring-offset-black' : ''}`}>
+                  <Avatar
+                    className={`w-32 h-32 ${
+                      profileData?.role === "trainer"
+                        ? "ring-4 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-4 ring-offset-black"
+                        : ""
+                    }`}
+                  >
                     <AvatarImage src={profileData?.avatar_url} />
                     <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-4xl">
                       {profileData?.username?.[0]?.toUpperCase()}
@@ -238,9 +264,11 @@ const FriendProfile = () => {
                 {/* Profile Info */}
                 <div className="flex-1 text-center md:text-left">
                   <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
-                    <h1 className="text-3xl font-bold text-white">{profileData?.username}</h1>
+                    <h1 className="text-3xl font-bold text-white">
+                      {profileData?.username}
+                    </h1>
                     <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
-                      {profileData?.role === 'trainer' && (
+                      {profileData?.role === "trainer" && (
                         <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold">
                           Trainer
                         </Badge>
@@ -248,21 +276,33 @@ const FriendProfile = () => {
                     </div>
                   </div>
 
-                  <p className="text-muted-foreground mb-6">{profileData?.bio}</p>
+                  <p className="text-muted-foreground mb-6">
+                    {profileData?.bio}
+                  </p>
 
                   {/* Stats */}
                   <div className="grid grid-cols-3 gap-4 mb-6">
                     <div className="text-center">
-                      <div className="gradient-text text-2xl font-bold">{allPosts.length}</div>
+                      <div className="gradient-text text-2xl font-bold">
+                        {allPosts.length}
+                      </div>
                       <div className="text-muted-foreground text-sm">Posts</div>
                     </div>
                     <div className="text-center">
-                      <div className="gradient-text text-2xl font-bold">{followersCount}</div>
-                      <div className="text-muted-foreground text-sm">Followers</div>
+                      <div className="gradient-text text-2xl font-bold">
+                        {followersCount}
+                      </div>
+                      <div className="text-muted-foreground text-sm">
+                        Followers
+                      </div>
                     </div>
                     <div className="text-center">
-                      <div className="gradient-text text-2xl font-bold">{followingCount}</div>
-                      <div className="text-muted-foreground text-sm">Following</div>
+                      <div className="gradient-text text-2xl font-bold">
+                        {followingCount}
+                      </div>
+                      <div className="text-muted-foreground text-sm">
+                        Following
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -274,10 +314,13 @@ const FriendProfile = () => {
           <Card className="glass-effect border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-pink-500/10">
             <CardContent className="p-8 text-center">
               <UserPlus2 className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-white mb-4">Join Our Fitness Community!</h2>
+              <h2 className="text-2xl font-bold text-white mb-4">
+                Join Our Fitness Community!
+              </h2>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Create your profile to connect with {profileData?.username} and thousands of other fitness enthusiasts. 
-                Share your progress, get inspired, and achieve your goals together!
+                Create your profile to connect with {profileData?.username} and
+                thousands of other fitness enthusiasts. Share your progress, get
+                inspired, and achieve your goals together!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild variant="primary" size="lg">
@@ -286,7 +329,12 @@ const FriendProfile = () => {
                     Sign Up Now
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+                <Button
+                  asChild
+                  variant="outline"
+                  size="lg"
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
                   <Link to="/">
                     <LogIn className="w-5 h-5 mr-2" />
                     Already have an account?
@@ -300,20 +348,22 @@ const FriendProfile = () => {
           {allPosts.length > 0 && (
             <Card className="glass-effect border-white/10">
               <CardContent className="p-6">
-                <h3 className="text-xl font-semibold text-white mb-6">Public Posts</h3>
+                <h3 className="text-xl font-semibold text-white mb-6">
+                  Public Posts
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {allPosts.slice(0, 6).map((post) => (
                     <div key={post.id} className="relative group">
                       <div className="aspect-square rounded-lg overflow-hidden">
                         {post.image_url ? (
-                          <img 
-                            src={post.image_url} 
+                          <img
+                            src={post.image_url}
                             alt="Post"
                             className="w-full h-full object-cover"
                           />
                         ) : post.video_url ? (
                           <div className="relative w-full h-full">
-                            <video 
+                            <video
                               src={post.video_url}
                               className="w-full h-full object-cover"
                             />
@@ -325,7 +375,9 @@ const FriendProfile = () => {
                           <div className="w-full h-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-white/10 flex flex-col items-center justify-center p-4">
                             <MessageCircle className="w-8 h-8 text-purple-400 mb-2" />
                             <p className="text-xs text-center text-white/70 leading-tight">
-                              {post.content.length > 60 ? `${post.content.substring(0, 60)}...` : post.content}
+                              {post.content.length > 60
+                                ? `${post.content.substring(0, 60)}...`
+                                : post.content}
                             </p>
                           </div>
                         )}
@@ -366,7 +418,13 @@ const FriendProfile = () => {
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-6 md:space-y-0 md:space-x-8">
               {/* Avatar */}
               <div className="relative">
-                <Avatar className={`w-32 h-32 ${profileData?.role === 'trainer' ? 'ring-4 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-4 ring-offset-black' : ''}`}>
+                <Avatar
+                  className={`w-32 h-32 ${
+                    profileData?.role === "trainer"
+                      ? "ring-4 ring-gradient-to-r from-yellow-400 to-orange-500 ring-offset-4 ring-offset-black"
+                      : ""
+                  }`}
+                >
                   <AvatarImage src={profileData?.avatar_url} />
                   <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-4xl">
                     {profileData?.username?.[0]?.toUpperCase()}
@@ -377,9 +435,11 @@ const FriendProfile = () => {
               {/* Profile Info */}
               <div className="flex-1 text-center md:text-left">
                 <div className="flex flex-col md:flex-row md:items-center md:space-x-4 mb-4">
-                  <h1 className="text-3xl font-bold text-white">{profileData?.username}</h1>
+                  <h1 className="text-3xl font-bold text-white">
+                    {profileData?.username}
+                  </h1>
                   <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
-                    {profileData?.role === 'trainer' && (
+                    {profileData?.role === "trainer" && (
                       <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold">
                         Trainer
                       </Badge>
@@ -392,16 +452,26 @@ const FriendProfile = () => {
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="text-center">
-                    <div className="gradient-text text-2xl font-bold">{allPosts.length}</div>
+                    <div className="gradient-text text-2xl font-bold">
+                      {allPosts.length}
+                    </div>
                     <div className="text-muted-foreground text-sm">Posts</div>
                   </div>
                   <div className="text-center">
-                    <div className="gradient-text text-2xl font-bold">{followersCount}</div>
-                    <div className="text-muted-foreground text-sm">Followers</div>
+                    <div className="gradient-text text-2xl font-bold">
+                      {followersCount}
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      Followers
+                    </div>
                   </div>
                   <div className="text-center">
-                    <div className="gradient-text text-2xl font-bold">{followingCount}</div>
-                    <div className="text-muted-foreground text-sm">Following</div>
+                    <div className="gradient-text text-2xl font-bold">
+                      {followingCount}
+                    </div>
+                    <div className="text-muted-foreground text-sm">
+                      Following
+                    </div>
                   </div>
                 </div>
 
@@ -410,16 +480,36 @@ const FriendProfile = () => {
                   <div className="mb-4">
                     <div className="flex items-center space-x-2 mb-2">
                       <Eye className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">View as:</span>
+                      <span className="text-sm text-muted-foreground">
+                        View as:
+                      </span>
                     </div>
-                    <Select value={privacyFilter} onValueChange={setPrivacyFilter}>
+                    <Select
+                      value={privacyFilter}
+                      onValueChange={setPrivacyFilter}
+                    >
                       <SelectTrigger className="bg-white/5 border-white/20 text-white">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-slate-800 border-white/20">
-                        <SelectItem value="all" className="text-white hover:bg-white/10">All Content (Private View)</SelectItem>
-                        <SelectItem value="public" className="text-white hover:bg-white/10">Public Only</SelectItem>
-                        <SelectItem value="friends" className="text-white hover:bg-white/10">Friends Only</SelectItem>
+                        <SelectItem
+                          value="all"
+                          className="text-white hover:bg-white/10"
+                        >
+                          All Content (Private View)
+                        </SelectItem>
+                        <SelectItem
+                          value="public"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Public Only
+                        </SelectItem>
+                        <SelectItem
+                          value="friends"
+                          className="text-white hover:bg-white/10"
+                        >
+                          Friends Only
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -428,14 +518,14 @@ const FriendProfile = () => {
                 {/* Action Buttons */}
                 <div className="flex flex-col sm:flex-row gap-3 justify-center md:justify-start w-full sm:w-auto">
                   {/* Conditional relationship buttons */}
-                  <FriendshipActions 
-                    userId={id || ''} 
-                    username={profileData?.username || ''} 
+                  <FriendshipActions
+                    userId={id || ""}
+                    username={profileData?.username || ""}
                   />
-                  
+
                   {/* Share Button */}
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => setIsShareModalOpen(true)}
                     className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto px-3 py-2 text-sm"
                   >
@@ -453,30 +543,34 @@ const FriendProfile = () => {
           <Card className="glass-effect border-white/10">
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold text-white mb-6">
-                Posts 
-                {user?.id === id && privacyFilter !== 'all' && (
+                Posts
+                {user?.id === id && privacyFilter !== "all" && (
                   <span className="text-sm text-muted-foreground ml-2">
-                    ({privacyFilter === 'public' ? 'Public Only' : 'Friends Only'})
+                    (
+                    {privacyFilter === "public"
+                      ? "Public Only"
+                      : "Friends Only"}
+                    )
                   </span>
                 )}
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {allPosts.map((post) => (
-                  <div 
-                    key={post.id} 
+                  <div
+                    key={post.id}
                     className="relative group cursor-pointer"
                     onClick={() => navigate(`/post/${post.id}`)}
                   >
                     <div className="aspect-square rounded-lg overflow-hidden">
                       {post.image_url ? (
-                        <img 
-                          src={post.image_url} 
+                        <img
+                          src={post.image_url}
                           alt="Post"
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                         />
                       ) : post.video_url ? (
                         <div className="relative w-full h-full">
-                          <video 
+                          <video
                             src={post.video_url}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                           />
@@ -488,12 +582,14 @@ const FriendProfile = () => {
                         <div className="w-full h-full bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-white/10 flex flex-col items-center justify-center p-4">
                           <MessageCircle className="w-8 h-8 text-purple-400 mb-2" />
                           <p className="text-xs text-center text-white/70 leading-tight">
-                            {post.content.length > 60 ? `${post.content.substring(0, 60)}...` : post.content}
+                            {post.content.length > 60
+                              ? `${post.content.substring(0, 60)}...`
+                              : post.content}
                           </p>
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Hover Overlay */}
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center space-x-6">
                       <div className="flex items-center text-white">
@@ -513,32 +609,31 @@ const FriendProfile = () => {
         )}
 
         {/* No posts message for filtered views */}
-        {allPosts.length === 0 && user?.id === id && privacyFilter !== 'all' && (
-          <Card className="glass-effect border-white/10">
-            <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">
-                No {privacyFilter === 'public' ? 'public' : 'friends-only'} posts to show.
-              </p>
-            </CardContent>
-          </Card>
-        )}
+        {allPosts.length === 0 &&
+          user?.id === id &&
+          privacyFilter !== "all" && (
+            <Card className="glass-effect border-white/10">
+              <CardContent className="p-6 text-center">
+                <p className="text-muted-foreground">
+                  No {privacyFilter === "public" ? "public" : "friends-only"}{" "}
+                  posts to show.
+                </p>
+              </CardContent>
+            </Card>
+          )}
       </div>
 
       {/* Modals */}
       <ShareProfileModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
-        profileId={id || ''}
-        profileName={profileData?.username || ''}
+        profileId={id || ""}
+        profileName={profileData?.username || ""}
       />
     </div>
   );
 
-  return (
-    <AppLayout>
-      {loggedInContent}
-    </AppLayout>
-  );
+  return <AppLayout>{loggedInContent}</AppLayout>;
 };
 
 export default FriendProfile;

@@ -29,7 +29,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   }, [isMobile, sidebarOpen]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
       {/* Mobile Menu Button */}
       {isMobile && (
         <Button

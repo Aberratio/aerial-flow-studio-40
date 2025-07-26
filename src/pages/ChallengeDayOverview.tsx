@@ -370,7 +370,7 @@ const ChallengeDayOverview = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
       </div>
     );
@@ -378,7 +378,7 @@ const ChallengeDayOverview = () => {
 
   if (!challenge || !trainingDay) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screenbg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-2">
             Challenge day not found
@@ -399,7 +399,7 @@ const ChallengeDayOverview = () => {
   const isRetry = calendarDay?.is_retry;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 text-white">
       <div className="container mx-auto px-4 py-4 sm:py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-6 sm:mb-8">

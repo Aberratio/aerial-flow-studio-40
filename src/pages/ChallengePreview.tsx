@@ -430,7 +430,11 @@ const ChallengePreview = () => {
 
   const handleCalendarDayClick = (date: Date) => {
     const dayInfo = getCalendarDayInfo(date);
-    if (dayInfo && dayInfo.isAccessible && !isDayLocked(dayInfo.trainingDay.day_number, calendarDays)) {
+    if (
+      dayInfo &&
+      dayInfo.isAccessible &&
+      !isDayLocked(dayInfo.trainingDay.day_number, calendarDays)
+    ) {
       navigate(`/challenge/${challengeId}/day/${dayInfo.id}`);
     }
   };
@@ -452,7 +456,7 @@ const ChallengePreview = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
       </div>
     );
@@ -460,7 +464,7 @@ const ChallengePreview = () => {
 
   if (!challenge) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-2">
             Challenge not found
@@ -474,7 +478,7 @@ const ChallengePreview = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 text-white">
+    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 text-white">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -754,21 +758,30 @@ const ChallengePreview = () => {
                     {isMobile ? "Your Training Schedule" : "Calendar View"}
                   </h3>
                   {isMobile && (
-                    <Badge variant="outline" className="border-white/30 text-white/90">
+                    <Badge
+                      variant="outline"
+                      className="border-white/30 text-white/90"
+                    >
                       <List className="w-3 h-3 mr-1" />
                       List View
                     </Badge>
                   )}
                 </div>
-                
+
                 {isMobile ? (
                   /* Mobile-friendly list view */
                   <div className="space-y-3">
                     {calendarDays
                       .sort((a, b) => {
                         // Sort by day number from training day
-                        const dayA = challenge?.training_days?.find(td => td.id === a.training_day_id)?.day_number || 0;
-                        const dayB = challenge?.training_days?.find(td => td.id === b.training_day_id)?.day_number || 0;
+                        const dayA =
+                          challenge?.training_days?.find(
+                            (td) => td.id === a.training_day_id
+                          )?.day_number || 0;
+                        const dayB =
+                          challenge?.training_days?.find(
+                            (td) => td.id === b.training_day_id
+                          )?.day_number || 0;
                         return dayA - dayB;
                       })
                       .map((calendarDay) => {
@@ -779,63 +792,87 @@ const ChallengePreview = () => {
 
                         const isCompleted = calendarDay.status === "completed";
                         const isFailed = calendarDay.status === "failed";
-                         const isToday = calendarDay.is_today;
-                         const isAccessible = calendarDay.is_accessible;
-                         const isRest = trainingDay.is_rest_day;
-                         const isLocked = isDayLocked(trainingDay.day_number, calendarDays);
-                         
-                         return (
-                           <Card
-                             key={calendarDay.id}
-                             className={`glass-effect border transition-all ${
-                               isCompleted
-                                 ? "border-emerald-500/50 bg-emerald-500/10"
-                                 : isFailed
-                                 ? "border-red-500/50 bg-red-500/10"
-                                 : isToday
-                                 ? "border-purple-500/50 bg-purple-500/10 ring-1 ring-purple-500/30"
-                                 : isRest
-                                 ? "border-green-500/50 bg-green-500/10"
-                                 : isAccessible && !isLocked
-                                 ? "border-blue-500/50 bg-blue-500/10"
-                                 : "border-white/10 bg-white/5 opacity-60"
-                             } ${isAccessible && !isLocked ? "cursor-pointer hover:bg-white/10" : "cursor-not-allowed"}`}
-                             onClick={() => isAccessible && !isLocked && handleCalendarDayClick(new Date(calendarDay.calendar_date))}
+                        const isToday = calendarDay.is_today;
+                        const isAccessible = calendarDay.is_accessible;
+                        const isRest = trainingDay.is_rest_day;
+                        const isLocked = isDayLocked(
+                          trainingDay.day_number,
+                          calendarDays
+                        );
+
+                        return (
+                          <Card
+                            key={calendarDay.id}
+                            className={`glass-effect border transition-all ${
+                              isCompleted
+                                ? "border-emerald-500/50 bg-emerald-500/10"
+                                : isFailed
+                                ? "border-red-500/50 bg-red-500/10"
+                                : isToday
+                                ? "border-purple-500/50 bg-purple-500/10 ring-1 ring-purple-500/30"
+                                : isRest
+                                ? "border-green-500/50 bg-green-500/10"
+                                : isAccessible && !isLocked
+                                ? "border-blue-500/50 bg-blue-500/10"
+                                : "border-white/10 bg-white/5 opacity-60"
+                            } ${
+                              isAccessible && !isLocked
+                                ? "cursor-pointer hover:bg-white/10"
+                                : "cursor-not-allowed"
+                            }`}
+                            onClick={() =>
+                              isAccessible &&
+                              !isLocked &&
+                              handleCalendarDayClick(
+                                new Date(calendarDay.calendar_date)
+                              )
+                            }
                           >
                             <CardContent className="p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                   <div className="text-2xl">
-                                     {isCompleted
-                                       ? "✅"
-                                       : isFailed
-                                       ? "❌"
-                                       : isRest
-                                       ? "🌴"
-                                       : isToday
-                                       ? "🎯"
-                                       : isLocked
-                                       ? <Lock className="w-6 h-6 text-gray-400" />
-                                       : "💪"}
-                                   </div>
+                                  <div className="text-2xl">
+                                    {isCompleted ? (
+                                      "✅"
+                                    ) : isFailed ? (
+                                      "❌"
+                                    ) : isRest ? (
+                                      "🌴"
+                                    ) : isToday ? (
+                                      "🎯"
+                                    ) : isLocked ? (
+                                      <Lock className="w-6 h-6 text-gray-400" />
+                                    ) : (
+                                      "💪"
+                                    )}
+                                  </div>
                                   <div>
                                     <div className="flex items-center gap-2">
                                       <span className="font-medium text-white">
                                         Day {trainingDay.day_number}
                                       </span>
                                       {calendarDay.is_retry && (
-                                        <Badge variant="outline" className="text-xs border-yellow-500/50 text-yellow-400">
+                                        <Badge
+                                          variant="outline"
+                                          className="text-xs border-yellow-500/50 text-yellow-400"
+                                        >
                                           🔄 Retry
                                         </Badge>
                                       )}
                                       {isToday && (
-                                        <Badge variant="outline" className="text-xs border-purple-500/50 text-purple-400">
+                                        <Badge
+                                          variant="outline"
+                                          className="text-xs border-purple-500/50 text-purple-400"
+                                        >
                                           Today
                                         </Badge>
                                       )}
                                     </div>
                                     <div className="text-sm text-muted-foreground">
-                                      {format(new Date(calendarDay.calendar_date), "MMM d, yyyy")}
+                                      {format(
+                                        new Date(calendarDay.calendar_date),
+                                        "MMM d, yyyy"
+                                      )}
                                     </div>
                                     {trainingDay.title && (
                                       <div className="text-sm text-white/70 mt-1">
@@ -845,40 +882,43 @@ const ChallengePreview = () => {
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
-                                   <Badge
-                                     variant="outline"
-                                     className={
-                                       isCompleted
-                                         ? "border-emerald-500/50 text-emerald-400"
-                                         : isFailed
-                                         ? "border-red-500/50 text-red-400"
-                                         : isRest
-                                         ? "border-green-500/50 text-green-400"
-                                         : isToday
-                                         ? "border-purple-500/50 text-purple-400"
-                                         : isAccessible && !isLocked
-                                         ? "border-blue-500/50 text-blue-400"
-                                         : "border-gray-500/50 text-gray-400"
-                                     }
-                                   >
-                                     {isCompleted
-                                       ? "Completed"
-                                       : isFailed
-                                       ? "Failed"
-                                       : isRest
-                                       ? "Rest Day"
-                                       : isToday
-                                       ? "Today"
-                                       : isAccessible && !isLocked
-                                       ? "Ready"
-                                       : "Locked"}
-                                   </Badge>
-                                   {isAccessible && !isLocked && (
-                                     <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                                   )}
-                                   {(isLocked || (!isAccessible && !isCompleted && !isFailed)) && (
-                                     <Lock className="w-4 h-4 text-gray-400" />
-                                   )}
+                                  <Badge
+                                    variant="outline"
+                                    className={
+                                      isCompleted
+                                        ? "border-emerald-500/50 text-emerald-400"
+                                        : isFailed
+                                        ? "border-red-500/50 text-red-400"
+                                        : isRest
+                                        ? "border-green-500/50 text-green-400"
+                                        : isToday
+                                        ? "border-purple-500/50 text-purple-400"
+                                        : isAccessible && !isLocked
+                                        ? "border-blue-500/50 text-blue-400"
+                                        : "border-gray-500/50 text-gray-400"
+                                    }
+                                  >
+                                    {isCompleted
+                                      ? "Completed"
+                                      : isFailed
+                                      ? "Failed"
+                                      : isRest
+                                      ? "Rest Day"
+                                      : isToday
+                                      ? "Today"
+                                      : isAccessible && !isLocked
+                                      ? "Ready"
+                                      : "Locked"}
+                                  </Badge>
+                                  {isAccessible && !isLocked && (
+                                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                                  )}
+                                  {(isLocked ||
+                                    (!isAccessible &&
+                                      !isCompleted &&
+                                      !isFailed)) && (
+                                    <Lock className="w-4 h-4 text-gray-400" />
+                                  )}
                                 </div>
                               </div>
                             </CardContent>
@@ -905,17 +945,20 @@ const ChallengePreview = () => {
                             );
                           }
 
-                           const {
-                             trainingDay,
-                             isCompleted,
-                             isFailed,
-                             isRest,
-                             isToday,
-                             isAccessible,
-                             isFailedRepetition,
-                           } = dayInfo;
+                          const {
+                            trainingDay,
+                            isCompleted,
+                            isFailed,
+                            isRest,
+                            isToday,
+                            isAccessible,
+                            isFailedRepetition,
+                          } = dayInfo;
 
-                           const isLocked = isDayLocked(trainingDay.day_number, calendarDays);
+                          const isLocked = isDayLocked(
+                            trainingDay.day_number,
+                            calendarDays
+                          );
 
                           return (
                             <div
@@ -940,17 +983,19 @@ const ChallengePreview = () => {
                                 {dayNumber}
                               </div>
                               <div className="flex-1 flex items-center justify-center">
-                                 <div className="text-2xl">
-                                   {isCompleted
-                                     ? "✅"
-                                     : isFailed
-                                     ? "❌"
-                                     : trainingDay.is_rest_day || isRest
-                                     ? "🌴"
-                                     : isLocked
-                                     ? <Lock className="w-6 h-6 text-gray-400" />
-                                     : "💪"}
-                                 </div>
+                                <div className="text-2xl">
+                                  {isCompleted ? (
+                                    "✅"
+                                  ) : isFailed ? (
+                                    "❌"
+                                  ) : trainingDay.is_rest_day || isRest ? (
+                                    "🌴"
+                                  ) : isLocked ? (
+                                    <Lock className="w-6 h-6 text-gray-400" />
+                                  ) : (
+                                    "💪"
+                                  )}
+                                </div>
                               </div>
                               <div className="text-xs text-center leading-tight mt-auto">
                                 Day {trainingDay.day_number}
@@ -965,25 +1010,31 @@ const ChallengePreview = () => {
                                   🌴
                                 </div>
                               )}
-                               {(isLocked || (!isAccessible && !isCompleted && !isFailed)) && (
-                                 <div className="absolute bottom-1 right-1 text-xs">
-                                   <Lock className="w-3 h-3 text-gray-400" />
-                                 </div>
-                               )}
+                              {(isLocked ||
+                                (!isAccessible &&
+                                  !isCompleted &&
+                                  !isFailed)) && (
+                                <div className="absolute bottom-1 right-1 text-xs">
+                                  <Lock className="w-3 h-3 text-gray-400" />
+                                </div>
+                              )}
                             </div>
                           );
                         },
                       }}
                       onDayClick={handleCalendarDayClick}
-                       disabled={(date) => {
-                         const dayInfo = getCalendarDayInfo(date);
-                         return (
-                           !dayInfo ||
-                           !dayInfo.isAccessible ||
-                           isAfter(date, new Date()) ||
-                           isDayLocked(dayInfo.trainingDay.day_number, calendarDays)
-                         );
-                       }}
+                      disabled={(date) => {
+                        const dayInfo = getCalendarDayInfo(date);
+                        return (
+                          !dayInfo ||
+                          !dayInfo.isAccessible ||
+                          isAfter(date, new Date()) ||
+                          isDayLocked(
+                            dayInfo.trainingDay.day_number,
+                            calendarDays
+                          )
+                        );
+                      }}
                       fromMonth={getCalendarStartMonth()}
                       toMonth={getCalendarEndMonth()}
                     />

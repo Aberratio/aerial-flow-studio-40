@@ -12,7 +12,7 @@ const buttonVariants = cva(
         default:
           "bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-800 hover:via-teal-800 hover:to-emerald-900 text-white transition-all duration-300 hover:translate-y-[-1px]",
         primary:
-          "bg-gradient-to-br from-purple-600/50 to-teal-700/50 hover:from-purple-600/60 hover:to-teal-700/60 text-white transition-all duration-200",
+          "bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-blue-500/20 hover:from-purple-500/30 hover:via-pink-500/30 hover:to-blue-500/30 text-white transition-all duration-200",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
