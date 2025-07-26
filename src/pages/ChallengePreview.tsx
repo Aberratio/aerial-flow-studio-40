@@ -570,14 +570,6 @@ const ChallengePreview = () => {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
-                  <Badge
-                    variant="outline"
-                    className="border-white/30 text-white/90 mb-2"
-                  >
-                    {challenge.type === "timer"
-                      ? "Timer Challenge"
-                      : "Manual Challenge"}
-                  </Badge>
                   <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold text-white line-clamp-2">
                     {challenge.title}
                   </h1>

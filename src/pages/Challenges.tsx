@@ -81,12 +81,12 @@ const Challenges = () => {
         .from("challenges")
         .select("*")
         .order("created_at", { ascending: false });
-      
+
       // If not admin, only show published challenges
       if (!isAdmin) {
         challengeQuery = challengeQuery.eq("status", "published");
       }
-      
+
       const { data: allChallenges, error } = await challengeQuery;
       if (error) throw error;
 
@@ -274,11 +274,11 @@ const Challenges = () => {
         .from("challenges")
         .select("id, start_date, end_date")
         .eq("status", "published");
-      
+
       const { data: publishedChallenges } = await statsQuery;
-      
+
       // Get participant data only for published challenges
-      const publishedChallengeIds = publishedChallenges?.map(c => c.id) || [];
+      const publishedChallengeIds = publishedChallenges?.map((c) => c.id) || [];
       let participantData = [];
       if (publishedChallengeIds.length > 0) {
         const { data } = await supabase
@@ -291,36 +291,37 @@ const Challenges = () => {
       // Get training days data for calculating training days vs total days
       let totalDurationDays = 0;
       let totalTrainingDays = 0;
-      
+
       if (publishedChallengeIds.length > 0) {
         const { data: trainingDaysData } = await supabase
           .from("challenge_training_days")
           .select("challenge_id, is_rest_day")
           .in("challenge_id", publishedChallengeIds);
-        
+
         // Count training days (non-rest days) and total days per challenge
-        const challengeDayCounts = trainingDaysData?.reduce((acc, day) => {
-          if (!acc[day.challenge_id]) {
-            acc[day.challenge_id] = { total: 0, training: 0 };
-          }
-          acc[day.challenge_id].total++;
-          if (!day.is_rest_day) {
-            acc[day.challenge_id].training++;
-          }
-          return acc;
-        }, {}) || {};
-        
+        const challengeDayCounts =
+          trainingDaysData?.reduce((acc, day) => {
+            if (!acc[day.challenge_id]) {
+              acc[day.challenge_id] = { total: 0, training: 0 };
+            }
+            acc[day.challenge_id].total++;
+            if (!day.is_rest_day) {
+              acc[day.challenge_id].training++;
+            }
+            return acc;
+          }, {}) || {};
+
         // Sum up all days
         Object.values(challengeDayCounts).forEach((counts: any) => {
           totalDurationDays += counts.total;
           totalTrainingDays += counts.training;
         });
       }
-      
+
       const now = new Date();
       let activeChallenges = 0;
       let completedChallenges = 0;
-      
+
       publishedChallenges?.forEach((challenge) => {
         const start = new Date(challenge.start_date);
         const end = new Date(challenge.end_date);
@@ -330,15 +331,15 @@ const Challenges = () => {
           completedChallenges++;
         }
       });
-      
+
       const averageDuration = publishedChallenges?.length
         ? Math.round(totalDurationDays / publishedChallenges.length)
         : 0;
-      
+
       const averageTrainingDays = publishedChallenges?.length
         ? Math.round(totalTrainingDays / publishedChallenges.length)
         : 0;
-      
+
       setStats({
         activeChallenges,
         completedChallenges,
@@ -446,7 +447,7 @@ const Challenges = () => {
       case "available":
         return "bg-blue-500/90 text-blue-100 border-blue-500/30";
       case "active":
-        return "bg-yellow-500/90 text-yellow-100 border-yellow-500/30";
+        return "bg-pink-700/90 text-pink-100 border-pink-500/30";
       case "completed":
         return "bg-green-500/90 text-green-100 border-green-500/30";
       case "failed":
@@ -505,14 +506,38 @@ const Challenges = () => {
   const getMobileDateOptions = () => {
     const today = new Date();
     const oneMonthAgo = subMonths(today, 1);
-    
+
     return [
-      { label: "Today", value: today, description: "Start your challenge today" },
-      { label: "Yesterday", value: subDays(today, 1), description: "Catch up from yesterday" },
-      { label: "3 days ago", value: subDays(today, 3), description: "Get back on track" },
-      { label: "1 week ago", value: subWeeks(today, 1), description: "Start from last week" },
-      { label: "2 weeks ago", value: subWeeks(today, 2), description: "Begin from 2 weeks back" },
-      { label: "1 month ago", value: oneMonthAgo, description: "Maximum allowed start date" },
+      {
+        label: "Today",
+        value: today,
+        description: "Start your challenge today",
+      },
+      {
+        label: "Yesterday",
+        value: subDays(today, 1),
+        description: "Catch up from yesterday",
+      },
+      {
+        label: "3 days ago",
+        value: subDays(today, 3),
+        description: "Get back on track",
+      },
+      {
+        label: "1 week ago",
+        value: subWeeks(today, 1),
+        description: "Start from last week",
+      },
+      {
+        label: "2 weeks ago",
+        value: subWeeks(today, 2),
+        description: "Begin from 2 weeks back",
+      },
+      {
+        label: "1 month ago",
+        value: oneMonthAgo,
+        description: "Maximum allowed start date",
+      },
     ];
   };
 
@@ -522,7 +547,6 @@ const Challenges = () => {
     isAdmin,
     shouldShowAdminMessage: !roleLoading && !isAdmin,
   });
-
 
   return (
     <div className="min-h-screen p-4 sm:p-6">
@@ -673,8 +697,8 @@ const Challenges = () => {
                           {challenge.status.replace("-", " ")}
                         </Badge>
                         {challenge.premium && (
-                          <Badge className="bg-gradient-to-r from-yellow-600 to-amber-600 text-white border-amber-500/30 font-semibold shadow-lg">
-                            Premium
+                          <Badge className="bg-gray-500 text-white border-gray-500/30 font-semibold shadow-lg">
+                            Premium 👑
                           </Badge>
                         )}
                       </div>
@@ -766,10 +790,9 @@ const Challenges = () => {
                               }
                             }}
                           >
-                            {challenge.premium && !hasPremiumAccess 
-                              ? "Premium Required" 
-                              : getButtonText(challenge.status)
-                            }
+                            {challenge.premium && !hasPremiumAccess
+                              ? "Premium Required"
+                              : getButtonText(challenge.status)}
                           </Button>
                         </div>
                       ) : (
@@ -833,16 +856,24 @@ const Challenges = () => {
                     {getMobileDateOptions().map((option, index) => (
                       <Button
                         key={index}
-                        variant={selectedStartDate?.toDateString() === option.value.toDateString() ? "primary" : "outline"}
+                        variant={
+                          selectedStartDate?.toDateString() ===
+                          option.value.toDateString()
+                            ? "primary"
+                            : "outline"
+                        }
                         onClick={() => setSelectedStartDate(option.value)}
                         className={`w-full p-4 h-auto flex flex-col items-start justify-start text-left ${
-                          selectedStartDate?.toDateString() === option.value.toDateString() 
-                            ? "border-primary bg-primary/10" 
+                          selectedStartDate?.toDateString() ===
+                          option.value.toDateString()
+                            ? "border-primary bg-primary/10"
                             : "border-white/20 bg-black/20 hover:bg-white/10"
                         }`}
                       >
                         <div className="flex items-center justify-between w-full">
-                          <span className="font-medium text-base">{option.label}</span>
+                          <span className="font-medium text-base">
+                            {option.label}
+                          </span>
                           <span className="text-xs opacity-70">
                             {format(option.value, "MMM d")}
                           </span>
@@ -852,7 +883,7 @@ const Challenges = () => {
                         </span>
                       </Button>
                     ))}
-                    
+
                     {/* Alternative: Show calendar option */}
                     <div className="pt-2 border-t border-white/10">
                       <Popover>
@@ -868,7 +899,10 @@ const Challenges = () => {
                             <ChevronDown className="h-4 w-4" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0 z-[70] max-w-[90vw]" align="start">
+                        <PopoverContent
+                          className="w-auto p-0 z-[70] max-w-[90vw]"
+                          align="start"
+                        >
                           <Calendar
                             mode="single"
                             selected={selectedStartDate}
@@ -876,7 +910,8 @@ const Challenges = () => {
                               setSelectedStartDate(date);
                             }}
                             disabled={(date) =>
-                              date > new Date() || date < subMonths(new Date(), 1)
+                              date > new Date() ||
+                              date < subMonths(new Date(), 1)
                             }
                             initialFocus
                             className="pointer-events-auto"
@@ -899,7 +934,10 @@ const Challenges = () => {
                           : "Pick a date"}
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 z-[70] max-w-[90vw]" align="start">
+                    <PopoverContent
+                      className="w-auto p-0 z-[70] max-w-[90vw]"
+                      align="start"
+                    >
                       <Calendar
                         mode="single"
                         selected={selectedStartDate}
@@ -915,7 +953,7 @@ const Challenges = () => {
                     </PopoverContent>
                   </Popover>
                 )}
-                
+
                 <div className="flex space-x-2 pt-2">
                   <Button
                     variant="primary"
