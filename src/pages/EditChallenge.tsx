@@ -10,6 +10,8 @@ import {
   CalendarDays,
   ArrowLeft,
   GripVertical,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -38,6 +40,11 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -145,6 +152,7 @@ const EditChallenge = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [collapsedDays, setCollapsedDays] = useState<Set<number>>(new Set());
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -233,6 +241,10 @@ const EditChallenge = () => {
         ) || [];
 
       setTrainingDays(formattedTrainingDays);
+      
+      // Set all training days to be collapsed by default
+      const allDayIndices = new Set(formattedTrainingDays.map((_, index) => index));
+      setCollapsedDays(allDayIndices);
     } catch (error) {
       console.error("Error fetching challenge:", error);
       toast({
@@ -454,6 +466,18 @@ const EditChallenge = () => {
         ? prev.filter((id) => id !== achievementId)
         : [...prev, achievementId]
     );
+  };
+
+  const toggleCollapsedDay = (index: number) => {
+    setCollapsedDays((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+      } else {
+        newSet.add(index);
+      }
+      return newSet;
+    });
   };
 
   const moveTrainingDay = (fromIndex: number, toIndex: number) => {
@@ -764,175 +788,200 @@ const EditChallenge = () => {
               </div>
 
               <div className="space-y-6">
-                {trainingDays.map((day, index) => (
-                  <div
-                    key={index}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, index)}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, index)}
-                    className="bg-card/50 border-2 border-border/50 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200 cursor-move"
-                  >
-                    {/* Day Header */}
-                    <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b border-border/50">
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                            <GripVertical className="w-5 h-5" />
-                          </div>
-                          <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center">
-                            <span className="text-lg font-bold text-primary">{index + 1}</span>
-                          </div>
-                          <div>
-                            <h3 className="text-xl font-bold">Day {index + 1}</h3>
-                            <p className="text-sm text-muted-foreground">Training session {index + 1}</p>
-                          </div>
-                          {day.isRestDay && (
-                            <Badge variant="secondary" className="text-sm px-3 py-1">
-                              <span className="mr-2">😴</span> Rest Day
-                            </Badge>
-                          )}
-                        </div>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeTrainingDay(index)}
-                          className="hover:bg-destructive/20 hover:text-destructive hover:border-destructive/50"
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          Remove Day
-                        </Button>
-                      </div>
-
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <Label className="text-sm font-semibold text-foreground">Title</Label>
-                          <Input
-                            placeholder="e.g., Upper Body Focus, Core Strength"
-                            value={day.title}
-                            onChange={(e) =>
-                              updateTrainingDay(index, "title", e.target.value)
-                            }
-                            className="h-11 bg-background/50 border-border/50"
-                          />
-                        </div>
-
-                        <div className="space-y-3">
-                          <Label className="text-sm font-semibold text-foreground">Date</Label>
-                          <Popover>
-                            <PopoverTrigger asChild>
+                {trainingDays.map((day, index) => {
+                  const isCollapsed = collapsedDays.has(index);
+                  
+                  return (
+                    <Collapsible
+                      key={index}
+                      open={!isCollapsed}
+                      onOpenChange={() => toggleCollapsedDay(index)}
+                    >
+                      <div
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, index)}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                        className="bg-card/50 border-2 border-border/50 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-200 cursor-move"
+                      >
+                        {/* Day Header */}
+                        <CollapsibleTrigger asChild>
+                          <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b border-border/50 cursor-pointer hover:bg-primary/15 transition-colors">
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                                  <GripVertical className="w-5 h-5" />
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {isCollapsed ? (
+                                    <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform" />
+                                  ) : (
+                                    <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform" />
+                                  )}
+                                </div>
+                                <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center">
+                                  <span className="text-lg font-bold text-primary">{index + 1}</span>
+                                </div>
+                                <div>
+                                  <h3 className="text-xl font-bold">Day {index + 1}</h3>
+                                  <p className="text-sm text-muted-foreground">Training session {index + 1}</p>
+                                </div>
+                                {day.isRestDay && (
+                                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                                    <span className="mr-2">😴</span> Rest Day
+                                  </Badge>
+                                )}
+                              </div>
                               <Button
+                                type="button"
                                 variant="outline"
-                                className={cn(
-                                  "w-full justify-start text-left font-normal h-11 bg-background/50 border-border/50",
-                                  !day.date && "text-muted-foreground"
-                                )}
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeTrainingDay(index);
+                                }}
+                                className="hover:bg-destructive/20 hover:text-destructive hover:border-destructive/50"
                               >
-                                <Calendar className="mr-3 h-5 w-5" />
-                                {day.date ? (
-                                  format(day.date, "MMM dd, yyyy")
-                                ) : (
-                                  <span>Select date</span>
-                                )}
+                                <X className="w-4 h-4 mr-2" />
+                                Remove Day
                               </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <CalendarComponent
-                                mode="single"
-                                selected={day.date}
-                                onSelect={(date) =>
-                                  date && updateTrainingDay(index, "date", date)
+                            </div>
+                          </div>
+                        </CollapsibleTrigger>
+
+                        <CollapsibleContent>
+                          <div className="p-6">
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                              <div className="space-y-3">
+                                <Label className="text-sm font-semibold text-foreground">Title</Label>
+                                <Input
+                                  placeholder="e.g., Upper Body Focus, Core Strength"
+                                  value={day.title}
+                                  onChange={(e) =>
+                                    updateTrainingDay(index, "title", e.target.value)
+                                  }
+                                  className="h-11 bg-background/50 border-border/50"
+                                />
+                              </div>
+
+                              <div className="space-y-3">
+                                <Label className="text-sm font-semibold text-foreground">Date</Label>
+                                <Popover>
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal h-11 bg-background/50 border-border/50",
+                                        !day.date && "text-muted-foreground"
+                                      )}
+                                    >
+                                      <Calendar className="mr-3 h-5 w-5" />
+                                      {day.date ? (
+                                        format(day.date, "MMM dd, yyyy")
+                                      ) : (
+                                        <span>Select date</span>
+                                      )}
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent
+                                    className="w-auto p-0"
+                                    align="start"
+                                  >
+                                    <CalendarComponent
+                                      mode="single"
+                                      selected={day.date}
+                                      onSelect={(date) =>
+                                        date && updateTrainingDay(index, "date", date)
+                                      }
+                                      disabled={(date) =>
+                                        startDate
+                                          ? date < startDate
+                                          : date < new Date()
+                                      }
+                                      initialFocus
+                                      className="p-3 pointer-events-auto"
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
+                            </div>
+
+                            <div className="mt-6 space-y-3">
+                              <Label className="text-sm font-semibold text-foreground">Description</Label>
+                              <Textarea
+                                placeholder="Describe what this training day focuses on..."
+                                value={day.description}
+                                onChange={(e) =>
+                                  updateTrainingDay(
+                                    index,
+                                    "description",
+                                    e.target.value
+                                  )
                                 }
-                                disabled={(date) =>
-                                  startDate
-                                    ? date < startDate
-                                    : date < new Date()
-                                }
-                                initialFocus
-                                className="p-3 pointer-events-auto"
+                                rows={3}
+                                className="resize-none bg-background/50 border-border/50"
                               />
-                            </PopoverContent>
-                          </Popover>
-                        </div>
-                      </div>
+                            </div>
 
-                      <div className="mt-6 space-y-3">
-                        <Label className="text-sm font-semibold text-foreground">Description</Label>
-                        <Textarea
-                          placeholder="Describe what this training day focuses on..."
-                          value={day.description}
-                          onChange={(e) =>
-                            updateTrainingDay(
-                              index,
-                              "description",
-                              e.target.value
-                            )
-                          }
-                          rows={3}
-                          className="resize-none bg-background/50 border-border/50"
-                        />
-                      </div>
+                            <div className="mt-6 flex items-center justify-between p-4 bg-background/30 rounded-lg border border-border/30">
+                              <div className="flex items-center gap-4">
+                                <Label className="text-sm font-semibold">Day Type:</Label>
+                                <div className="flex items-center space-x-3">
+                                  <Switch
+                                    checked={day.isRestDay || false}
+                                    onCheckedChange={(checked) =>
+                                      updateTrainingDay(index, "isRestDay", checked)
+                                    }
+                                  />
+                                  <span className="text-sm font-medium">
+                                    {day.isRestDay ? "Rest Day" : "Training Day"}
+                                  </span>
+                                </div>
+                              </div>
+                              {!day.isRestDay && (
+                                <Badge variant="outline" className="text-sm px-3 py-1">
+                                  {day.exercises?.length || 0} exercise
+                                  {(day.exercises?.length || 0) !== 1 ? "s" : ""}
+                                </Badge>
+                              )}
+                            </div>
 
-                      <div className="mt-6 flex items-center justify-between p-4 bg-background/30 rounded-lg border border-border/30">
-                        <div className="flex items-center gap-4">
-                          <Label className="text-sm font-semibold">Day Type:</Label>
-                          <div className="flex items-center space-x-3">
-                            <Switch
-                              checked={day.isRestDay || false}
-                              onCheckedChange={(checked) =>
-                                updateTrainingDay(index, "isRestDay", checked)
-                              }
-                            />
-                            <span className="text-sm font-medium">
-                              {day.isRestDay ? "Rest Day" : "Training Day"}
-                            </span>
+                            {/* Day Content */}
+                            <div className="mt-6">
+                              {day.isRestDay ? (
+                                <div className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg bg-blue-500/5">
+                                  <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                    <span className="text-3xl">😴</span>
+                                  </div>
+                                  <h4 className="font-semibold text-lg mb-2">Rest & Recovery Day</h4>
+                                  <p className="text-sm">
+                                    No exercises needed - time to let your body recover and rebuild!
+                                  </p>
+                                </div>
+                              ) : (
+                                <div className="space-y-4">
+                                  <div className="flex items-center gap-3 pb-3 border-b border-border/30">
+                                    <CalendarDays className="w-5 h-5 text-primary" />
+                                    <h4 className="text-lg font-semibold">Exercises for this day</h4>
+                                  </div>
+                                  <ExerciseManagement
+                                    trainingDayId={day.id || `temp-${index}`}
+                                    exercises={day.exercises}
+                                    onExercisesChange={(exercises) =>
+                                      updateTrainingDay(index, "exercises", exercises)
+                                    }
+                                    canEdit={true}
+                                    challengeType={type}
+                                  />
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                        {!day.isRestDay && (
-                          <Badge variant="outline" className="text-sm px-3 py-1">
-                            {day.exercises?.length || 0} exercise
-                            {(day.exercises?.length || 0) !== 1 ? "s" : ""}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Day Content */}
-                    <div className="p-6">
-                      {day.isRestDay ? (
-                        <div className="text-center py-12 text-muted-foreground border-2 border-dashed border-border/50 rounded-lg bg-blue-500/5">
-                          <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-500/20 flex items-center justify-center">
-                            <span className="text-3xl">😴</span>
-                          </div>
-                          <h4 className="font-semibold text-lg mb-2">Rest & Recovery Day</h4>
-                          <p className="text-sm">
-                            No exercises needed - time to let your body recover and rebuild!
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="flex items-center gap-3 pb-3 border-b border-border/30">
-                            <CalendarDays className="w-5 h-5 text-primary" />
-                            <h4 className="text-lg font-semibold">Exercises for this day</h4>
-                          </div>
-                          <ExerciseManagement
-                            trainingDayId={day.id || `temp-${index}`}
-                            exercises={day.exercises}
-                            onExercisesChange={(exercises) =>
-                              updateTrainingDay(index, "exercises", exercises)
-                            }
-                            canEdit={true}
-                            challengeType={type}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                         </CollapsibleContent>
+                       </div>
+                     </Collapsible>
+                   );
+                 })}
 
                 {trainingDays.length === 0 && (
                   <div className="text-center py-16 text-muted-foreground border-2 border-dashed border-border/50 rounded-xl bg-muted/20">
