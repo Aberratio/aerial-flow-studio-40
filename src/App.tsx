@@ -37,7 +37,7 @@ import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
 import PremiumRoute from "@/components/PremiumRoute";
 import IntroductionModal from "@/components/IntroductionModal";
-import ChallengeDayOverviewRefactored from "./pages/ChallengeDayOverviewRefactored";
+
 
 const queryClient = new QueryClient();
 

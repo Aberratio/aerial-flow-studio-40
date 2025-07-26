@@ -511,6 +511,23 @@ const ChallengeDayOverview = () => {
               {trainingDay.description}
             </p>
 
+            {/* Start Day Button */}
+            {shouldShowActionButtons() && !trainingDay.is_rest_day && (
+              <div className="mb-8">
+                <Button
+                  variant="primary"
+                  onClick={handleStartDay}
+                  disabled={trainingDay.exercises.length === 0}
+                  className="w-full sm:w-auto sm:min-w-[200px] h-12 sm:h-14 text-base sm:text-lg font-semibold disabled:opacity-50"
+                >
+                  <Play className="w-5 h-5 mr-3" />
+                  {isRetryAttempt()
+                    ? `Retry Day ${dayNumber}`
+                    : `Start Day ${dayNumber}`}
+                </Button>
+              </div>
+            )}
+
             {/* Exercises List */}
             {trainingDay.exercises.length > 0 ? (
               <div className="space-y-4">
