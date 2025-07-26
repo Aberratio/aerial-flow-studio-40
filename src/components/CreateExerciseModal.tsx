@@ -1,16 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Upload, Loader2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState, useEffect } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Upload, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface CreateExerciseModalProps {
   isOpen: boolean;
@@ -19,59 +30,64 @@ interface CreateExerciseModalProps {
   editingFigure?: any;
 }
 
-export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editingFigure }: CreateExerciseModalProps) => {
+export const CreateExerciseModal = ({
+  isOpen,
+  onClose,
+  onExerciseCreated,
+  editingFigure,
+}: CreateExerciseModalProps) => {
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    instructions: '',
-    difficulty_level: '',
-    category: '',
-    level: '',
-    type: '',
-    image_url: '',
-    video_url: '',
+    name: "",
+    description: "",
+    instructions: "",
+    difficulty_level: "",
+    category: "",
+    level: "",
+    type: "",
+    image_url: "",
+    video_url: "",
     tags: [] as string[],
     synonyms: [] as string[],
-    premium: false
+    premium: false,
   });
-  const [tagInput, setTagInput] = useState('');
-  const [synonymInput, setSynonymInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
+  const [synonymInput, setSynonymInput] = useState("");
 
   // Update form when editing a figure
   useEffect(() => {
     if (editingFigure) {
       setFormData({
-        name: editingFigure.name || '',
-        description: editingFigure.description || '',
-        instructions: editingFigure.instructions || '',
-        difficulty_level: editingFigure.difficulty_level || '',
-        category: editingFigure.category || '',
-        level: editingFigure.level || '',
-        type: editingFigure.type || '',
-        image_url: editingFigure.image_url || '',
-        video_url: editingFigure.video_url || '',
+        name: editingFigure.name || "",
+        description: editingFigure.description || "",
+        instructions: editingFigure.instructions || "",
+        difficulty_level: editingFigure.difficulty_level || "",
+        category: editingFigure.category || "",
+        level: editingFigure.level || "",
+        type: editingFigure.type || "",
+        image_url: editingFigure.image_url || "",
+        video_url: editingFigure.video_url || "",
         tags: editingFigure.tags || [],
         synonyms: editingFigure.synonyms || [],
-        premium: editingFigure.premium || false
+        premium: editingFigure.premium || false,
       });
     } else {
       setFormData({
-        name: '',
-        description: '',
-        instructions: '',
-        difficulty_level: '',
-        category: '',
-        level: '',
-        type: '',
-        image_url: '',
-        video_url: '',
+        name: "",
+        description: "",
+        instructions: "",
+        difficulty_level: "",
+        category: "",
+        level: "",
+        type: "",
+        image_url: "",
+        video_url: "",
         tags: [],
         synonyms: [],
-        premium: false
+        premium: false,
       });
     }
-    setTagInput('');
-    setSynonymInput('');
+    setTagInput("");
+    setSynonymInput("");
   }, [editingFigure, isOpen]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -83,13 +99,13 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !formData.name.trim()) return;
-    
+
     // Check if image is required (for new exercises or if no existing image)
     if (!editingFigure && !imageFile && !formData.image_url) {
       toast({
         title: "Image Required",
         description: "Please upload an image for the exercise.",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -102,44 +118,44 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
       // Upload image if provided
       if (imageFile) {
-        const imageExt = imageFile.name.split('.').pop();
+        const imageExt = imageFile.name.split(".").pop();
         const imageName = `${Date.now()}.${imageExt}`;
-        
+
         const { error: imageError } = await supabase.storage
-          .from('posts')
+          .from("posts")
           .upload(`figures/${imageName}`, imageFile);
 
         if (imageError) throw imageError;
 
         const { data: imageData } = supabase.storage
-          .from('posts')
+          .from("posts")
           .getPublicUrl(`figures/${imageName}`);
-        
+
         imageUrl = imageData.publicUrl;
       }
 
       // Upload video if provided
       if (videoFile) {
-        const videoExt = videoFile.name.split('.').pop();
+        const videoExt = videoFile.name.split(".").pop();
         const videoName = `${Date.now()}.${videoExt}`;
-        
+
         const { error: videoError } = await supabase.storage
-          .from('posts')
+          .from("posts")
           .upload(`figures/${videoName}`, videoFile);
 
         if (videoError) throw videoError;
 
         const { data: videoData } = supabase.storage
-          .from('posts')
+          .from("posts")
           .getPublicUrl(`figures/${videoName}`);
-        
+
         videoUrl = videoData.publicUrl;
       }
 
       // Create or update the figure
       if (editingFigure) {
         const { error } = await supabase
-          .from('figures')
+          .from("figures")
           .update({
             name: formData.name.trim(),
             description: formData.description.trim() || null,
@@ -153,66 +169,66 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             tags: formData.tags.length > 0 ? formData.tags : null,
             synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
             premium: formData.premium,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
-          .eq('id', editingFigure.id);
+          .eq("id", editingFigure.id);
 
         if (error) throw error;
       } else {
-        const { error } = await supabase
-          .from('figures')
-          .insert({
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-            instructions: formData.instructions.trim() || null,
-            difficulty_level: formData.difficulty_level || null,
-            category: formData.category || null,
-            level: formData.level || null,
-            type: formData.type || null,
-            image_url: imageUrl || null,
-            video_url: videoUrl || null,
-            tags: formData.tags.length > 0 ? formData.tags : null,
-            synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
-            premium: formData.premium,
-            created_by: user.id
-          });
+        const { error } = await supabase.from("figures").insert({
+          name: formData.name.trim(),
+          description: formData.description.trim() || null,
+          instructions: formData.instructions.trim() || null,
+          difficulty_level: formData.difficulty_level || null,
+          category: formData.category || null,
+          level: formData.level || null,
+          type: formData.type || null,
+          image_url: imageUrl || null,
+          video_url: videoUrl || null,
+          tags: formData.tags.length > 0 ? formData.tags : null,
+          synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
+          premium: formData.premium,
+          created_by: user.id,
+        });
 
         if (error) throw error;
       }
 
       toast({
         title: editingFigure ? "Exercise Updated" : "Exercise Added",
-        description: editingFigure ? "Your exercise has been successfully updated." : "Your exercise has been successfully added to the library.",
+        description: editingFigure
+          ? "Your exercise has been successfully updated."
+          : "Your exercise has been successfully added to the library.",
       });
 
       // Reset form
       setFormData({
-        name: '',
-        description: '',
-        instructions: '',
-        difficulty_level: '',
-        category: '',
-        level: '',
-        type: '',
-        image_url: '',
-        video_url: '',
+        name: "",
+        description: "",
+        instructions: "",
+        difficulty_level: "",
+        category: "",
+        level: "",
+        type: "",
+        image_url: "",
+        video_url: "",
         tags: [],
         synonyms: [],
-        premium: false
+        premium: false,
       });
       setImageFile(null);
       setVideoFile(null);
-      setTagInput('');
-      setSynonymInput('');
+      setTagInput("");
+      setSynonymInput("");
 
       if (onExerciseCreated) onExerciseCreated();
       onClose();
     } catch (error: any) {
-      console.error('Error creating exercise:', error);
+      console.error("Error creating exercise:", error);
       toast({
         title: "Error",
         description: error.message || "Failed to create exercise",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -223,7 +239,7 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      setFormData(prev => ({ ...prev, image_url: '' }));
+      setFormData((prev) => ({ ...prev, image_url: "" }));
     }
   };
 
@@ -231,27 +247,27 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
     const file = e.target.files?.[0];
     if (file) {
       setVideoFile(file);
-      setFormData(prev => ({ ...prev, video_url: '' }));
+      setFormData((prev) => ({ ...prev, video_url: "" }));
     }
   };
 
   const addTag = () => {
     const tag = tagInput.trim();
     if (tag && !formData.tags.includes(tag)) {
-      setFormData(prev => ({ ...prev, tags: [...prev.tags, tag] }));
-      setTagInput('');
+      setFormData((prev) => ({ ...prev, tags: [...prev.tags, tag] }));
+      setTagInput("");
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      tags: prev.tags.filter(tag => tag !== tagToRemove) 
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
     }));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addTag();
     }
@@ -260,20 +276,23 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
   const addSynonym = () => {
     const synonym = synonymInput.trim();
     if (synonym && !formData.synonyms.includes(synonym)) {
-      setFormData(prev => ({ ...prev, synonyms: [...prev.synonyms, synonym] }));
-      setSynonymInput('');
+      setFormData((prev) => ({
+        ...prev,
+        synonyms: [...prev.synonyms, synonym],
+      }));
+      setSynonymInput("");
     }
   };
 
   const removeSynonym = (synonymToRemove: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      synonyms: prev.synonyms.filter(synonym => synonym !== synonymToRemove) 
+    setFormData((prev) => ({
+      ...prev,
+      synonyms: prev.synonyms.filter((synonym) => synonym !== synonymToRemove),
     }));
   };
 
   const handleSynonymKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       e.preventDefault();
       addSynonym();
     }
@@ -284,17 +303,21 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">
-            {editingFigure ? 'Edit Exercise' : 'Add New Exercise'}
+            {editingFigure ? "Edit Exercise" : "Add New Exercise"}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <Label htmlFor="name" className="text-white">Exercise Name *</Label>
+            <Label htmlFor="name" className="text-white">
+              Exercise Name *
+            </Label>
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
               className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
               placeholder="Enter exercise name"
               required
@@ -303,24 +326,32 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="premium" className="text-white">Access Level</Label>
+              <Label htmlFor="premium" className="text-white">
+                Access Level
+              </Label>
               <div className="flex items-center space-x-3 mt-2">
                 <Switch
                   id="premium"
                   checked={formData.premium}
-                  onCheckedChange={(checked) => setFormData(prev => ({ ...prev, premium: checked }))}
+                  onCheckedChange={(checked) =>
+                    setFormData((prev) => ({ ...prev, premium: checked }))
+                  }
                 />
                 <Label htmlFor="premium" className="text-white cursor-pointer">
-                  {formData.premium ? 'Premium' : 'Free'}
+                  {formData.premium ? "Premium" : "Free"}
                 </Label>
               </div>
             </div>
 
             <div>
-              <Label htmlFor="difficulty" className="text-white">Difficulty Level (Optional)</Label>
-              <Select 
-                value={formData.difficulty_level} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}
+              <Label htmlFor="difficulty" className="text-white">
+                Difficulty Level (Optional)
+              </Label>
+              <Select
+                value={formData.difficulty_level}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, difficulty_level: value }))
+                }
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select difficulty" />
@@ -337,10 +368,14 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="category" className="text-white">Category (Optional)</Label>
-              <Select 
-                value={formData.category} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+              <Label htmlFor="category" className="text-white">
+                Category (Optional)
+              </Label>
+              <Select
+                value={formData.category}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, category: value }))
+                }
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select category" />
@@ -349,16 +384,21 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                   <SelectItem value="silks">Silks</SelectItem>
                   <SelectItem value="hoop">Hoop</SelectItem>
                   <SelectItem value="pole">Pole</SelectItem>
-                  <SelectItem value="straps">Straps</SelectItem>
+                  <SelectItem value="hammock">Hammock</SelectItem>
+                  <SelectItem value="core">Core</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="type" className="text-white">Type (Optional)</Label>
-              <Select 
-                value={formData.type} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+              <Label htmlFor="type" className="text-white">
+                Type (Optional)
+              </Label>
+              <Select
+                value={formData.type}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, type: value }))
+                }
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select type" />
@@ -371,10 +411,14 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             </div>
 
             <div>
-              <Label htmlFor="level" className="text-white">Level (Optional)</Label>
-              <Select 
-                value={formData.level} 
-                onValueChange={(value) => setFormData(prev => ({ ...prev, level: value }))}
+              <Label htmlFor="level" className="text-white">
+                Level (Optional)
+              </Label>
+              <Select
+                value={formData.level}
+                onValueChange={(value) =>
+                  setFormData((prev) => ({ ...prev, level: value }))
+                }
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select level" />
@@ -391,11 +435,18 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
           </div>
 
           <div>
-            <Label htmlFor="description" className="text-white">Description (Optional)</Label>
+            <Label htmlFor="description" className="text-white">
+              Description (Optional)
+            </Label>
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
               placeholder="Brief description of the exercise"
               rows={3}
@@ -403,11 +454,18 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
           </div>
 
           <div>
-            <Label htmlFor="instructions" className="text-white">Instructions (Optional)</Label>
+            <Label htmlFor="instructions" className="text-white">
+              Instructions (Optional)
+            </Label>
             <Textarea
               id="instructions"
               value={formData.instructions}
-              onChange={(e) => setFormData(prev => ({ ...prev, instructions: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  instructions: e.target.value,
+                }))
+              }
               className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
               placeholder="Step-by-step instructions"
               rows={4}
@@ -415,7 +473,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
           </div>
 
           <div>
-            <Label htmlFor="tags" className="text-white">Tags (Optional)</Label>
+            <Label htmlFor="tags" className="text-white">
+              Tags (Optional)
+            </Label>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <Input
@@ -451,8 +511,12 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
           </div>
 
           <div>
-            <Label htmlFor="synonyms" className="text-white">Synonyms (Optional)</Label>
-            <p className="text-sm text-white/60 mb-2">Alternative names for this exercise</p>
+            <Label htmlFor="synonyms" className="text-white">
+              Synonyms (Optional)
+            </Label>
+            <p className="text-sm text-white/60 mb-2">
+              Alternative names for this exercise
+            </p>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <Input
@@ -489,7 +553,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="image" className="text-white">Exercise Image *</Label>
+              <Label htmlFor="image" className="text-white">
+                Exercise Image *
+              </Label>
               <div className="space-y-2">
                 <Input
                   id="image"
@@ -499,7 +565,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                   className="bg-white/5 border-white/10 text-white file:bg-white/10 file:text-white file:border-0"
                 />
                 {imageFile && (
-                  <p className="text-sm text-green-400">Image selected: {imageFile.name}</p>
+                  <p className="text-sm text-green-400">
+                    Image selected: {imageFile.name}
+                  </p>
                 )}
                 {formData.image_url && !imageFile && (
                   <p className="text-sm text-white/60">Current image URL set</p>
@@ -508,7 +576,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
             </div>
 
             <div>
-              <Label htmlFor="video" className="text-white">Video (Optional)</Label>
+              <Label htmlFor="video" className="text-white">
+                Video (Optional)
+              </Label>
               <div className="space-y-2">
                 <Input
                   id="video"
@@ -518,7 +588,9 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
                   className="bg-white/5 border-white/10 text-white file:bg-white/10 file:text-white file:border-0"
                 />
                 {videoFile && (
-                  <p className="text-sm text-green-400">Video selected: {videoFile.name}</p>
+                  <p className="text-sm text-green-400">
+                    Video selected: {videoFile.name}
+                  </p>
                 )}
                 {formData.video_url && !videoFile && (
                   <p className="text-sm text-white/60">Current video URL set</p>
@@ -545,10 +617,12 @@ export const CreateExerciseModal = ({ isOpen, onClose, onExerciseCreated, editin
               {isLoading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {editingFigure ? 'Updating...' : 'Creating...'}
+                  {editingFigure ? "Updating..." : "Creating..."}
                 </>
+              ) : editingFigure ? (
+                "Update Exercise"
               ) : (
-                editingFigure ? 'Update Exercise' : 'Create Exercise'
+                "Create Exercise"
               )}
             </Button>
           </div>
