@@ -1,16 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Clock, Repeat, Timer, Video, Volume2, FileText } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState, useEffect } from "react";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Clock,
+  Repeat,
+  Timer,
+  Video,
+  Volume2,
+  FileText,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Exercise {
   id: string;
@@ -52,19 +74,19 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   exercises,
   onExercisesChange,
   canEdit,
-  challengeType
+  challengeType,
 }) => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [availableFigures, setAvailableFigures] = useState<Figure[]>([]);
-  const [selectedFigure, setSelectedFigure] = useState<string>('');
+  const [selectedFigure, setSelectedFigure] = useState<string>("");
   const [sets, setSets] = useState<number | undefined>();
   const [reps, setReps] = useState<number | undefined>();
   const [holdTime, setHoldTime] = useState<number | undefined>();
   const [restTime, setRestTime] = useState<number | undefined>();
-  const [videoUrl, setVideoUrl] = useState('');
-  const [audioUrl, setAudioUrl] = useState('');
-  const [notes, setNotes] = useState('');
+  const [videoUrl, setVideoUrl] = useState("");
+  const [audioUrl, setAudioUrl] = useState("");
+  const [notes, setNotes] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -75,13 +97,13 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   const fetchFigures = async () => {
     try {
       let query = supabase
-        .from('figures')
-        .select('id, name, difficulty_level, category, image_url, type')
-        .order('name');
+        .from("figures")
+        .select("id, name, difficulty_level, category, image_url, type")
+        .order("name");
 
       // Filter by "core" type for timer challenges
-      if (challengeType === 'timer') {
-        query = query.eq('type', 'core');
+      if (challengeType === "timer") {
+        query = query.eq("category", "core");
       }
 
       const { data, error } = await query;
@@ -89,19 +111,19 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
       if (error) throw error;
       setAvailableFigures(data || []);
     } catch (error) {
-      console.error('Error fetching figures:', error);
+      console.error("Error fetching figures:", error);
     }
   };
 
   const resetForm = () => {
-    setSelectedFigure('');
+    setSelectedFigure("");
     setSets(undefined);
     setReps(undefined);
     setHoldTime(undefined);
     setRestTime(undefined);
-    setVideoUrl('');
-    setAudioUrl('');
-    setNotes('');
+    setVideoUrl("");
+    setAudioUrl("");
+    setNotes("");
     setEditingExercise(null);
   };
 
@@ -117,9 +139,9 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     setReps(exercise.reps);
     setHoldTime(exercise.hold_time_seconds);
     setRestTime(exercise.rest_time_seconds);
-    setVideoUrl(exercise.video_url || '');
-    setAudioUrl(exercise.audio_url || '');
-    setNotes(exercise.notes || '');
+    setVideoUrl(exercise.video_url || "");
+    setAudioUrl(exercise.audio_url || "");
+    setNotes(exercise.notes || "");
     setIsAddModalOpen(true);
   };
 
@@ -133,13 +155,15 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
       return;
     }
 
-    // For temporary training day IDs (when creating new challenges), 
+    // For temporary training day IDs (when creating new challenges),
     // we'll handle the save in the parent component
-    if (trainingDayId.startsWith('temp-')) {
+    if (trainingDayId.startsWith("temp-")) {
       const newExercise: Exercise = {
         id: `temp-${Date.now()}`,
         figure_id: selectedFigure,
-        order_index: editingExercise ? editingExercise.order_index : exercises.length,
+        order_index: editingExercise
+          ? editingExercise.order_index
+          : exercises.length,
         sets,
         reps,
         hold_time_seconds: holdTime,
@@ -147,11 +171,13 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         video_url: videoUrl || undefined,
         audio_url: audioUrl || undefined,
         notes: notes || undefined,
-        figure: availableFigures.find(f => f.id === selectedFigure)
+        figure: availableFigures.find((f) => f.id === selectedFigure),
       };
 
       const updatedExercises = editingExercise
-        ? exercises.map(ex => ex.id === editingExercise.id ? newExercise : ex)
+        ? exercises.map((ex) =>
+            ex.id === editingExercise.id ? newExercise : ex
+          )
         : [...exercises, newExercise];
 
       onExercisesChange(updatedExercises);
@@ -165,7 +191,9 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
       const exerciseData = {
         training_day_id: trainingDayId,
         figure_id: selectedFigure,
-        order_index: editingExercise ? editingExercise.order_index : exercises.length,
+        order_index: editingExercise
+          ? editingExercise.order_index
+          : exercises.length,
         sets,
         reps,
         hold_time_seconds: holdTime,
@@ -178,42 +206,50 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
       let result;
       if (editingExercise) {
         result = await supabase
-          .from('training_day_exercises')
+          .from("training_day_exercises")
           .update(exerciseData)
-          .eq('id', editingExercise.id)
-          .select(`
+          .eq("id", editingExercise.id)
+          .select(
+            `
             *,
             figure:figures(id, name, difficulty_level, category)
-          `)
+          `
+          )
           .single();
       } else {
         result = await supabase
-          .from('training_day_exercises')
+          .from("training_day_exercises")
           .insert(exerciseData)
-          .select(`
+          .select(
+            `
             *,
             figure:figures(id, name, difficulty_level, category)
-          `)
+          `
+          )
           .single();
       }
 
       if (result.error) throw result.error;
 
       const updatedExercises = editingExercise
-        ? exercises.map(ex => ex.id === editingExercise.id ? result.data : ex)
+        ? exercises.map((ex) =>
+            ex.id === editingExercise.id ? result.data : ex
+          )
         : [...exercises, result.data];
 
       onExercisesChange(updatedExercises);
 
       toast({
         title: "Success",
-        description: `Exercise ${editingExercise ? 'updated' : 'added'} successfully`,
+        description: `Exercise ${
+          editingExercise ? "updated" : "added"
+        } successfully`,
       });
 
       setIsAddModalOpen(false);
       resetForm();
     } catch (error) {
-      console.error('Error saving exercise:', error);
+      console.error("Error saving exercise:", error);
       toast({
         title: "Error",
         description: "Failed to save exercise",
@@ -225,20 +261,20 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   const handleDelete = async (exerciseId: string) => {
     try {
       const { error } = await supabase
-        .from('training_day_exercises')
+        .from("training_day_exercises")
         .delete()
-        .eq('id', exerciseId);
+        .eq("id", exerciseId);
 
       if (error) throw error;
 
-      onExercisesChange(exercises.filter(ex => ex.id !== exerciseId));
+      onExercisesChange(exercises.filter((ex) => ex.id !== exerciseId));
 
       toast({
         title: "Success",
         description: "Exercise deleted successfully",
       });
     } catch (error) {
-      console.error('Error deleting exercise:', error);
+      console.error("Error deleting exercise:", error);
       toast({
         title: "Error",
         description: "Failed to delete exercise",
@@ -249,10 +285,14 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
-      case 'beginner': return 'bg-green-500/20 text-green-400';
-      case 'intermediate': return 'bg-yellow-500/20 text-yellow-400';
-      case 'advanced': return 'bg-red-500/20 text-red-400';
-      default: return 'bg-gray-500/20 text-gray-400';
+      case "beginner":
+        return "bg-green-500/20 text-green-400";
+      case "intermediate":
+        return "bg-yellow-500/20 text-yellow-400";
+      case "advanced":
+        return "bg-red-500/20 text-red-400";
+      default:
+        return "bg-gray-500/20 text-gray-400";
     }
   };
 
@@ -283,8 +323,14 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                   <Badge variant="outline" className="text-xs">
                     #{index + 1}
                   </Badge>
-                  <CardTitle className="text-sm">{exercise.figure?.name}</CardTitle>
-                  <Badge className={getDifficultyColor(exercise.figure?.difficulty_level || '')}>
+                  <CardTitle className="text-sm">
+                    {exercise.figure?.name}
+                  </CardTitle>
+                  <Badge
+                    className={getDifficultyColor(
+                      exercise.figure?.difficulty_level || ""
+                    )}
+                  >
                     {exercise.figure?.difficulty_level}
                   </Badge>
                 </div>
@@ -335,7 +381,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                   </div>
                 )}
               </div>
-              
+
               <div className="flex gap-2 mt-2">
                 {exercise.video_url && (
                   <Badge variant="outline" className="text-xs">
@@ -356,9 +402,11 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                   </Badge>
                 )}
               </div>
-              
+
               {exercise.notes && (
-                <p className="text-xs text-muted-foreground mt-2">{exercise.notes}</p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  {exercise.notes}
+                </p>
               )}
             </CardContent>
           </Card>
@@ -378,7 +426,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>
-              {editingExercise ? 'Edit Exercise' : 'Add Exercise'}
+              {editingExercise ? "Edit Exercise" : "Add Exercise"}
             </DialogTitle>
           </DialogHeader>
 
@@ -394,7 +442,11 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                     <SelectItem key={figure.id} value={figure.id}>
                       <div className="flex items-center gap-2">
                         <span>{figure.name}</span>
-                        <Badge className={getDifficultyColor(figure.difficulty_level)}>
+                        <Badge
+                          className={getDifficultyColor(
+                            figure.difficulty_level
+                          )}
+                        >
                           {figure.difficulty_level}
                         </Badge>
                       </div>
@@ -410,8 +462,12 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                 <Input
                   type="number"
                   placeholder="Number of sets"
-                  value={sets || ''}
-                  onChange={(e) => setSets(e.target.value ? parseInt(e.target.value) : undefined)}
+                  value={sets || ""}
+                  onChange={(e) =>
+                    setSets(
+                      e.target.value ? parseInt(e.target.value) : undefined
+                    )
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -419,8 +475,12 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                 <Input
                   type="number"
                   placeholder="Number of reps"
-                  value={reps || ''}
-                  onChange={(e) => setReps(e.target.value ? parseInt(e.target.value) : undefined)}
+                  value={reps || ""}
+                  onChange={(e) =>
+                    setReps(
+                      e.target.value ? parseInt(e.target.value) : undefined
+                    )
+                  }
                 />
               </div>
             </div>
@@ -431,8 +491,12 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                 <Input
                   type="number"
                   placeholder="Hold duration"
-                  value={holdTime || ''}
-                  onChange={(e) => setHoldTime(e.target.value ? parseInt(e.target.value) : undefined)}
+                  value={holdTime || ""}
+                  onChange={(e) =>
+                    setHoldTime(
+                      e.target.value ? parseInt(e.target.value) : undefined
+                    )
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -440,8 +504,12 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                 <Input
                   type="number"
                   placeholder="Rest duration"
-                  value={restTime || ''}
-                  onChange={(e) => setRestTime(e.target.value ? parseInt(e.target.value) : undefined)}
+                  value={restTime || ""}
+                  onChange={(e) =>
+                    setRestTime(
+                      e.target.value ? parseInt(e.target.value) : undefined
+                    )
+                  }
                 />
               </div>
             </div>
@@ -475,11 +543,14 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setIsAddModalOpen(false)}
+              >
                 Cancel
               </Button>
               <Button onClick={handleSave}>
-                {editingExercise ? 'Update' : 'Add'} Exercise
+                {editingExercise ? "Update" : "Add"} Exercise
               </Button>
             </div>
           </div>
