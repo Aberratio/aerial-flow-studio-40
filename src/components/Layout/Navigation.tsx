@@ -93,7 +93,7 @@ const Navigation: React.FC<NavigationProps> = ({
     path: '/challenges',
     icon: Trophy,
     label: 'Challenges',
-    premium: true
+    premium: false // Now accessible to all users
   }, {
     path: '/training',
     icon: Dumbbell,

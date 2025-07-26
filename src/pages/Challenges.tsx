@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import ChallengePreviewModal from "@/components/ChallengePreviewModal";
 import CreateChallengeModal from "@/components/CreateChallengeModal";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -53,6 +54,7 @@ const Challenges = () => {
     isAdmin,
     isLoading: roleLoading,
   } = useUserRole();
+  const { hasPremiumAccess } = useSubscriptionStatus();
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -73,14 +75,18 @@ const Challenges = () => {
   const fetchChallenges = async () => {
     setIsLoading(true);
     try {
-      // Get all published challenges first
-      const { data: allChallenges, error } = await supabase
+      // Get challenges based on user role
+      let challengeQuery = supabase
         .from("challenges")
         .select("*")
-        .eq("status", "published")
-        .order("created_at", {
-          ascending: false,
-        });
+        .order("created_at", { ascending: false });
+      
+      // If not admin, only show published challenges
+      if (!isAdmin) {
+        challengeQuery = challengeQuery.eq("status", "published");
+      }
+      
+      const { data: allChallenges, error } = await challengeQuery;
       if (error) throw error;
 
       // Debug logging
@@ -192,6 +198,7 @@ const Challenges = () => {
             end_date: challenge.end_date,
             status,
             created_by: challenge.created_by,
+            premium: challenge.premium || false,
             duration: calculateDuration(
               challenge.start_date,
               challenge.end_date
@@ -261,10 +268,16 @@ const Challenges = () => {
   };
   const fetchStats = async () => {
     try {
-      const { data: allChallenges } = await supabase
+      // Get stats based on user role
+      let statsQuery = supabase
         .from("challenges")
-        .select("start_date, end_date")
-        .eq("status", "published");
+        .select("start_date, end_date");
+      
+      if (!isAdmin) {
+        statsQuery = statsQuery.eq("status", "published");
+      }
+      
+      const { data: allChallenges } = await statsQuery;
       const { data: participantData } = await supabase
         .from("challenge_participants")
         .select("challenge_id");
@@ -313,17 +326,28 @@ const Challenges = () => {
 
     // Find the challenge by ID and set it as selected
     const challenge = challenges.find((c) => c.id === challengeId);
-    if (challenge) {
-      setSelectedChallenge(challenge);
-      // allow the user to set the start challenge date
-      setShowStartDatePicker(true);
-    } else {
+    if (!challenge) {
       toast({
         title: "Error",
         description: "Challenge not found. Please try again.",
         variant: "destructive",
       });
+      return;
     }
+
+    // Check if challenge is premium and user has access
+    if (challenge.premium && !hasPremiumAccess) {
+      toast({
+        title: "Premium Required",
+        description: "This challenge requires a premium subscription to join.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedChallenge(challenge);
+    // allow the user to set the start challenge date
+    setShowStartDatePicker(true);
   };
 
   const addChallengeParticipant = async () => {
@@ -459,56 +483,6 @@ const Challenges = () => {
     shouldShowAdminMessage: !roleLoading && !isAdmin,
   });
 
-  // Show admin-only access message for non-admin users
-  if (!roleLoading && !isAdmin) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="glass-effect p-8 rounded-xl border border-white/10">
-            <div className="mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-primary to-primary-foreground rounded-full flex items-center justify-center">
-                <Trophy className="w-8 h-8 text-white" />
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                Admin Only
-              </h1>
-              <p className="text-muted-foreground text-lg mb-6">
-                Challenges are currently only accessible to administrators.
-              </p>
-              <div className="space-y-3 text-left">
-                <div className="flex items-center text-muted-foreground">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Create and manage training challenges</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Track participant progress</span>
-                </div>
-                <div className="flex items-center text-muted-foreground">
-                  <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Community engagement features</span>
-                </div>
-              </div>
-            </div>
-            <Button
-              onClick={() => navigate("/")}
-              variant="primary"
-              className="mr-4"
-            >
-              Go to Home
-            </Button>
-            <Button
-              onClick={() => navigate("/library")}
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10"
-            >
-              View Library
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen p-4 sm:p-6">
@@ -654,10 +628,15 @@ const Challenges = () => {
                         className="w-full h-full object-cover"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      <div className="absolute top-4 right-4">
+                      <div className="absolute top-4 right-4 flex flex-col gap-2">
                         <Badge className={getStatusColor(challenge.status)}>
                           {challenge.status.replace("-", " ")}
                         </Badge>
+                        {challenge.premium && (
+                          <Badge className="bg-yellow-500/90 text-yellow-100 border-yellow-500/30">
+                            Premium
+                          </Badge>
+                        )}
                       </div>
                       <div className="absolute bottom-4 left-4">
                         <Badge
@@ -737,6 +716,7 @@ const Challenges = () => {
                           <Button
                             variant="primary"
                             className="flex-1"
+                            disabled={challenge.premium && !hasPremiumAccess}
                             onClick={(e) => {
                               e.stopPropagation();
                               if (challenge.status === "active") {
@@ -746,7 +726,10 @@ const Challenges = () => {
                               }
                             }}
                           >
-                            {getButtonText(challenge.status)}
+                            {challenge.premium && !hasPremiumAccess 
+                              ? "Premium Required" 
+                              : getButtonText(challenge.status)
+                            }
                           </Button>
                         </div>
                       ) : (

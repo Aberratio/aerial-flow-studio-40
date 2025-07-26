@@ -97,6 +97,7 @@ interface Challenge {
   created_by: string;
   difficulty_level?: string;
   image_url?: string;
+  premium?: boolean;
 }
 
 interface ChallengeTrainingDay {
@@ -143,6 +144,8 @@ const EditChallenge = () => {
   const [endDate, setEndDate] = useState<Date>();
   const [difficultyLevel, setDifficultyLevel] = useState("intermediate");
   const [type, setType] = useState("manual");
+  const [isPublished, setIsPublished] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>(
     []
   );
@@ -200,6 +203,8 @@ const EditChallenge = () => {
       setDifficultyLevel(challengeData.difficulty_level || "intermediate");
       setType(challengeData.type || "manual");
       setImageUrl(challengeData.image_url || "");
+      setIsPublished(challengeData.status === "published");
+      setIsPremium(challengeData.premium || false);
 
       // Set selected achievements
       setSelectedAchievements(
@@ -334,6 +339,8 @@ const EditChallenge = () => {
           difficulty_level: difficultyLevel,
           type: type,
           image_url: uploadedImageUrl || null,
+          status: isPublished ? "published" : "draft",
+          premium: isPremium,
         })
         .eq("id", challengeId);
 
@@ -724,6 +731,57 @@ const EditChallenge = () => {
                     />
                   </PopoverContent>
                 </Popover>
+              </div>
+            </div>
+
+            {/* Publishing and Premium Settings */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <Label className="text-lg font-semibold">Publishing Status</Label>
+                <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                  <Switch
+                    checked={isPublished}
+                    onCheckedChange={setIsPublished}
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">
+                      {isPublished ? "Published" : "Unpublished"}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {isPublished 
+                        ? "Challenge is visible to all users" 
+                        : "Challenge is only visible to admins"
+                      }
+                    </div>
+                  </div>
+                  <Badge variant={isPublished ? "default" : "secondary"}>
+                    {isPublished ? "Published" : "Draft"}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-lg font-semibold">Access Level</Label>
+                <div className="flex items-center space-x-3 p-4 border rounded-lg">
+                  <Switch
+                    checked={isPremium}
+                    onCheckedChange={setIsPremium}
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium">
+                      {isPremium ? "Premium" : "Free"}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {isPremium 
+                        ? "Only premium users can join" 
+                        : "All users can join this challenge"
+                      }
+                    </div>
+                  </div>
+                  <Badge variant={isPremium ? "default" : "secondary"}>
+                    {isPremium ? "Premium" : "Free"}
+                  </Badge>
+                </div>
               </div>
             </div>
 
