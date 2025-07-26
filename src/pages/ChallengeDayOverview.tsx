@@ -490,7 +490,6 @@ const ChallengeDayOverview = () => {
             )}
         </div>
 
-
         {/* Challenge Day Content */}
         <Card className="glass-effect border-white/10 mb-6">
           <CardHeader>
@@ -671,27 +670,17 @@ const ChallengeDayOverview = () => {
             {/* Primary Action Button */}
             <div className="flex flex-col sm:flex-row gap-3">
               {!trainingDay.is_rest_day ? (
-                <>
-                  <Button
-                    variant="primary"
-                    onClick={handleStartDay}
-                    disabled={trainingDay.exercises.length === 0}
-                    className="flex-1 disabled:opacity-50 h-12"
-                  >
-                    <Play className="w-4 h-4 mr-2" />
-                    {isRetryAttempt()
-                      ? `Retry Day ${dayNumber}`
-                      : `Start Day ${dayNumber}`}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => handleStatusChange("completed")}
-                    className="flex-1 border-blue-500/30 text-blue-400 hover:bg-blue-500/10 h-12"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Complete Day
-                  </Button>
-                </>
+                <Button
+                  variant="primary"
+                  onClick={handleStartDay}
+                  disabled={trainingDay.exercises.length === 0}
+                  className="flex-1 disabled:opacity-50 h-12"
+                >
+                  <Play className="w-4 h-4 mr-2" />
+                  {isRetryAttempt()
+                    ? `Retry Day ${dayNumber}`
+                    : `Start Day ${dayNumber}`}
+                </Button>
               ) : (
                 <Button
                   onClick={() => handleStatusChange("completed")}
@@ -706,6 +695,14 @@ const ChallengeDayOverview = () => {
             {/* Additional Action Buttons - Only for non-rest days */}
             {!trainingDay.is_rest_day && (
               <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => handleStatusChange("completed")}
+                  className="flex-1 border-green-500/30 text-green-400 hover:bg-green-500/10 h-12"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Complete Day
+                </Button>
                 <Button
                   variant="outline"
                   onClick={() => handleStatusChange("rest")}
@@ -725,17 +722,6 @@ const ChallengeDayOverview = () => {
                 </Button>
               </div>
             )}
-
-            {/* Back Button for Mobile */}
-            <div className="sm:hidden">
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/challenges/${challengeId}`)}
-                className="w-full border-white/20 text-white hover:bg-white/10 h-12"
-              >
-                Back to Challenge
-              </Button>
-            </div>
           </div>
         )}
 
