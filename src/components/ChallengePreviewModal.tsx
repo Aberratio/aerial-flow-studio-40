@@ -268,7 +268,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl gradient-text">
+            <DialogTitle className="text-2xl text-white">
               {challenge.title}
             </DialogTitle>
             {canEditChallenge() && (
@@ -336,7 +336,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 <Clock className="w-5 h-5 text-purple-400 mx-auto mb-2" />
                 <div className="text-sm text-muted-foreground">Duration</div>
                 <div className="text-white font-semibold">
-                  {calculateDuration()}
+                  {challenge.training_days?.length || 0} days
                 </div>
               </Card>
 
@@ -366,7 +366,9 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   Training Days
                 </div>
                 <div className="text-white font-semibold">
-                  {challenge.training_days?.length || 0}
+                  {challenge.training_days?.filter((day) => !day.is_rest_day)
+                    .length || 0}{" "}
+                  days
                 </div>
               </Card>
             </div>
@@ -408,13 +410,16 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 </h3>
                 <div className="text-muted-foreground">
                   <p>
-                    This {calculateDuration()} challenge includes{" "}
-                    {challenge.training_days.length} structured training days
-                    with progressively challenging exercises.
+                    This {challenge.training_days?.length || 0} days challenge
+                    includes{" "}
+                    {challenge.training_days?.filter((day) => !day.is_rest_day)
+                      .length || 0}{" "}
+                    structured training days with progressively challenging
+                    exercises.
                   </p>
                   <ul className="mt-2 space-y-1">
                     <li>• Comprehensive training schedule</li>
-                    <li>• Exercise demonstrations and instructions</li>
+                    {/* <li>• Exercise demonstrations and instructions</li> */}
                     <li>• Progressive difficulty levels</li>
                     <li>• Achievement rewards for completion</li>
                   </ul>
@@ -466,9 +471,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   }}
                   disabled={challenge.status !== "published"}
                 >
-                  <Play className="w-4 h-4 mr-2" />
                   {getButtonText(challenge.status)}
-                  <ChevronRight className="ml-2 w-4 h-4" />
                 </Button>
               );
             })()}

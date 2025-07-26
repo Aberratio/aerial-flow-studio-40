@@ -805,7 +805,6 @@ const Challenges = () => {
                           }}
                         >
                           {getButtonText(challenge.status)}
-                          <ChevronRight className="ml-2 w-4 h-4" />
                         </Button>
                       )}
                     </CardContent>
