@@ -47,6 +47,7 @@ const Challenges = () => {
     completedChallenges: 0,
     totalParticipants: 0,
     averageDuration: "0 days",
+    averageTrainingDays: "0 training days",
   });
 
   const {
@@ -268,24 +269,59 @@ const Challenges = () => {
   };
   const fetchStats = async () => {
     try {
-      // Get stats based on user role
+      // Get stats based on user role - only count published challenges for stats
       let statsQuery = supabase
         .from("challenges")
-        .select("start_date, end_date");
+        .select("id, start_date, end_date")
+        .eq("status", "published");
       
-      if (!isAdmin) {
-        statsQuery = statsQuery.eq("status", "published");
+      const { data: publishedChallenges } = await statsQuery;
+      
+      // Get participant data only for published challenges
+      const publishedChallengeIds = publishedChallenges?.map(c => c.id) || [];
+      let participantData = [];
+      if (publishedChallengeIds.length > 0) {
+        const { data } = await supabase
+          .from("challenge_participants")
+          .select("challenge_id")
+          .in("challenge_id", publishedChallengeIds);
+        participantData = data || [];
+      }
+
+      // Get training days data for calculating training days vs total days
+      let totalDurationDays = 0;
+      let totalTrainingDays = 0;
+      
+      if (publishedChallengeIds.length > 0) {
+        const { data: trainingDaysData } = await supabase
+          .from("challenge_training_days")
+          .select("challenge_id, is_rest_day")
+          .in("challenge_id", publishedChallengeIds);
+        
+        // Count training days (non-rest days) and total days per challenge
+        const challengeDayCounts = trainingDaysData?.reduce((acc, day) => {
+          if (!acc[day.challenge_id]) {
+            acc[day.challenge_id] = { total: 0, training: 0 };
+          }
+          acc[day.challenge_id].total++;
+          if (!day.is_rest_day) {
+            acc[day.challenge_id].training++;
+          }
+          return acc;
+        }, {}) || {};
+        
+        // Sum up all days
+        Object.values(challengeDayCounts).forEach((counts: any) => {
+          totalDurationDays += counts.total;
+          totalTrainingDays += counts.training;
+        });
       }
       
-      const { data: allChallenges } = await statsQuery;
-      const { data: participantData } = await supabase
-        .from("challenge_participants")
-        .select("challenge_id");
       const now = new Date();
       let activeChallenges = 0;
       let completedChallenges = 0;
-      let totalDays = 0;
-      allChallenges?.forEach((challenge) => {
+      
+      publishedChallenges?.forEach((challenge) => {
         const start = new Date(challenge.start_date);
         const end = new Date(challenge.end_date);
         if (start <= now && end >= now) {
@@ -293,18 +329,22 @@ const Challenges = () => {
         } else if (end < now) {
           completedChallenges++;
         }
-        totalDays += Math.ceil(
-          (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
-        );
       });
-      const averageDuration = allChallenges?.length
-        ? Math.round(totalDays / allChallenges.length)
+      
+      const averageDuration = publishedChallenges?.length
+        ? Math.round(totalDurationDays / publishedChallenges.length)
         : 0;
+      
+      const averageTrainingDays = publishedChallenges?.length
+        ? Math.round(totalTrainingDays / publishedChallenges.length)
+        : 0;
+      
       setStats({
         activeChallenges,
         completedChallenges,
         totalParticipants: participantData?.length || 0,
         averageDuration: `${averageDuration} days`,
+        averageTrainingDays: `${averageTrainingDays} training days`,
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -528,8 +568,8 @@ const Challenges = () => {
               icon: Users,
             },
             {
-              label: "Average Duration",
-              value: stats.averageDuration,
+              label: "Avg Training Days",
+              value: stats.averageTrainingDays,
               icon: Clock,
             },
           ].map((stat, index) => {
@@ -633,7 +673,7 @@ const Challenges = () => {
                           {challenge.status.replace("-", " ")}
                         </Badge>
                         {challenge.premium && (
-                          <Badge className="bg-yellow-500/90 text-yellow-100 border-yellow-500/30">
+                          <Badge className="bg-gradient-to-r from-yellow-600 to-amber-600 text-white border-amber-500/30 font-semibold shadow-lg">
                             Premium
                           </Badge>
                         )}
