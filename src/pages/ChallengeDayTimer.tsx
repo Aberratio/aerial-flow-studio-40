@@ -61,7 +61,7 @@ const ChallengeDayTimer = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [trainingDayId, setTrainingDayId] = useState<string>("");
   const [isPreparingToStart, setIsPreparingToStart] = useState(false);
-  const [preparationTime, setPreparationTime] = useState(5);
+  const [preparationTime, setPreparationTime] = useState(10);
 
   const { speak } = useSpeech(isAudioEnabled);
 
@@ -180,9 +180,9 @@ const ChallengeDayTimer = () => {
       interval = setInterval(() => {
         setPreparationTime((prev) => {
           // Speak countdown numbers
-          if (prev > 1) {
-            speak(prev.toString());
-          } else if (prev === 1) {
+          if (prev > 2 && prev < 7) {
+            speak((prev - 1).toString());
+          } else if (prev === 2) {
             speak("1... Begin!");
           }
 
@@ -190,7 +190,7 @@ const ChallengeDayTimer = () => {
             // Preparation complete, start actual workout
             setIsPreparingToStart(false);
             setIsRunning(true);
-            setPreparationTime(5); // Reset for next time
+            setPreparationTime(10); // Reset for next time
             return 0;
           }
           return prev - 1;
@@ -223,7 +223,13 @@ const ChallengeDayTimer = () => {
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, isPreparingToStart, timeRemaining, currentSegmentIndex, segments]);
+  }, [
+    isRunning,
+    isPreparingToStart,
+    timeRemaining,
+    currentSegmentIndex,
+    segments,
+  ]);
 
   // Announce segment changes
   useEffect(() => {
@@ -236,7 +242,9 @@ const ChallengeDayTimer = () => {
 
       if (currentSegment.type === "exercise") {
         const duration = formatTimeNatural(currentSegment.duration);
-        const notes = currentSegment.exerciseNotes ? `, ${currentSegment.exerciseNotes}` : '';
+        const notes = currentSegment.exerciseNotes
+          ? `, ${currentSegment.exerciseNotes}`
+          : "";
         speak(`${currentSegment.exerciseName}, ${duration}${notes}`);
       } else {
         const duration = formatTimeNatural(currentSegment.duration);
@@ -288,10 +296,10 @@ const ChallengeDayTimer = () => {
   };
 
   const handleWorkoutComplete = async () => {
-    if (!user || !challengeId || !trainingDayId) return;
+    if (!user || !challengeId || !dayId) return;
 
     try {
-      const calendarDay = getCalendarDayByTrainingDay(trainingDayId);
+      const calendarDay = getCalendarDayByTrainingDay(dayId);
       if (calendarDay) {
         await changeDayStatus(calendarDay.calendar_date, "completed");
         toast({
@@ -311,16 +319,40 @@ const ChallengeDayTimer = () => {
     }
   };
 
+  const handleWorkoutFailed = async () => {
+    if (!user || !challengeId || !dayId) return;
+
+    try {
+      const calendarDay = getCalendarDayByTrainingDay(dayId);
+      if (calendarDay) {
+        await changeDayStatus(calendarDay.calendar_date, "failed");
+        toast({
+          title: "Workout Failed!",
+          description:
+            "This training day has been marked as failed. Don't worry, you can try again next day!",
+        });
+        navigate(`/challenges/${challengeId}`);
+      }
+    } catch (error) {
+      console.error("Error failing workout:", error);
+      toast({
+        title: "Error",
+        description: "Failed to mark workout as failed",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handlePlayPause = () => {
     if (!isRunning && !isPreparingToStart) {
       // Start preparation countdown
       setIsPreparingToStart(true);
-      setPreparationTime(5);
-      speak("Get ready! Starting in 5 seconds");
+      setPreparationTime(10);
+      speak("Get ready!");
     } else if (isPreparingToStart) {
       // Cancel preparation
       setIsPreparingToStart(false);
-      setPreparationTime(5);
+      setPreparationTime(10);
     } else {
       // Pause/resume timer
       setIsRunning(!isRunning);
@@ -436,11 +468,12 @@ const ChallengeDayTimer = () => {
                   <div className="text-sm text-white/60">
                     {formatTimeNatural(nextSegment.duration)}
                   </div>
-                  {nextSegment.type === "exercise" && nextSegment.exerciseNotes && (
-                    <div className="text-xs text-primary/80 mt-1 bg-primary/10 rounded px-2 py-1 border border-primary/20">
-                      {nextSegment.exerciseNotes}
-                    </div>
-                  )}
+                  {nextSegment.type === "exercise" &&
+                    nextSegment.exerciseNotes && (
+                      <div className="text-xs text-primary/80 mt-1 bg-primary/10 rounded px-2 py-1 border border-primary/20">
+                        {nextSegment.exerciseNotes}
+                      </div>
+                    )}
                 </div>
               </div>
             </CardContent>
@@ -552,23 +585,28 @@ const ChallengeDayTimer = () => {
                     </h2>
 
                     {/* Exercise Notes */}
-                    {currentSegment.type === "exercise" && currentSegment.exerciseNotes && (
-                      <div className="mb-3 sm:mb-4 px-2">
-                        <p className="text-sm sm:text-base text-primary/90 bg-primary/10 rounded-lg p-2 sm:p-3 border border-primary/20">
-                          {currentSegment.exerciseNotes}
-                        </p>
-                      </div>
-                    )}
+                    {currentSegment.type === "exercise" &&
+                      currentSegment.exerciseNotes && (
+                        <div className="mb-3 sm:mb-4 px-2">
+                          <p className="text-sm sm:text-base text-primary/90 bg-primary/10 rounded-lg p-2 sm:p-3 border border-primary/20">
+                            {currentSegment.exerciseNotes}
+                          </p>
+                        </div>
+                      )}
 
                     {/* Large Timer Display */}
                     <div className="relative mb-4 sm:mb-6">
                       {isPreparingToStart ? (
                         <div className="flex flex-col items-center">
-                          <div className="text-lg sm:text-xl text-white/70 mb-2">Get Ready!</div>
+                          <div className="text-lg sm:text-xl text-white/70 mb-2">
+                            Get Ready!
+                          </div>
                           <div className="text-6xl sm:text-7xl md:text-9xl font-mono font-bold text-yellow-400 mb-2 animate-pulse">
                             {preparationTime}
                           </div>
-                          <div className="text-sm sm:text-base text-white/60">Workout starts in...</div>
+                          <div className="text-sm sm:text-base text-white/60">
+                            Workout starts in...
+                          </div>
                         </div>
                       ) : (
                         <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
@@ -658,14 +696,17 @@ const ChallengeDayTimer = () => {
                         </span>
                       </div>
                     )}
-                    {currentSegment.type === "exercise" && currentSegment.exerciseNotes && (
-                      <div className="pt-3 border-t border-white/10">
-                        <div className="text-white/70 text-xs mb-1">Notes:</div>
-                        <div className="text-white text-xs bg-primary/10 rounded p-2 border border-primary/20">
-                          {currentSegment.exerciseNotes}
+                    {currentSegment.type === "exercise" &&
+                      currentSegment.exerciseNotes && (
+                        <div className="pt-3 border-t border-white/10">
+                          <div className="text-white/70 text-xs mb-1">
+                            Notes:
+                          </div>
+                          <div className="text-white text-xs bg-primary/10 rounded p-2 border border-primary/20">
+                            {currentSegment.exerciseNotes}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 </CardContent>
               </Card>
@@ -724,7 +765,7 @@ const ChallengeDayTimer = () => {
                     {exercises.length} exercises completed
                   </div>
                 </div>
-                
+
                 {/* Status Selection Buttons */}
                 <div className="space-y-3 mb-6">
                   <Button
@@ -734,27 +775,24 @@ const ChallengeDayTimer = () => {
                     ✅ Completed Successfully
                   </Button>
                   <Button
-                    onClick={() => {
-                      // Mark as failed but still navigate back
-                      toast({
-                        title: "Workout Status Updated",
-                        description: "This workout has been marked as not completed.",
-                      });
-                      navigate(`/challenges/${challengeId}`);
-                    }}
+                    onClick={handleWorkoutFailed}
                     variant="outline"
                     className="border-red-500/50 text-red-400 hover:bg-red-500/10 w-full py-3 text-lg"
                   >
                     ❌ Could Not Complete
                   </Button>
                 </div>
-                
+
                 {/* Navigation Options */}
                 <div className="space-y-2 pt-4 border-t border-white/10">
-                  <p className="text-sm text-white/60 mb-3">Or continue without marking status:</p>
+                  <p className="text-sm text-white/60 mb-3">
+                    Or continue without marking status:
+                  </p>
                   <div className="flex gap-2">
                     <Button
-                      onClick={() => navigate(`/challenge/${challengeId}/day/${dayId}`)}
+                      onClick={() =>
+                        navigate(`/challenge/${challengeId}/day/${dayId}`)
+                      }
                       variant="ghost"
                       className="text-white/70 hover:text-white hover:bg-white/10 flex-1"
                     >
