@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../integrations/supabase/client";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "./use-toast";
+import { useAchievementChecker } from "./useAchievementChecker";
 
 export interface CalendarDay {
   id: string;
@@ -36,6 +37,7 @@ export interface NextAvailableDay {
 export const useChallengeCalendar = (challengeId: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { checkChallengeCompletionAchievements } = useAchievementChecker();
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [nextAvailableDay, setNextAvailableDay] =
     useState<NextAvailableDay | null>(null);
@@ -138,6 +140,47 @@ export const useChallengeCalendar = (challengeId: string) => {
     [user?.id, challengeId, loadCalendar, loadNextAvailableDay, toast]
   );
 
+  // Check if challenge is completed and handle achievements
+  const checkChallengeCompletion = useCallback(async () => {
+    if (!user?.id || !challengeId) return;
+
+    try {
+      // Check if all training days are completed
+      const totalTrainingDays = calendarDays.filter(day => !day.is_rest_day).length;
+      const completedTrainingDays = calendarDays.filter(
+        day => !day.is_rest_day && day.status === "completed"
+      ).length;
+
+      if (totalTrainingDays > 0 && completedTrainingDays === totalTrainingDays) {
+        // Mark challenge participant as completed
+        const { error: completionError } = await supabase
+          .from('challenge_participants')
+          .update({ 
+            completed: true,
+            status: 'completed',
+            updated_at: new Date().toISOString()
+          })
+          .eq('challenge_id', challengeId)
+          .eq('user_id', user.id);
+
+        if (completionError) {
+          console.error('Error marking challenge as completed:', completionError);
+          return;
+        }
+
+        // Check for achievements
+        await checkChallengeCompletionAchievements(challengeId);
+
+        toast({
+          title: "Challenge Completed! 🎉",
+          description: "Congratulations! You've completed this challenge!",
+        });
+      }
+    } catch (error) {
+      console.error('Error checking challenge completion:', error);
+    }
+  }, [user?.id, challengeId, calendarDays, checkChallengeCompletionAchievements, toast]);
+
   // Handle day status change (completed, failed, rest)
   const changeDayStatus = useCallback(
     async (
@@ -171,6 +214,11 @@ export const useChallengeCalendar = (challengeId: string) => {
         await loadCalendar();
         await loadNextAvailableDay();
 
+        // Check if challenge is completed after this day completion
+        if (newStatus === "completed") {
+          await checkChallengeCompletion();
+        }
+
         const statusMessages = {
           completed: "Day completed successfully!",
           failed: "Day marked as failed. You can retry tomorrow.",
@@ -193,7 +241,7 @@ export const useChallengeCalendar = (challengeId: string) => {
         setIsLoading(false);
       }
     },
-    [user?.id, challengeId, loadCalendar, loadNextAvailableDay, toast]
+    [user?.id, challengeId, loadCalendar, loadNextAvailableDay, checkChallengeCompletion, toast]
   );
 
   // Check if user can access a specific calendar day
@@ -265,6 +313,7 @@ export const useChallengeCalendar = (challengeId: string) => {
     const today = new Date().toISOString().split("T")[0];
     return getCalendarDay(today);
   }, [getCalendarDay]);
+
 
   // Load initial data
   useEffect(() => {

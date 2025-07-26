@@ -20,6 +20,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
+import { useAchievementChecker } from "@/hooks/useAchievementChecker";
+import { AchievementEarnedModal } from "@/components/AchievementEarnedModal";
 
 interface Exercise {
   id: string;
@@ -123,6 +125,7 @@ const ChallengeDayOverview = () => {
     changeDayStatus,
     getCalendarDayByTrainingDay,
   } = useChallengeCalendar(challengeId || "");
+  const { newAchievement, showAchievementModal, closeAchievementModal } = useAchievementChecker();
   const { toast } = useToast();
 
   // Helper function to check if this is a retry attempt
@@ -705,6 +708,12 @@ const ChallengeDayOverview = () => {
           </div>
         )}
       </div>
+
+      <AchievementEarnedModal
+        achievement={newAchievement}
+        isOpen={showAchievementModal}
+        onClose={closeAchievementModal}
+      />
     </div>
   );
 };

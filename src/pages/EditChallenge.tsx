@@ -268,6 +268,7 @@ const EditChallenge = () => {
       const { data, error } = await supabase
         .from("achievements")
         .select("*")
+        .eq("rule_type", "challenges_completed")
         .order("name");
 
       if (error) throw error;
