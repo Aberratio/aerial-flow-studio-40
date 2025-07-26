@@ -496,14 +496,6 @@ const ChallengeDayOverview = () => {
             <CardTitle className="text-white flex items-center gap-2">
               <CalendarIcon className="w-5 h-5" />
               Day {dayNumber}: {trainingDay.title}
-              {/* {isRetryAttempt() && (
-                <Badge
-                  variant="outline"
-                  className="ml-2 border-orange-500/30 text-orange-400"
-                >
-                  Attempt {userChallengeCalendar?.attempt_number}
-                </Badge>
-              )} */}
             </CardTitle>
           </CardHeader>
           <CardContent>

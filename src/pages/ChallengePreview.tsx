@@ -51,6 +51,7 @@ import {
   isBefore,
   isSameMonth,
 } from "date-fns";
+import { useIsTablet } from "@/hooks/use-tablet";
 
 interface Challenge {
   id: string;
@@ -96,14 +97,16 @@ const ChallengePreview = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { canCreateChallenges } = useUserRole();
-  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [userParticipant, setUserParticipant] = useState<any>(null);
   const [isResettingProgress, setIsResettingProgress] = useState(false);
-  const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(new Date());
+  const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
+    new Date()
+  );
 
   // Use the new refactored challenge calendar hook
   const {
@@ -489,7 +492,7 @@ const ChallengePreview = () => {
   };
 
   const hasTrainingDaysInMonth = (month: Date) => {
-    return calendarDays.some(day => {
+    return calendarDays.some((day) => {
       const dayDate = new Date(day.calendar_date);
       return isSameMonth(dayDate, month);
     });
@@ -804,20 +807,11 @@ const ChallengePreview = () => {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-white font-semibold">
-                    {isMobile ? "Your Training Schedule" : "Calendar View"}
+                    {isTablet && "Your Training Schedule"}
                   </h3>
-                  {isMobile && (
-                    <Badge
-                      variant="outline"
-                      className="border-white/30 text-white/90"
-                    >
-                      <List className="w-3 h-3 mr-1" />
-                      List View
-                    </Badge>
-                  )}
                 </div>
 
-                {isMobile ? (
+                {isTablet ? (
                   /* Mobile-friendly list view */
                   <div className="space-y-3">
                     {calendarDays
@@ -977,7 +971,7 @@ const ChallengePreview = () => {
                   </div>
                 ) : (
                   /* Desktop/tablet calendar view */
-                  <div className="bg-white/5 rounded-lg border border-white/10">
+                  <div className="bg-white/5 rounded-lg border border-white/10 w-[760px]">
                     {/* Month Navigation Header (only show if multiple months) */}
                     {hasMultipleMonths() && (
                       <div className="flex items-center justify-between p-4 border-b border-white/10">
@@ -1006,7 +1000,7 @@ const ChallengePreview = () => {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="p-6">
                       <Calendar
                         mode="single"
