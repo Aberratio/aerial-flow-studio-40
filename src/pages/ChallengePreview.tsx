@@ -1271,70 +1271,93 @@ const ChallengePreview = () => {
                   </h3>
                 </div>
 
-                {isTablet ? (
-                  /* Mobile-friendly list view */
-                  <div className="space-y-3">
-                    {calendarDays
-                      .sort((a, b) => {
-                        // Sort by day number from training day
-                        const dayA =
-                          challenge?.training_days?.find(
-                            (td) => td.id === a.training_day_id
-                          )?.day_number || 0;
-                        const dayB =
-                          challenge?.training_days?.find(
-                            (td) => td.id === b.training_day_id
-                          )?.day_number || 0;
-                        return dayA - dayB;
-                      })
-                      .map((calendarDay) => {
-                        const trainingDay = challenge?.training_days?.find(
-                          (td) => td.id === calendarDay.training_day_id
-                        );
-                        if (!trainingDay) return null;
-
-                        const isCompleted = calendarDay.status === "completed";
-                        const isFailed = calendarDay.status === "failed";
-                        const isToday = calendarDay.is_today;
-                        const isAccessible = calendarDay.is_accessible;
-                        const isRest = trainingDay.is_rest_day;
-                        const isLocked = isDayLocked(
-                          trainingDay.day_number,
-                          calendarDays
-                        );
-
-                        return (
-                          <Card
-                            key={calendarDay.id}
-                            className={`glass-effect border transition-all ${
-                              isCompleted
-                                ? "border-emerald-500/50 bg-emerald-500/10"
-                                : isFailed
-                                ? "border-red-500/50 bg-red-500/10"
-                                : isToday
-                                ? "border-purple-500/50 bg-purple-500/10 ring-1 ring-purple-500/30"
-                                : isRest
-                                ? "border-green-500/50 bg-green-500/10"
-                                : isAccessible && !isLocked
-                                ? "border-blue-500/50 bg-blue-500/10"
-                                : "border-white/10 bg-white/5 opacity-60"
-                            } ${
-                              isAccessible && !isLocked
-                                ? "cursor-pointer hover:bg-white/10"
-                                : "cursor-not-allowed"
-                            }`}
-                            onClick={() =>
-                              isAccessible &&
-                              !isLocked &&
-                              handleCalendarDayClick(
-                                new Date(calendarDay.calendar_date)
-                              )
+                {isTablet || useIsMobile() ? (
+                  /* Mobile/Tablet horizontal tabs view - limit to 10 visible tabs */
+                  <div className="relative">
+                    <div 
+                      className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide"
+                      style={{
+                        scrollSnapType: 'x mandatory',
+                        WebkitOverflowScrolling: 'touch'
+                      }}
+                      ref={(ref) => {
+                        if (ref && calendarDays.length > 0) {
+                          // Auto-scroll to last unlocked day on mount
+                          const sortedDays = calendarDays
+                            .sort((a, b) => {
+                              const dayA = challenge?.training_days?.find(td => td.id === a.training_day_id)?.day_number || 0;
+                              const dayB = challenge?.training_days?.find(td => td.id === b.training_day_id)?.day_number || 0;
+                              return dayA - dayB;
+                            });
+                          
+                          let lastUnlockedIndex = -1;
+                          sortedDays.forEach((calendarDay, index) => {
+                            const trainingDay = challenge?.training_days?.find(td => td.id === calendarDay.training_day_id);
+                            if (trainingDay) {
+                              const isLocked = isDayLocked(trainingDay.day_number, calendarDays);
+                              if (!isLocked) {
+                                lastUnlockedIndex = index;
+                              }
                             }
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <div className="text-2xl">
+                          });
+                          
+                          if (lastUnlockedIndex >= 0) {
+                            // Calculate scroll position to show last unlocked day
+                            const tabWidth = 120; // approximate tab width
+                            const containerWidth = ref.clientWidth;
+                            const visibleTabs = Math.floor(containerWidth / tabWidth);
+                            const scrollPosition = Math.max(0, (lastUnlockedIndex - visibleTabs + 2) * tabWidth);
+                            ref.scrollTo({ left: scrollPosition, behavior: 'smooth' });
+                          }
+                        }
+                      }}
+                    >
+                      {calendarDays
+                        .sort((a, b) => {
+                          const dayA = challenge?.training_days?.find(td => td.id === a.training_day_id)?.day_number || 0;
+                          const dayB = challenge?.training_days?.find(td => td.id === b.training_day_id)?.day_number || 0;
+                          return dayA - dayB;
+                        })
+                        .map((calendarDay) => {
+                          const trainingDay = challenge?.training_days?.find(td => td.id === calendarDay.training_day_id);
+                          if (!trainingDay) return null;
+
+                          const isCompleted = calendarDay.status === "completed";
+                          const isFailed = calendarDay.status === "failed";
+                          const isToday = calendarDay.is_today;
+                          const isAccessible = calendarDay.is_accessible;
+                          const isRest = trainingDay.is_rest_day;
+                          const isLocked = isDayLocked(trainingDay.day_number, calendarDays);
+
+                          return (
+                            <div
+                              key={calendarDay.id}
+                              className={`flex-shrink-0 w-28 h-32 rounded-lg border-2 transition-all cursor-pointer scroll-snap-align-start ${
+                                isCompleted
+                                  ? "border-emerald-500/50 bg-emerald-500/20"
+                                  : isFailed
+                                  ? "border-red-500/50 bg-red-500/20"
+                                  : isToday
+                                  ? "border-purple-500 bg-purple-500/20 ring-2 ring-purple-500/30"
+                                  : isRest
+                                  ? "border-green-500/50 bg-green-500/20"
+                                  : isAccessible && !isLocked
+                                  ? "border-blue-500/50 bg-blue-500/20"
+                                  : "border-white/20 bg-white/5 opacity-60"
+                              } ${
+                                isAccessible && !isLocked
+                                  ? "hover:bg-white/10"
+                                  : "cursor-not-allowed"
+                              }`}
+                              onClick={() =>
+                                isAccessible &&
+                                !isLocked &&
+                                handleCalendarDayClick(new Date(calendarDay.calendar_date))
+                              }
+                            >
+                              <div className="p-3 h-full flex flex-col items-center justify-between">
+                                <div className="text-center">
+                                  <div className="text-2xl mb-1">
                                     {isCompleted ? (
                                       "✅"
                                     ) : isFailed ? (
@@ -1344,90 +1367,56 @@ const ChallengePreview = () => {
                                     ) : isToday ? (
                                       "🎯"
                                     ) : isLocked ? (
-                                      <Lock className="w-6 h-6 text-gray-400" />
+                                      "🔒"
                                     ) : (
                                       "💪"
                                     )}
                                   </div>
-                                  <div>
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium text-white">
-                                        Day {trainingDay.day_number}
-                                      </span>
-                                      {calendarDay.is_retry && (
-                                        <Badge
-                                          variant="outline"
-                                          className="text-xs border-yellow-500/50 text-yellow-400"
-                                        >
-                                          🔄 Retry
-                                        </Badge>
-                                      )}
-                                      {isToday && (
-                                        <Badge
-                                          variant="outline"
-                                          className="text-xs border-purple-500/50 text-purple-400"
-                                        >
-                                          Today
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                      {format(
-                                        new Date(calendarDay.calendar_date),
-                                        "MMM d, yyyy"
-                                      )}
-                                    </div>
-                                    {trainingDay.title && (
-                                      <div className="text-sm text-white/70 mt-1">
-                                        {trainingDay.title}
-                                      </div>
-                                    )}
+                                  <div className="text-xs font-bold text-white mb-1">
+                                    DAY {trainingDay.day_number}
                                   </div>
+                                  {calendarDay.is_retry && (
+                                    <div className="text-xs text-yellow-400">
+                                      RETRY
+                                    </div>
+                                  )}
                                 </div>
-                                <div className="flex flex-col items-end gap-1">
-                                  <Badge
-                                    variant="outline"
-                                    className={
-                                      isCompleted
-                                        ? "border-emerald-500/50 text-emerald-400"
-                                        : isFailed
-                                        ? "border-red-500/50 text-red-400"
-                                        : isRest
-                                        ? "border-green-500/50 text-green-400"
-                                        : isToday
-                                        ? "border-purple-500/50 text-purple-400"
-                                        : isAccessible && !isLocked
-                                        ? "border-blue-500/50 text-blue-400"
-                                        : "border-gray-500/50 text-gray-400"
-                                    }
-                                  >
-                                    {isCompleted
-                                      ? "Completed"
+                                
+                                <div className="text-center">
+                                  <div className="text-xs text-muted-foreground mb-1">
+                                    {format(new Date(calendarDay.calendar_date), "MMM d")}
+                                  </div>
+                                  <div className={`text-xs px-2 py-1 rounded-full ${
+                                    isCompleted
+                                      ? "bg-emerald-500/30 text-emerald-400"
                                       : isFailed
-                                      ? "Failed"
+                                      ? "bg-red-500/30 text-red-400"
                                       : isRest
-                                      ? "Rest Day"
+                                      ? "bg-green-500/30 text-green-400"
+                                      : isToday
+                                      ? "bg-purple-500/30 text-purple-400"
+                                      : isAccessible && !isLocked
+                                      ? "bg-blue-500/30 text-blue-400"
+                                      : "bg-gray-500/30 text-gray-400"
+                                  }`}>
+                                    {isCompleted
+                                      ? "✓"
+                                      : isFailed
+                                      ? "✗"
+                                      : isRest
+                                      ? "Rest"
                                       : isToday
                                       ? "Today"
                                       : isAccessible && !isLocked
                                       ? "Ready"
                                       : "Locked"}
-                                  </Badge>
-                                  {isAccessible && !isLocked && (
-                                    <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                                  )}
-                                  {(isLocked ||
-                                    (!isAccessible &&
-                                      !isCompleted &&
-                                      !isFailed)) && (
-                                    <Lock className="w-4 h-4 text-gray-400" />
-                                  )}
+                                  </div>
                                 </div>
                               </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
+                            </div>
+                          );
+                        })}
+                    </div>
                   </div>
                 ) : (
                   /* Desktop/tablet calendar view */
