@@ -1104,7 +1104,7 @@ const ChallengePreview = () => {
                       Duration
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-white">
-                      {challenge.training_days?.length || 0}
+                      {challenge.training_days?.length || 0} days
                     </div>
                   </CardContent>
                 </Card>
@@ -1128,7 +1128,7 @@ const ChallengePreview = () => {
                       Difficulty
                     </div>
                     <Badge
-                      className={`mt-1 ${getDifficultyColor(
+                      className={`mt-1 w-[120px] mx-auto ${getDifficultyColor(
                         challenge.difficulty_level || "intermediate"
                       )}`}
                     >
@@ -1142,12 +1142,13 @@ const ChallengePreview = () => {
                   <CardContent className="p-3 sm:p-4 text-center">
                     <CalendarDays className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 mx-auto mb-2" />
                     <div className="text-xs sm:text-sm text-muted-foreground">
-                      Training Days
+                      Trainings
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-white">
                       {challenge.training_days?.filter(
                         (day) => !day.is_rest_day
-                      ).length || 0}
+                      ).length || 0}{" "}
+                      sessions
                     </div>
                   </CardContent>
                 </Card>
