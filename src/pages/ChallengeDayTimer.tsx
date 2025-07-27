@@ -349,6 +349,7 @@ const ChallengeDayTimer = () => {
   };
 
   const handleActionConfirm = async () => {
+    console.log("handleActionConfirm called with actionType:", actionType);
     if (!actionType || !user || !challengeId || !dayId) return;
 
     try {
