@@ -343,6 +343,39 @@ const ChallengeDayTimer = () => {
     }
   };
 
+  const handleActionClick = (action: "failed" | "rest") => {
+    setActionType(action);
+    setShowActionDialog(true);
+  };
+
+  const handleActionConfirm = async () => {
+    if (!actionType || !user || !challengeId || !dayId) return;
+
+    try {
+      const calendarDay = getCalendarDayByTrainingDay(dayId);
+      if (calendarDay) {
+        await changeDayStatus(calendarDay.calendar_date, actionType);
+        toast({
+          title: actionType === "failed" ? "Day Marked as Failed" : "Day Marked as Rest",
+          description: actionType === "failed" 
+            ? "This training day has been marked as failed. You can retry tomorrow!"
+            : "This training day has been marked as a rest day.",
+        });
+        navigate(`/challenges/${challengeId}`);
+      }
+    } catch (error) {
+      console.error(`Error marking day as ${actionType}:`, error);
+      toast({
+        title: "Error",
+        description: `Failed to mark day as ${actionType}`,
+        variant: "destructive",
+      });
+    } finally {
+      setShowActionDialog(false);
+      setActionType(null);
+    }
+  };
+
   const handlePlayPause = () => {
     if (!isRunning && !isPreparingToStart) {
       setIsPreparingToStart(true);
