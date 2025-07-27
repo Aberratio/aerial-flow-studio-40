@@ -368,6 +368,21 @@ const EditChallenge = () => {
     }
   };
 
+  // Function to calculate duration for a training day
+  const calculateTrainingDayDuration = (exercises: Exercise[]) => {
+    if (!exercises || exercises.length === 0) return 0;
+    
+    let totalDuration = 0;
+    exercises.forEach((exercise) => {
+      const sets = exercise.sets || 1;
+      const holdTime = exercise.hold_time_seconds || 30;
+      const restTime = exercise.rest_time_seconds || 15;
+      totalDuration += sets * (holdTime + restTime);
+    });
+    
+    return totalDuration;
+  };
+
   const saveAchievementsAndTrainingDays = async () => {
     if (!challengeId) return;
 
@@ -404,6 +419,9 @@ const EditChallenge = () => {
 
       // Insert training days one by one to get their IDs
       for (const day of trainingDays) {
+        // Calculate duration for this training day
+        const durationSeconds = day.isRestDay ? 0 : calculateTrainingDayDuration(day.exercises);
+        
         const { data: trainingDayData, error: dayError } = await supabase
           .from("challenge_training_days")
           .insert({
@@ -412,6 +430,7 @@ const EditChallenge = () => {
             title: day.title,
             description: day.description || null,
             is_rest_day: day.isRestDay || false,
+            duration_seconds: durationSeconds,
           })
           .select()
           .single();

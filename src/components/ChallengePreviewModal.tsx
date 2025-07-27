@@ -54,6 +54,7 @@ interface Challenge {
       figure: {
         name: string;
         difficulty_level: string;
+        image_url?: string;
       };
       sets?: number;
       reps?: number;
@@ -107,11 +108,11 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             )
           ),
           challenge_training_days (
-            id, day_number, title, description, is_rest_day,
+            id, day_number, title, description, is_rest_day, duration_seconds,
             training_day_exercises (
               id, sets, reps, hold_time_seconds, rest_time_seconds,
               figure:figures (
-                name, difficulty_level
+                name, difficulty_level, image_url
               )
             )
           )
@@ -182,6 +183,26 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
       }
     });
     return Array.from(exerciseSet);
+  };
+
+  const getUniqueExercisesWithImages = () => {
+    const exerciseMap = new Map<string, { name: string; image_url?: string; difficulty_level: string }>();
+    
+    challenge.training_days?.forEach((day) => {
+      if (!day.is_rest_day && day.exercises) {
+        day.exercises.forEach((exercise) => {
+          if (!exerciseMap.has(exercise.figure.name)) {
+            exerciseMap.set(exercise.figure.name, {
+              name: exercise.figure.name,
+              image_url: exercise.figure.image_url,
+              difficulty_level: exercise.figure.difficulty_level
+            });
+          }
+        });
+      }
+    });
+    
+    return Array.from(exerciseMap.values());
   };
 
   const calculateDailyDuration = () => {
@@ -471,20 +492,40 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   <h4 className="text-md font-medium text-white">Exercises Included</h4>
                   <div className="text-muted-foreground">
                     {(() => {
-                      const exercises = getChallengeExercises();
+                      const exercises = getUniqueExercisesWithImages();
                       if (exercises.length === 0) {
                         return <p>No exercises configured for this challenge</p>;
                       }
                       return (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                           {exercises.map((exercise, index) => (
-                            <Badge
+                            <div
                               key={index}
-                              variant="outline"
-                              className="border-white/20 text-white/80 text-xs"
+                              className="flex items-center gap-2 p-2 rounded-lg glass-effect border-white/10"
                             >
-                              {exercise}
-                            </Badge>
+                              {exercise.image_url ? (
+                                <img
+                                  src={exercise.image_url}
+                                  alt={exercise.name}
+                                  className="w-10 h-10 rounded-md object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-md bg-purple-500/20 flex items-center justify-center">
+                                  <Trophy className="w-5 h-5 text-purple-400" />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <div className="text-sm font-medium text-white truncate">
+                                  {exercise.name}
+                                </div>
+                                <Badge
+                                  variant="secondary"
+                                  className="text-xs bg-white/10 text-white/70"
+                                >
+                                  {exercise.difficulty_level}
+                                </Badge>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       );

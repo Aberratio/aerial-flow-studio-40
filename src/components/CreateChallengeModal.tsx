@@ -217,6 +217,21 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
     }
   };
 
+  // Function to calculate duration for a training day
+  const calculateTrainingDayDuration = (exercises: Exercise[]) => {
+    if (!exercises || exercises.length === 0) return 0;
+    
+    let totalDuration = 0;
+    exercises.forEach((exercise) => {
+      const sets = exercise.sets || 1;
+      const holdTime = exercise.hold_time_seconds || 30;
+      const restTime = exercise.rest_time_seconds || 15;
+      totalDuration += sets * (holdTime + restTime);
+    });
+    
+    return totalDuration;
+  };
+
   const saveAchievementsAndTrainingDays = async (challengeIdToUse: string) => {
     // Save achievements
     if (selectedAchievements.length > 0) {
@@ -251,17 +266,21 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
 
       // Insert training days one by one to get their IDs
       for (const day of trainingDays) {
-          const { data: trainingDayData, error: dayError } = await supabase
-            .from('challenge_training_days')
-            .insert({
-              challenge_id: challengeIdToUse,
-              day_date: day.date.toISOString().split('T')[0],
-              title: day.title,
-              description: day.description,
-              is_rest_day: day.isRestDay
-            })
-            .select()
-            .single();
+        // Calculate duration for this training day
+        const durationSeconds = day.isRestDay ? 0 : calculateTrainingDayDuration(day.exercises);
+        
+        const { data: trainingDayData, error: dayError } = await supabase
+          .from('challenge_training_days')
+          .insert({
+            challenge_id: challengeIdToUse,
+            day_number: trainingDays.indexOf(day) + 1,
+            title: day.title,
+            description: day.description,
+            is_rest_day: day.isRestDay,
+            duration_seconds: durationSeconds,
+          })
+          .select()
+          .single();
 
         if (dayError) throw dayError;
 
