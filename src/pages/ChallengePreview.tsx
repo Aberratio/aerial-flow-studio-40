@@ -586,7 +586,7 @@ const ChallengePreview = () => {
     }
   }, [userParticipant?.user_started_at, calendarDays.length]);
 
-  // Auto-scroll to ready-to-start day when carousel is ready (only on first render)
+  // Auto-scroll to pending day when carousel is ready (only on first render)
   useEffect(() => {
     if (
       carouselApi &&
@@ -605,24 +605,14 @@ const ChallengePreview = () => {
         })
         .sort((a, b) => a.trainingDay.day_number - b.trainingDay.day_number);
 
-      // Find the ready-to-start day (today and pending/accessible)
-      const readyDayIndex = allTrainingDays.findIndex((dayData, index) => {
+      // Find the first pending day (isPending = true)
+      const pendingDayIndex = allTrainingDays.findIndex((dayData) => {
         const { calendarDay } = dayData;
-        const previousDayData = allTrainingDays[index - 1];
-        const isPreviousDayCompleted =
-          index === 0 || previousDayData?.calendarDay?.status === "completed";
-        const isBlocked =
-          !isPreviousDayCompleted && calendarDay?.status !== "completed";
-        const isToday =
-          calendarDay?.calendar_date === format(new Date(), "yyyy-MM-dd");
-        const isAccessible = calendarDay?.is_accessible || false;
-        const isPending = calendarDay?.status === "pending";
-
-        return !isBlocked && isPending && isAccessible && isToday;
+        return calendarDay?.status === "pending";
       });
 
-      if (readyDayIndex >= 0) {
-        carouselApi.scrollTo(readyDayIndex);
+      if (pendingDayIndex >= 0) {
+        carouselApi.scrollTo(pendingDayIndex);
       }
     }
   }, [carouselApi, isParticipant, challenge?.training_days, calendarDays]);
