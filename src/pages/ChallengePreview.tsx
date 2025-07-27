@@ -664,79 +664,103 @@ const ChallengePreview = () => {
               <div className="mb-12">
                 <Carousel className="w-full">
                   <CarouselContent className="-ml-2 md:-ml-4">
-                    {allTrainingDays.map((dayData, index) => {
-                      const { calendarDay, trainingDay } = dayData;
-                      const exercises =
-                        trainingDay.training_day_exercises || [];
-                      const isCompleted = calendarDay?.status === "completed";
-                      const isFailed = calendarDay?.status === "failed";
-                      const isRestDay = trainingDay.is_rest_day;
-                      const isAccessible = calendarDay?.is_accessible || false;
-                      const isPending = calendarDay?.status === "pending";
+                     {allTrainingDays.map((dayData, index) => {
+                       const { calendarDay, trainingDay } = dayData;
+                       const exercises =
+                         trainingDay.training_day_exercises || [];
+                       const isCompleted = calendarDay?.status === "completed";
+                       const isFailed = calendarDay?.status === "failed";
+                       const isRestDay = trainingDay.is_rest_day;
+                       const isAccessible = calendarDay?.is_accessible || false;
+                       const isPending = calendarDay?.status === "pending";
 
-                      // Calculate total duration
-                      const formatTime = (seconds: number) => {
-                        const mins = Math.floor(seconds / 60);
-                        const secs = seconds % 60;
-                        return mins > 0
-                          ? `${mins}:${secs.toString().padStart(2, "0")}`
-                          : `0:${secs.toString().padStart(2, "0")}`;
-                      };
+                       // Check if previous day is completed (blocking mechanism)
+                       const previousDayData = allTrainingDays[index - 1];
+                       const isPreviousDayCompleted = index === 0 || 
+                         previousDayData?.calendarDay?.status === 'completed';
+                       const isBlocked = !isPreviousDayCompleted && !isCompleted;
+                       
+                       // Check if this is today's training
+                       const isToday = calendarDay?.calendar_date === format(new Date(), 'yyyy-MM-dd');
 
-                      const totalDuration = trainingDay.duration_seconds || 0;
+                       // Calculate total duration
+                       const formatTime = (seconds: number) => {
+                         const mins = Math.floor(seconds / 60);
+                         const secs = seconds % 60;
+                         return mins > 0
+                           ? `${mins}:${secs.toString().padStart(2, "0")}`
+                           : `0:${secs.toString().padStart(2, "0")}`;
+                       };
+
+                       const totalDuration = trainingDay.duration_seconds || 0;
 
                       return (
                         <CarouselItem
                           key={trainingDay.id}
                           className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3"
                         >
-                          <Card
-                            className={`glass-effect border-white/10 overflow-hidden h-full ${
-                              isCompleted
-                                ? "border-emerald-500/50"
-                                : isFailed
-                                ? "border-red-500/50"
-                                : isPending && isAccessible
-                                ? "border-purple-500/50 ring-1 ring-purple-500/30"
-                                : "border-white/10"
-                            } ${
-                              isAccessible && calendarDay
-                                ? "cursor-pointer hover:bg-white/5"
-                                : "opacity-60"
-                            }`}
-                            onClick={() =>
-                              calendarDay &&
-                              isAccessible &&
-                              navigate(
-                                `/challenge/${challengeId}/day/${calendarDay.id}`
-                              )
-                            }
+                           <Card
+                             className={`glass-effect overflow-hidden h-full transition-all duration-200 ${
+                               isBlocked
+                                 ? "border-muted/30 opacity-50 cursor-not-allowed"
+                                 : isCompleted
+                                 ? "border-emerald-500/50"
+                                 : isFailed
+                                 ? "border-red-500/50"
+                                 : isToday
+                                 ? "border-primary/60 ring-2 ring-primary/30 shadow-lg shadow-primary/20"
+                                 : isPending && isAccessible
+                                 ? "border-purple-500/50 ring-1 ring-purple-500/30"
+                                 : "border-white/10"
+                             } ${
+                               !isBlocked && isAccessible && calendarDay
+                                 ? "cursor-pointer hover:bg-white/5"
+                                 : ""
+                             }`}
+                             onClick={() =>
+                               !isBlocked && calendarDay &&
+                               isAccessible &&
+                               navigate(
+                                 `/challenge/${challengeId}/day/${calendarDay.id}`
+                               )
+                             }
                           >
-                            {/* Header */}
-                            <div className="relative h-20 bg-gradient-to-r from-purple-600/80 to-blue-600/80 flex items-center justify-between px-4">
-                              <div className="absolute inset-0 bg-black/20"></div>
-                              <div className="relative z-10 flex items-center gap-2">
-                                <div className="text-xl">
-                                  {isCompleted
-                                    ? "✅"
-                                    : isFailed
-                                    ? "❌"
-                                    : isRestDay
-                                    ? "🌴"
-                                    : "💪"}
-                                </div>
-                                <div>
-                                  <h3 className="text-lg font-bold text-white">
-                                    DAY {trainingDay.day_number}
-                                    {calendarDay?.is_retry && " (RETRY)"}
-                                  </h3>
-                                  <div className="text-sm text-white/90">
-                                    {trainingDay.title ||
-                                      (isRestDay ? "Rest Day" : "Training Day")}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
+                             {/* Header */}
+                             <div className={`relative h-20 flex items-center justify-between px-4 ${
+                               isBlocked 
+                                 ? 'bg-gradient-to-r from-muted/40 to-muted/20'
+                                 : isToday
+                                 ? 'bg-gradient-to-r from-primary/80 to-primary/60'
+                                 : 'bg-gradient-to-r from-purple-600/80 to-blue-600/80'
+                             }`}>
+                               <div className="absolute inset-0 bg-black/20"></div>
+                               <div className="relative z-10 flex items-center gap-2">
+                                 <div className="text-xl">
+                                   {isBlocked
+                                     ? "🔒"
+                                     : isCompleted
+                                     ? "✅"
+                                     : isFailed
+                                     ? "❌"
+                                     : isRestDay
+                                     ? "🌴"
+                                     : isToday
+                                     ? "⭐"
+                                     : "💪"}
+                                 </div>
+                                 <div>
+                                   <h3 className={`text-lg font-bold ${isBlocked ? 'text-muted-foreground' : 'text-white'}`}>
+                                     DAY {trainingDay.day_number}
+                                     {calendarDay?.is_retry && " (RETRY)"}
+                                   </h3>
+                                   <div className={`text-sm ${isBlocked ? 'text-muted-foreground/70' : 'text-white/90'}`}>
+                                     {isBlocked ? 'Complete previous day first' :
+                                      trainingDay.title ||
+                                       (isRestDay ? "Rest Day" : "Training Day")}
+                                   </div>
+                                 </div>
+                               </div>
+                             </div>
 
                             <CardContent className="p-4 flex-1">
                               {/* Duration and Exercise Count */}
@@ -777,14 +801,22 @@ const ChallengePreview = () => {
                                           </div>
                                         </div>
 
-                                        {/* Exercise preview - photo of the exercise */}
-                                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded flex items-center justify-center">
-                                          <img
-                                            src={exercise.figure.image_url}
-                                            alt={exercise.figure.name}
-                                            className="w-4 h-4 bg-purple-500/30 rounded"
-                                          />
-                                        </div>
+                                         {/* Exercise preview - photo of the exercise */}
+                                         <div className={`w-8 h-8 rounded-full border-2 border-background overflow-hidden ${
+                                           isBlocked ? 'opacity-50' : ''
+                                         }`}>
+                                           {exercise.figure?.image_url ? (
+                                             <img
+                                               src={exercise.figure.image_url}
+                                               alt={exercise.figure.name}
+                                               className="w-full h-full object-cover"
+                                             />
+                                           ) : (
+                                             <div className="w-full h-full flex items-center justify-center bg-muted">
+                                               <Target className="w-4 h-4 text-muted-foreground" />
+                                             </div>
+                                           )}
+                                         </div>
                                       </div>
                                     ))}
 
@@ -820,10 +852,18 @@ const ChallengePreview = () => {
                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
                                       Failed - Retry
                                     </span>
-                                  ) : isPending && isAccessible ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                                      Ready to Start
-                                    </span>
+                                   ) : isBlocked ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted/20 text-muted-foreground border border-muted/30">
+                                       🔒 Locked
+                                     </span>
+                                   ) : isToday ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                       ⭐ Train Today
+                                     </span>
+                                   ) : isPending && isAccessible ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                       Ready to Start
+                                     </span>
                                   ) : isAccessible ? (
                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
                                       Available

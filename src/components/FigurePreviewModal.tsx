@@ -40,6 +40,10 @@ interface FigurePreviewModalProps {
     category: string;
     instructions?: string;
     image_url?: string;
+    description?: string;
+    video_url?: string;
+    type?: string;
+    tags?: string[];
   };
   isOpen: boolean;
   onClose: () => void;
@@ -276,20 +280,20 @@ export const FigurePreviewModal = ({
           <div className="flex flex-col lg:flex-row min-h-[80vh]">
             {/* Media Section */}
             <div className="lg:w-1/2 bg-black relative">
-              {figure.video_url ? (
+              {figure?.video_url ? (
                 <div className="relative w-full h-full min-h-[400px] flex items-center justify-center">
                   <video
-                    src={figure.video_url}
+                    src={figure?.video_url}
                     className="w-full h-full object-contain"
                     controls
                     autoPlay={false}
                   />
                 </div>
-              ) : figure.image_url ? (
+              ) : figure?.image_url ? (
                 <div className="relative w-full h-full min-h-[400px] flex items-center justify-center">
                   <img
-                    src={figure.image_url}
-                    alt={figure.name}
+                    src={figure?.image_url}
+                    alt={figure?.name}
                     className="w-full h-full object-contain"
                   />
                 </div>
@@ -309,16 +313,16 @@ export const FigurePreviewModal = ({
               <div className="p-6 border-b border-white/10">
                 <div className="flex items-start justify-between mb-4 my-[23px]">
                   <h2 className="text-2xl font-bold text-white">
-                    {figure.name}
+                    {figure?.name}
                   </h2>
                   <div className="flex items-center space-x-2 my-0">
-                    {figure.difficulty_level && (
+                    {figure?.difficulty_level && (
                       <Badge
                         className={`${getDifficultyColor(
-                          figure.difficulty_level
+                          figure?.difficulty_level
                         )}`}
                       >
-                        {figure.difficulty_level}
+                        {figure?.difficulty_level}
                       </Badge>
                     )}
                     <Button
@@ -332,31 +336,31 @@ export const FigurePreviewModal = ({
                   </div>
                 </div>
 
-                {figure.description && (
+                {figure?.description && (
                   <p className="text-muted-foreground mb-4">
-                    {figure.description}
+                    {figure?.description}
                   </p>
                 )}
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {figure.category && (
+                  {figure?.category && (
                     <Badge
                       variant="outline"
                       className="border-white/20 text-white/80"
                     >
-                      {figure.category}
+                      {figure?.category}
                     </Badge>
                   )}
-                  {figure.type && (
+                  {figure?.type && (
                     <Badge
                       variant="outline"
                       className="border-white/20 text-white/80"
                     >
-                      {figure.type}
+                      {figure?.type}
                     </Badge>
                   )}
-                  {figure.tags &&
-                    figure.tags.map((tag, index) => (
+                  {figure?.tags &&
+                    figure?.tags.map((tag, index) => (
                       <Badge
                         key={index}
                         variant="outline"
@@ -473,13 +477,13 @@ export const FigurePreviewModal = ({
               </div>
 
               {/* Instructions */}
-              {figure.instructions && (
+              {figure?.instructions && (
                 <div className="p-6 border-b border-white/10">
                   <h3 className="text-lg font-semibold text-white mb-2">
                     Instructions
                   </h3>
                   <p className="text-muted-foreground whitespace-pre-wrap">
-                    {figure.instructions}
+                    {figure?.instructions}
                   </p>
                 </div>
               )}
