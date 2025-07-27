@@ -22,6 +22,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CarouselApi,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -134,6 +135,7 @@ const ChallengePreview = () => {
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
     new Date()
   );
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
 
   // Use the new refactored challenge calendar hook
   const {
@@ -583,6 +585,42 @@ const ChallengePreview = () => {
     }
   }, [userParticipant?.user_started_at, calendarDays.length]);
 
+  // Auto-scroll to ready-to-start day when carousel is ready (only on first render)
+  useEffect(() => {
+    if (carouselApi && isParticipant && challenge?.training_days && calendarDays.length > 0) {
+      const allTrainingDays = challenge.training_days
+        .map((trainingDay) => {
+          const calendarDay = calendarDays.find(
+            (cd) => cd.training_day_id === trainingDay.id
+          );
+          return calendarDay
+            ? { calendarDay, trainingDay }
+            : { calendarDay: null, trainingDay };
+        })
+        .sort(
+          (a, b) => a.trainingDay.day_number - b.trainingDay.day_number
+        );
+
+      // Find the ready-to-start day (today and pending/accessible)
+      const readyDayIndex = allTrainingDays.findIndex((dayData, index) => {
+        const { calendarDay } = dayData;
+        const previousDayData = allTrainingDays[index - 1];
+        const isPreviousDayCompleted = index === 0 || 
+          previousDayData?.calendarDay?.status === 'completed';
+        const isBlocked = !isPreviousDayCompleted && calendarDay?.status !== 'completed';
+        const isToday = calendarDay?.calendar_date === format(new Date(), 'yyyy-MM-dd');
+        const isAccessible = calendarDay?.is_accessible || false;
+        const isPending = calendarDay?.status === "pending";
+        
+        return !isBlocked && isPending && isAccessible && isToday;
+      });
+
+      if (readyDayIndex >= 0) {
+        carouselApi.scrollTo(readyDayIndex);
+      }
+    }
+  }, [carouselApi, isParticipant, challenge?.training_days, calendarDays]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center">
@@ -662,7 +700,7 @@ const ChallengePreview = () => {
 
             return (
               <div className="mb-12">
-                <Carousel className="w-full">
+                <Carousel className="w-full" setApi={setCarouselApi}>
                   <CarouselContent className="-ml-2 md:-ml-4">
                      {allTrainingDays.map((dayData, index) => {
                        const { calendarDay, trainingDay } = dayData;
@@ -680,8 +718,9 @@ const ChallengePreview = () => {
                          previousDayData?.calendarDay?.status === 'completed';
                        const isBlocked = !isPreviousDayCompleted && !isCompleted;
                        
-                       // Check if this is today's training
+                       // Check if this is today's training and ready to start
                        const isToday = calendarDay?.calendar_date === format(new Date(), 'yyyy-MM-dd');
+                       const isReadyToStart = !isBlocked && isPending && isAccessible && isToday;
 
                        // Calculate total duration
                        const formatTime = (seconds: number) => {
@@ -707,7 +746,7 @@ const ChallengePreview = () => {
                                  ? "border-emerald-500/50"
                                  : isFailed
                                  ? "border-red-500/50"
-                                 : isToday
+                                 : isReadyToStart
                                  ? "border-primary/60 ring-2 ring-primary/30 shadow-lg shadow-primary/20"
                                  : isPending && isAccessible
                                  ? "border-purple-500/50 ring-1 ring-purple-500/30"
@@ -729,7 +768,7 @@ const ChallengePreview = () => {
                              <div className={`relative h-20 flex items-center justify-between px-4 ${
                                isBlocked 
                                  ? 'bg-gradient-to-r from-muted/40 to-muted/20'
-                                 : isToday
+                                 : isReadyToStart
                                  ? 'bg-gradient-to-r from-primary/80 to-primary/60'
                                  : 'bg-gradient-to-r from-purple-600/80 to-blue-600/80'
                              }`}>
@@ -744,7 +783,7 @@ const ChallengePreview = () => {
                                      ? "❌"
                                      : isRestDay
                                      ? "🌴"
-                                     : isToday
+                                     : isReadyToStart
                                      ? "⭐"
                                      : "💪"}
                                  </div>
@@ -775,31 +814,78 @@ const ChallengePreview = () => {
                                   <List className="w-4 h-4" />
                                   {exercises.length} exercises
                                 </div>
-                              </div>
+                               </div>
 
-                              {/* Exercises List */}
-                              {!isRestDay && exercises.length > 0 && (
-                                <div className="space-y-2">
-                                  {exercises
-                                    .slice(0, 3)
-                                    .map((exercise, exerciseIndex) => (
-                                      <div
-                                        key={exercise.id}
-                                        className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
-                                      >
-                                        <div className="flex-1">
-                                          <h4 className="font-medium text-white text-sm">
-                                            {exercise.figure.name}
-                                          </h4>
-                                          <div className="text-xs text-purple-400">
-                                            {formatTime(
-                                              exercise.hold_time_seconds || 30
-                                            )}
-                                            {exercise.sets &&
-                                              exercise.sets > 1 &&
-                                              ` × ${exercise.sets}`}
-                                          </div>
-                                        </div>
+                               {/* Day Notes */}
+                               {(calendarDay?.notes || trainingDay.description) && (
+                                 <div className="mb-4">
+                                   <p className={`text-sm ${isBlocked ? 'text-muted-foreground/70' : 'text-muted-foreground'}`}>
+                                     {calendarDay?.notes || trainingDay.description}
+                                   </p>
+                                 </div>
+                               )}
+
+                               {/* Exercise Photos Preview */}
+                               {!isRestDay && exercises.length > 0 && (
+                                 <div className="space-y-3">
+                                   <p className={`text-xs font-medium ${isBlocked ? 'text-muted-foreground/70' : 'text-muted-foreground'}`}>
+                                     {exercises.length} exercise{exercises.length !== 1 ? 's' : ''}
+                                   </p>
+                                   <div className="grid grid-cols-3 gap-2">
+                                     {exercises
+                                       .slice(0, 6)
+                                       .map((exercise, exerciseIndex) => (
+                                         <div
+                                           key={exercise.id}
+                                           className={`aspect-square rounded-lg overflow-hidden bg-white/5 border border-white/10 ${
+                                             isBlocked ? 'opacity-50' : ''
+                                           }`}
+                                         >
+                                           {exercise.figure?.image_url ? (
+                                             <img
+                                               src={exercise.figure.image_url}
+                                               alt={exercise.figure.name}
+                                               className="w-full h-full object-cover"
+                                             />
+                                           ) : (
+                                             <div className="w-full h-full flex items-center justify-center bg-muted">
+                                               <Target className="w-4 h-4 text-muted-foreground" />
+                                             </div>
+                                           )}
+                                         </div>
+                                       ))}
+                                   </div>
+                                   {exercises.length > 6 && (
+                                     <p className={`text-xs text-center ${isBlocked ? 'text-muted-foreground/70' : 'text-muted-foreground'}`}>
+                                       +{exercises.length - 6} more exercises
+                                     </p>
+                                   )}
+                                 </div>
+                               )}
+
+                               {/* Exercise List (fallback for older design) */}
+                               {!isRestDay && exercises.length > 0 && (
+                                 <div className="space-y-2 mt-4">
+                                   {exercises
+                                     .slice(0, 3)
+                                     .map((exercise, exerciseIndex) => (
+                                       <div
+                                         key={exercise.id}
+                                         className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
+                                       >
+                                         <div className="flex-1">
+                                           <h4 className={`font-medium text-sm ${isBlocked ? 'text-muted-foreground' : 'text-white'}`}>
+                                             {exercise.figure.name}
+                                           </h4>
+                                           <div className={`text-xs ${isBlocked ? 'text-muted-foreground/70' : 'text-purple-400'}`}>
+                                             {formatTime(
+                                               exercise.hold_time_seconds || 30
+                                             )}
+                                             {exercise.sets &&
+                                               exercise.sets > 1 &&
+                                               ` × ${exercise.sets}`}
+                                           </div>
+                                         </div>
 
                                          {/* Exercise preview - photo of the exercise */}
                                          <div className={`w-8 h-8 rounded-full border-2 border-background overflow-hidden ${
@@ -817,18 +903,18 @@ const ChallengePreview = () => {
                                              </div>
                                            )}
                                          </div>
-                                      </div>
-                                    ))}
+                                       </div>
+                                     ))}
 
-                                  {exercises.length > 3 && (
-                                    <div className="text-center py-2">
-                                      <span className="text-xs text-muted-foreground">
-                                        +{exercises.length - 3} more exercises
-                                      </span>
-                                    </div>
-                                  )}
-                                </div>
-                              )}
+                                   {exercises.length > 3 && (
+                                     <div className="text-center py-2">
+                                       <span className={`text-xs ${isBlocked ? 'text-muted-foreground/70' : 'text-muted-foreground'}`}>
+                                         +{exercises.length - 3} more exercises
+                                       </span>
+                                     </div>
+                                   )}
+                                 </div>
+                               )}
 
                               {/* Rest Day Content */}
                               {isRestDay && (
@@ -841,29 +927,43 @@ const ChallengePreview = () => {
                                 </div>
                               )}
 
-                              {/* Status Badge */}
-                              <div className="mt-4 pt-3 border-t border-white/10">
-                                <div className="text-center">
-                                  {isCompleted ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                      Completed ✓
-                                    </span>
-                                  ) : isFailed ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
-                                      Failed - Retry
-                                    </span>
-                                   ) : isBlocked ? (
-                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted/20 text-muted-foreground border border-muted/30">
-                                       🔒 Locked
+                               {/* Status Badge and Action Button */}
+                               <div className="mt-4 pt-3 border-t border-white/10 space-y-3">
+                                 {/* Start Workout Button for Ready Day */}
+                                 {isReadyToStart && (
+                                   <Button
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       navigate(`/challenge/${challengeId}/day/${calendarDay?.id}/timer`);
+                                     }}
+                                     className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                                   >
+                                     <Play className="w-4 h-4 mr-2" />
+                                     Start Workout
+                                   </Button>
+                                 )}
+                                 
+                                 <div className="text-center">
+                                   {isCompleted ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                       Completed ✓
                                      </span>
-                                   ) : isToday ? (
-                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
-                                       ⭐ Train Today
+                                   ) : isFailed ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
+                                       Failed - Retry
                                      </span>
-                                   ) : isPending && isAccessible ? (
-                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                                       Ready to Start
-                                     </span>
+                                    ) : isBlocked ? (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted/20 text-muted-foreground border border-muted/30">
+                                        🔒 Locked
+                                      </span>
+                                    ) : isReadyToStart ? (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                        ⭐ Train Today
+                                      </span>
+                                    ) : isPending && isAccessible ? (
+                                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                        Ready to Start
+                                      </span>
                                   ) : isAccessible ? (
                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
                                       Available
