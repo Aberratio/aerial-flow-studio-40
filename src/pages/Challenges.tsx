@@ -461,29 +461,14 @@ const Challenges = () => {
         description: "Start your challenge today",
       },
       {
-        label: "Yesterday",
-        value: subDays(today, 1),
-        description: "Catch up from yesterday",
-      },
-      {
-        label: "3 days ago",
-        value: subDays(today, 3),
-        description: "Get back on track",
-      },
-      {
         label: "1 week ago",
         value: subWeeks(today, 1),
-        description: "Start from last week",
-      },
-      {
-        label: "2 weeks ago",
-        value: subWeeks(today, 2),
-        description: "Begin from 2 weeks back",
+        description: "For testing purposes",
       },
       {
         label: "1 month ago",
         value: oneMonthAgo,
-        description: "Maximum allowed start date",
+        description: "For testing purposes",
       },
     ];
   };

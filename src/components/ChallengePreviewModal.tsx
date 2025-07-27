@@ -63,6 +63,20 @@ interface Challenge {
       reps?: number;
       hold_time_seconds?: number;
     }>;
+    training_day_exercises?: Array<{
+      id: string;
+      figure: {
+        id: string;
+        name: string;
+        difficulty_level: string;
+        category: string;
+        instructions?: string;
+        image_url?: string;
+      };
+      sets?: number;
+      reps?: number;
+      hold_time_seconds?: number;
+    }>;
   }>;
   participants_count?: number;
 }
@@ -195,8 +209,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     >();
 
     challenge.training_days?.forEach((day) => {
-      if (!day.is_rest_day && day.exercises) {
-        day.exercises.forEach((exercise) => {
+      if (!day.is_rest_day && day.training_day_exercises) {
+        day.training_day_exercises.forEach((exercise) => {
           if (!exerciseMap.has(exercise.figure.name)) {
             exerciseMap.set(exercise.figure.name, {
               name: exercise.figure.name,
