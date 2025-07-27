@@ -905,24 +905,24 @@ const ChallengePreview = () => {
                                           </div>
                                         </div>
 
-                                        {/* Exercise preview - photo of the exercise */}
-                                        <div
-                                          className={`w-full sm:w-20 h-48 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center ${
-                                            isBlocked ? "opacity-50" : ""
-                                          }`}
-                                        >
-                                          {exercise.figure?.image_url ? (
-                                            <img
-                                              src={exercise.figure.image_url}
-                                              alt={exercise.figure.name}
-                                              className="w-full h-full object-cover"
-                                            />
-                                          ) : (
-                                            <div className="w-full h-full flex items-center justify-center bg-muted">
-                                              <Target className="w-4 h-4 text-muted-foreground" />
-                                            </div>
-                                          )}
-                                        </div>
+                                         {/* Exercise preview - photo of the exercise */}
+                                         <div
+                                           className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center ${
+                                             isBlocked ? "opacity-50" : ""
+                                           }`}
+                                         >
+                                           {exercise.figure?.image_url ? (
+                                             <img
+                                               src={exercise.figure.image_url}
+                                               alt={exercise.figure.name}
+                                               className="w-full h-full object-cover"
+                                             />
+                                           ) : (
+                                             <div className="w-full h-full flex items-center justify-center bg-muted">
+                                               <Target className="w-4 h-4 text-muted-foreground" />
+                                             </div>
+                                           )}
+                                         </div>
                                       </div>
                                     ))}
 
