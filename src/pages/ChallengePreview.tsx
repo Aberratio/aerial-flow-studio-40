@@ -127,6 +127,7 @@ const ChallengePreview = () => {
   const { toast } = useToast();
   const { canCreateChallenges } = useUserRole();
   const isTablet = useIsTablet();
+  const isMobile = useIsMobile();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
@@ -1271,7 +1272,7 @@ const ChallengePreview = () => {
                   </h3>
                 </div>
 
-                {isTablet || useIsMobile() ? (
+                {isTablet || isMobile ? (
                   /* Mobile/Tablet horizontal tabs view - limit to 10 visible tabs */
                   <div className="relative">
                     <div 
