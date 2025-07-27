@@ -681,12 +681,15 @@ const ChallengePreview = () => {
             const allTrainingDays =
               challenge?.training_days
                 ?.map((trainingDay) => {
-                  const calendarDay = calendarDays.find(
-                    (cd) => cd.training_day_id === trainingDay.id
-                  );
-                  return calendarDay
-                    ? { calendarDay, trainingDay }
-                    : { calendarDay: null, trainingDay };
+                  // Get the latest calendar day for this training day (latest attempt)
+                  const latestCalendarDay = calendarDays
+                    .filter((cd) => cd.training_day_id === trainingDay.id)
+                    .sort((a, b) => b.attempt_number - a.attempt_number)[0];
+                  
+                  return {
+                    calendarDay: latestCalendarDay || null,
+                    trainingDay
+                  };
                 })
                 .sort(
                   (a, b) => a.trainingDay.day_number - b.trainingDay.day_number
@@ -703,10 +706,12 @@ const ChallengePreview = () => {
                       const exercises =
                         trainingDay.training_day_exercises || [];
                       const isCompleted = calendarDay?.status === "completed";
-                      const isFailed = calendarDay?.status === "failed";
+                      // Don't show failed status in slider - treat as pending for retry
+                      const isFailed = false;
                       const isRestDay = trainingDay.is_rest_day;
+                      const isUserRestDay = calendarDay?.status === "rest" && !trainingDay.is_rest_day;
                       const isAccessible = calendarDay?.is_accessible || false;
-                      const isPending = calendarDay?.status === "pending";
+                      const isPending = calendarDay?.status === "pending" || calendarDay?.status === "failed";
 
                       // Check if previous day is completed (blocking mechanism)
                       const previousDayData = allTrainingDays[index - 1];
@@ -719,8 +724,11 @@ const ChallengePreview = () => {
                       const isToday =
                         calendarDay?.calendar_date ===
                         format(new Date(), "yyyy-MM-dd");
+                      
+                      // If failed or rest today, need to wait for tomorrow
+                      const isFailedOrRestToday = isToday && (calendarDay?.status === "failed" || calendarDay?.status === "rest");
                       const isReadyToStart =
-                        !isBlocked && isPending && isAccessible && isToday;
+                        !isBlocked && isPending && isAccessible && !isFailedOrRestToday;
 
                       // Calculate total duration
                       const formatTime = (seconds: number) => {
@@ -756,18 +764,19 @@ const ChallengePreview = () => {
                                 ? "cursor-pointer hover:bg-white/5"
                                 : ""
                             }`}
-                            onClick={() =>
-                              !isBlocked &&
-                              calendarDay &&
-                              isAccessible &&
-                              (isPending
-                                ? navigate(
-                                    `/challenge/${challengeId}/day/${calendarDay.id}/timer`
-                                  )
-                                : navigate(
-                                    `/challenge/${challengeId}/day/${calendarDay.id}`
-                                  ))
-                            }
+                             onClick={() =>
+                               !isBlocked &&
+                               !isFailedOrRestToday &&
+                               calendarDay &&
+                               isAccessible &&
+                               (isPending
+                                 ? navigate(
+                                     `/challenge/${challengeId}/day/${calendarDay.id}/timer`
+                                   )
+                                 : navigate(
+                                     `/challenge/${challengeId}/day/${calendarDay.id}`
+                                   ))
+                             }
                           >
                             {/* Header */}
                             <div
@@ -781,19 +790,19 @@ const ChallengePreview = () => {
                             >
                               <div className="absolute inset-0 bg-black/20"></div>
                               <div className="relative z-10 flex items-center gap-2">
-                                <div className="text-xl">
-                                  {isBlocked
-                                    ? "🔒"
-                                    : isCompleted
-                                    ? "✅"
-                                    : isFailed
-                                    ? "❌"
-                                    : isRestDay
-                                    ? "🌴"
-                                    : isReadyToStart
-                                    ? "⭐"
-                                    : "💪"}
-                                </div>
+                                 <div className="text-xl">
+                                   {isBlocked
+                                     ? "🔒"
+                                     : isCompleted
+                                     ? "✅"
+                                     : isUserRestDay
+                                     ? "🛌"
+                                     : isRestDay
+                                     ? "🌴"
+                                     : isReadyToStart
+                                     ? "⭐"
+                                     : "💪"}
+                                 </div>
                                 <div>
                                   <h3
                                     className={`text-lg font-bold ${
@@ -962,38 +971,42 @@ const ChallengePreview = () => {
                                   </Button>
                                 )}
 
-                                <div className="text-center">
-                                  {isCompleted ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                      Completed ✓
-                                    </span>
-                                  ) : isFailed ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">
-                                      Failed - Retry
-                                    </span>
-                                  ) : isBlocked ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted/20 text-muted-foreground border border-muted/30">
-                                      🔒 Locked
-                                    </span>
-                                  ) : isReadyToStart ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
-                                      ⭐ Train Today
-                                    </span>
-                                  ) : isPending && isAccessible ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                                      Ready to Start
-                                    </span>
-                                  ) : isAccessible ? (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                                      Available
-                                    </span>
-                                  ) : (
-                                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
-                                      <Lock className="w-3 h-3 mr-1" />
-                                      Locked
-                                    </span>
-                                  )}
-                                </div>
+                                 <div className="text-center">
+                                   {isCompleted ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                       Completed ✓
+                                     </span>
+                                   ) : isUserRestDay ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                                       🛌 Rest Day
+                                     </span>
+                                   ) : isFailedOrRestToday ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                                       Try Tomorrow
+                                     </span>
+                                   ) : isBlocked ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted/20 text-muted-foreground border border-muted/30">
+                                       🔒 Locked
+                                     </span>
+                                   ) : isReadyToStart ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                       ⭐ Train Today
+                                     </span>
+                                   ) : isPending && isAccessible ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                       Ready to Start
+                                     </span>
+                                   ) : isAccessible ? (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                                       Available
+                                     </span>
+                                   ) : (
+                                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-500/20 text-gray-400 border border-gray-500/30">
+                                       <Lock className="w-3 h-3 mr-1" />
+                                       Locked
+                                     </span>
+                                   )}
+                                 </div>
                               </div>
                             </CardContent>
                           </Card>
