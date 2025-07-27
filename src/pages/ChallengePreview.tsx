@@ -290,48 +290,67 @@ const ChallengePreview = () => {
     }
   };
 
-  // Get current training day (either today's date or first unblocked day)
+  // Get current training day (last unlocked/accessible training day)
   const getCurrentTrainingDay = () => {
     if (!calendarDays.length) return null;
 
-    // First, try to find today's calendar day
-    const today = new Date().toISOString().split("T")[0];
-    const todaysCalendarDay = calendarDays.find(day => day.calendar_date === today);
+    // Find the last unlocked training day (furthest accessible day)
+    const accessibleDays = calendarDays
+      .filter(day => day.is_accessible)
+      .map(cd => {
+        const td = challenge?.training_days?.find(t => t.id === cd.training_day_id);
+        return td ? { calendarDay: cd, trainingDay: td } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a!.trainingDay.day_number - b!.trainingDay.day_number);
+
+    if (!accessibleDays.length) return null;
+
+    // Find the last day that's either pending, failed, or the last completed day
+    let currentTrainingDay = null;
+
+    // First, look for failed days (they need to be retried)
+    const failedDays = accessibleDays.filter(d => d!.calendarDay.status === "failed");
+    if (failedDays.length > 0) {
+      // Return the first failed day (earliest one to retry)
+      currentTrainingDay = failedDays[0];
+    } else {
+      // Look for pending days
+      const pendingDays = accessibleDays.filter(d => d!.calendarDay.status === "pending");
+      if (pendingDays.length > 0) {
+        // Return the first pending day
+        currentTrainingDay = pendingDays[0];
+      } else {
+        // If no pending or failed days, show the last completed day
+        const completedDays = accessibleDays.filter(d => d!.calendarDay.status === "completed");
+        if (completedDays.length > 0) {
+          currentTrainingDay = completedDays[completedDays.length - 1];
+        }
+      }
+    }
+
+    return currentTrainingDay || accessibleDays[0];
+  };
+
+  // Get upcoming training days for preview
+  const getUpcomingTrainingDays = (count = 3) => {
+    if (!calendarDays.length) return [];
+
+    const currentDay = getCurrentTrainingDay();
+    if (!currentDay) return [];
+
+    const allDays = calendarDays
+      .map(cd => {
+        const td = challenge?.training_days?.find(t => t.id === cd.training_day_id);
+        return td ? { calendarDay: cd, trainingDay: td } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a!.trainingDay.day_number - b!.trainingDay.day_number);
+
+    const currentIndex = allDays.findIndex(d => d!.calendarDay.id === currentDay.calendarDay.id);
     
-    if (todaysCalendarDay) {
-      const todaysTrainingDay = challenge?.training_days?.find(
-        td => td.id === todaysCalendarDay.training_day_id
-      );
-      if (todaysTrainingDay) {
-        return {
-          calendarDay: todaysCalendarDay,
-          trainingDay: todaysTrainingDay
-        };
-      }
-    }
-
-    // If no today's day, find first unblocked/accessible day
-    const firstUnblockedDay = calendarDays
-      .filter(day => day.is_accessible && day.status === "pending")
-      .sort((a, b) => {
-        const dayA = challenge?.training_days?.find(td => td.id === a.training_day_id)?.day_number || 0;
-        const dayB = challenge?.training_days?.find(td => td.id === b.training_day_id)?.day_number || 0;
-        return dayA - dayB;
-      })[0];
-
-    if (firstUnblockedDay) {
-      const trainingDay = challenge?.training_days?.find(
-        td => td.id === firstUnblockedDay.training_day_id
-      );
-      if (trainingDay) {
-        return {
-          calendarDay: firstUnblockedDay,
-          trainingDay: trainingDay
-        };
-      }
-    }
-
-    return null;
+    // Return current day + next days
+    return allDays.slice(currentIndex, currentIndex + count);
   };
 
   const startTodaysChallenge = async () => {
@@ -803,226 +822,176 @@ const ChallengePreview = () => {
           </div>
         </div>
 
-        {/* Current Training Day - Prominent Display */}
+        {/* Training Days Preview - Mobile-style */}
         {isParticipant && (() => {
-          const currentDay = getCurrentTrainingDay();
-          if (!currentDay) return null;
-
-          const { calendarDay, trainingDay } = currentDay;
-          const exercises = trainingDay.exercises || [];
-          
-          // Calculate day duration in minutes
-          const calculateDayDuration = () => {
-            if (!exercises.length) return 0;
-            return exercises.reduce((total, exercise) => {
-              const exerciseTime = (exercise.sets || 1) * ((exercise.hold_time_seconds || 0) + (exercise.rest_time_seconds || 0));
-              return total + exerciseTime;
-            }, 0) / 60; // Convert to minutes
-          };
-
-          const duration = Math.round(calculateDayDuration());
-          const isCurrentDayCompleted = calendarDay.status === "completed";
-          const isCurrentDayFailed = calendarDay.status === "failed";
-          const isRestDay = trainingDay.is_rest_day;
-
-          // Get navigation days (previous and next)
-          const sortedDays = calendarDays
-            .map(cd => {
-              const td = challenge?.training_days?.find(t => t.id === cd.training_day_id);
-              return td ? { calendarDay: cd, trainingDay: td } : null;
-            })
-            .filter(Boolean)
-            .sort((a, b) => a!.trainingDay.day_number - b!.trainingDay.day_number);
-
-          const currentIndex = sortedDays.findIndex(d => d!.calendarDay.id === calendarDay.id);
-          const previousDay = currentIndex > 0 ? sortedDays[currentIndex - 1] : null;
-          const nextDay = currentIndex < sortedDays.length - 1 ? sortedDays[currentIndex + 1] : null;
+          const upcomingDays = getUpcomingTrainingDays(3);
+          if (!upcomingDays.length) return null;
 
           return (
-            <Card className="glass-effect border-white/10 mb-8">
-              <CardContent className="p-6">
-                {/* Header with navigation */}
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">
-                      {isCurrentDayCompleted ? "✅" : isCurrentDayFailed ? "❌" : isRestDay ? "🌴" : "🎯"}
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-white">
-                        Day {trainingDay.day_number} {calendarDay.is_retry && "- Retry"}
-                      </h2>
-                      <p className="text-muted-foreground">
-                        {format(new Date(calendarDay.calendar_date), "EEEE, MMMM d, yyyy")}
-                      </p>
-                    </div>
-                  </div>
-                  
-                  {/* Day Navigation */}
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => previousDay && navigate(`/challenge/${challengeId}/day/${previousDay.calendarDay.id}`)}
-                      disabled={!previousDay}
-                      className="text-white hover:bg-white/10 disabled:opacity-30"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                      Previous
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => nextDay && navigate(`/challenge/${challengeId}/day/${nextDay.calendarDay.id}`)}
-                      disabled={!nextDay}
-                      className="text-white hover:bg-white/10 disabled:opacity-30"
-                    >
-                      Next
-                      <ChevronRight className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </div>
+            <div className="mb-8 space-y-4">
+              {upcomingDays.map((dayData, index) => {
+                const { calendarDay, trainingDay } = dayData!;
+                const exercises = trainingDay.exercises || [];
+                const isCurrentDay = index === 0;
+                const isCompleted = calendarDay.status === "completed";
+                const isFailed = calendarDay.status === "failed";
+                const isRestDay = trainingDay.is_rest_day;
+                const isAccessible = calendarDay.is_accessible;
 
-                {/* Training day details */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2">
-                    <div className="mb-4">
-                      <h3 className="text-xl font-semibold text-white mb-2">
-                        {trainingDay.title || `Training Day ${trainingDay.day_number}`}
-                      </h3>
-                      {trainingDay.description && (
-                        <p className="text-muted-foreground">{trainingDay.description}</p>
+                // Calculate total duration
+                const totalDuration = exercises.reduce((total, exercise) => {
+                  const exerciseTime = (exercise.sets || 1) * (exercise.hold_time_seconds || 30);
+                  return total + exerciseTime;
+                }, 0);
+
+                const formatTime = (seconds: number) => {
+                  const mins = Math.floor(seconds / 60);
+                  const secs = seconds % 60;
+                  return mins > 0 ? `${mins}:${secs.toString().padStart(2, '0')}` : `0:${secs.toString().padStart(2, '0')}`;
+                };
+
+                return (
+                  <Card 
+                    key={calendarDay.id} 
+                    className={`glass-effect border-white/10 overflow-hidden ${
+                      isCurrentDay ? 'ring-2 ring-purple-500/50' : ''
+                    } ${!isAccessible ? 'opacity-60' : ''}`}
+                  >
+                    {/* Header with background image effect */}
+                    <div className="relative h-24 bg-gradient-to-r from-purple-600/80 to-blue-600/80 flex items-center justify-between px-6">
+                      <div className="absolute inset-0 bg-black/20"></div>
+                      <div className="relative z-10 flex items-center gap-3">
+                        <div className="text-2xl">
+                          {isCompleted ? "✅" : isFailed ? "❌" : isRestDay ? "🌴" : "💪"}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-white">
+                            {challenge.difficulty_level?.toUpperCase()}-DAY {trainingDay.day_number}
+                            {calendarDay.is_retry && " (RETRY)"}
+                          </h3>
+                          <div className="flex items-center gap-4 text-sm text-white/90">
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-4 h-4" />
+                              {isRestDay ? "Rest Day" : `${Math.ceil(totalDuration / 60)} mins`}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <List className="w-4 h-4" />
+                              {exercises.length} workouts
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {isCurrentDay && (
+                        <div className="relative z-10">
+                          <Badge className="bg-white/20 text-white border-white/30">
+                            CURRENT
+                          </Badge>
+                        </div>
                       )}
                     </div>
 
-                    {/* Exercises Overview */}
-                    {!isRestDay && exercises.length > 0 && (
-                      <div className="space-y-3">
-                        <h4 className="text-lg font-medium text-white flex items-center gap-2">
-                          <List className="w-5 h-5" />
-                          Exercises ({exercises.length})
-                        </h4>
-                        <div className="grid gap-3">
-                          {exercises.map((exercise, index) => (
-                            <Card key={exercise.id} className="glass-effect border-white/20">
-                              <CardContent className="p-3">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center text-purple-400 font-semibold text-sm">
-                                      {index + 1}
-                                    </div>
-                                    <div>
-                                      <p className="font-medium text-white">{exercise.figure.name}</p>
-                                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                        {exercise.sets && (
-                                          <span>{exercise.sets} sets</span>
-                                        )}
-                                        {exercise.reps && (
-                                          <span>{exercise.reps} reps</span>
-                                        )}
-                                        {exercise.hold_time_seconds && (
-                                          <span>{exercise.hold_time_seconds}s hold</span>
-                                        )}
-                                        {exercise.rest_time_seconds && (
-                                          <span>{exercise.rest_time_seconds}s rest</span>
-                                        )}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <Badge className={getDifficultyColor(exercise.figure.difficulty_level)}>
-                                    {exercise.figure.difficulty_level}
-                                  </Badge>
+                    <CardContent className="p-0">
+                      {/* Exercise List */}
+                      {!isRestDay && exercises.length > 0 && (
+                        <div className="space-y-0">
+                          {exercises.slice(0, isCurrentDay ? exercises.length : 3).map((exercise, exerciseIndex) => (
+                            <div 
+                              key={exercise.id}
+                              className="flex items-center justify-between p-4 border-b border-white/10 last:border-b-0 hover:bg-white/5 transition-colors"
+                            >
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-white text-sm mb-1">
+                                  {exercise.figure.name.toUpperCase()}
+                                </h4>
+                                <div className="text-lg font-bold text-purple-400">
+                                  {formatTime(exercise.hold_time_seconds || 30)}
                                 </div>
-                              </CardContent>
-                            </Card>
+                                {exercise.sets && exercise.sets > 1 && (
+                                  <div className="text-xs text-muted-foreground">
+                                    {exercise.sets} sets
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Exercise preview placeholder */}
+                              <div className="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
+                                <div className="w-8 h-8 bg-purple-500/30 rounded"></div>
+                              </div>
+                            </div>
                           ))}
+                          
+                          {!isCurrentDay && exercises.length > 3 && (
+                            <div className="p-4 text-center">
+                              <span className="text-sm text-muted-foreground">
+                                +{exercises.length - 3} more exercises
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    )}
+                      )}
 
-                    {isRestDay && (
-                      <div className="text-center py-8">
-                        <div className="text-6xl mb-4">🌴</div>
-                        <h4 className="text-xl font-medium text-white mb-2">Rest Day</h4>
-                        <p className="text-muted-foreground">Take a well-deserved break and let your body recover.</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Day Stats & Actions */}
-                  <div className="space-y-4">
-                    <Card className="glass-effect border-white/20">
-                      <CardContent className="p-4 space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Duration</span>
-                          <span className="text-white font-medium">
-                            {isRestDay ? "Rest Day" : `~${duration}min`}
-                          </span>
+                      {/* Rest Day Content */}
+                      {isRestDay && (
+                        <div className="p-8 text-center">
+                          <div className="text-4xl mb-3">🌴</div>
+                          <h4 className="text-lg font-semibold text-white mb-2">Rest Day</h4>
+                          <p className="text-muted-foreground text-sm">
+                            Take time to recover and prepare for tomorrow
+                          </p>
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Exercises</span>
-                          <span className="text-white font-medium">{exercises.length}</span>
+                      )}
+
+                      {/* Action Button */}
+                      {isCurrentDay && isAccessible && (
+                        <div className="p-4">
+                          {!isCompleted && !isRestDay && (
+                            <Button 
+                              onClick={startTodaysChallenge}
+                              className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white h-12 text-lg font-semibold"
+                            >
+                              START
+                            </Button>
+                          )}
+
+                          {isRestDay && calendarDay.status === "pending" && (
+                            <Button 
+                              onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay.id}`)}
+                              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white h-12 text-lg font-semibold"
+                            >
+                              MARK AS RESTED
+                            </Button>
+                          )}
+
+                          {isCompleted && (
+                            <Button 
+                              onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay.id}`)}
+                              variant="outline"
+                              className="w-full border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 h-12 text-lg font-semibold"
+                            >
+                              COMPLETED ✓
+                            </Button>
+                          )}
                         </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Status</span>
-                          <Badge className={
-                            isCurrentDayCompleted 
-                              ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-                              : isCurrentDayFailed
-                              ? "bg-red-500/20 text-red-400 border-red-500/30"
-                              : isRestDay && calendarDay.status === "rest"
-                              ? "bg-green-500/20 text-green-400 border-green-500/30"
-                              : "bg-blue-500/20 text-blue-400 border-blue-500/30"
-                          }>
-                            {isCurrentDayCompleted 
-                              ? "Completed" 
-                              : isCurrentDayFailed 
-                              ? "Failed" 
-                              : isRestDay && calendarDay.status === "rest"
-                              ? "Rest Day"
-                              : "Ready to Start"}
-                          </Badge>
+                      )}
+
+                      {!isCurrentDay && isAccessible && (
+                        <div className="p-4">
+                          <Button 
+                            onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay.id}`)}
+                            variant="outline"
+                            className="w-full border-white/20 text-white hover:bg-white/10 h-10"
+                            disabled={!isAccessible}
+                          >
+                            View Day {trainingDay.day_number}
+                          </Button>
                         </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Start/Continue Button */}
-                    {!isCurrentDayCompleted && !isRestDay && (
-                      <Button 
-                        onClick={startTodaysChallenge}
-                        className="w-full bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white"
-                        size="lg"
-                      >
-                        <Play className="w-5 h-5 mr-2" />
-                        {isCurrentDayFailed ? "Retry Day" : "Start Training"}
-                      </Button>
-                    )}
-
-                    {isRestDay && calendarDay.status === "pending" && (
-                      <Button 
-                        onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay.id}`)}
-                        variant="outline"
-                        className="w-full border-green-500/30 text-green-400 hover:bg-green-500/10"
-                        size="lg"
-                      >
-                        <Play className="w-5 h-5 mr-2" />
-                        Mark as Rested
-                      </Button>
-                    )}
-
-                    {isCurrentDayCompleted && (
-                      <Button 
-                        onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay.id}`)}
-                        variant="outline"
-                        className="w-full border-white/20 text-white hover:bg-white/10"
-                        size="lg"
-                      >
-                        View Details
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           );
         })()}
 
