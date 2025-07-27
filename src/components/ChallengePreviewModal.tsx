@@ -209,27 +209,33 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     const durations: number[] = [];
     
     challenge.training_days?.forEach((day) => {
-      if (!day.is_rest_day && day.exercises) {
-        let dayDuration = 0;
-        day.exercises.forEach((exercise) => {
-          // Calculate time per exercise (sets * (hold_time + rest_time))
-          const sets = exercise.sets || 1;
-          const holdTime = exercise.hold_time_seconds || 30;
-          const restTime = (exercise as any).rest_time_seconds || 15;
-          dayDuration += sets * (holdTime + restTime);
-        });
-        durations.push(dayDuration);
+      if (!day.is_rest_day) {
+        // Use duration_seconds from database if available, otherwise calculate
+        if ((day as any).duration_seconds !== undefined) {
+          durations.push((day as any).duration_seconds);
+        } else if (day.exercises) {
+          let dayDuration = 0;
+          day.exercises.forEach((exercise) => {
+            const sets = exercise.sets || 1;
+            const holdTime = exercise.hold_time_seconds || 30;
+            const restTime = (exercise as any).rest_time_seconds || 15;
+            dayDuration += sets * (holdTime + restTime);
+          });
+          durations.push(dayDuration);
+        }
       }
     });
 
-    if (durations.length === 0) return { min: 0, max: 0 };
+    if (durations.length === 0) return { min: 0, max: 0, shortest: 0, longest: 0 };
 
     const minSeconds = Math.min(...durations);
     const maxSeconds = Math.max(...durations);
     
     return {
       min: Math.ceil(minSeconds / 60), // Convert to minutes
-      max: Math.ceil(maxSeconds / 60)
+      max: Math.ceil(maxSeconds / 60),
+      shortest: Math.ceil(minSeconds / 60),
+      longest: Math.ceil(maxSeconds / 60)
     };
   };
 
@@ -471,18 +477,40 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 </h3>
                 
                 {/* Daily Duration */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <h4 className="text-md font-medium text-white">Daily Time Commitment</h4>
-                  <div className="text-muted-foreground">
+                  <div className="space-y-2">
                     {(() => {
                       const duration = calculateDailyDuration();
                       if (duration.min === 0 && duration.max === 0) {
-                        return <p>Duration information not available</p>;
+                        return (
+                          <div className="text-muted-foreground">
+                            <p>Duration information not available</p>
+                          </div>
+                        );
                       }
-                      if (duration.min === duration.max) {
-                        return <p>Approximately {duration.min} minutes per training day</p>;
-                      }
-                      return <p>{duration.min}-{duration.max} minutes per training day</p>;
+                      return (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <Card className="glass-effect border-white/10 p-3">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-green-400" />
+                              <div>
+                                <div className="text-sm font-medium text-white">Shortest Day</div>
+                                <div className="text-xs text-green-400">{duration.shortest} minutes</div>
+                              </div>
+                            </div>
+                          </Card>
+                          <Card className="glass-effect border-white/10 p-3">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-orange-400" />
+                              <div>
+                                <div className="text-sm font-medium text-white">Longest Day</div>
+                                <div className="text-xs text-orange-400">{duration.longest} minutes</div>
+                              </div>
+                            </div>
+                          </Card>
+                        </div>
+                      );
                     })()}
                   </div>
                 </div>
