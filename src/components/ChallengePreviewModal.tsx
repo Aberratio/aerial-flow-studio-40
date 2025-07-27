@@ -109,7 +109,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
           challenge_training_days (
             id, day_number, title, description, is_rest_day,
             training_day_exercises (
-              id, sets, reps, hold_time_seconds,
+              id, sets, reps, hold_time_seconds, rest_time_seconds,
               figure:figures (
                 name, difficulty_level
               )
@@ -170,6 +170,46 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
       );
     }
     return "Intermediate";
+  };
+
+  const getChallengeExercises = () => {
+    const exerciseSet = new Set<string>();
+    challenge.training_days?.forEach((day) => {
+      if (!day.is_rest_day && day.exercises) {
+        day.exercises.forEach((exercise) => {
+          exerciseSet.add(exercise.figure.name);
+        });
+      }
+    });
+    return Array.from(exerciseSet);
+  };
+
+  const calculateDailyDuration = () => {
+    const durations: number[] = [];
+    
+    challenge.training_days?.forEach((day) => {
+      if (!day.is_rest_day && day.exercises) {
+        let dayDuration = 0;
+        day.exercises.forEach((exercise) => {
+          // Calculate time per exercise (sets * (hold_time + rest_time))
+          const sets = exercise.sets || 1;
+          const holdTime = exercise.hold_time_seconds || 30;
+          const restTime = (exercise as any).rest_time_seconds || 15;
+          dayDuration += sets * (holdTime + restTime);
+        });
+        durations.push(dayDuration);
+      }
+    });
+
+    if (durations.length === 0) return { min: 0, max: 0 };
+
+    const minSeconds = Math.min(...durations);
+    const maxSeconds = Math.max(...durations);
+    
+    return {
+      min: Math.ceil(minSeconds / 60), // Convert to minutes
+      max: Math.ceil(maxSeconds / 60)
+    };
   };
 
   const getStatusColor = (status: string) => {
@@ -404,25 +444,61 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
             {/* Training Overview */}
             {challenge.training_days && challenge.training_days.length > 0 && (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-white">
                   Training Overview
                 </h3>
+                
+                {/* Daily Duration */}
+                <div className="space-y-2">
+                  <h4 className="text-md font-medium text-white">Daily Time Commitment</h4>
+                  <div className="text-muted-foreground">
+                    {(() => {
+                      const duration = calculateDailyDuration();
+                      if (duration.min === 0 && duration.max === 0) {
+                        return <p>Duration information not available</p>;
+                      }
+                      if (duration.min === duration.max) {
+                        return <p>Approximately {duration.min} minutes per training day</p>;
+                      }
+                      return <p>{duration.min}-{duration.max} minutes per training day</p>;
+                    })()}
+                  </div>
+                </div>
+
+                {/* Exercises Included */}
+                <div className="space-y-2">
+                  <h4 className="text-md font-medium text-white">Exercises Included</h4>
+                  <div className="text-muted-foreground">
+                    {(() => {
+                      const exercises = getChallengeExercises();
+                      if (exercises.length === 0) {
+                        return <p>No exercises configured for this challenge</p>;
+                      }
+                      return (
+                        <div className="flex flex-wrap gap-2">
+                          {exercises.map((exercise, index) => (
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="border-white/20 text-white/80 text-xs"
+                            >
+                              {exercise}
+                            </Badge>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+
+                {/* Challenge Stats */}
                 <div className="text-muted-foreground">
                   <p>
-                    This {challenge.training_days?.length || 0} days challenge
-                    includes{" "}
-                    {challenge.training_days?.filter((day) => !day.is_rest_day)
-                      .length || 0}{" "}
-                    structured training days with progressively challenging
-                    exercises.
+                    This {challenge.training_days?.length || 0} day challenge includes{" "}
+                    {challenge.training_days?.filter((day) => !day.is_rest_day).length || 0}{" "}
+                    training days and {challenge.training_days?.filter((day) => day.is_rest_day).length || 0} rest days.
                   </p>
-                  <ul className="mt-2 space-y-1">
-                    <li>• Comprehensive training schedule</li>
-                    {/* <li>• Exercise demonstrations and instructions</li> */}
-                    <li>• Progressive difficulty levels</li>
-                    <li>• Achievement rewards for completion</li>
-                  </ul>
                 </div>
               </div>
             )}
