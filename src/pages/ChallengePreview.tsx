@@ -863,9 +863,9 @@ const ChallengePreview = () => {
                                     .map((exercise, exerciseIndex) => (
                                       <div
                                         key={exercise.id}
-                                        className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/10"
+                                        className="flex items-start justify-between p-2 bg-white/5 rounded border border-white/10"
                                       >
-                                        <div className="flex-1">
+                                        <div className="flex-1 pt-2 pl-2">
                                           <h4
                                             className={`font-medium text-sm ${
                                               isBlocked
