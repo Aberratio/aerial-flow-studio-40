@@ -1,10 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, Hand, Volume2, VolumeX, Play, Pause } from "lucide-react";
+import { ChevronLeft, Hand, Volume2, VolumeX, Play, Pause, MoreHorizontal, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -65,10 +78,11 @@ const ChallengeDayTimer = () => {
   const [trainingDayId, setTrainingDayId] = useState<string>("");
   const [isPreparingToStart, setIsPreparingToStart] = useState(false);
   const [preparationTime, setPreparationTime] = useState(10);
+  const [showActionDialog, setShowActionDialog] = useState(false);
+  const [actionType, setActionType] = useState<"failed" | "rest" | null>(null);
 
   const { speak } = useSpeech(isAudioEnabled);
 
-  // Fetch exercises data
   useEffect(() => {
     const fetchExercises = async () => {
       if (!dayId || !user?.id) return;
@@ -76,7 +90,6 @@ const ChallengeDayTimer = () => {
       try {
         setIsLoading(true);
 
-        // Get user challenge calendar day to find training day ID
         const { data: calendarDay, error: calendarError } = await supabase
           .from("user_challenge_calendar_days")
           .select("training_day_id")
@@ -87,7 +100,6 @@ const ChallengeDayTimer = () => {
         if (calendarError) throw calendarError;
         setTrainingDayId(calendarDay.training_day_id);
 
-        // Fetch training day exercises
         const { data: trainingDayData, error: trainingDayError } =
           await supabase
             .from("challenge_training_days")
@@ -133,7 +145,6 @@ const ChallengeDayTimer = () => {
     fetchExercises();
   }, [dayId, user?.id]);
 
-  // Generate timer segments from exercises
   useEffect(() => {
     if (exercises.length === 0) return;
 
@@ -143,7 +154,6 @@ const ChallengeDayTimer = () => {
       const sets = exercise.sets || 1;
 
       for (let setIndex = 0; setIndex < sets; setIndex++) {
-        // Add exercise segment
         newSegments.push({
           type: "exercise",
           exerciseIndex,
@@ -154,10 +164,7 @@ const ChallengeDayTimer = () => {
           exerciseNotes: exercise.notes,
         });
 
-        // Add rest segment (except after the last set of the last exercise)
-        if (
-          !(exerciseIndex === exercises.length - 1 && setIndex === sets - 1)
-        ) {
+        if (!(exerciseIndex === exercises.length - 1 && setIndex === sets - 1)) {
           newSegments.push({
             type: "rest",
             exerciseIndex,
@@ -175,14 +182,12 @@ const ChallengeDayTimer = () => {
     }
   }, [exercises]);
 
-  // Preparation countdown logic
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isPreparingToStart && preparationTime > 0) {
       interval = setInterval(() => {
         setPreparationTime((prev) => {
-          // Speak countdown numbers
           if (prev > 2 && prev < 7) {
             speak((prev - 1).toString());
           } else if (prev === 2) {
@@ -190,10 +195,9 @@ const ChallengeDayTimer = () => {
           }
 
           if (prev <= 1) {
-            // Preparation complete, start actual workout
             setIsPreparingToStart(false);
             setIsRunning(true);
-            setPreparationTime(10); // Reset for next time
+            setPreparationTime(10);
             return 0;
           }
           return prev - 1;
@@ -204,14 +208,12 @@ const ChallengeDayTimer = () => {
     return () => clearInterval(interval);
   }, [isPreparingToStart, preparationTime]);
 
-  // Timer logic with synchronized countdown
   useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (isRunning && !isPreparingToStart && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
-          // Speak countdown BEFORE decrementing to fix synchronization
           if (prev <= 7 && prev > 1) {
             speak((prev - 2).toString());
           }
@@ -234,7 +236,6 @@ const ChallengeDayTimer = () => {
     segments,
   ]);
 
-  // Announce segment changes
   useEffect(() => {
     if (!isRunning || !segments[currentSegmentIndex]) return;
 
@@ -256,12 +257,10 @@ const ChallengeDayTimer = () => {
     }
   }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, segments]);
 
-  // Reset announcement flags when segment changes
   useEffect(() => {
     setHasAnnouncedSegment(false);
   }, [currentSegmentIndex]);
 
-  // Format time in natural language
   const formatTimeNatural = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -283,14 +282,12 @@ const ChallengeDayTimer = () => {
     const currentSegment = segments[currentSegmentIndex];
 
     if (currentSegmentIndex >= segments.length - 1) {
-      // Timer completed
       setIsCompleted(true);
       setIsRunning(false);
       speak("Workout completed! Great job!");
       return;
     }
 
-    // Move to next segment
     const nextIndex = currentSegmentIndex + 1;
     const nextSegment = segments[nextIndex];
 
@@ -348,16 +345,13 @@ const ChallengeDayTimer = () => {
 
   const handlePlayPause = () => {
     if (!isRunning && !isPreparingToStart) {
-      // Start preparation countdown
       setIsPreparingToStart(true);
       setPreparationTime(10);
       speak("Get ready!");
     } else if (isPreparingToStart) {
-      // Cancel preparation
       setIsPreparingToStart(false);
       setPreparationTime(10);
     } else {
-      // Pause/resume timer
       setIsRunning(!isRunning);
     }
   };
@@ -442,7 +436,6 @@ const ChallengeDayTimer = () => {
   const NextUp = ({ className }: { className: string }) => {
     return (
       <div className={`${className}`}>
-        {/* Next Up */}
         {nextSegment && (
           <Card className="glass-effect border-white/10">
             <CardContent className="p-4">
@@ -488,7 +481,6 @@ const ChallengeDayTimer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
-      {/* Modern Header */}
       <div>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
@@ -503,14 +495,40 @@ const ChallengeDayTimer = () => {
             </Button>
 
             <div className="flex items-center gap-3">
-              {/* Progress indicator */}
               <div className="hidden sm:flex items-center gap-2 text-sm text-white/70">
                 <span>
                   {currentSegmentIndex + 1} / {segments.length}
                 </span>
               </div>
 
-              {/* Voice toggle */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="text-white hover:bg-white/10"
+                  >
+                    <MoreHorizontal className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent 
+                  align="end" 
+                  className="glass-effect border-white/10 bg-black/90"
+                >
+                  <DropdownMenuItem 
+                    onClick={() => handleActionClick("failed")}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                  >
+                    Mark as Failed
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    onClick={() => handleActionClick("rest")}
+                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                  >
+                    Mark as Rest Day
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               <Button
                 variant="ghost"
                 onClick={() => {
@@ -540,11 +558,9 @@ const ChallengeDayTimer = () => {
         <ProgressBar className="hidden sm:block mb-8" />
         {currentSegment && (
           <div className="grid lg:grid-cols-3 gap-4">
-            {/* Main Exercise Display */}
             <div className="lg:col-span-2">
               <Card className="glass-effect border-white/10 overflow-hidden">
                 <CardContent className="p-0">
-                  {/* Exercise Image - Very Large */}
                   <div className="relative">
                     <div className="aspect-square max-w-2xl mx-auto bg-gray-900/50 rounded-lg overflow-hidden">
                       {currentSegment.type === "exercise" &&
@@ -565,7 +581,6 @@ const ChallengeDayTimer = () => {
                       )}
                     </div>
 
-                    {/* Overlay with exercise type */}
                     <div className="absolute top-4 left-4">
                       <Badge
                         className={`text-sm font-medium ${
@@ -581,13 +596,11 @@ const ChallengeDayTimer = () => {
                     </div>
                   </div>
 
-                  {/* Exercise Info */}
                   <div className="p-4 sm:p-6 text-center bg-gradient-to-t from-black/30 to-transparent">
                     <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
                       {currentSegment.exerciseName}
                     </h2>
 
-                    {/* Exercise Notes */}
                     {currentSegment.type === "exercise" &&
                       currentSegment.exerciseNotes && (
                         <div className="mb-3 sm:mb-4 px-2">
@@ -597,7 +610,6 @@ const ChallengeDayTimer = () => {
                         </div>
                       )}
 
-                    {/* Large Timer Display */}
                     <div className="relative mb-4 sm:mb-6">
                       {isPreparingToStart ? (
                         <div className="flex flex-col items-center">
@@ -618,7 +630,6 @@ const ChallengeDayTimer = () => {
                       )}
                     </div>
 
-                    {/* Controls */}
                     <div className="flex flex-row justify-center gap-4">
                       <Button
                         onClick={handlePlayPause}
@@ -661,9 +672,7 @@ const ChallengeDayTimer = () => {
             <NextUp className="block sm:hidden" />
             <ProgressBar className="block sm:hidden" />
 
-            {/* Sidebar Info */}
             <div className="space-y-4">
-              {/* Current Exercise Details */}
               <Card className="glass-effect border-white/10">
                 <CardContent className="p-4">
                   <h3 className="text-lg font-semibold text-white mb-3">
@@ -716,7 +725,6 @@ const ChallengeDayTimer = () => {
 
               <NextUp className="hidden sm:block" />
 
-              {/* Workout Stats */}
               <Card className="glass-effect border-white/10">
                 <CardContent className="p-4">
                   <h3 className="text-lg font-semibold text-white mb-3">
@@ -746,7 +754,57 @@ const ChallengeDayTimer = () => {
           </div>
         )}
 
-        {/* Completion Modal */}
+        <Dialog open={showActionDialog} onOpenChange={setShowActionDialog}>
+          <DialogContent className="glass-effect border-white/10 max-w-md">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-yellow-500" />
+                {actionType === "failed" ? "Mark Day as Failed" : "Mark Day as Rest"}
+              </DialogTitle>
+              <DialogDescription className="text-white/70">
+                {actionType === "failed" ? (
+                  <>
+                    Are you sure you want to mark this day as failed? This will:
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li>Record this training day as incomplete</li>
+                      <li>Allow you to retry this day tomorrow</li>
+                      <li>Not affect your overall challenge progress negatively</li>
+                    </ul>
+                  </>
+                ) : (
+                  <>
+                    Are you sure you want to mark this day as a rest day? This will:
+                    <ul className="list-disc list-inside mt-2 space-y-1">
+                      <li>Convert this training day to a rest day</li>
+                      <li>Mark it as completed without exercises</li>
+                      <li>Allow you to continue to the next day</li>
+                    </ul>
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-3 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => setShowActionDialog(false)}
+                className="flex-1 border-white/20 text-white hover:bg-white/10"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleActionConfirm}
+                className={`flex-1 ${
+                  actionType === "failed"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-blue-600 hover:bg-blue-700"
+                } text-white`}
+              >
+                {actionType === "failed" ? "Mark as Failed" : "Mark as Rest"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         {isCompleted && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <Card className="glass-effect border-white/10 max-w-md w-full">
@@ -769,7 +827,6 @@ const ChallengeDayTimer = () => {
                   </div>
                 </div>
 
-                {/* Status Selection Buttons */}
                 <div className="space-y-3 mb-6">
                   <Button
                     onClick={handleWorkoutComplete}
@@ -786,7 +843,6 @@ const ChallengeDayTimer = () => {
                   </Button>
                 </div>
 
-                {/* Navigation Options */}
                 <div className="space-y-2 pt-4 border-t border-white/10">
                   <p className="text-sm text-white/60 mb-3">
                     Or continue without marking status:
