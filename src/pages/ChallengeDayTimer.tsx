@@ -21,6 +21,9 @@ interface Exercise {
   figure: {
     id: string;
     name: string;
+    difficulty_level?: string;
+    category?: string;
+    instructions?: string;
     image_url?: string;
   };
 }

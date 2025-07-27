@@ -52,8 +52,11 @@ interface Challenge {
     exercises?: Array<{
       id: string;
       figure: {
+        id: string;
         name: string;
         difficulty_level: string;
+        category: string;
+        instructions?: string;
         image_url?: string;
       };
       sets?: number;
@@ -186,8 +189,11 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   };
 
   const getUniqueExercisesWithImages = () => {
-    const exerciseMap = new Map<string, { name: string; image_url?: string; difficulty_level: string }>();
-    
+    const exerciseMap = new Map<
+      string,
+      { name: string; image_url?: string; difficulty_level: string }
+    >();
+
     challenge.training_days?.forEach((day) => {
       if (!day.is_rest_day && day.exercises) {
         day.exercises.forEach((exercise) => {
@@ -195,19 +201,19 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             exerciseMap.set(exercise.figure.name, {
               name: exercise.figure.name,
               image_url: exercise.figure.image_url,
-              difficulty_level: exercise.figure.difficulty_level
+              difficulty_level: exercise.figure.difficulty_level,
             });
           }
         });
       }
     });
-    
+
     return Array.from(exerciseMap.values());
   };
 
   const calculateDailyDuration = () => {
     const durations: number[] = [];
-    
+
     challenge.training_days?.forEach((day) => {
       if (!day.is_rest_day) {
         // Use duration_seconds from database if available, otherwise calculate
@@ -226,16 +232,17 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
       }
     });
 
-    if (durations.length === 0) return { min: 0, max: 0, shortest: 0, longest: 0 };
+    if (durations.length === 0)
+      return { min: 0, max: 0, shortest: 0, longest: 0 };
 
     const minSeconds = Math.min(...durations);
     const maxSeconds = Math.max(...durations);
-    
+
     return {
       min: Math.ceil(minSeconds / 60), // Convert to minutes
       max: Math.ceil(maxSeconds / 60),
       shortest: Math.ceil(minSeconds / 60),
-      longest: Math.ceil(maxSeconds / 60)
+      longest: Math.ceil(maxSeconds / 60),
     };
   };
 
@@ -475,10 +482,12 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 <h3 className="text-lg font-semibold text-white">
                   Training Overview
                 </h3>
-                
+
                 {/* Daily Duration */}
                 <div className="space-y-3">
-                  <h4 className="text-md font-medium text-white">Daily Time Commitment</h4>
+                  <h4 className="text-md font-medium text-white">
+                    Daily Time Commitment
+                  </h4>
                   <div className="space-y-2">
                     {(() => {
                       const duration = calculateDailyDuration();
@@ -495,8 +504,12 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-green-400" />
                               <div>
-                                <div className="text-sm font-medium text-white">Shortest Day</div>
-                                <div className="text-xs text-green-400">{duration.shortest} minutes</div>
+                                <div className="text-sm font-medium text-white">
+                                  Shortest Day
+                                </div>
+                                <div className="text-xs text-green-400">
+                                  {duration.shortest} minutes
+                                </div>
                               </div>
                             </div>
                           </Card>
@@ -504,8 +517,12 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-orange-400" />
                               <div>
-                                <div className="text-sm font-medium text-white">Longest Day</div>
-                                <div className="text-xs text-orange-400">{duration.longest} minutes</div>
+                                <div className="text-sm font-medium text-white">
+                                  Longest Day
+                                </div>
+                                <div className="text-xs text-orange-400">
+                                  {duration.longest} minutes
+                                </div>
                               </div>
                             </div>
                           </Card>
@@ -517,12 +534,16 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
                 {/* Exercises Included */}
                 <div className="space-y-2">
-                  <h4 className="text-md font-medium text-white">Exercises Included</h4>
+                  <h4 className="text-md font-medium text-white">
+                    Exercises Included
+                  </h4>
                   <div className="text-muted-foreground">
                     {(() => {
                       const exercises = getUniqueExercisesWithImages();
                       if (exercises.length === 0) {
-                        return <p>No exercises configured for this challenge</p>;
+                        return (
+                          <p>No exercises configured for this challenge</p>
+                        );
                       }
                       return (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
@@ -564,9 +585,14 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 {/* Challenge Stats */}
                 <div className="text-muted-foreground">
                   <p>
-                    This {challenge.training_days?.length || 0} day challenge includes{" "}
-                    {challenge.training_days?.filter((day) => !day.is_rest_day).length || 0}{" "}
-                    training days and {challenge.training_days?.filter((day) => day.is_rest_day).length || 0} rest days.
+                    This {challenge.training_days?.length || 0} day challenge
+                    includes{" "}
+                    {challenge.training_days?.filter((day) => !day.is_rest_day)
+                      .length || 0}{" "}
+                    training days and{" "}
+                    {challenge.training_days?.filter((day) => day.is_rest_day)
+                      .length || 0}{" "}
+                    rest days.
                   </p>
                 </div>
               </div>

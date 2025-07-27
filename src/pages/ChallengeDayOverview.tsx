@@ -49,6 +49,7 @@ interface TrainingDay {
   description: string;
   is_rest_day?: boolean;
   exercises: Exercise[];
+  duration_seconds?: number;
 }
 
 interface Challenge {
@@ -204,6 +205,7 @@ const ChallengeDayOverview = () => {
         title: trainingDayData.title || `Day ${trainingDayData.day_number}`,
         description: trainingDayData.description || "",
         is_rest_day: trainingDayData.is_rest_day || false,
+        duration_seconds: trainingDayData.duration_seconds,
         exercises:
           trainingDayData.training_day_exercises?.map((exercise: any) => ({
             id: exercise.id,

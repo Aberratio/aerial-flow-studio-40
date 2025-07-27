@@ -107,6 +107,7 @@ interface ChallengeTrainingDay {
   description?: string;
   is_rest_day?: boolean;
   training_day_exercises?: TrainingDayExercise[];
+  duration_seconds?: number;
 }
 
 interface TrainingDayExercise {
@@ -216,7 +217,10 @@ const EditChallenge = () => {
       // Set training days with exercises - sort by day_number
       const formattedTrainingDays =
         challengeData.challenge_training_days
-          ?.sort((a: ChallengeTrainingDay, b: ChallengeTrainingDay) => a.day_number - b.day_number)
+          ?.sort(
+            (a: ChallengeTrainingDay, b: ChallengeTrainingDay) =>
+              a.day_number - b.day_number
+          )
           ?.map((day: ChallengeTrainingDay) => ({
             id: day.id,
             date: startDate
@@ -242,13 +246,14 @@ const EditChallenge = () => {
                 notes: ex.notes,
                 figure: ex.figure,
               })) || [],
-          })
-        ) || [];
+          })) || [];
 
       setTrainingDays(formattedTrainingDays);
-      
+
       // Set all training days to be collapsed by default
-      const allDayIndices = new Set(formattedTrainingDays.map((_, index) => index));
+      const allDayIndices = new Set(
+        formattedTrainingDays.map((_, index) => index)
+      );
       setCollapsedDays(allDayIndices);
     } catch (error) {
       console.error("Error fetching challenge:", error);
@@ -371,7 +376,7 @@ const EditChallenge = () => {
   // Function to calculate duration for a training day
   const calculateTrainingDayDuration = (exercises: Exercise[]) => {
     if (!exercises || exercises.length === 0) return 0;
-    
+
     let totalDuration = 0;
     exercises.forEach((exercise) => {
       const sets = exercise.sets || 1;
@@ -379,7 +384,7 @@ const EditChallenge = () => {
       const restTime = exercise.rest_time_seconds || 15;
       totalDuration += sets * (holdTime + restTime);
     });
-    
+
     return totalDuration;
   };
 
@@ -420,8 +425,10 @@ const EditChallenge = () => {
       // Insert training days one by one to get their IDs
       for (const day of trainingDays) {
         // Calculate duration for this training day
-        const durationSeconds = day.isRestDay ? 0 : calculateTrainingDayDuration(day.exercises);
-        
+        const durationSeconds = day.isRestDay
+          ? 0
+          : calculateTrainingDayDuration(day.exercises);
+
         const { data: trainingDayData, error: dayError } = await supabase
           .from("challenge_training_days")
           .insert({
@@ -757,7 +764,9 @@ const EditChallenge = () => {
             {/* Publishing and Premium Settings */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-3">
-                <Label className="text-lg font-semibold">Publishing Status</Label>
+                <Label className="text-lg font-semibold">
+                  Publishing Status
+                </Label>
                 <div className="flex items-center space-x-3 p-4 border rounded-lg">
                   <Switch
                     checked={isPublished}
@@ -768,10 +777,9 @@ const EditChallenge = () => {
                       {isPublished ? "Published" : "Unpublished"}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {isPublished 
-                        ? "Challenge is visible to all users" 
-                        : "Challenge is only visible to admins"
-                      }
+                      {isPublished
+                        ? "Challenge is visible to all users"
+                        : "Challenge is only visible to admins"}
                     </div>
                   </div>
                   <Badge variant={isPublished ? "default" : "secondary"}>
@@ -783,19 +791,15 @@ const EditChallenge = () => {
               <div className="space-y-3">
                 <Label className="text-lg font-semibold">Access Level</Label>
                 <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                  <Switch
-                    checked={isPremium}
-                    onCheckedChange={setIsPremium}
-                  />
+                  <Switch checked={isPremium} onCheckedChange={setIsPremium} />
                   <div className="flex-1">
                     <div className="font-medium">
                       {isPremium ? "Premium" : "Free"}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      {isPremium 
-                        ? "Only premium users can join" 
-                        : "All users can join this challenge"
-                      }
+                      {isPremium
+                        ? "Only premium users can join"
+                        : "All users can join this challenge"}
                     </div>
                   </div>
                   <Badge variant={isPremium ? "default" : "secondary"}>
@@ -850,7 +854,9 @@ const EditChallenge = () => {
                   <CalendarDays className="w-6 h-6 text-blue-400" />
                   <div>
                     <Label className="text-xl font-bold">Training Days</Label>
-                    <p className="text-sm text-muted-foreground">Design your challenge schedule</p>
+                    <p className="text-sm text-muted-foreground">
+                      Design your challenge schedule
+                    </p>
                   </div>
                 </div>
                 <Button
@@ -868,7 +874,7 @@ const EditChallenge = () => {
               <div className="space-y-6">
                 {trainingDays.map((day, index) => {
                   const isCollapsed = collapsedDays.has(index);
-                  
+
                   return (
                     <Collapsible
                       key={index}
@@ -898,14 +904,23 @@ const EditChallenge = () => {
                                   )}
                                 </div>
                                 <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center">
-                                  <span className="text-lg font-bold text-primary">{index + 1}</span>
+                                  <span className="text-lg font-bold text-primary">
+                                    {index + 1}
+                                  </span>
                                 </div>
                                 <div>
-                                  <h3 className="text-xl font-bold">Day {index + 1}</h3>
-                                  <p className="text-sm text-muted-foreground">Training session {index + 1}</p>
+                                  <h3 className="text-xl font-bold">
+                                    Day {index + 1}
+                                  </h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    Training session {index + 1}
+                                  </p>
                                 </div>
                                 {day.isRestDay && (
-                                  <Badge variant="secondary" className="text-sm px-3 py-1">
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-sm px-3 py-1"
+                                  >
                                     <span className="mr-2">😴</span> Rest Day
                                   </Badge>
                                 )}
@@ -931,19 +946,27 @@ const EditChallenge = () => {
                           <div className="p-6">
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                               <div className="space-y-3">
-                                <Label className="text-sm font-semibold text-foreground">Title</Label>
+                                <Label className="text-sm font-semibold text-foreground">
+                                  Title
+                                </Label>
                                 <Input
                                   placeholder="e.g., Upper Body Focus, Core Strength"
                                   value={day.title}
                                   onChange={(e) =>
-                                    updateTrainingDay(index, "title", e.target.value)
+                                    updateTrainingDay(
+                                      index,
+                                      "title",
+                                      e.target.value
+                                    )
                                   }
                                   className="h-11 bg-background/50 border-border/50"
                                 />
                               </div>
 
                               <div className="space-y-3">
-                                <Label className="text-sm font-semibold text-foreground">Date</Label>
+                                <Label className="text-sm font-semibold text-foreground">
+                                  Date
+                                </Label>
                                 <Popover>
                                   <PopoverTrigger asChild>
                                     <Button
@@ -969,7 +992,8 @@ const EditChallenge = () => {
                                       mode="single"
                                       selected={day.date}
                                       onSelect={(date) =>
-                                        date && updateTrainingDay(index, "date", date)
+                                        date &&
+                                        updateTrainingDay(index, "date", date)
                                       }
                                       disabled={(date) =>
                                         startDate
@@ -985,7 +1009,9 @@ const EditChallenge = () => {
                             </div>
 
                             <div className="mt-6 space-y-3">
-                              <Label className="text-sm font-semibold text-foreground">Description</Label>
+                              <Label className="text-sm font-semibold text-foreground">
+                                Description
+                              </Label>
                               <Textarea
                                 placeholder="Describe what this training day focuses on..."
                                 value={day.description}
@@ -1003,23 +1029,36 @@ const EditChallenge = () => {
 
                             <div className="mt-6 flex items-center justify-between p-4 bg-background/30 rounded-lg border border-border/30">
                               <div className="flex items-center gap-4">
-                                <Label className="text-sm font-semibold">Day Type:</Label>
+                                <Label className="text-sm font-semibold">
+                                  Day Type:
+                                </Label>
                                 <div className="flex items-center space-x-3">
                                   <Switch
                                     checked={day.isRestDay || false}
                                     onCheckedChange={(checked) =>
-                                      updateTrainingDay(index, "isRestDay", checked)
+                                      updateTrainingDay(
+                                        index,
+                                        "isRestDay",
+                                        checked
+                                      )
                                     }
                                   />
                                   <span className="text-sm font-medium">
-                                    {day.isRestDay ? "Rest Day" : "Training Day"}
+                                    {day.isRestDay
+                                      ? "Rest Day"
+                                      : "Training Day"}
                                   </span>
                                 </div>
                               </div>
                               {!day.isRestDay && (
-                                <Badge variant="outline" className="text-sm px-3 py-1">
+                                <Badge
+                                  variant="outline"
+                                  className="text-sm px-3 py-1"
+                                >
                                   {day.exercises?.length || 0} exercise
-                                  {(day.exercises?.length || 0) !== 1 ? "s" : ""}
+                                  {(day.exercises?.length || 0) !== 1
+                                    ? "s"
+                                    : ""}
                                 </Badge>
                               )}
                             </div>
@@ -1031,22 +1070,31 @@ const EditChallenge = () => {
                                   <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-blue-500/20 flex items-center justify-center">
                                     <span className="text-3xl">😴</span>
                                   </div>
-                                  <h4 className="font-semibold text-lg mb-2">Rest & Recovery Day</h4>
+                                  <h4 className="font-semibold text-lg mb-2">
+                                    Rest & Recovery Day
+                                  </h4>
                                   <p className="text-sm">
-                                    No exercises needed - time to let your body recover and rebuild!
+                                    No exercises needed - time to let your body
+                                    recover and rebuild!
                                   </p>
                                 </div>
                               ) : (
                                 <div className="space-y-4">
                                   <div className="flex items-center gap-3 pb-3 border-b border-border/30">
                                     <CalendarDays className="w-5 h-5 text-primary" />
-                                    <h4 className="text-lg font-semibold">Exercises for this day</h4>
+                                    <h4 className="text-lg font-semibold">
+                                      Exercises for this day
+                                    </h4>
                                   </div>
                                   <ExerciseManagement
                                     trainingDayId={day.id || `temp-${index}`}
                                     exercises={day.exercises}
                                     onExercisesChange={(exercises) =>
-                                      updateTrainingDay(index, "exercises", exercises)
+                                      updateTrainingDay(
+                                        index,
+                                        "exercises",
+                                        exercises
+                                      )
                                     }
                                     canEdit={true}
                                     challengeType={type}
@@ -1055,16 +1103,18 @@ const EditChallenge = () => {
                               )}
                             </div>
                           </div>
-                         </CollapsibleContent>
-                       </div>
-                     </Collapsible>
-                   );
-                 })}
+                        </CollapsibleContent>
+                      </div>
+                    </Collapsible>
+                  );
+                })}
 
                 {trainingDays.length === 0 && (
                   <div className="text-center py-16 text-muted-foreground border-2 border-dashed border-border/50 rounded-xl bg-muted/20">
                     <CalendarDays className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold mb-2">No training days added yet</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No training days added yet
+                    </h3>
                     <p className="text-sm mb-6">
                       Start building your challenge by adding training sessions
                     </p>
