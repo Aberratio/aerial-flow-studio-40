@@ -50,6 +50,8 @@ interface Exercise {
     name: string;
     difficulty_level: string;
     category: string;
+    instructions?: string;
+    image_url?: string;
   };
 }
 
@@ -59,6 +61,7 @@ interface Figure {
   difficulty_level: string;
   category: string;
   image_url?: string;
+  instructions?: string;
 }
 
 interface ExerciseManagementProps {

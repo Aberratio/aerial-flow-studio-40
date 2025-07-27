@@ -1,20 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Plus, Save, Globe, X, Award, CalendarDays } from 'lucide-react';
-import { format } from 'date-fns';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import {
+  Calendar,
+  Plus,
+  Save,
+  Globe,
+  X,
+  Award,
+  CalendarDays,
+} from "lucide-react";
+import { format } from "date-fns";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { cn } from "@/lib/utils";
 
-import ExerciseManagement from '@/components/ExerciseManagement';
+import ExerciseManagement from "@/components/ExerciseManagement";
 
 interface CreateChallengeModalProps {
   isOpen: boolean;
@@ -46,6 +63,8 @@ interface Exercise {
     name: string;
     difficulty_level: string;
     category: string;
+    instructions?: string;
+    image_url?: string;
   };
 }
 
@@ -57,20 +76,26 @@ interface TrainingDay {
   exercises: Exercise[];
 }
 
-const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateChallengeModalProps) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [difficultyLevel, setDifficultyLevel] = useState('intermediate');
-  const [type, setType] = useState('manual');
+const CreateChallengeModal = ({
+  isOpen,
+  onClose,
+  onChallengeCreated,
+}: CreateChallengeModalProps) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [difficultyLevel, setDifficultyLevel] = useState("intermediate");
+  const [type, setType] = useState("manual");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
-  const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
+  const [selectedAchievements, setSelectedAchievements] = useState<string[]>(
+    []
+  );
   const [trainingDays, setTrainingDays] = useState<TrainingDay[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageUrl, setImageUrl] = useState<string>('');
+  const [imageUrl, setImageUrl] = useState<string>("");
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -83,29 +108,29 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
   const fetchAchievements = async () => {
     try {
       const { data, error } = await supabase
-        .from('achievements')
-        .select('*')
-        .order('name');
+        .from("achievements")
+        .select("*")
+        .order("name");
 
       if (error) throw error;
       setAchievements(data || []);
     } catch (error) {
-      console.error('Error fetching achievements:', error);
+      console.error("Error fetching achievements:", error);
     }
   };
 
   const resetForm = () => {
-    setTitle('');
-    setDescription('');
-    setDifficultyLevel('intermediate');
-    setType('manual');
+    setTitle("");
+    setDescription("");
+    setDifficultyLevel("intermediate");
+    setType("manual");
     setStartDate(undefined);
     setEndDate(undefined);
     setSelectedAchievements([]);
     setTrainingDays([]);
     setChallengeId(null);
     setImageFile(null);
-    setImageUrl('');
+    setImageUrl("");
   };
 
   const handleClose = () => {
@@ -115,12 +140,12 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
 
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `challenges/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('challenges')
+        .from("challenges")
         .upload(filePath, file);
 
       if (uploadError) {
@@ -128,19 +153,19 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
       }
 
       const { data } = supabase.storage
-        .from('challenges')
+        .from("challenges")
         .getPublicUrl(filePath);
 
       return data.publicUrl;
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error("Error uploading image:", error);
       return null;
     }
   };
 
   const saveDraft = async () => {
     if (!user) return;
-    
+
     if (!title.trim() || !startDate || !endDate) {
       toast({
         title: "Missing Information",
@@ -154,7 +179,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
 
     try {
       let uploadedImageUrl = imageUrl;
-      
+
       // Upload image if a new file is selected
       if (imageFile) {
         const uploadedUrl = await uploadImage(imageFile);
@@ -172,23 +197,23 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
         start_date: startDate?.toISOString(),
         end_date: endDate?.toISOString(),
         created_by: user.id,
-        status: 'draft',
-        image_url: uploadedImageUrl || null
+        status: "draft",
+        image_url: uploadedImageUrl || null,
       };
 
       let result;
       if (challengeId) {
         // Update existing draft
         result = await supabase
-          .from('challenges')
+          .from("challenges")
           .update(challengeData)
-          .eq('id', challengeId)
+          .eq("id", challengeId)
           .select()
           .single();
       } else {
         // Create new draft
         result = await supabase
-          .from('challenges')
+          .from("challenges")
           .insert([challengeData])
           .select()
           .single();
@@ -197,16 +222,16 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
       if (result.error) throw result.error;
 
       setChallengeId(result.data.id);
-      
+
       // Save achievements and training days
       await saveAchievementsAndTrainingDays(result.data.id);
-      
+
       toast({
         title: "Draft Saved",
         description: "Challenge saved as draft successfully.",
       });
     } catch (error) {
-      console.error('Error saving challenge:', error);
+      console.error("Error saving challenge:", error);
       toast({
         title: "Error",
         description: "Failed to save challenge draft.",
@@ -220,7 +245,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
   // Function to calculate duration for a training day
   const calculateTrainingDayDuration = (exercises: Exercise[]) => {
     if (!exercises || exercises.length === 0) return 0;
-    
+
     let totalDuration = 0;
     exercises.forEach((exercise) => {
       const sets = exercise.sets || 1;
@@ -228,27 +253,27 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
       const restTime = exercise.rest_time_seconds || 15;
       totalDuration += sets * (holdTime + restTime);
     });
-    
+
     return totalDuration;
   };
 
   const saveAchievementsAndTrainingDays = async (challengeIdToUse: string) => {
     // Save achievements
     if (selectedAchievements.length > 0) {
-      const achievementData = selectedAchievements.map(achievementId => ({
+      const achievementData = selectedAchievements.map((achievementId) => ({
         challenge_id: challengeIdToUse,
-        achievement_id: achievementId
+        achievement_id: achievementId,
       }));
 
       const { error: achievementError } = await supabase
-        .from('challenge_achievements')
+        .from("challenge_achievements")
         .delete()
-        .eq('challenge_id', challengeIdToUse);
+        .eq("challenge_id", challengeIdToUse);
 
       if (achievementError) throw achievementError;
 
       const { error: insertError } = await supabase
-        .from('challenge_achievements')
+        .from("challenge_achievements")
         .insert(achievementData);
 
       if (insertError) throw insertError;
@@ -258,19 +283,21 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
     if (trainingDays.length > 0) {
       // First, delete existing training days (this will cascade delete exercises)
       const { error: deleteError } = await supabase
-        .from('challenge_training_days')
+        .from("challenge_training_days")
         .delete()
-        .eq('challenge_id', challengeIdToUse);
+        .eq("challenge_id", challengeIdToUse);
 
       if (deleteError) throw deleteError;
 
       // Insert training days one by one to get their IDs
       for (const day of trainingDays) {
         // Calculate duration for this training day
-        const durationSeconds = day.isRestDay ? 0 : calculateTrainingDayDuration(day.exercises);
-        
+        const durationSeconds = day.isRestDay
+          ? 0
+          : calculateTrainingDayDuration(day.exercises);
+
         const { data: trainingDayData, error: dayError } = await supabase
-          .from('challenge_training_days')
+          .from("challenge_training_days")
           .insert({
             challenge_id: challengeIdToUse,
             day_number: trainingDays.indexOf(day) + 1,
@@ -296,11 +323,11 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
             rest_time_seconds: exercise.rest_time_seconds,
             video_url: exercise.video_url,
             audio_url: exercise.audio_url,
-            notes: exercise.notes
+            notes: exercise.notes,
           }));
 
           const { error: exerciseError } = await supabase
-            .from('training_day_exercises')
+            .from("training_day_exercises")
             .insert(exerciseData);
 
           if (exerciseError) throw exerciseError;
@@ -310,29 +337,36 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
   };
 
   const addTrainingDay = () => {
-    setTrainingDays([...trainingDays, { 
-      date: new Date(), 
-      title: '', 
-      description: '',
-      isRestDay: false,
-      exercises: []
-    }]);
+    setTrainingDays([
+      ...trainingDays,
+      {
+        date: new Date(),
+        title: "",
+        description: "",
+        isRestDay: false,
+        exercises: [],
+      },
+    ]);
   };
 
   const removeTrainingDay = (index: number) => {
     setTrainingDays(trainingDays.filter((_, i) => i !== index));
   };
 
-  const updateTrainingDay = (index: number, field: keyof TrainingDay, value: any) => {
+  const updateTrainingDay = (
+    index: number,
+    field: keyof TrainingDay,
+    value: any
+  ) => {
     const updated = [...trainingDays];
     updated[index] = { ...updated[index], [field]: value };
     setTrainingDays(updated);
   };
 
   const toggleAchievement = (achievementId: string) => {
-    setSelectedAchievements(prev => 
-      prev.includes(achievementId) 
-        ? prev.filter(id => id !== achievementId)
+    setSelectedAchievements((prev) =>
+      prev.includes(achievementId)
+        ? prev.filter((id) => id !== achievementId)
         : [...prev, achievementId]
     );
   };
@@ -357,9 +391,9 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
 
     try {
       const { error } = await supabase
-        .from('challenges')
-        .update({ status: 'published' })
-        .eq('id', challengeId);
+        .from("challenges")
+        .update({ status: "published" })
+        .eq("id", challengeId);
 
       if (error) throw error;
 
@@ -367,11 +401,11 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
         title: "Challenge Published",
         description: "Challenge has been published successfully.",
       });
-      
+
       onChallengeCreated();
       handleClose();
     } catch (error) {
-      console.error('Error publishing challenge:', error);
+      console.error("Error publishing challenge:", error);
       toast({
         title: "Error",
         description: "Failed to publish challenge.",
@@ -432,14 +466,18 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                 className="cursor-pointer"
               />
               <div className="text-xs text-muted-foreground">
-                {imageFile ? `Selected: ${imageFile.name}` : imageUrl ? 'Current image uploaded' : 'No file selected'}
+                {imageFile
+                  ? `Selected: ${imageFile.name}`
+                  : imageUrl
+                  ? "Current image uploaded"
+                  : "No file selected"}
               </div>
             </div>
             {imageUrl && (
               <div className="mt-2">
-                <img 
-                  src={imageUrl} 
-                  alt="Challenge preview" 
+                <img
+                  src={imageUrl}
+                  alt="Challenge preview"
                   className="w-32 h-20 object-cover rounded-md border"
                 />
               </div>
@@ -486,7 +524,11 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                     )}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "PPP") : <span>Pick a date</span>}
+                    {startDate ? (
+                      format(startDate, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -514,7 +556,11 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                     )}
                   >
                     <Calendar className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "PPP") : <span>Pick a date</span>}
+                    {endDate ? (
+                      format(endDate, "PPP")
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -535,17 +581,22 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Award className="w-5 h-5 text-purple-400" />
-              <Label className="text-lg font-semibold">Challenge Achievements</Label>
+              <Label className="text-lg font-semibold">
+                Challenge Achievements
+              </Label>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-40 overflow-y-auto border rounded-lg p-4">
               {achievements.map((achievement) => (
-                <div key={achievement.id} className="flex items-center space-x-3">
+                <div
+                  key={achievement.id}
+                  className="flex items-center space-x-3"
+                >
                   <Checkbox
                     id={achievement.id}
                     checked={selectedAchievements.includes(achievement.id)}
                     onCheckedChange={() => toggleAchievement(achievement.id)}
                   />
-                  <Label 
+                  <Label
                     htmlFor={achievement.id}
                     className="flex-1 text-sm cursor-pointer"
                   >
@@ -553,7 +604,9 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                       <span>{achievement.icon}</span>
                       <div>
                         <div className="font-medium">{achievement.name}</div>
-                        <div className="text-xs text-muted-foreground">{achievement.points} points</div>
+                        <div className="text-xs text-muted-foreground">
+                          {achievement.points} points
+                        </div>
                       </div>
                     </div>
                   </Label>
@@ -580,12 +633,14 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                 Add Day
               </Button>
             </div>
-            
+
             <div className="space-y-3 max-h-60 overflow-y-auto">
               {trainingDays.map((day, index) => (
                 <div key={index} className="border rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Day {index + 1}</Label>
+                    <Label className="text-sm font-medium">
+                      Day {index + 1}
+                    </Label>
                     <Button
                       type="button"
                       variant="ghost"
@@ -595,7 +650,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                       <X className="w-4 h-4" />
                     </Button>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label className="text-xs">Date</Label>
@@ -610,67 +665,83 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                             size="sm"
                           >
                             <Calendar className="mr-2 h-4 w-4" />
-                            {day.date ? format(day.date, "PP") : <span>Pick date</span>}
+                            {day.date ? (
+                              format(day.date, "PP")
+                            ) : (
+                              <span>Pick date</span>
+                            )}
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
                           <CalendarComponent
                             mode="single"
                             selected={day.date}
-                            onSelect={(date) => date && updateTrainingDay(index, 'date', date)}
-                            disabled={(date) => startDate ? date < startDate : date < new Date()}
+                            onSelect={(date) =>
+                              date && updateTrainingDay(index, "date", date)
+                            }
+                            disabled={(date) =>
+                              startDate ? date < startDate : date < new Date()
+                            }
                             initialFocus
                             className="p-3 pointer-events-auto"
                           />
                         </PopoverContent>
                       </Popover>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <Label className="text-xs">Title</Label>
                       <Input
                         placeholder="Training day title"
                         value={day.title}
-                        onChange={(e) => updateTrainingDay(index, 'title', e.target.value)}
+                        onChange={(e) =>
+                          updateTrainingDay(index, "title", e.target.value)
+                        }
                         size={undefined}
                       />
                     </div>
                   </div>
-                  
-                    <div className="space-y-2">
-                      <Label className="text-xs">Description</Label>
-                      <Textarea
-                        placeholder="Training day description"
-                        value={day.description}
-                        onChange={(e) => updateTrainingDay(index, 'description', e.target.value)}
-                        rows={2}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id={`rest-day-${index}`}
-                        checked={day.isRestDay}
-                        onChange={(e) => updateTrainingDay(index, 'isRestDay', e.target.checked)}
-                        className="rounded border-gray-300"
-                      />
-                      <Label htmlFor={`rest-day-${index}`} className="text-xs">
-                        Rest Day (no exercises)
-                      </Label>
-                    </div>
-                  
+
+                  <div className="space-y-2">
+                    <Label className="text-xs">Description</Label>
+                    <Textarea
+                      placeholder="Training day description"
+                      value={day.description}
+                      onChange={(e) =>
+                        updateTrainingDay(index, "description", e.target.value)
+                      }
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id={`rest-day-${index}`}
+                      checked={day.isRestDay}
+                      onChange={(e) =>
+                        updateTrainingDay(index, "isRestDay", e.target.checked)
+                      }
+                      className="rounded border-gray-300"
+                    />
+                    <Label htmlFor={`rest-day-${index}`} className="text-xs">
+                      Rest Day (no exercises)
+                    </Label>
+                  </div>
+
                   {/* Exercise Management */}
                   {!day.isRestDay && (
-                           <ExerciseManagement
-                             trainingDayId={`temp-${index}`}
-                             exercises={day.exercises}
-                             onExercisesChange={(exercises) => updateTrainingDay(index, 'exercises', exercises)}
-                             canEdit={true}
-                             challengeType={type}
-                           />
+                    <ExerciseManagement
+                      trainingDayId={`temp-${index}`}
+                      exercises={day.exercises}
+                      onExercisesChange={(exercises) =>
+                        updateTrainingDay(index, "exercises", exercises)
+                      }
+                      canEdit={true}
+                      challengeType={type}
+                    />
                   )}
-                  
+
                   {day.isRestDay && (
                     <div className="text-center py-4 text-muted-foreground border-2 border-dashed rounded-lg">
                       <span className="text-2xl">😴</span>
@@ -679,12 +750,14 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                   )}
                 </div>
               ))}
-              
+
               {trainingDays.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                   <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-50" />
                   <p>No training days added yet</p>
-                  <p className="text-sm">Click "Add Day" to create training sessions</p>
+                  <p className="text-sm">
+                    Click "Add Day" to create training sessions
+                  </p>
                 </div>
               )}
             </div>
@@ -694,7 +767,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
             <Button variant="outline" onClick={handleClose}>
               Cancel
             </Button>
-            
+
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -705,7 +778,7 @@ const CreateChallengeModal = ({ isOpen, onClose, onChallengeCreated }: CreateCha
                 <Save className="w-4 h-4" />
                 Save Draft
               </Button>
-              
+
               <Button
                 onClick={publishChallenge}
                 disabled={isLoading}
