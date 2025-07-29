@@ -70,7 +70,7 @@ const ChallengeDayTimer = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [audioMode, setAudioMode] = useState<"sound" | "no_sound" | "minimal_sound">(() => {
     const saved = localStorage.getItem("challengeTimerAudioMode");
-    return (saved as "sound" | "no_sound" | "minimal_sound") || "sound";
+    return (saved as "sound" | "no_sound" | "minimal_sound") || "minimal_sound";
   });
   const [hasAnnouncedSegment, setHasAnnouncedSegment] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -83,8 +83,8 @@ const ChallengeDayTimer = () => {
 
   const { speak } = useSpeech(audioMode === "sound");
 
-  // Create beeping sound for minimal mode
-  const playBeep = () => {
+  // Create optimistic beeping sound for minimal mode
+  const playBeep = (type: "countdown" | "transition" | "ready" = "countdown") => {
     if (audioMode !== "minimal_sound") return;
     
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -94,15 +94,23 @@ const ChallengeDayTimer = () => {
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
     
-    oscillator.frequency.value = 800; // High pitched beep
+    // Different frequencies for different contexts
+    if (type === "countdown") {
+      oscillator.frequency.value = 1000; // Higher pitched for countdown
+    } else if (type === "transition") {
+      oscillator.frequency.value = 800; // Medium pitch for transitions
+    } else if (type === "ready") {
+      oscillator.frequency.value = 1200; // Highest pitch for get ready
+    }
+    
     oscillator.type = 'sine';
     
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
     
     oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.3);
+    oscillator.stop(audioContext.currentTime + 0.2);
   };
 
   useEffect(() => {
@@ -216,6 +224,11 @@ const ChallengeDayTimer = () => {
             } else if (prev === 2) {
               speak("1... Begin!");
             }
+          } else if (audioMode === "minimal_sound") {
+            // Beep during countdown for get ready phase
+            if (prev <= 5 && prev > 0) {
+              playBeep("ready");
+            }
           }
 
           if (prev <= 1) {
@@ -243,9 +256,14 @@ const ChallengeDayTimer = () => {
             speak((prev - 2).toString());
           }
           
-          // Beeping for minimal sound mode - only during exercise segments
-          if (audioMode === "minimal_sound" && currentSegmentIndex < segments.length && segments[currentSegmentIndex]?.type === "exercise" && prev <= 5 && prev > 0) {
-            playBeep();
+          // Beeping for minimal sound mode
+          if (audioMode === "minimal_sound" && currentSegmentIndex < segments.length && prev <= 5 && prev > 0) {
+            const currentSegment = segments[currentSegmentIndex];
+            if (currentSegment?.type === "exercise") {
+              playBeep("countdown");
+            } else if (currentSegment?.type === "rest") {
+              playBeep("transition");
+            }
           }
 
           if (prev <= 1) {
@@ -600,7 +618,7 @@ const ChallengeDayTimer = () => {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  const modes: Array<"sound" | "no_sound" | "minimal_sound"> = ["sound", "minimal_sound", "no_sound"];
+                  const modes: Array<"sound" | "no_sound" | "minimal_sound"> = ["minimal_sound", "sound", "no_sound"];
                   const currentIndex = modes.indexOf(audioMode);
                   const nextMode = modes[(currentIndex + 1) % modes.length];
                   setAudioMode(nextMode);
