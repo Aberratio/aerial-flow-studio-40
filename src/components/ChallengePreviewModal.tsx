@@ -129,7 +129,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             training_day_exercises (
               id, sets, reps, hold_time_seconds, rest_time_seconds,
               figure:figures (
-                name, difficulty_level, image_url
+                id, name, difficulty_level, category, image_url, instructions
               )
             )
           )
