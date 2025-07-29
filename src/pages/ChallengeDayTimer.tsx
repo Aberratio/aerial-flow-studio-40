@@ -68,9 +68,9 @@ const ChallengeDayTimer = () => {
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [isAudioEnabled, setIsAudioEnabled] = useState(() => {
-    const saved = localStorage.getItem("challengeTimerVoice");
-    return saved !== null ? JSON.parse(saved) : true;
+  const [audioMode, setAudioMode] = useState<"sound" | "no_sound" | "minimal_sound">(() => {
+    const saved = localStorage.getItem("challengeTimerAudioMode");
+    return (saved as "sound" | "no_sound" | "minimal_sound") || "sound";
   });
   const [hasAnnouncedSegment, setHasAnnouncedSegment] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -81,7 +81,29 @@ const ChallengeDayTimer = () => {
   const [showActionDialog, setShowActionDialog] = useState(false);
   const [actionType, setActionType] = useState<"failed" | "rest" | null>(null);
 
-  const { speak } = useSpeech(isAudioEnabled);
+  const { speak } = useSpeech(audioMode === "sound");
+
+  // Create beeping sound for minimal mode
+  const playBeep = () => {
+    if (audioMode !== "minimal_sound") return;
+    
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800; // High pitched beep
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  };
 
   useEffect(() => {
     const fetchExercises = async () => {
@@ -188,10 +210,12 @@ const ChallengeDayTimer = () => {
     if (isPreparingToStart && preparationTime > 0) {
       interval = setInterval(() => {
         setPreparationTime((prev) => {
-          if (prev > 2 && prev < 7) {
-            speak((prev - 1).toString());
-          } else if (prev === 2) {
-            speak("1... Begin!");
+          if (audioMode === "sound") {
+            if (prev > 2 && prev < 7) {
+              speak((prev - 1).toString());
+            } else if (prev === 2) {
+              speak("1... Begin!");
+            }
           }
 
           if (prev <= 1) {
@@ -214,8 +238,14 @@ const ChallengeDayTimer = () => {
     if (isRunning && !isPreparingToStart && timeRemaining > 0) {
       interval = setInterval(() => {
         setTimeRemaining((prev) => {
-          if (prev <= 7 && prev > 1) {
+          // Voice countdown for full sound mode
+          if (audioMode === "sound" && prev <= 7 && prev > 1) {
             speak((prev - 2).toString());
+          }
+          
+          // Beeping for minimal sound mode - only during exercise segments
+          if (audioMode === "minimal_sound" && currentSegmentIndex < segments.length && segments[currentSegmentIndex]?.type === "exercise" && prev <= 5 && prev > 0) {
+            playBeep();
           }
 
           if (prev <= 1) {
@@ -241,7 +271,7 @@ const ChallengeDayTimer = () => {
 
     const currentSegment = segments[currentSegmentIndex];
 
-    if (!hasAnnouncedSegment) {
+    if (!hasAnnouncedSegment && audioMode === "sound") {
       setHasAnnouncedSegment(true);
 
       if (currentSegment.type === "exercise") {
@@ -284,7 +314,9 @@ const ChallengeDayTimer = () => {
     if (currentSegmentIndex >= segments.length - 1) {
       setIsCompleted(true);
       setIsRunning(false);
-      speak("Workout completed! Great job!");
+      if (audioMode === "sound") {
+        speak("Workout completed! Great job!");
+      }
       return;
     }
 
@@ -381,7 +413,9 @@ const ChallengeDayTimer = () => {
     if (!isRunning && !isPreparingToStart) {
       setIsPreparingToStart(true);
       setPreparationTime(10);
-      speak("Get ready!");
+      if (audioMode === "sound") {
+        speak("Get ready!");
+      }
     } else if (isPreparingToStart) {
       setIsPreparingToStart(false);
       setPreparationTime(10);
@@ -566,19 +600,28 @@ const ChallengeDayTimer = () => {
               <Button
                 variant="ghost"
                 onClick={() => {
-                  const newValue = !isAudioEnabled;
-                  setIsAudioEnabled(newValue);
-                  localStorage.setItem(
-                    "challengeTimerVoice",
-                    JSON.stringify(newValue)
-                  );
+                  const modes: Array<"sound" | "no_sound" | "minimal_sound"> = ["sound", "minimal_sound", "no_sound"];
+                  const currentIndex = modes.indexOf(audioMode);
+                  const nextMode = modes[(currentIndex + 1) % modes.length];
+                  setAudioMode(nextMode);
+                  localStorage.setItem("challengeTimerAudioMode", nextMode);
                 }}
                 className={`text-white hover:bg-white/10 transition-all ${
-                  isAudioEnabled ? "bg-primary/20 text-primary" : "bg-white/5"
+                  audioMode === "sound" ? "bg-primary/20 text-primary" : 
+                  audioMode === "minimal_sound" ? "bg-yellow-500/20 text-yellow-400" : "bg-white/5"
                 }`}
+                title={
+                  audioMode === "sound" ? "Full sound mode" :
+                  audioMode === "minimal_sound" ? "Minimal sound mode (beeps only)" :
+                  "No sound mode"
+                }
               >
-                {isAudioEnabled ? (
+                {audioMode === "sound" ? (
                   <Volume2 className="w-5 h-5" />
+                ) : audioMode === "minimal_sound" ? (
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <div className="w-3 h-3 bg-current rounded-full animate-pulse"></div>
+                  </div>
                 ) : (
                   <VolumeX className="w-5 h-5" />
                 )}
