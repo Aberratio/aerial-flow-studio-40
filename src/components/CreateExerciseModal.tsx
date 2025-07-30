@@ -333,13 +333,17 @@ export const CreateExerciseModal = ({
                 <Switch
                   id="premium"
                   checked={formData.premium}
-                  onCheckedChange={(checked) =>
-                    setFormData((prev) => ({ ...prev, premium: checked }))
-                  }
+                  onCheckedChange={(checked) => {
+                    console.log("Premium switch changed to:", checked);
+                    setFormData((prev) => ({ ...prev, premium: checked }));
+                  }}
                 />
                 <Label htmlFor="premium" className="text-white cursor-pointer">
                   {formData.premium ? "Premium" : "Free"}
                 </Label>
+                <div className="text-xs text-white/60 ml-2">
+                  Current: {formData.premium ? "Premium" : "Free"}
+                </div>
               </div>
             </div>
 
