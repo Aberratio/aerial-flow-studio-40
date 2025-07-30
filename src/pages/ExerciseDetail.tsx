@@ -283,7 +283,7 @@ const ExerciseDetail = () => {
     if (user.role === "trainer" && exercise.created_by === user.id) return true;
     
     // Trainers who are experts on this exercise can edit it
-    if (user.role === "trainer" && exercise.experts?.some(expert => expert.expert_user_id === user.id)) return true;
+    if (user.role === "trainer" && experts?.some(expert => expert.expert_user_id === user.id)) return true;
     
     return false;
   };
