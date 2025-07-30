@@ -275,6 +275,21 @@ const ExerciseDetail = () => {
 
   const canModifyExercise = () => {
     if (!user || !exercise) return false;
+    
+    // Admins can edit any exercise
+    if (user.role === "admin") return true;
+    
+    // Trainers can edit exercises they created
+    if (user.role === "trainer" && exercise.created_by === user.id) return true;
+    
+    // Trainers who are experts on this exercise can edit it
+    if (user.role === "trainer" && exercise.experts?.some(expert => expert.expert_user_id === user.id)) return true;
+    
+    return false;
+  };
+
+  const canDeleteExercise = () => {
+    if (!user || !exercise) return false;
     return (
       user.role === "admin" ||
       (user.role === "trainer" && exercise.created_by === user.id)
@@ -746,25 +761,26 @@ const ExerciseDetail = () => {
             </Button>
 
             {canModifyExercise() && (
-              <>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowEditModal(true)}
-                  className="border-white/20 text-white hover:bg-white/10 text-sm"
-                  size="sm"
-                >
-                  <Edit className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Edit</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowDeleteModal(true)}
-                  className="border-red-500/50 text-red-400 hover:bg-red-500/10"
-                  size="sm"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              </>
+              <Button
+                variant="outline"
+                onClick={() => setShowEditModal(true)}
+                className="border-white/20 text-white hover:bg-white/10 text-sm"
+                size="sm"
+              >
+                <Edit className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Edit</span>
+              </Button>
+            )}
+            
+            {canDeleteExercise() && (
+              <Button
+                variant="outline"
+                onClick={() => setShowDeleteModal(true)}
+                className="border-red-500/50 text-red-400 hover:bg-red-500/10"
+                size="sm"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
             )}
           </div>
         </div>
