@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Play,
   User,
-  Clock,
   Target,
   BookOpen,
   Edit,
@@ -275,16 +274,20 @@ const ExerciseDetail = () => {
 
   const canModifyExercise = () => {
     if (!user || !exercise) return false;
-    
+
     // Admins can edit any exercise
     if (user.role === "admin") return true;
-    
+
     // Trainers can edit exercises they created
     if (user.role === "trainer" && exercise.created_by === user.id) return true;
-    
+
     // Trainers who are experts on this exercise can edit it
-    if (user.role === "trainer" && experts?.some(expert => expert.expert_user_id === user.id)) return true;
-    
+    if (
+      user.role === "trainer" &&
+      experts?.some((expert) => expert.expert_user_id === user.id)
+    )
+      return true;
+
     return false;
   };
 
@@ -771,7 +774,7 @@ const ExerciseDetail = () => {
                 <span className="hidden sm:inline">Edit</span>
               </Button>
             )}
-            
+
             {canDeleteExercise() && (
               <Button
                 variant="outline"
@@ -833,14 +836,6 @@ const ExerciseDetail = () => {
                         setShowVideoPlayer(false);
                       }}
                     />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-2 right-2 text-white bg-black/50 hover:bg-black/70"
-                      onClick={() => setShowVideoPlayer(false)}
-                    >
-                      <ArrowLeft className="w-4 h-4" />
-                    </Button>
                   </div>
                 )}
 
