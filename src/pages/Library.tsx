@@ -67,6 +67,7 @@ const Library = () => {
   const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>(
     []
   );
+  const [selectedVideoTypes, setSelectedVideoTypes] = useState<string[]>([]);
   const [extendedFiltersOpen, setExtendedFiltersOpen] = useState(false);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [editingFigure, setEditingFigure] = useState(null);
@@ -90,6 +91,7 @@ const Library = () => {
   const types = ["all", "single_figure", "combo"];
   const statuses = ["all", "completed", "for_later", "failed", "not_tried"];
   const contentTypes = ["all", "free", "premium"];
+  const videoTypes = ["all", "with_video", "without_video"];
 
   // Fetch user profile to get sports preferences
   const fetchUserProfile = async () => {
@@ -246,6 +248,7 @@ const Library = () => {
       selectedStatuses,
       selectedExperts,
       selectedContentTypes,
+      selectedVideoTypes,
       extendedFiltersOpen,
     };
     localStorage.setItem("libraryFilters", JSON.stringify(filters));
@@ -257,6 +260,7 @@ const Library = () => {
     selectedStatuses,
     selectedExperts,
     selectedContentTypes,
+    selectedVideoTypes,
     extendedFiltersOpen,
   ]);
 
@@ -273,6 +277,7 @@ const Library = () => {
         setSelectedStatuses(filters.selectedStatuses || []);
         setSelectedExperts(filters.selectedExperts || []);
         setSelectedContentTypes(filters.selectedContentTypes || []);
+        setSelectedVideoTypes(filters.selectedVideoTypes || []);
         setExtendedFiltersOpen(filters.extendedFiltersOpen || false);
       }
     } catch (error) {
@@ -323,6 +328,11 @@ const Library = () => {
         selectedContentTypes.includes("all") ||
         (selectedContentTypes.includes("free") && !figure.premium) ||
         (selectedContentTypes.includes("premium") && figure.premium);
+      const matchesVideoType =
+        selectedVideoTypes.length === 0 ||
+        selectedVideoTypes.includes("all") ||
+        (selectedVideoTypes.includes("with_video") && figure.video_url) ||
+        (selectedVideoTypes.includes("without_video") && !figure.video_url);
       return (
         matchesSearch &&
         matchesCategory &&
@@ -331,7 +341,8 @@ const Library = () => {
         matchesTags &&
         matchesStatus &&
         matchesExpert &&
-        matchesContentType
+        matchesContentType &&
+        matchesVideoType
       );
     })
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -764,14 +775,16 @@ const Library = () => {
                   <div className="flex items-center gap-2">
                     <Filter className="w-4 h-4" />
                     <span>Extended Filters</span>
-                    {(selectedExperts.length > 0 ||
-                      selectedContentTypes.length > 0) && (
-                      <span className="bg-primary/20 text-primary rounded-full px-2 py-0.5 text-xs">
-                        {selectedExperts.filter((e) => e !== "all").length +
-                          selectedContentTypes.filter((t) => t !== "all")
-                            .length}
-                      </span>
-                    )}
+                     {(selectedExperts.length > 0 ||
+                       selectedContentTypes.length > 0 ||
+                       selectedVideoTypes.length > 0) && (
+                       <span className="bg-primary/20 text-primary rounded-full px-2 py-0.5 text-xs">
+                         {selectedExperts.filter((e) => e !== "all").length +
+                           selectedContentTypes.filter((t) => t !== "all")
+                             .length +
+                           selectedVideoTypes.filter((t) => t !== "all").length}
+                       </span>
+                     )}
                   </div>
                   {extendedFiltersOpen ? (
                     <ChevronUp className="w-4 h-4" />
@@ -780,8 +793,8 @@ const Library = () => {
                   )}
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-4 pt-4 animate-accordion-down">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+               <CollapsibleContent className="space-y-4 pt-4 animate-accordion-down">
+                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {/* Expert Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-white/80">
@@ -1000,20 +1013,116 @@ const Library = () => {
                           </div>
                         </div>
                       </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-              </CollapsibleContent>
+                     </Popover>
+                   </div>
+
+                   {/* Video Type Filter */}
+                   <div className="space-y-2">
+                     <label className="text-sm font-medium text-white/80">
+                       Video Content
+                     </label>
+                     <Popover>
+                       <PopoverTrigger asChild>
+                         <Button
+                           variant="outline"
+                           className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
+                         >
+                           <span className="truncate">
+                             {selectedVideoTypes.length === 0
+                               ? "All Videos"
+                               : selectedVideoTypes.includes("all")
+                               ? "All Videos"
+                               : selectedVideoTypes.length === 1
+                               ? selectedVideoTypes[0]
+                                   .replace("_", " ")
+                                   .split(" ")
+                                   .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                                   .join(" ")
+                               : `${selectedVideoTypes.length} Selected`}
+                           </span>
+                           <div className="flex items-center gap-1">
+                             {selectedVideoTypes.length > 0 &&
+                               !selectedVideoTypes.includes("all") && (
+                                 <span className="bg-primary text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                                   {selectedVideoTypes.length}
+                                 </span>
+                               )}
+                             <ChevronDown className="w-4 h-4" />
+                           </div>
+                         </Button>
+                       </PopoverTrigger>
+                       <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
+                         <div className="space-y-3">
+                           <div className="flex items-center space-x-2">
+                             <Checkbox
+                               id="all-video-types"
+                               checked={selectedVideoTypes.includes("all")}
+                               onCheckedChange={(checked) => {
+                                 if (checked) {
+                                   setSelectedVideoTypes(["all"]);
+                                 } else {
+                                   setSelectedVideoTypes([]);
+                                 }
+                               }}
+                             />
+                             <label
+                               htmlFor="all-video-types"
+                               className="text-white font-medium text-sm"
+                             >
+                               All Videos
+                             </label>
+                           </div>
+                           <div className="border-t border-white/10 pt-2 space-y-2">
+                             {videoTypes.slice(1).map((type) => (
+                               <div
+                                 key={type}
+                                 className="flex items-center space-x-2"
+                               >
+                                 <Checkbox
+                                   id={`video-${type}`}
+                                   checked={selectedVideoTypes.includes(type)}
+                                   onCheckedChange={(checked) => {
+                                     if (checked) {
+                                       setSelectedVideoTypes((prev) => [
+                                         ...prev.filter((t) => t !== "all"),
+                                         type,
+                                       ]);
+                                     } else {
+                                       setSelectedVideoTypes((prev) =>
+                                         prev.filter((t) => t !== type)
+                                       );
+                                     }
+                                   }}
+                                 />
+                                 <label
+                                   htmlFor={`video-${type}`}
+                                   className="text-white text-sm capitalize flex items-center gap-2"
+                                 >
+                                   {type === "with_video" && (
+                                     <Play className="w-3 h-3 text-blue-400" />
+                                   )}
+                                   {type.replace("_", " ")}
+                                 </label>
+                               </div>
+                             ))}
+                           </div>
+                         </div>
+                       </PopoverContent>
+                     </Popover>
+                   </div>
+                 </div>
+               </CollapsibleContent>
             </Collapsible>
           </div>
 
           {/* Active Filters Summary */}
           {(selectedCategories.length > 0 ||
-            selectedLevels.length > 0 ||
-            selectedTypes.length > 0 ||
-            selectedStatuses.length > 0 ||
-            selectedExperts.length > 0 ||
-            selectedContentTypes.length > 0) && (
+             selectedLevels.length > 0 ||
+             selectedTypes.length > 0 ||
+             selectedStatuses.length > 0 ||
+             selectedExperts.length > 0 ||
+             selectedContentTypes.length > 0 ||
+             selectedVideoTypes.length > 0) && (
             <div className="flex flex-wrap gap-2 pt-2">
               {selectedCategories
                 .filter((c) => c !== "all")
@@ -1152,10 +1261,30 @@ const Library = () => {
                         )
                       }
                     />
-                  </Badge>
-                ))}
-            </div>
-          )}
+                   </Badge>
+                 ))}
+               {selectedVideoTypes
+                 .filter((t) => t !== "all")
+                 .map((type) => (
+                   <Badge
+                     key={type}
+                     variant="secondary"
+                     className="bg-cyan-500/20 text-cyan-300 border-cyan-400/30 flex items-center gap-1"
+                   >
+                     {type === "with_video" && <Play className="w-3 h-3" />}
+                     {type.replace("_", " ")}
+                     <X
+                       className="w-3 h-3 cursor-pointer"
+                       onClick={() =>
+                         setSelectedVideoTypes((prev) =>
+                           prev.filter((t) => t !== type)
+                         )
+                       }
+                     />
+                   </Badge>
+                 ))}
+             </div>
+           )}
         </div>
 
         {/* Figures Grid */}
@@ -1223,12 +1352,15 @@ const Library = () => {
                       </p>
                     )}
 
-                    <div className="flex items-center gap-2 mb-4">
-                      {getStatusIcon(figure.progress_status)}
-                      <span className="text-sm text-muted-foreground capitalize">
-                        {figure.progress_status.replace("_", " ")}
-                      </span>
-                    </div>
+                     <div className="flex items-center gap-2 mb-4">
+                       {getStatusIcon(figure.progress_status)}
+                       <span className="text-sm text-muted-foreground capitalize">
+                         {figure.progress_status.replace("_", " ")}
+                       </span>
+                       {figure.video_url && (
+                         <Play className="w-4 h-4 text-blue-400 ml-auto" />
+                       )}
+                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="flex flex-col space-y-1"></div>
