@@ -277,8 +277,7 @@ const ExerciseDetail = () => {
     if (!user || !exercise) return false;
     return (
       user.role === "admin" ||
-      user.role === "trainer" ||
-      exercise.created_by === user.id
+      (user.role === "trainer" && exercise.created_by === user.id)
     );
   };
 
