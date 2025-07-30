@@ -798,7 +798,7 @@ const ExerciseDetail = () => {
                         "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=600&h=600&fit=crop"
                       }
                       alt={exercise.name}
-                      className="w-full h-64 sm:h-80 object-cover cursor-pointer hover:scale-105 transition-transform duration-300"
+                      className="w-full min-h-64 max-h-[600px] object-contain cursor-pointer hover:scale-105 transition-transform duration-300"
                       onClick={() =>
                         exercise.video_url
                           ? setShowVideoPlayer(true)
@@ -822,7 +822,7 @@ const ExerciseDetail = () => {
                       src={exercise.video_url}
                       controls
                       autoPlay
-                      className="w-full h-64 sm:h-80 object-cover"
+                      className="w-full min-h-64 max-h-[600px] object-contain"
                       onError={() => {
                         toast({
                           title: "Video Error",
