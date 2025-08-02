@@ -10,6 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { ProfilePreviewModal } from "@/components/ProfilePreviewModal";
@@ -26,6 +27,7 @@ export const FriendInviteModal = ({
   onFriendAdded,
 }: FriendInviteModalProps) => {
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [searchQuery, setSearchQuery] = useState("");
   const [suggestedFriends, setSuggestedFriends] = useState<any[]>([]);
   const [sentInvites, setSentInvites] = useState<string[]>([]);
@@ -172,9 +174,15 @@ export const FriendInviteModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
-        <DialogHeader>
-          <DialogTitle className="text-white">Find Friends</DialogTitle>
+      <DialogContent className={`
+        ${isMobile 
+          ? 'w-[100vw] h-[100vh] max-w-none max-h-none m-0 rounded-none p-4' 
+          : 'w-[95vw] max-w-[600px] max-h-[90vh]'
+        } 
+        overflow-y-auto glass-effect border-white/10
+      `}>
+        <DialogHeader className={isMobile ? "pb-4" : ""}>
+          <DialogTitle className="text-white text-lg sm:text-xl">Find Friends</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -184,11 +192,14 @@ export const FriendInviteModal = ({
               placeholder="Search for friends..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-muted-foreground"
+              className={`
+                pl-10 bg-white/5 border-white/10 text-white placeholder:text-muted-foreground
+                ${isMobile ? 'h-12 text-base' : ''}
+              `}
             />
           </div>
 
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className={`space-y-3 ${isMobile ? 'max-h-[calc(100vh-180px)]' : 'max-h-96'} overflow-y-auto`}>
             <h3 className="text-sm font-medium text-muted-foreground">
               {searchQuery
                 ? `Search results for "${searchQuery}"`
@@ -202,7 +213,7 @@ export const FriendInviteModal = ({
               </div>
             ) : suggestedFriends.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <p>
+                <p className="text-sm sm:text-base">
                   {searchQuery
                     ? `No users found matching "${searchQuery}"`
                     : "No users to suggest at the moment"}
@@ -212,31 +223,46 @@ export const FriendInviteModal = ({
               suggestedFriends.map((friend) => (
                 <div
                   key={friend.id}
-                  className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10 gap-4"
+                  className={`
+                    flex items-center justify-between bg-white/5 rounded-lg border border-white/10 gap-3
+                    ${isMobile ? 'p-3' : 'p-4'}
+                  `}
                 >
                   <div
-                    className="flex items-center space-x-3 flex-1 cursor-pointer hover:bg-white/5 rounded p-2 -m-2"
+                    className={`
+                      flex items-center flex-1 cursor-pointer hover:bg-white/5 rounded -m-2
+                      ${isMobile ? 'space-x-2 p-2' : 'space-x-3 p-2'}
+                    `}
                     onClick={() => {
                       setSelectedUserId(friend.id);
                       setShowProfilePreview(true);
                     }}
                   >
-                    <div className="relative">
-                      <Avatar>
+                    <div className="relative flex-shrink-0">
+                      <Avatar className={isMobile ? "w-10 h-10" : "w-12 h-12"}>
                         <AvatarImage src={friend.avatar_url} />
                         <AvatarFallback>
                           {friend.username[0].toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       {friend.isOnline && (
-                        <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-background"></div>
+                        <div className={`
+                          absolute -bottom-1 -right-1 bg-green-500 rounded-full border-2 border-background
+                          ${isMobile ? 'w-2.5 h-2.5' : 'w-3 h-3'}
+                        `}></div>
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium text-white truncate">
+                      <p className={`
+                        font-medium text-white truncate
+                        ${isMobile ? 'text-sm' : 'text-base'}
+                      `}>
                         {friend.username}
                       </p>
-                      <p className="text-sm text-muted-foreground truncate">
+                      <p className={`
+                        text-muted-foreground truncate
+                        ${isMobile ? 'text-xs' : 'text-sm'}
+                      `}>
                         {friend.bio || "Aerial enthusiast"}
                       </p>
                     </div>
@@ -245,23 +271,32 @@ export const FriendInviteModal = ({
                   <div className="flex-shrink-0">
                     {sentInvites.includes(friend.id) ||
                     friend.hasPendingRequest ? (
-                      <div className="flex items-center space-x-2 text-green-400">
+                      <div className={`
+                        flex items-center text-green-400
+                        ${isMobile ? 'space-x-1' : 'space-x-2'}
+                      `}>
                         <Check className="w-4 h-4" />
-                        <span className="text-sm whitespace-nowrap">Sent</span>
+                        <span className={`whitespace-nowrap ${isMobile ? 'text-xs' : 'text-sm'}`}>
+                          Sent
+                        </span>
                       </div>
                     ) : (
                       <Button
                         variant="primary"
-                        size="sm"
+                        size={isMobile ? "sm" : "sm"}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleSendInvite(friend.id, friend.username);
                         }}
-                        className="whitespace-nowrap"
+                        className={`
+                          whitespace-nowrap
+                          ${isMobile ? 'px-2 py-1 text-xs' : 'px-3 py-2 text-sm'}
+                        `}
                       >
-                        <UserPlus className="w-4 h-4 mr-2" />
-                        <span className="hidden sm:inline">Add Friend</span>
-                        <span className="sm:hidden">Add</span>
+                        <UserPlus className="w-4 h-4 mr-1" />
+                        <span className={isMobile ? "text-xs" : "text-sm"}>
+                          {isMobile ? "Add" : "Add Friend"}
+                        </span>
                       </Button>
                     )}
                   </div>
