@@ -236,6 +236,7 @@ const Library = () => {
     fetchFigures();
     fetchUserProfile();
     loadFiltersFromLocalStorage();
+    loadSearchFromLocalStorage();
   }, [user]);
 
   // Save filters to localStorage whenever they change
@@ -264,6 +265,11 @@ const Library = () => {
     extendedFiltersOpen,
   ]);
 
+  // Save search term to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("librarySearchTerm", searchTerm);
+  }, [searchTerm]);
+
   // Load filters from localStorage
   const loadFiltersFromLocalStorage = () => {
     try {
@@ -283,6 +289,24 @@ const Library = () => {
     } catch (error) {
       console.error("Error loading filters from localStorage:", error);
     }
+  };
+
+  // Load search term from localStorage
+  const loadSearchFromLocalStorage = () => {
+    try {
+      const savedSearchTerm = localStorage.getItem("librarySearchTerm");
+      if (savedSearchTerm) {
+        setSearchTerm(savedSearchTerm);
+      }
+    } catch (error) {
+      console.error("Error loading search term from localStorage:", error);
+    }
+  };
+
+  // Clear search term
+  const clearSearchTerm = () => {
+    setSearchTerm("");
+    localStorage.removeItem("librarySearchTerm");
   };
 
   const filteredFigures = figuresWithProgress
@@ -442,8 +466,18 @@ const Library = () => {
               placeholder="Search exercises..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
+              className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
             />
+            {searchTerm && (
+              <Button
+                onClick={clearSearchTerm}
+                variant="ghost"
+                size="sm"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-white/10 text-muted-foreground hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-3">
