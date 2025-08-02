@@ -32,6 +32,7 @@ import PostDetail from "@/pages/PostDetail";
 import ExerciseDetail from "@/pages/ExerciseDetail";
 import AchievementManagement from "@/pages/AchievementManagement";
 import Summary from "@/pages/Summary";
+import AerialJourney from "@/pages/AerialJourney";
 
 import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
@@ -315,6 +316,14 @@ const AppRoutes = () => {
             <PremiumRoute>
               <EditChallenge />
             </PremiumRoute>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/aerial-journey"
+        element={
+          <ProtectedRoute>
+            <AerialJourney />
           </ProtectedRoute>
         }
       />

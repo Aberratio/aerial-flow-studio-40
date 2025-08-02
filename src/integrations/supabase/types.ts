@@ -1262,6 +1262,45 @@ export type Database = {
           },
         ]
       }
+      user_journeys: {
+        Row: {
+          badges_earned: string[]
+          created_at: string
+          current_streak: number
+          experience_level: string
+          goals: string[]
+          id: string
+          sport_type: string
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          badges_earned?: string[]
+          created_at?: string
+          current_streak?: number
+          experience_level: string
+          goals?: string[]
+          id?: string
+          sport_type: string
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          badges_earned?: string[]
+          created_at?: string
+          current_streak?: number
+          experience_level?: string
+          goals?: string[]
+          id?: string
+          sport_type?: string
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_scores: {
         Row: {
           created_at: string

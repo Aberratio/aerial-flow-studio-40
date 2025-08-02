@@ -8,18 +8,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import type { Database } from "@/integrations/supabase/types";
 
-interface UserJourney {
-  id: string;
-  user_id: string;
-  sport_type: string;
-  experience_level: string;
-  goals: string[];
-  created_at: string;
-  current_streak: number;
-  total_points: number;
-  badges_earned: string[];
-}
+type UserJourney = Database['public']['Tables']['user_journeys']['Row'];
 
 const SPORT_OPTIONS = [
   { id: "hoop", name: "Aerial Hoop (Lyra)", icon: "🪩", description: "Graceful circular apparatus" },
@@ -84,9 +75,9 @@ const AerialJourney = () => {
         .from('user_journeys')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Error fetching journey:', error);
         return;
       }
