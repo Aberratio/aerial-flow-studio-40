@@ -68,7 +68,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [pointLimit, setPointLimit] = useState<number>(0);
   const [selectedFigures, setSelectedFigures] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('');
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -267,7 +267,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
       const matchesSearch = searchTerm === '' || 
         figure.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (figure.description && figure.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesDifficulty = difficultyFilter === '' || figure.difficulty_level === difficultyFilter;
+      const matchesDifficulty = difficultyFilter === 'all' || figure.difficulty_level === difficultyFilter;
       
       return matchesCategory && matchesSearch && matchesDifficulty;
     });
@@ -459,7 +459,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Levels</SelectItem>
+                    <SelectItem value="all">All Levels</SelectItem>
                     <SelectItem value="Beginner">Beginner</SelectItem>
                     <SelectItem value="Intermediate">Intermediate</SelectItem>
                     <SelectItem value="Advanced">Advanced</SelectItem>
