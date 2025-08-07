@@ -937,6 +937,7 @@ export type Database = {
           id: string
           level_name: string
           level_number: number
+          point_limit: number
           sport_category: string
           updated_at: string
         }
@@ -946,6 +947,7 @@ export type Database = {
           id?: string
           level_name: string
           level_number: number
+          point_limit?: number
           sport_category: string
           updated_at?: string
         }
@@ -955,6 +957,7 @@ export type Database = {
           id?: string
           level_name?: string
           level_number?: number
+          point_limit?: number
           sport_category?: string
           updated_at?: string
         }

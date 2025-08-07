@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Edit, Trash2, Save, X, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, Users, Search, Filter } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -64,7 +64,10 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   // Form states
   const [levelName, setLevelName] = useState('');
   const [levelNumber, setLevelNumber] = useState<number>(0);
+  const [pointLimit, setPointLimit] = useState<number>(0);
   const [selectedFigures, setSelectedFigures] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [difficultyFilter, setDifficultyFilter] = useState<string>('');
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -169,6 +172,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
           sport_category: selectedSport,
           level_number: levelNumber,
           level_name: levelName.trim(),
+          point_limit: pointLimit,
           created_by: user.id
         });
 
@@ -178,6 +182,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
       setIsCreateLevelOpen(false);
       setLevelName('');
       setLevelNumber(0);
+      setPointLimit(0);
       fetchLevelsForSport();
     } catch (error) {
       console.error('Error creating level:', error);
@@ -252,7 +257,15 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   };
 
   const getSportFigures = () => {
-    return figures.filter(figure => figure.category === selectedSport);
+    return figures.filter(figure => {
+      const matchesCategory = figure.category === selectedSport;
+      const matchesSearch = searchTerm === '' || 
+        figure.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (figure.description && figure.description.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesDifficulty = difficultyFilter === '' || figure.difficulty_level === difficultyFilter;
+      
+      return matchesCategory && matchesSearch && matchesDifficulty;
+    });
   };
 
   const getNextLevelNumber = () => {
@@ -317,6 +330,17 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                         value={levelNumber}
                         onChange={(e) => setLevelNumber(parseInt(e.target.value) || 0)}
                         placeholder={`Next: ${getNextLevelNumber()}`}
+                        className="bg-white/5 border-white/10 text-white"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="pointLimit" className="text-white">Point Limit</Label>
+                      <Input
+                        id="pointLimit"
+                        type="number"
+                        value={pointLimit}
+                        onChange={(e) => setPointLimit(parseInt(e.target.value) || 0)}
+                        placeholder="Points required to unlock"
                         className="bg-white/5 border-white/10 text-white"
                       />
                     </div>
@@ -410,11 +434,40 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="flex gap-4 items-end">
+              <div className="flex-1">
+                <Label className="text-white">Search Figures</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Search by name or description..."
+                    className="pl-10 bg-white/5 border-white/10 text-white"
+                  />
+                </div>
+              </div>
+              <div>
+                <Label className="text-white">Difficulty</Label>
+                <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                  <SelectTrigger className="w-40 bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="All" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Levels</SelectItem>
+                    <SelectItem value="Beginner">Beginner</SelectItem>
+                    <SelectItem value="Intermediate">Intermediate</SelectItem>
+                    <SelectItem value="Advanced">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
             <p className="text-muted-foreground">
-              Select figures that belong to this level. Selected: {selectedFigures.length}
+              Select figures that belong to this level. Selected: {selectedFigures.length} / {getSportFigures().length}
             </p>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
               {getSportFigures().map((figure) => (
                 <div
                   key={figure.id}
@@ -425,6 +478,18 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                     onCheckedChange={() => handleFigureToggle(figure.id)}
                     className="mt-1"
                   />
+                  {figure.image_url && (
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
+                      <img 
+                        src={figure.image_url} 
+                        alt={figure.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-white text-sm">{figure.name}</h4>
                     {figure.description && (
@@ -438,6 +503,11 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                   </div>
                 </div>
               ))}
+              {getSportFigures().length === 0 && (
+                <p className="text-center text-muted-foreground py-8">
+                  No figures found matching your search criteria.
+                </p>
+              )}
             </div>
             
             <div className="flex gap-2 pt-4 border-t border-white/10">
