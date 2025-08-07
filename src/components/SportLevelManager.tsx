@@ -70,6 +70,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('current');
+  const [usedFiguresInSport, setUsedFiguresInSport] = useState<string[]>([]);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -81,6 +82,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     fetchFigures();
     if (selectedSport) {
       fetchLevelsForSport();
+      fetchUsedFiguresInSport();
     }
   }, [user, selectedSport]);
 
@@ -129,6 +131,37 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
       toast.error('Failed to fetch levels');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUsedFiguresInSport = async () => {
+    try {
+      // First get all level IDs for the current sport
+      const { data: levelIds, error: levelError } = await supabase
+        .from('sport_levels')
+        .select('id')
+        .eq('sport_category', selectedSport);
+
+      if (levelError) throw levelError;
+
+      if (!levelIds || levelIds.length === 0) {
+        setUsedFiguresInSport([]);
+        return;
+      }
+
+      // Then get all figure IDs used in those levels
+      const { data, error } = await supabase
+        .from('level_figures')
+        .select('figure_id')
+        .in('level_id', levelIds.map(level => level.id));
+
+      if (error) throw error;
+
+      const usedFigureIds = data?.map(item => item.figure_id) || [];
+      setUsedFiguresInSport(usedFigureIds);
+    } catch (error) {
+      console.error('Error fetching used figures:', error);
+      setUsedFiguresInSport([]);
     }
   };
 
@@ -248,6 +281,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
       toast.success('Level figures updated successfully');
       setIsEditFiguresOpen(false);
       fetchLevelsForSport();
+      fetchUsedFiguresInSport();
     } catch (error) {
       console.error('Error saving level figures:', error);
       toast.error('Failed to save level figures');
@@ -272,7 +306,12 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
         (figure.description && figure.description.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesDifficulty = difficultyFilter === 'all' || figure.difficulty_level === difficultyFilter;
       
-      return matchesCategory && matchesSearch && matchesDifficulty;
+      // Don't show figures that are already used in this sport category (except for the current level being edited)
+      const isUsedInSport = usedFiguresInSport.includes(figure.id);
+      const isCurrentlySelected = selectedFigures.includes(figure.id);
+      const isAvailable = !isUsedInSport || isCurrentlySelected;
+      
+      return matchesCategory && matchesSearch && matchesDifficulty && isAvailable;
     });
   };
 
