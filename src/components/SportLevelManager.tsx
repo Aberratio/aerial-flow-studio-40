@@ -69,6 +69,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [selectedFigures, setSelectedFigures] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('current');
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -263,7 +264,9 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
 
   const getSportFigures = () => {
     return figures.filter(figure => {
-      const matchesCategory = figure.category === selectedSport;
+      const matchesCategory = categoryFilter === 'all' || 
+        (categoryFilter === 'current' && figure.category === selectedSport) ||
+        (categoryFilter !== 'current' && categoryFilter !== 'all' && figure.category === categoryFilter);
       const matchesSearch = searchTerm === '' || 
         figure.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (figure.description && figure.description.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -276,6 +279,11 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const getNextLevelNumber = () => {
     if (levels.length === 0) return 0;
     return Math.max(...levels.map(l => l.level_number)) + 1;
+  };
+
+  const getAvailableCategories = () => {
+    const categories = [...new Set(figures.map(f => f.category))].filter(Boolean);
+    return categories.map(cat => SPORT_CATEGORIES.find(sc => sc.value === cat) || { value: cat, label: cat });
   };
 
   return (
@@ -439,7 +447,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex gap-4 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex-1">
                 <Label className="text-white">Search Figures</Label>
                 <div className="relative">
@@ -453,9 +461,26 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                 </div>
               </div>
               <div>
+                <Label className="text-white">Sport Category</Label>
+                <Select value={categoryFilter || undefined} onValueChange={setCategoryFilter}>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current">Current Sport Only</SelectItem>
+                    <SelectItem value="all">All Sports</SelectItem>
+                    {getAvailableCategories().map(category => (
+                      <SelectItem key={category.value} value={category.value}>
+                        {category.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label className="text-white">Difficulty</Label>
                 <Select value={difficultyFilter || undefined} onValueChange={setDifficultyFilter}>
-                  <SelectTrigger className="w-40 bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
                   <SelectContent>
@@ -468,50 +493,99 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
               </div>
             </div>
             
-            <p className="text-muted-foreground">
-              Select figures that belong to this level. Selected: {selectedFigures.length} / {getSportFigures().length}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground">
+                Select figures for <span className="text-white font-medium">{selectedLevel?.level_name}</span>
+              </p>
+              <Badge variant="secondary" className="bg-purple-500/20 text-purple-300">
+                {selectedFigures.length} selected of {getSportFigures().length} available
+              </Badge>
+            </div>
             
-            <div className="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto border border-white/10 rounded-lg p-4 bg-black/20">
               {getSportFigures().map((figure) => (
                 <div
                   key={figure.id}
-                  className="flex items-start space-x-3 p-3 rounded-lg bg-white/5 border border-white/10"
+                  className={`group relative overflow-hidden rounded-lg border transition-all duration-300 cursor-pointer ${
+                    selectedFigures.includes(figure.id)
+                      ? 'border-purple-400 bg-purple-500/10 ring-2 ring-purple-400/30'
+                      : 'border-white/20 bg-white/5 hover:border-purple-400/50 hover:bg-white/10'
+                  }`}
+                  onClick={() => handleFigureToggle(figure.id)}
                 >
-                  <Checkbox
-                    checked={selectedFigures.includes(figure.id)}
-                    onCheckedChange={() => handleFigureToggle(figure.id)}
-                    className="mt-1"
-                  />
-                  {figure.image_url && (
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-white/10 flex-shrink-0">
-                      <img 
-                        src={figure.image_url} 
-                        alt={figure.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none';
-                        }}
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      <Checkbox
+                        checked={selectedFigures.includes(figure.id)}
+                        onCheckedChange={() => handleFigureToggle(figure.id)}
+                        onClick={(e) => e.stopPropagation()}
+                        className="mt-1 shrink-0"
                       />
+                      
+                      {figure.image_url && (
+                        <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-white/10 shrink-0">
+                          <img 
+                            src={figure.image_url} 
+                            alt={figure.name}
+                            className="w-full h-full object-cover transition-transform group-hover:scale-110"
+                            onError={(e) => {
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      )}
+                      
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h4 className="font-semibold text-white text-sm leading-tight group-hover:text-purple-300 transition-colors">
+                            {figure.name}
+                          </h4>
+                          {selectedFigures.includes(figure.id) && (
+                            <div className="w-2 h-2 rounded-full bg-purple-400 shrink-0 mt-1" />
+                          )}
+                        </div>
+                        
+                        {figure.description && (
+                          <p className="text-xs text-muted-foreground mb-2 line-clamp-2 leading-relaxed">
+                            {figure.description}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center gap-2">
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs px-2 py-1 ${
+                              figure.difficulty_level === 'Beginner' ? 'border-green-400/50 text-green-300' :
+                              figure.difficulty_level === 'Intermediate' ? 'border-yellow-400/50 text-yellow-300' :
+                              'border-red-400/50 text-red-300'
+                            }`}
+                          >
+                            {figure.difficulty_level}
+                          </Badge>
+                          
+                          {figure.category !== selectedSport && (
+                            <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-300 border-blue-400/30">
+                              {SPORT_CATEGORIES.find(c => c.value === figure.category)?.label || figure.category}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-medium text-white text-sm">{figure.name}</h4>
-                    {figure.description && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {figure.description}
-                      </p>
-                    )}
-                    <Badge variant="outline" className="mt-2 text-xs">
-                      {figure.difficulty_level}
-                    </Badge>
                   </div>
                 </div>
               ))}
+              
               {getSportFigures().length === 0 && (
-                <p className="text-center text-muted-foreground py-8">
-                  No figures found matching your search criteria.
-                </p>
+                <div className="col-span-full text-center py-12">
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                    <Search className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-muted-foreground text-lg font-medium mb-2">No figures found</p>
+                  <p className="text-muted-foreground text-sm">
+                    Try adjusting your search criteria or filters
+                  </p>
+                </div>
               )}
             </div>
             
