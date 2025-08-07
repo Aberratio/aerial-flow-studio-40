@@ -17,6 +17,7 @@ interface SportLevel {
   sport_category: string;
   level_number: number;
   level_name: string;
+  point_limit: number;
   created_at: string;
   figure_count: number;
 }
@@ -102,20 +103,24 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
       setLoading(true);
       const { data, error } = await supabase
         .from('sport_levels')
-        .select(`
-          *,
-          level_figures!inner(count)
-        `)
+        .select('*')
         .eq('sport_category', selectedSport)
         .order('level_number');
 
       if (error) throw error;
 
-      // Format data with figure count
-      const levelsWithCount = data?.map(level => ({
-        ...level,
-        figure_count: level.level_figures?.[0]?.count || 0
-      })) || [];
+      // Get figure counts separately
+      const levelsWithCount = await Promise.all((data || []).map(async (level) => {
+        const { count } = await supabase
+          .from('level_figures')
+          .select('*', { count: 'exact', head: true })
+          .eq('level_id', level.id);
+        
+        return {
+          ...level,
+          figure_count: count || 0
+        };
+      }));
 
       setLevels(levelsWithCount);
     } catch (error) {
