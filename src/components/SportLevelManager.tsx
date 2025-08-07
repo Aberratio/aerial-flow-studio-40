@@ -293,7 +293,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
           <CardTitle className="text-white">Select Sport Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={selectedSport} onValueChange={setSelectedSport}>
+          <Select value={selectedSport || undefined} onValueChange={setSelectedSport}>
             <SelectTrigger className="bg-white/5 border-white/10 text-white">
               <SelectValue placeholder="Choose a sport category" />
             </SelectTrigger>
@@ -454,7 +454,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
               </div>
               <div>
                 <Label className="text-white">Difficulty</Label>
-                <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                <Select value={difficultyFilter || undefined} onValueChange={setDifficultyFilter}>
                   <SelectTrigger className="w-40 bg-white/5 border-white/10 text-white">
                     <SelectValue placeholder="All" />
                   </SelectTrigger>
