@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SkillTree from "@/components/SkillTree";
+import SportLevelManager from "@/components/SportLevelManager";
 
 interface UserJourney {
   id: string;
@@ -65,6 +66,7 @@ const AerialJourney = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [availableSports, setAvailableSports] = useState<Array<{category: string, count: number}>>([]);
   const [selectedSkillTreeSport, setSelectedSkillTreeSport] = useState<{category: string, name: string} | null>(null);
+  const [showLevelManager, setShowLevelManager] = useState(false);
   
   // Form state
   const [selectedSport, setSelectedSport] = useState("");
@@ -214,6 +216,17 @@ const AerialJourney = () => {
     );
   }
 
+  // Show level manager if selected
+  if (showLevelManager) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-pink-900/20 to-blue-900/20 p-4 md:p-6">
+        <div className="max-w-6xl mx-auto">
+          <SportLevelManager onClose={() => setShowLevelManager(false)} />
+        </div>
+      </div>
+    );
+  }
+
   // Show skill tree if sport is selected
   if (selectedSkillTreeSport) {
     return (
@@ -249,7 +262,7 @@ const AerialJourney = () => {
           </div>
 
           {/* Action Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <Card className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
               <CardContent className="p-6 text-center">
                 <TreePine className="w-12 h-12 mx-auto mb-4 text-green-400" />
@@ -266,6 +279,17 @@ const AerialJourney = () => {
                 <Users className="w-12 h-12 mx-auto mb-4 text-blue-400" />
                 <h3 className="text-xl font-bold text-white mb-2">Setup Journey</h3>
                 <p className="text-muted-foreground text-sm">Personalize your aerial training experience</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
+              onClick={() => setShowLevelManager(true)}
+            >
+              <CardContent className="p-6 text-center">
+                <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
+                <h3 className="text-xl font-bold text-white mb-2">Manage Levels</h3>
+                <p className="text-muted-foreground text-sm">Admin: Create and manage sport levels</p>
               </CardContent>
             </Card>
 

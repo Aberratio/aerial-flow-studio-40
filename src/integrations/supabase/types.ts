@@ -514,6 +514,48 @@ export type Database = {
         }
         Relationships: []
       }
+      level_figures: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          figure_id: string
+          id: string
+          level_id: string
+          order_index: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          figure_id: string
+          id?: string
+          level_id: string
+          order_index?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          figure_id?: string
+          id?: string
+          level_id?: string
+          order_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "level_figures_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "level_figures_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "sport_levels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           amount: number | null
@@ -884,6 +926,36 @@ export type Database = {
           id?: string
           setting_key?: string
           setting_value?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      sport_levels: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          level_name: string
+          level_number: number
+          sport_category: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          level_name: string
+          level_number: number
+          sport_category: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          level_name?: string
+          level_number?: number
+          sport_category?: string
           updated_at?: string
         }
         Relationships: []
