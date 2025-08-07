@@ -3,11 +3,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Star, Trophy, Target, Zap, Crown, Award, Medal } from "lucide-react";
+import { ArrowLeft, Star, Trophy, Target, Zap, Crown, Award, Medal, TreePine, Users, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import SkillTree from "@/components/SkillTree";
 
 interface UserJourney {
   id: string;
@@ -59,9 +60,11 @@ const ACHIEVEMENT_BADGES = [
 const AerialJourney = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(0); // Start with main view
   const [userJourney, setUserJourney] = useState<UserJourney | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [availableSports, setAvailableSports] = useState<Array<{category: string, count: number}>>([]);
+  const [selectedSkillTreeSport, setSelectedSkillTreeSport] = useState<{category: string, name: string} | null>(null);
   
   // Form state
   const [selectedSport, setSelectedSport] = useState("");
@@ -75,7 +78,34 @@ const AerialJourney = () => {
     }
     
     checkExistingJourney();
+    fetchAvailableSports();
   }, [user, navigate]);
+
+  const fetchAvailableSports = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('figures')
+        .select('category')
+        .not('category', 'is', null);
+
+      if (error) throw error;
+
+      // Count figures per category
+      const sportCounts = data.reduce((acc: Record<string, number>, figure) => {
+        acc[figure.category] = (acc[figure.category] || 0) + 1;
+        return acc;
+      }, {});
+
+      const sportsArray = Object.entries(sportCounts).map(([category, count]) => ({
+        category,
+        count
+      }));
+
+      setAvailableSports(sportsArray);
+    } catch (error) {
+      console.error('Error fetching sports:', error);
+    }
+  };
 
   const checkExistingJourney = async () => {
     if (!user) return;
@@ -94,7 +124,7 @@ const AerialJourney = () => {
 
       if (data) {
         setUserJourney(data);
-        setCurrentStep(4); // Go to dashboard if journey exists
+        // Don't automatically go to dashboard, stay on main view
       }
     } catch (error) {
       console.error('Error:', error);
@@ -106,6 +136,32 @@ const AerialJourney = () => {
   const handleSportSelect = (sportId: string) => {
     setSelectedSport(sportId);
     setCurrentStep(2);
+  };
+
+  const handleSkillTreeView = (category: string, name: string) => {
+    setSelectedSkillTreeSport({ category, name });
+  };
+
+  const getSportDisplayName = (category: string) => {
+    const sportMap: Record<string, string> = {
+      'hoop': 'Aerial Hoop',
+      'pole': 'Pole Dancing',
+      'silks': 'Aerial Silks',
+      'hammock': 'Aerial Hammock',
+      'core': 'Core Training'
+    };
+    return sportMap[category] || category.charAt(0).toUpperCase() + category.slice(1);
+  };
+
+  const getSportIcon = (category: string) => {
+    const iconMap: Record<string, string> = {
+      'hoop': '🪩',
+      'pole': '💃',
+      'silks': '🎪',
+      'hammock': '🏺',
+      'core': '💪'
+    };
+    return iconMap[category] || '🏃';
   };
 
   const handleLevelSelect = (levelId: string) => {
@@ -158,11 +214,22 @@ const AerialJourney = () => {
     );
   }
 
-  // Welcome Step
-  if (currentStep === 1) {
+  // Show skill tree if sport is selected
+  if (selectedSkillTreeSport) {
+    return (
+      <SkillTree
+        sportCategory={selectedSkillTreeSport.category}
+        sportName={selectedSkillTreeSport.name}
+        onBack={() => setSelectedSkillTreeSport(null)}
+      />
+    );
+  }
+
+  // Main View - Sports Overview
+  if (currentStep === 0) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-pink-900/20 to-blue-900/20 p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <Button
             variant="ghost"
             onClick={() => navigate('/summary')}
@@ -170,6 +237,122 @@ const AerialJourney = () => {
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
+          </Button>
+
+          <div className="text-center mb-8">
+            <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+              Aerial Journey
+            </h1>
+            <p className="text-xl text-muted-foreground mb-8">
+              Master aerial skills through gamified progression
+            </p>
+          </div>
+
+          {/* Action Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <Card className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
+              <CardContent className="p-6 text-center">
+                <TreePine className="w-12 h-12 mx-auto mb-4 text-green-400" />
+                <h3 className="text-xl font-bold text-white mb-2">Explore Skill Trees</h3>
+                <p className="text-muted-foreground text-sm">View all sports and their progression paths</p>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
+              onClick={() => setCurrentStep(1)}
+            >
+              <CardContent className="p-6 text-center">
+                <Users className="w-12 h-12 mx-auto mb-4 text-blue-400" />
+                <h3 className="text-xl font-bold text-white mb-2">Setup Journey</h3>
+                <p className="text-muted-foreground text-sm">Personalize your aerial training experience</p>
+              </CardContent>
+            </Card>
+
+            {userJourney && (
+              <Card 
+                className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
+                onClick={() => setCurrentStep(4)}
+              >
+                <CardContent className="p-6 text-center">
+                  <Activity className="w-12 h-12 mx-auto mb-4 text-purple-400" />
+                  <h3 className="text-xl font-bold text-white mb-2">My Dashboard</h3>
+                  <p className="text-muted-foreground text-sm">View your progress and achievements</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Available Sports */}
+          <Card className="glass-effect border-white/10 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center">
+                <TreePine className="w-5 h-5 mr-2" />
+                Explore Skill Trees by Sport
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Click on any sport to see its complete skill tree and your progression
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {availableSports.map((sport) => {
+                  const displayName = getSportDisplayName(sport.category);
+                  const icon = getSportIcon(sport.category);
+                  
+                  return (
+                    <Card
+                      key={sport.category}
+                      className="cursor-pointer hover:scale-105 transition-all duration-300 bg-white/5 border-white/10 hover:border-purple-400/50"
+                      onClick={() => handleSkillTreeView(sport.category, displayName)}
+                    >
+                      <CardContent className="p-6">
+                        <div className="text-center mb-4">
+                          <div className="text-4xl mb-3">{icon}</div>
+                          <h3 className="font-semibold text-white text-lg mb-2">{displayName}</h3>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">Available Figures</span>
+                            <Badge variant="secondary">{sport.count}</Badge>
+                          </div>
+                          
+                          <Button 
+                            className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 text-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSkillTreeView(sport.category, displayName);
+                            }}
+                          >
+                            <TreePine className="w-4 h-4 mr-2" />
+                            View Skill Tree
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Welcome Step
+  if (currentStep === 1) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-pink-900/20 to-blue-900/20 p-4 md:p-6">
+        <div className="max-w-4xl mx-auto">
+          <Button
+            variant="ghost"
+            onClick={() => setCurrentStep(0)}
+            className="mb-6 text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Main View
           </Button>
 
           <div className="text-center mb-8">
@@ -315,11 +498,11 @@ const AerialJourney = () => {
         <div className="max-w-6xl mx-auto">
           <Button
             variant="ghost"
-            onClick={() => navigate('/summary')}
+            onClick={() => setCurrentStep(0)}
             className="mb-6 text-white hover:bg-white/10"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            Back to Main View
           </Button>
 
           <div className="mb-8">
