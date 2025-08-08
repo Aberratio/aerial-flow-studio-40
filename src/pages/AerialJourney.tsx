@@ -64,7 +64,7 @@ const AerialJourney = () => {
   const [currentStep, setCurrentStep] = useState(0); // Start with main view
   const [userJourney, setUserJourney] = useState<UserJourney | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [availableSports, setAvailableSports] = useState<Array<{category: string, count: number}>>([]);
+  const [availableSports, setAvailableSports] = useState<Array<{category: string, count: number, userPoints?: number, totalLevels?: number, unlockedLevels?: number}>>([]);
   const [selectedSkillTreeSport, setSelectedSkillTreeSport] = useState<{category: string, name: string} | null>(null);
   const [showLevelManager, setShowLevelManager] = useState(false);
   
@@ -98,10 +98,38 @@ const AerialJourney = () => {
         return acc;
       }, {});
 
-      const sportsArray = Object.entries(sportCounts).map(([category, count]) => ({
-        category,
-        count
-      }));
+      // Get user points if user exists
+      let userPoints = 0;
+      if (user) {
+        const { data: journeyData } = await supabase
+          .from('user_journeys')
+          .select('total_points')
+          .eq('user_id', user.id)
+          .single();
+        userPoints = journeyData?.total_points || 0;
+      }
+
+      // For each sport category, get level information
+      const sportsArray = await Promise.all(
+        Object.entries(sportCounts).map(async ([category, count]) => {
+          const { data: levelsData } = await supabase
+            .from('sport_levels')
+            .select('id, level_number, point_limit')
+            .eq('sport_category', category)
+            .order('level_number', { ascending: true });
+
+          const totalLevels = levelsData?.length || 0;
+          const unlockedLevels = levelsData?.filter(level => userPoints >= level.point_limit).length || 0;
+
+          return {
+            category,
+            count,
+            userPoints,
+            totalLevels,
+            unlockedLevels
+          };
+        })
+      );
 
       setAvailableSports(sportsArray);
     } catch (error) {
@@ -323,6 +351,8 @@ const AerialJourney = () => {
                 {availableSports.map((sport) => {
                   const displayName = getSportDisplayName(sport.category);
                   const icon = getSportIcon(sport.category);
+                  const hasLevels = (sport.totalLevels || 0) > 0;
+                  const progressPercentage = hasLevels ? Math.round(((sport.unlockedLevels || 0) / (sport.totalLevels || 1)) * 100) : 0;
                   
                   return (
                     <Card
@@ -337,10 +367,42 @@ const AerialJourney = () => {
                         </div>
                         
                         <div className="space-y-3">
+                          {/* Points Display */}
+                          {user && (
+                            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-yellow-400 font-medium">Your Points</span>
+                                <Badge className="bg-yellow-500/20 text-yellow-400">
+                                  💰 {sport.userPoints || 0}
+                                </Badge>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Level Progress */}
+                          {hasLevels && user && (
+                            <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-sm text-purple-400 font-medium">Level Progress</span>
+                                <span className="text-xs text-purple-300">
+                                  {sport.unlockedLevels}/{sport.totalLevels} unlocked
+                                </span>
+                              </div>
+                              <Progress value={progressPercentage} className="h-2" />
+                            </div>
+                          )}
+
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-muted-foreground">Available Figures</span>
                             <Badge variant="secondary">{sport.count}</Badge>
                           </div>
+
+                          {hasLevels && (
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-muted-foreground">Skill Levels</span>
+                              <Badge variant="outline">{sport.totalLevels}</Badge>
+                            </div>
+                          )}
                           
                           <Button 
                             className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 text-white"

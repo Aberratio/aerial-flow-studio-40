@@ -21,6 +21,7 @@ interface SportLevel {
   sport_category: string;
   level_number: number;
   level_name: string;
+  point_limit: number;
   figures: Figure[];
 }
 
@@ -39,12 +40,12 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const { user } = useAuth();
   const [sportLevels, setSportLevels] = useState<SportLevel[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
-  const [userLevel, setUserLevel] = useState<number>(0);
+  const [userPoints, setUserPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchSportLevelsAndProgress();
-    fetchUserLevel();
+    fetchUserPoints();
   }, [sportCategory, user]);
 
   const fetchSportLevelsAndProgress = async () => {
@@ -59,6 +60,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           sport_category,
           level_number,
           level_name,
+          point_limit,
           level_figures (
             figure_id,
             order_index,
@@ -83,6 +85,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
         sport_category: level.sport_category,
         level_number: level.level_number,
         level_name: level.level_name,
+        point_limit: level.point_limit,
         figures: level.level_figures
           ?.sort((a, b) => a.order_index - b.order_index)
           ?.map(lf => lf.figures)
@@ -107,31 +110,22 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     }
   };
 
-  const fetchUserLevel = async () => {
+  const fetchUserPoints = async () => {
     if (!user) return;
 
     try {
       const { data, error } = await supabase
         .from('user_journeys')
-        .select('experience_level')
+        .select('total_points')
         .eq('user_id', user.id)
         .single();
 
       if (error) {
-        console.error('Error fetching user level:', error);
+        console.error('Error fetching user points:', error);
         return;
       }
 
-      if (data?.experience_level) {
-        // Convert experience level to number (for simplicity, assume beginner=0, intermediate=1, advanced=2)
-        const levelMap: Record<string, number> = {
-          'beginner': 0,
-          'intermediate': 1,
-          'advanced': 2,
-          'professional': 3
-        };
-        setUserLevel(levelMap[data.experience_level.toLowerCase()] || 0);
-      }
+      setUserPoints(data?.total_points || 0);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -141,8 +135,13 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     return userProgress.find(p => p.figure_id === figureId);
   };
 
-  const isLevelUnlocked = (levelNumber: number) => {
-    return levelNumber <= userLevel;
+  const isLevelUnlocked = (level: SportLevel) => {
+    return userPoints >= level.point_limit;
+  };
+
+  const getPointsForNextLevel = (currentLevel: SportLevel) => {
+    const nextLevel = sportLevels.find(l => l.level_number === currentLevel.level_number + 1);
+    return nextLevel ? nextLevel.point_limit - userPoints : 0;
   };
 
   const getLevelProgress = (level: SportLevel) => {
@@ -150,7 +149,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     
     const completedFigures = level.figures.filter(figure => {
       const progress = getFigureProgress(figure.id);
-      return progress?.status === 'mastered' || progress?.status === 'learned';
+      return progress?.status === 'completed';
     });
     
     return Math.round((completedFigures.length / level.figures.length) * 100);
@@ -180,27 +179,38 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
             {sportName} Skill Tree
           </h1>
-          <div className="flex items-center space-x-4">
-            <Badge className="bg-purple-500/20 text-purple-400">
-              Your Level: {userLevel}
+          <div className="flex items-center flex-wrap gap-4 mb-4">
+            <Badge className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 border border-yellow-400/30 px-4 py-2 text-lg">
+              💰 {userPoints} Points
             </Badge>
             <p className="text-muted-foreground">
-              Progress through levels by mastering figures
+              Complete figures to earn points and unlock new levels
             </p>
           </div>
+          <Card className="glass-effect border-white/10 p-4">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Your Progress in {sportName}</span>
+              <span className="text-white font-semibold">{userPoints} total points earned</span>
+            </div>
+          </Card>
         </div>
 
         {/* Level Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {sportLevels.map((level) => {
-            const isUnlocked = isLevelUnlocked(level.level_number);
+            const isUnlocked = isLevelUnlocked(level);
             const progress = getLevelProgress(level);
             const figureCount = level.figures.length;
+            const pointsNeeded = getPointsForNextLevel(level);
             
             return (
               <Card
                 key={level.id}
-                className={`glass-effect border-white/10 ${!isUnlocked ? 'opacity-50' : ''}`}
+                className={`glass-effect border-white/10 transition-all duration-300 ${
+                  isUnlocked 
+                    ? 'border-green-400/30 bg-green-500/5' 
+                    : 'opacity-70 border-red-400/30 bg-red-500/5'
+                }`}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
@@ -208,23 +218,57 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                       {isUnlocked ? (
                         <CheckCircle className="w-6 h-6 text-green-400" />
                       ) : (
-                        <Lock className="w-6 h-6 text-muted-foreground" />
+                        <Lock className="w-6 h-6 text-red-400" />
                       )}
-                      <h3 className="text-xl font-bold text-white">{level.level_name}</h3>
+                      <h3 className="text-lg font-bold text-white">{level.level_name}</h3>
                     </div>
-                    {level.level_number === userLevel && <Crown className="w-6 h-6 text-yellow-400" />}
+                    <Badge 
+                      className={`${
+                        isUnlocked 
+                          ? 'bg-green-500/20 text-green-400' 
+                          : 'bg-red-500/20 text-red-400'
+                      }`}
+                    >
+                      {level.point_limit} pts
+                    </Badge>
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{figureCount} figures</span>
-                      <span className="text-muted-foreground">{progress}%</span>
+                      <span className="text-muted-foreground">{progress}% complete</span>
                     </div>
                     <Progress value={isUnlocked ? progress : 0} className="h-2" />
+                    
+                    {!isUnlocked && level.point_limit > 0 && (
+                      <div className="bg-red-500/10 border border-red-400/20 rounded-lg p-3">
+                        <div className="flex items-center space-x-2 text-sm">
+                          <Lock className="w-4 h-4 text-red-400" />
+                          <span className="text-red-400 font-medium">
+                            Need {level.point_limit - userPoints} more points
+                          </span>
+                        </div>
+                        <p className="text-xs text-red-300 mt-1">
+                          Complete figures in unlocked levels to earn points
+                        </p>
+                      </div>
+                    )}
+
+                    {isUnlocked && (
+                      <div className="bg-green-500/10 border border-green-400/20 rounded-lg p-3">
+                        <div className="flex items-center space-x-2 text-sm">
+                          <CheckCircle className="w-4 h-4 text-green-400" />
+                          <span className="text-green-400 font-medium">Unlocked!</span>
+                        </div>
+                        <p className="text-xs text-green-300 mt-1">
+                          You can practice and complete all figures in this level
+                        </p>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="mt-3 text-xs text-muted-foreground">
-                    Level {level.level_number}
+                    Level {level.level_number} • {level.point_limit} points required
                   </div>
                 </CardContent>
               </Card>
@@ -247,22 +291,32 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
             </Card>
           ) : (
             sportLevels.map((level) => {
-              const isUnlocked = isLevelUnlocked(level.level_number);
+              const isUnlocked = isLevelUnlocked(level);
+              const pointsNeeded = level.point_limit - userPoints;
               
               return (
                 <Card key={level.id} className={`glass-effect border-white/10 ${!isUnlocked ? 'opacity-60' : ''}`}>
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center space-x-3">
+                    <CardTitle className="text-white flex items-center flex-wrap gap-3">
                       {isUnlocked ? (
                         <CheckCircle className="w-5 h-5 text-green-400" />
                       ) : (
-                        <Lock className="w-5 h-5 text-muted-foreground" />
+                        <Lock className="w-5 h-5 text-red-400" />
                       )}
                       <span>{level.level_name} (Level {level.level_number})</span>
                       <Badge variant="secondary">{level.figures.length} figures</Badge>
-                      {!isUnlocked && (
-                        <Badge className="bg-red-500/20 text-red-400">
-                          Locked - Complete previous level first
+                      <Badge 
+                        className={`${
+                          isUnlocked 
+                            ? 'bg-green-500/20 text-green-400' 
+                            : 'bg-red-500/20 text-red-400'
+                        }`}
+                      >
+                        {level.point_limit} points required
+                      </Badge>
+                      {!isUnlocked && pointsNeeded > 0 && (
+                        <Badge className="bg-orange-500/20 text-orange-400">
+                          Need {pointsNeeded} more points
                         </Badge>
                       )}
                     </CardTitle>
@@ -276,31 +330,33 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {level.figures.map((figure) => {
                           const progress = getFigureProgress(figure.id);
-                          const isCompleted = progress?.status === 'mastered' || progress?.status === 'learned';
+                          const isCompleted = progress?.status === 'completed';
+                          const canPractice = isUnlocked;
                           
                           return (
                             <Card
                               key={figure.id}
                               className={`transition-all duration-300 ${
-                                isUnlocked
+                                canPractice
                                   ? isCompleted
-                                    ? 'bg-green-500/10 border-green-400/50 hover:scale-105'
-                                    : 'bg-white/5 border-white/10 hover:border-purple-400/50 hover:scale-105'
+                                    ? 'bg-green-500/10 border-green-400/50 hover:scale-105 cursor-pointer'
+                                    : 'bg-white/5 border-white/10 hover:border-purple-400/50 hover:scale-105 cursor-pointer'
                                   : 'bg-gray-900/50 border-gray-700/50 cursor-not-allowed'
                               }`}
+                              title={!canPractice ? `Unlock this level with ${level.point_limit} points to practice this figure` : ''}
                             >
                               <CardContent className="p-4">
                                 <div className="flex items-start justify-between mb-2">
                                   <h4 className="font-semibold text-white text-sm">{figure.name}</h4>
                                   <div className="flex items-center space-x-1">
-                                    {isUnlocked ? (
+                                    {canPractice ? (
                                       isCompleted ? (
                                         <CheckCircle className="w-4 h-4 text-green-400" />
                                       ) : (
                                         <Circle className="w-4 h-4 text-muted-foreground" />
                                       )
                                     ) : (
-                                      <Lock className="w-4 h-4 text-muted-foreground" />
+                                      <Lock className="w-4 h-4 text-red-400" />
                                     )}
                                   </div>
                                 </div>
@@ -311,23 +367,39 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                   </p>
                                 )}
                                 
-                                {progress && (
-                                  <Badge 
-                                    className={`text-xs ${
-                                      progress.status === 'mastered' ? 'bg-green-500/20 text-green-400' :
-                                      progress.status === 'learned' ? 'bg-blue-500/20 text-blue-400' :
-                                      progress.status === 'practicing' ? 'bg-yellow-500/20 text-yellow-400' :
-                                      'bg-gray-500/20 text-gray-400'
-                                    }`}
-                                  >
-                                    {progress.status}
-                                  </Badge>
-                                )}
+                                <div className="flex items-center justify-between">
+                                  {progress && (
+                                    <Badge 
+                                      className={`text-xs ${
+                                        progress.status === 'completed' ? 'bg-green-500/20 text-green-400' :
+                                        progress.status === 'for_later' ? 'bg-blue-500/20 text-blue-400' :
+                                        progress.status === 'failed' ? 'bg-red-500/20 text-red-400' :
+                                        'bg-gray-500/20 text-gray-400'
+                                      }`}
+                                    >
+                                      {progress.status === 'completed' ? '✅ Complete' :
+                                       progress.status === 'for_later' ? '📝 For Later' :
+                                       progress.status === 'failed' ? '❌ Failed' :
+                                       progress.status}
+                                    </Badge>
+                                  )}
+                                  
+                                  {figure.difficulty_level && (
+                                    <Badge variant="outline" className="text-xs">
+                                      {figure.difficulty_level}
+                                    </Badge>
+                                  )}
+                                </div>
                                 
-                                {!isUnlocked && (
-                                  <div className="mt-2 text-center">
-                                    <Lock className="w-6 h-6 mx-auto text-muted-foreground" />
-                                    <p className="text-xs text-muted-foreground mt-1">Locked</p>
+                                {!canPractice && (
+                                  <div className="mt-2 text-center bg-red-500/10 border border-red-400/20 rounded p-2">
+                                    <Lock className="w-4 h-4 mx-auto text-red-400 mb-1" />
+                                    <p className="text-xs text-red-400">
+                                      Need {level.point_limit} points
+                                    </p>
+                                    <p className="text-xs text-red-300">
+                                      Preview only
+                                    </p>
                                   </div>
                                 )}
                               </CardContent>
