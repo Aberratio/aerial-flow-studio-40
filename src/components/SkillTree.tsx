@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Lock, CheckCircle, Circle, Crown } from "lucide-react";
+import { ArrowLeft, Lock, CheckCircle, Circle, Crown, Eye, ExternalLink } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { FigurePreviewModal } from "@/components/FigurePreviewModal";
+import { useNavigate } from "react-router-dom";
 
 interface Figure {
   id: string;
@@ -38,10 +40,13 @@ interface SkillTreeProps {
 
 const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [sportLevels, setSportLevels] = useState<SportLevel[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
   const [userPoints, setUserPoints] = useState<number>(0);
   const [loading, setLoading] = useState(true);
+  const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   useEffect(() => {
     fetchSportLevelsAndProgress();
@@ -129,6 +134,20 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     } catch (error) {
       console.error('Error:', error);
     }
+  };
+
+  const handleFigureClick = (figure: Figure, canPractice: boolean) => {
+    if (canPractice) {
+      setSelectedFigure(figure);
+      setIsPreviewModalOpen(true);
+    }
+  };
+
+  const handleClosePreviewModal = () => {
+    setIsPreviewModalOpen(false);
+    setSelectedFigure(null);
+    // Refresh progress data
+    fetchSportLevelsAndProgress();
   };
 
   const getFigureProgress = (figureId: string) => {
@@ -344,21 +363,55 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                   : 'bg-gray-900/50 border-gray-700/50 cursor-not-allowed'
                               }`}
                               title={!canPractice ? `Unlock this level with ${level.point_limit} points to practice this figure` : ''}
+                              onClick={() => handleFigureClick(figure, canPractice)}
                             >
                               <CardContent className="p-4">
-                                <div className="flex items-start justify-between mb-2">
-                                  <h4 className="font-semibold text-white text-sm">{figure.name}</h4>
-                                  <div className="flex items-center space-x-1">
+                                {/* Figure Image */}
+                                <div className="mb-3 relative">
+                                  {figure.image_url ? (
+                                    <div className="aspect-square rounded-lg overflow-hidden bg-gray-800">
+                                      <img 
+                                        src={figure.image_url} 
+                                        alt={figure.name}
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                          e.currentTarget.src = '/placeholder.svg';
+                                        }}
+                                      />
+                                      {canPractice && (
+                                        <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
+                                          <Eye className="w-6 h-6 text-white" />
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="aspect-square rounded-lg bg-gray-800 flex items-center justify-center">
+                                      <span className="text-2xl">🤸</span>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Status Badge Overlay */}
+                                  <div className="absolute top-2 right-2">
                                     {canPractice ? (
                                       isCompleted ? (
-                                        <CheckCircle className="w-4 h-4 text-green-400" />
+                                        <div className="bg-green-500 rounded-full p-1">
+                                          <CheckCircle className="w-4 h-4 text-white" />
+                                        </div>
                                       ) : (
-                                        <Circle className="w-4 h-4 text-muted-foreground" />
+                                        <div className="bg-gray-600 rounded-full p-1">
+                                          <Circle className="w-4 h-4 text-white" />
+                                        </div>
                                       )
                                     ) : (
-                                      <Lock className="w-4 h-4 text-red-400" />
+                                      <div className="bg-red-500 rounded-full p-1">
+                                        <Lock className="w-4 h-4 text-white" />
+                                      </div>
                                     )}
                                   </div>
+                                </div>
+
+                                <div className="flex items-start justify-between mb-2">
+                                  <h4 className="font-semibold text-white text-sm leading-tight">{figure.name}</h4>
                                 </div>
                                 
                                 {figure.description && (
@@ -390,9 +443,37 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                     </Badge>
                                   )}
                                 </div>
+
+                                {canPractice && (
+                                  <div className="mt-3 flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="flex-1 text-xs h-8"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleFigureClick(figure, canPractice);
+                                      }}
+                                    >
+                                      <Eye className="w-3 h-3 mr-1" />
+                                      Preview
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="text-xs h-8 px-2"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        navigate(`/exercise-detail/${figure.id}`);
+                                      }}
+                                    >
+                                      <ExternalLink className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                )}
                                 
                                 {!canPractice && (
-                                  <div className="mt-2 text-center bg-red-500/10 border border-red-400/20 rounded p-2">
+                                  <div className="mt-3 text-center bg-red-500/10 border border-red-400/20 rounded p-2">
                                     <Lock className="w-4 h-4 mx-auto text-red-400 mb-1" />
                                     <p className="text-xs text-red-400">
                                       Need {level.point_limit} points
@@ -414,6 +495,15 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
             })
           )}
         </div>
+
+        {/* Figure Preview Modal */}
+        {selectedFigure && (
+          <FigurePreviewModal
+            figure={selectedFigure}
+            isOpen={isPreviewModalOpen}
+            onClose={handleClosePreviewModal}
+          />
+        )}
       </div>
     </div>
   );
