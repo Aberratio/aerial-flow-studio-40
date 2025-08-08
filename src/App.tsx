@@ -31,7 +31,7 @@ import ChallengePreview from "@/pages/ChallengePreview";
 import PostDetail from "@/pages/PostDetail";
 import ExerciseDetail from "@/pages/ExerciseDetail";
 import AchievementManagement from "@/pages/AchievementManagement";
-import Summary from "@/pages/Summary";
+import Index from "@/pages/Index";
 import AerialJourney from "@/pages/AerialJourney";
 
 import LandingPageManagement from "@/pages/LandingPageManagement";
@@ -89,7 +89,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (user) {
-    return <Navigate to="/summary" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return <>{children}</>;
@@ -143,10 +143,10 @@ const AppRoutes = () => {
         }
       />
       <Route
-        path="/summary"
+        path="/home"
         element={
           <ProtectedRoute>
-            <Summary />
+            <Index />
           </ProtectedRoute>
         }
       />
