@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Lock, CheckCircle, Circle, Crown, Eye, ExternalLink, EyeOff } from "lucide-react";
+import { ArrowLeft, Lock, CheckCircle, Circle, Crown, Eye, ExternalLink, EyeOff, Bookmark, AlertCircle, CircleMinus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FigurePreviewModal } from "@/components/FigurePreviewModal";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 
 interface Figure {
   id: string;
@@ -42,6 +44,8 @@ interface SkillTreeProps {
 const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { hasPremiumAccess } = useSubscriptionStatus();
   const [sportLevels, setSportLevels] = useState<SportLevel[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
   const [userPoints, setUserPoints] = useState<number>(0);
@@ -49,6 +53,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [showAllLevels, setShowAllLevels] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSportLevelsAndProgress();
@@ -189,6 +194,73 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     });
     
     return Math.round((completedFigures.length / level.figures.length) * 100);
+  };
+
+  // Update figure progress status
+  const updateFigureStatus = async (figureId: string, status: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    if (!user) return;
+    
+    try {
+      setUpdatingStatus(figureId);
+
+      const { data, error } = await supabase
+        .from('figure_progress')
+        .upsert(
+          {
+            user_id: user.id,
+            figure_id: figureId,
+            status: status,
+            updated_at: new Date().toISOString(),
+          },
+          {
+            onConflict: 'user_id,figure_id',
+          }
+        )
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      // Update local state
+      setUserProgress(prev => {
+        const existing = prev.find(p => p.figure_id === figureId);
+        if (existing) {
+          return prev.map(p => p.figure_id === figureId ? { ...p, status } : p);
+        } else {
+          return [...prev, { figure_id: figureId, status }];
+        }
+      });
+
+      // Refresh user points
+      await fetchUserPoints();
+
+      toast({
+        title: "Status updated!",
+        description: `Exercise marked as ${status.replace("_", " ")}.`,
+      });
+    } catch (error) {
+      console.error('Error updating figure status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update exercise status. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
+
+  // Check if figure requires premium access
+  const requiresPremiumAccess = (figure: Figure) => {
+    // Check if figure is marked as premium (you might need to add this field to the Figure interface and database)
+    // For now, checking if it's a premium feature based on category or other criteria
+    return figure.difficulty_level === 'Expert' || figure.difficulty_level === 'Advanced';
+  };
+
+  const canAccessFigure = (figure: Figure) => {
+    if (!requiresPremiumAccess(figure)) return true;
+    return hasPremiumAccess;
   };
 
   if (loading) {
@@ -438,47 +510,95 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                         {figure.difficulty_level}
                                       </Badge>
                                     )}
-                                  </div>
+                                   </div>
 
-                                  {canPractice && (
-                                    <div className="mt-3 flex gap-2">
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="flex-1 text-xs h-8"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleFigureClick(figure, canPractice);
-                                        }}
-                                      >
-                                        <Eye className="w-3 h-3 mr-1" />
-                                        Preview
-                                      </Button>
-                                      <Button
-                                        size="sm"
-                                        variant="ghost"
-                                        className="text-xs h-8 px-2"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          navigate(`/exercise-detail/${figure.id}`);
-                                        }}
-                                      >
-                                        <ExternalLink className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  )}
-                                  
-                                  {!canPractice && (
-                                    <div className="mt-3 text-center bg-red-500/10 border border-red-400/20 rounded p-2">
-                                      <Lock className="w-4 h-4 mx-auto text-red-400 mb-1" />
-                                      <p className="text-xs text-red-400">
-                                        Need {level.point_limit} points
-                                      </p>
-                                      <p className="text-xs text-red-300">
-                                        Preview only
-                                      </p>
-                                    </div>
-                                  )}
+                                   {/* Completion Status Buttons - Show for unlocked levels */}
+                                   {canPractice && (
+                                     <div className="mt-3 space-y-2">
+                                       {/* Quick Status Buttons */}
+                                       <div className="flex gap-1">
+                                         <Button
+                                           size="sm"
+                                           variant={progress?.status === 'completed' ? 'default' : 'outline'}
+                                           className="flex-1 text-xs h-6 px-1"
+                                           onClick={(e) => updateFigureStatus(figure.id, 'completed', e)}
+                                           disabled={updatingStatus === figure.id}
+                                         >
+                                           <CheckCircle className="w-3 h-3" />
+                                         </Button>
+                                         <Button
+                                           size="sm"
+                                           variant={progress?.status === 'for_later' ? 'default' : 'outline'}
+                                           className="flex-1 text-xs h-6 px-1"
+                                           onClick={(e) => updateFigureStatus(figure.id, 'for_later', e)}
+                                           disabled={updatingStatus === figure.id}
+                                         >
+                                           <Bookmark className="w-3 h-3" />
+                                         </Button>
+                                         <Button
+                                           size="sm"
+                                           variant={progress?.status === 'failed' ? 'default' : 'outline'}
+                                           className="flex-1 text-xs h-6 px-1"
+                                           onClick={(e) => updateFigureStatus(figure.id, 'failed', e)}
+                                           disabled={updatingStatus === figure.id}
+                                         >
+                                           <AlertCircle className="w-3 h-3" />
+                                         </Button>
+                                       </div>
+                                       
+                                       {/* Action Buttons */}
+                                       <div className="flex gap-2">
+                                         <Button
+                                           size="sm"
+                                           variant="outline"
+                                           className="flex-1 text-xs h-8"
+                                           onClick={(e) => {
+                                             e.stopPropagation();
+                                             handleFigureClick(figure, canPractice);
+                                           }}
+                                         >
+                                           <Eye className="w-3 h-3 mr-1" />
+                                           Preview
+                                         </Button>
+                                         <Button
+                                           size="sm"
+                                           variant="ghost"
+                                           className="text-xs h-8 px-2"
+                                           onClick={(e) => {
+                                             e.stopPropagation();
+                                             navigate(`/exercise/${figure.id}`);
+                                           }}
+                                         >
+                                           <ExternalLink className="w-3 h-3" />
+                                         </Button>
+                                       </div>
+                                     </div>
+                                   )}
+
+                                   {/* Premium Block for Free Users */}
+                                   {canPractice && requiresPremiumAccess(figure) && !hasPremiumAccess && (
+                                     <div className="mt-3 text-center bg-yellow-500/10 border border-yellow-400/20 rounded p-2">
+                                       <Crown className="w-4 h-4 mx-auto text-yellow-400 mb-1" />
+                                       <p className="text-xs text-yellow-400">
+                                         Premium Required
+                                       </p>
+                                       <p className="text-xs text-yellow-300">
+                                         Upgrade to access
+                                       </p>
+                                     </div>
+                                   )}
+                                   
+                                   {!canPractice && (
+                                     <div className="mt-3 text-center bg-red-500/10 border border-red-400/20 rounded p-2">
+                                       <Lock className="w-4 h-4 mx-auto text-red-400 mb-1" />
+                                       <p className="text-xs text-red-400">
+                                         Need {level.point_limit} points
+                                       </p>
+                                       <p className="text-xs text-red-300">
+                                         Preview only
+                                       </p>
+                                     </div>
+                                   )}
                                 </CardContent>
                               </Card>
                             );
