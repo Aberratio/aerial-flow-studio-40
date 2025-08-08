@@ -973,6 +973,7 @@ export type Database = {
           level_number: number
           point_limit: number
           sport_category: string
+          status: string
           updated_at: string
         }
         Insert: {
@@ -984,6 +985,7 @@ export type Database = {
           level_number: number
           point_limit?: number
           sport_category: string
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -995,6 +997,7 @@ export type Database = {
           level_number?: number
           point_limit?: number
           sport_category?: string
+          status?: string
           updated_at?: string
         }
         Relationships: [

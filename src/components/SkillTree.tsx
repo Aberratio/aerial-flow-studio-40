@@ -108,6 +108,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           )
         `)
         .eq('sport_category', sportCategory)
+        .eq('status', 'published')
         .order('level_number', { ascending: true });
 
       if (levelsError) throw levelsError;

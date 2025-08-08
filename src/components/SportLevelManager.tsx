@@ -21,6 +21,7 @@ interface SportLevel {
   created_at: string;
   figure_count: number;
   challenge_id?: string;
+  status: 'draft' | 'published';
 }
 
 interface Challenge {
@@ -79,6 +80,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [levelNumber, setLevelNumber] = useState<number>(0);
   const [pointLimit, setPointLimit] = useState<number>(0);
   const [selectedChallenge, setSelectedChallenge] = useState<string>('none');
+  const [selectedStatus, setSelectedStatus] = useState<'draft' | 'published'>('draft');
   const [selectedFigures, setSelectedFigures] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
@@ -90,6 +92,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [editLevelNumber, setEditLevelNumber] = useState<number>(0);
   const [editPointLimit, setEditPointLimit] = useState<number>(0);
   const [editSelectedChallenge, setEditSelectedChallenge] = useState<string>('none');
+  const [editSelectedStatus, setEditSelectedStatus] = useState<'draft' | 'published'>('draft');
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -167,7 +170,8 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
         
         return {
           ...level,
-          figure_count: count || 0
+          figure_count: count || 0,
+          status: level.status as 'draft' | 'published'
         };
       }));
 
@@ -259,6 +263,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
           level_name: levelName.trim(),
           point_limit: pointLimit,
           challenge_id: selectedChallenge === 'none' ? null : selectedChallenge || null,
+          status: selectedStatus,
           created_by: user.id
         });
 
@@ -270,6 +275,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
       setLevelNumber(0);
       setPointLimit(0);
       setSelectedChallenge('none');
+      setSelectedStatus('draft');
       fetchLevelsForSport();
     } catch (error) {
       console.error('Error creating level:', error);
@@ -300,6 +306,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     setEditLevelNumber(level.level_number);
     setEditPointLimit(level.point_limit);
     setEditSelectedChallenge(level.challenge_id || 'none');
+    setEditSelectedStatus(level.status);
     setIsEditLevelOpen(true);
   };
 
@@ -313,7 +320,8 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
           level_name: editLevelName.trim(),
           level_number: editLevelNumber,
           point_limit: editPointLimit,
-          challenge_id: editSelectedChallenge === 'none' ? null : editSelectedChallenge || null
+          challenge_id: editSelectedChallenge === 'none' ? null : editSelectedChallenge || null,
+          status: editSelectedStatus
         })
         .eq('id', selectedLevel.id);
 
@@ -515,6 +523,18 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div>
+                      <Label htmlFor="selectedStatus" className="text-white">Status</Label>
+                      <Select value={selectedStatus} onValueChange={(value) => setSelectedStatus(value as 'draft' | 'published')}>
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-900 border-white/10">
+                          <SelectItem value="draft">Draft</SelectItem>
+                          <SelectItem value="published">Published</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="flex gap-2">
                       <Button onClick={createLevel} className="flex-1">
                         <Save className="w-4 h-4 mr-2" />
@@ -563,6 +583,12 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className="text-primary border-primary/50">
                         {level.point_limit} pts
+                      </Badge>
+                      <Badge 
+                        variant={level.status === 'published' ? 'default' : 'secondary'} 
+                        className={level.status === 'published' ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'}
+                      >
+                        {level.status === 'published' ? 'Published' : 'Draft'}
                       </Badge>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -654,6 +680,18 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                       </div>
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="editSelectedStatus" className="text-white">Status</Label>
+              <Select value={editSelectedStatus} onValueChange={(value) => setEditSelectedStatus(value as 'draft' | 'published')}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-white/10">
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="published">Published</SelectItem>
                 </SelectContent>
               </Select>
             </div>
