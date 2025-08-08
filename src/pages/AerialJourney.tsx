@@ -3,9 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Star, Trophy, Target, Zap, Crown, Award, Medal, TreePine, Users, Activity } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Star, Trophy, Target, Zap, Crown, Award, Medal, TreePine, Users, Activity, Eye, EyeOff, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SkillTree from "@/components/SkillTree";
@@ -58,13 +60,28 @@ const ACHIEVEMENT_BADGES = [
   { id: "social_butterfly", name: "Social Butterfly", icon: "🦋", description: "Connected with 5 aerial friends" }
 ];
 
+interface SportCategory {
+  id: string;
+  name: string;
+  description?: string;
+  image_url?: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  count?: number;
+  userPoints?: number;
+  totalLevels?: number;
+  unlockedLevels?: number;
+}
+
 const AerialJourney = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const [currentStep, setCurrentStep] = useState(0); // Start with main view
   const [userJourney, setUserJourney] = useState<UserJourney | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [availableSports, setAvailableSports] = useState<Array<{category: string, count: number, userPoints?: number, totalLevels?: number, unlockedLevels?: number}>>([]);
+  const [availableSports, setAvailableSports] = useState<SportCategory[]>([]);
   const [selectedSkillTreeSport, setSelectedSkillTreeSport] = useState<{category: string, name: string} | null>(null);
   const [showLevelManager, setShowLevelManager] = useState(false);
   
@@ -74,37 +91,36 @@ const AerialJourney = () => {
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
 
   useEffect(() => {
-    if (user?.role !== 'admin') {
-      navigate('/summary');
-      return;
-    }
-    
     checkExistingJourney();
     fetchAvailableSports();
   }, [user, navigate]);
 
   const fetchAvailableSports = async () => {
     try {
-      const { data, error } = await supabase
-        .from('figures')
-        .select('category')
-        .not('category', 'is', null);
+      // Fetch sport categories from the new table
+      const { data: categoriesData, error: categoriesError } = await supabase
+        .from('sport_categories')
+        .select('*')
+        .order('name');
 
-      if (error) throw error;
+      if (categoriesError) throw categoriesError;
 
-      // Count figures per category
-      const sportCounts = data.reduce((acc: Record<string, number>, figure) => {
-        acc[figure.category] = (acc[figure.category] || 0) + 1;
-        return acc;
-      }, {});
-
-      // For each sport category, calculate points and level information
+      // For each sport category, get figure counts and level information
       const sportsArray = await Promise.all(
-        Object.entries(sportCounts).map(async ([category, count]) => {
+        (categoriesData || []).map(async (category) => {
+          // Count figures in this category
+          const { data: figuresData } = await supabase
+            .from('figures')
+            .select('id')
+            .eq('category', category.name);
+
+          const count = figuresData?.length || 0;
+
+          // Get levels for this category
           const { data: levelsData } = await supabase
             .from('sport_levels')
             .select('id, level_number, point_limit')
-            .eq('sport_category', category)
+            .eq('sport_category', category.name)
             .order('level_number', { ascending: true });
 
           const totalLevels = levelsData?.length || 0;
@@ -127,7 +143,7 @@ const AerialJourney = () => {
               `)
               .eq('user_id', user.id)
               .eq('status', 'completed')
-              .eq('figures.category', category);
+              .eq('figures.category', category.name);
 
             if (progressData) {
               userPoints = progressData.reduce((total, progress) => {
@@ -141,18 +157,43 @@ const AerialJourney = () => {
           const unlockedLevels = levelsData?.filter(level => userPoints >= level.point_limit).length || 0;
 
           return {
-            category,
+            ...category,
             count,
             userPoints,
             totalLevels,
             unlockedLevels
-          };
+          } as SportCategory;
         })
       );
 
       setAvailableSports(sportsArray);
     } catch (error) {
       console.error('Error fetching sports:', error);
+    }
+  };
+
+  const handlePublishToggle = async (sportId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('sport_categories')
+        .update({ is_published: !currentStatus })
+        .eq('id', sportId);
+
+      if (error) throw error;
+
+      // Update local state
+      setAvailableSports(prev => 
+        prev.map(sport => 
+          sport.id === sportId 
+            ? { ...sport, is_published: !currentStatus }
+            : sport
+        )
+      );
+
+      toast.success(`Sport ${!currentStatus ? 'published' : 'unpublished'} successfully`);
+    } catch (error) {
+      console.error('Error updating sport status:', error);
+      toast.error('Failed to update sport status');
     }
   };
 
@@ -201,6 +242,11 @@ const AerialJourney = () => {
     };
     return sportMap[category] || category.charAt(0).toUpperCase() + category.slice(1);
   };
+
+  // Filter sports based on user role
+  const filteredSports = isAdmin 
+    ? availableSports // Admins see all sports
+    : availableSports.filter(sport => sport.is_published); // Regular users see only published sports
 
   const getSportIcon = (category: string) => {
     const iconMap: Record<string, string> = {
@@ -357,88 +403,165 @@ const AerialJourney = () => {
           {/* Available Sports */}
           <Card className="glass-effect border-white/10 mb-8">
             <CardHeader>
-              <CardTitle className="text-white flex items-center">
-                <TreePine className="w-5 h-5 mr-2" />
-                Explore Skill Trees by Sport
-              </CardTitle>
-              <p className="text-muted-foreground">
-                Click on any sport to see its complete skill tree and your progression
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-white flex items-center">
+                    <TreePine className="w-5 h-5 mr-2" />
+                    Explore Skill Trees by Sport
+                    {isAdmin && (
+                      <Badge className="ml-2 bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
+                        Admin View
+                      </Badge>
+                    )}
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    {isAdmin 
+                      ? "All sports (published and draft). Use switches to publish/unpublish sports."
+                      : "Click on any sport to see its complete skill tree and your progression"
+                    }
+                  </p>
+                </div>
+                {isAdmin && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowLevelManager(true)}
+                    className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    Manage Sports
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {availableSports.map((sport) => {
-                  const displayName = getSportDisplayName(sport.category);
-                  const icon = getSportIcon(sport.category);
-                  const hasLevels = (sport.totalLevels || 0) > 0;
-                  const progressPercentage = hasLevels ? Math.round(((sport.unlockedLevels || 0) / (sport.totalLevels || 1)) * 100) : 0;
-                  
-                  return (
-                    <Card
-                      key={sport.category}
-                      className="cursor-pointer hover:scale-105 transition-all duration-300 bg-white/5 border-white/10 hover:border-purple-400/50"
-                      onClick={() => handleSkillTreeView(sport.category, displayName)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="text-center mb-4">
-                          <div className="text-4xl mb-3">{icon}</div>
-                          <h3 className="font-semibold text-white text-lg mb-2">{displayName}</h3>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          {/* Points Display */}
-                          {user && (
-                            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-lg p-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-yellow-400 font-medium">Your Points</span>
-                                <Badge className="bg-yellow-500/20 text-yellow-400">
-                                  💰 {sport.userPoints || 0}
-                                </Badge>
+              {filteredSports.length === 0 ? (
+                <div className="text-center py-12">
+                  <TreePine className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
+                  <h3 className="text-xl font-semibold text-white mb-2">No Sports Available</h3>
+                  <p className="text-muted-foreground">
+                    {isAdmin 
+                      ? "No sport categories have been created yet. Use the Manage Sports button to add some."
+                      : "No sports are currently published. Check back later!"
+                    }
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredSports.map((sport) => {
+                    const displayName = getSportDisplayName(sport.name);
+                    const icon = getSportIcon(sport.name);
+                    const hasLevels = (sport.totalLevels || 0) > 0;
+                    const progressPercentage = hasLevels ? Math.round(((sport.unlockedLevels || 0) / (sport.totalLevels || 1)) * 100) : 0;
+                    
+                    return (
+                      <Card
+                        key={sport.id}
+                        className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
+                          sport.is_published 
+                            ? 'bg-white/5 border-white/10 hover:border-purple-400/50' 
+                            : 'bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50'
+                        }`}
+                        onClick={() => handleSkillTreeView(sport.name, displayName)}
+                      >
+                        <CardContent className="p-6">
+                          {/* Admin Controls */}
+                          {isAdmin && (
+                            <div className="absolute top-3 right-3 flex items-center space-x-2">
+                              <div className="flex items-center space-x-1 bg-black/50 rounded-lg px-2 py-1">
+                                {sport.is_published ? (
+                                  <Eye className="w-3 h-3 text-green-400" />
+                                ) : (
+                                  <EyeOff className="w-3 h-3 text-orange-400" />
+                                )}
+                                <Switch
+                                  checked={sport.is_published}
+                                  onCheckedChange={() => handlePublishToggle(sport.id, sport.is_published)}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="scale-75"
+                                />
                               </div>
                             </div>
                           )}
 
-                          {/* Level Progress */}
-                          {hasLevels && user && (
-                            <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-lg p-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-purple-400 font-medium">Level Progress</span>
-                                <span className="text-xs text-purple-300">
-                                  {sport.unlockedLevels}/{sport.totalLevels} unlocked
-                                </span>
-                              </div>
-                              <Progress value={progressPercentage} className="h-2" />
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">Available Figures</span>
-                            <Badge variant="secondary">{sport.count}</Badge>
-                          </div>
-
-                          {hasLevels && (
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Skill Levels</span>
-                              <Badge variant="outline">{sport.totalLevels}</Badge>
+                          {/* Status Badge */}
+                          {isAdmin && (
+                            <div className="mb-3">
+                              <Badge 
+                                className={`text-xs ${
+                                  sport.is_published 
+                                    ? 'bg-green-500/20 text-green-400 border-green-400/30' 
+                                    : 'bg-orange-500/20 text-orange-400 border-orange-400/30'
+                                }`}
+                              >
+                                {sport.is_published ? 'Published' : 'Draft'}
+                              </Badge>
                             </div>
                           )}
                           
-                          <Button 
-                            className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 text-white"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSkillTreeView(sport.category, displayName);
-                            }}
-                          >
-                            <TreePine className="w-4 h-4 mr-2" />
-                            View Skill Tree
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+                          <div className="text-center mb-4">
+                            <div className="text-4xl mb-3">{icon}</div>
+                            <h3 className="font-semibold text-white text-lg mb-2">{displayName}</h3>
+                            {sport.description && (
+                              <p className="text-sm text-muted-foreground">{sport.description}</p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-3">
+                            {/* Points Display */}
+                            {user && (
+                              <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-lg p-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm text-yellow-400 font-medium">Your Points</span>
+                                  <Badge className="bg-yellow-500/20 text-yellow-400">
+                                    💰 {sport.userPoints || 0}
+                                  </Badge>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Level Progress */}
+                            {hasLevels && user && (
+                              <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-lg p-3">
+                                <div className="flex items-center justify-between mb-2">
+                                  <span className="text-sm text-purple-400 font-medium">Level Progress</span>
+                                  <span className="text-xs text-purple-300">
+                                    {sport.unlockedLevels}/{sport.totalLevels} unlocked
+                                  </span>
+                                </div>
+                                <Progress value={progressPercentage} className="h-2" />
+                              </div>
+                            )}
+
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm text-muted-foreground">Available Figures</span>
+                              <Badge variant="secondary">{sport.count || 0}</Badge>
+                            </div>
+
+                            {hasLevels && (
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-muted-foreground">Skill Levels</span>
+                                <Badge variant="outline">{sport.totalLevels}</Badge>
+                              </div>
+                            )}
+                            
+                            <Button 
+                              className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSkillTreeView(sport.name, displayName);
+                              }}
+                              disabled={!sport.is_published && !isAdmin}
+                            >
+                              <TreePine className="w-4 h-4 mr-2" />
+                              {sport.is_published || isAdmin ? 'View Skill Tree' : 'Coming Soon'}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

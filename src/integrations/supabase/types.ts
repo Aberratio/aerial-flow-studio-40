@@ -930,6 +930,39 @@ export type Database = {
         }
         Relationships: []
       }
+      sport_categories: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_published: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_published?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sport_levels: {
         Row: {
           created_at: string
