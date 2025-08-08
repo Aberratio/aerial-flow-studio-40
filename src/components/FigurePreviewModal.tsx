@@ -31,6 +31,7 @@ import { ShareExerciseModal } from "@/components/ShareExerciseModal";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 interface FigurePreviewModalProps {
   figure: {
@@ -55,6 +56,7 @@ export const FigurePreviewModal = ({
 }: FigurePreviewModalProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [communityPosts, setCommunityPosts] = useState([]);
   const [friendsPosts, setFriendsPosts] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
@@ -487,6 +489,20 @@ export const FigurePreviewModal = ({
                   </p>
                 </div>
               )}
+
+              {/* Show Details Button */}
+              <div className="p-6 border-b border-white/10">
+                <Button
+                  onClick={() => {
+                    onClose();
+                    navigate(`/figures/${figure.id}`);
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                >
+                  <Target className="w-4 h-4 mr-2" />
+                  Show Full Details
+                </Button>
+              </div>
 
               {/* Community Posts Tabs */}
               <div className="flex-1 p-6">

@@ -267,6 +267,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           ) : (
             sportLevels.map((level) => {
               const isUnlocked = isLevelUnlocked(level);
+              const isCompleted = getLevelProgress(level) === 100;
               const pointsNeeded = level.point_limit - userPoints;
               
               return (
@@ -334,7 +335,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                       )}
                     </div>
                   </CardHeader>
-                  {(showAllLevels || isUnlocked) && (
+                  {(showAllLevels || (isUnlocked && !isCompleted)) && (
                     <CardContent>
                       {level.figures.length === 0 ? (
                         <p className="text-muted-foreground text-center py-8">
