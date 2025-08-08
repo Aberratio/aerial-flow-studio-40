@@ -44,7 +44,7 @@ const ACTIVITY_OPTIONS = [{
   icon: Target,
   color: 'text-purple-400',
   bgColor: 'bg-purple-500/20',
-  link: '/library'
+  link: '/figure-of-the-day'
 }, {
   id: 'training',
   title: 'Training Session',

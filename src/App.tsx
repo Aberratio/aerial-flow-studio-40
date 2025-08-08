@@ -33,6 +33,7 @@ import ExerciseDetail from "@/pages/ExerciseDetail";
 import AchievementManagement from "@/pages/AchievementManagement";
 import Index from "@/pages/Index";
 import AerialJourney from "@/pages/AerialJourney";
+import FigureOfTheDay from "@/pages/FigureOfTheDay";
 
 import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
@@ -324,6 +325,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <AerialJourney />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/figure-of-the-day"
+        element={
+          <ProtectedRoute>
+            <FigureOfTheDay />
           </ProtectedRoute>
         }
       />
