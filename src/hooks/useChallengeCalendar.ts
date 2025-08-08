@@ -157,15 +157,14 @@ export const useChallengeCalendar = (challengeId: string) => {
         totalTrainingDays > 0 &&
         completedTrainingDays + 1 >= totalTrainingDays
       ) {
-        // Mark challenge participant as completed
-        const { error: completionError } = await supabase
-          .from("challenge_participants")
-          .update({
-            completed: true,
-            status: "completed",
-          })
-          .eq("challenge_id", challengeId)
-          .eq("user_id", user.id);
+        // Award completion points and mark challenge as completed
+        const { error: completionError } = await supabase.rpc(
+          'award_challenge_completion_points',
+          {
+            p_user_id: user.id,
+            p_challenge_id: challengeId
+          }
+        );
 
         if (completionError) {
           console.error(
@@ -180,7 +179,7 @@ export const useChallengeCalendar = (challengeId: string) => {
 
         toast({
           title: "Challenge Completed! 🎉",
-          description: "Congratulations! You've completed this challenge!",
+          description: "Congratulations! You've completed this challenge and earned 50 points!",
         });
       }
     } catch (error) {

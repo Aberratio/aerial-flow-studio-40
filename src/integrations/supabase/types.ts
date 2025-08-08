@@ -1457,6 +1457,10 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: boolean
       }
+      award_challenge_completion_points: {
+        Args: { p_user_id: string; p_challenge_id: string }
+        Returns: undefined
+      }
       can_access_challenge_day: {
         Args: {
           p_user_id: string
