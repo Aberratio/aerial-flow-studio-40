@@ -243,10 +243,7 @@ const Index = () => {
                       {activity.description}
                     </p>
                     
-                    <div className="flex items-center justify-center text-primary group-hover:translate-x-1 transition-transform">
-                      <span className="text-sm font-medium mr-2">Get started</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </div>
+                    
                   </CardContent>
                 </Card>
               </Link>;
