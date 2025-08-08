@@ -98,18 +98,7 @@ const AerialJourney = () => {
         return acc;
       }, {});
 
-      // Get user points if user exists
-      let userPoints = 0;
-      if (user) {
-        const { data: journeyData } = await supabase
-          .from('user_journeys')
-          .select('total_points')
-          .eq('user_id', user.id)
-          .single();
-        userPoints = journeyData?.total_points || 0;
-      }
-
-      // For each sport category, get level information
+      // For each sport category, calculate points and level information
       const sportsArray = await Promise.all(
         Object.entries(sportCounts).map(async ([category, count]) => {
           const { data: levelsData } = await supabase
@@ -119,6 +108,36 @@ const AerialJourney = () => {
             .order('level_number', { ascending: true });
 
           const totalLevels = levelsData?.length || 0;
+          
+          // Calculate user points for this specific sport category
+          let userPoints = 0;
+          if (user) {
+            // Get all completed figures in this category
+            const { data: progressData } = await supabase
+              .from('figure_progress')
+              .select(`
+                status,
+                figures!inner(
+                  id,
+                  category,
+                  level_figures!inner(
+                    sport_levels!inner(level_number)
+                  )
+                )
+              `)
+              .eq('user_id', user.id)
+              .eq('status', 'completed')
+              .eq('figures.category', category);
+
+            if (progressData) {
+              userPoints = progressData.reduce((total, progress) => {
+                // Get the level number for this figure
+                const levelNumber = progress.figures?.level_figures?.[0]?.sport_levels?.level_number || 1;
+                return total + (1 * levelNumber); // 1 point × level number
+              }, 0);
+            }
+          }
+
           const unlockedLevels = levelsData?.filter(level => userPoints >= level.point_limit).length || 0;
 
           return {

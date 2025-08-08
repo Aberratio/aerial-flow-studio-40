@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Lock, CheckCircle, Circle, Crown, Eye, ExternalLink } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { ArrowLeft, Lock, CheckCircle, Circle, Crown, Eye, ExternalLink, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FigurePreviewModal } from "@/components/FigurePreviewModal";
@@ -47,6 +48,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const [loading, setLoading] = useState(true);
   const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [showAllLevels, setShowAllLevels] = useState(false);
 
   useEffect(() => {
     fetchSportLevelsAndProgress();
@@ -119,18 +121,33 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('user_journeys')
-        .select('total_points')
+      // Calculate user points for this specific sport category
+      const { data: progressData } = await supabase
+        .from('figure_progress')
+        .select(`
+          status,
+          figures!inner(
+            id,
+            category,
+            level_figures!inner(
+              sport_levels!inner(level_number)
+            )
+          )
+        `)
         .eq('user_id', user.id)
-        .single();
+        .eq('status', 'completed')
+        .eq('figures.category', sportCategory);
 
-      if (error) {
-        console.error('Error fetching user points:', error);
-        return;
+      let calculatedPoints = 0;
+      if (progressData) {
+        calculatedPoints = progressData.reduce((total, progress) => {
+          // Get the level number for this figure
+          const levelNumber = progress.figures?.level_figures?.[0]?.sport_levels?.level_number || 1;
+          return total + (1 * levelNumber); // 1 point × level number
+        }, 0);
       }
 
-      setUserPoints(data?.total_points || 0);
+      setUserPoints(calculatedPoints);
     } catch (error) {
       console.error('Error:', error);
     }
@@ -203,9 +220,28 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
               💰 {userPoints} Points
             </Badge>
             <p className="text-muted-foreground">
-              Complete figures to earn points and unlock new levels
+              Complete figures to earn 1 point × level number
             </p>
           </div>
+          
+          {/* Toggle for showing all levels */}
+          <Card className="glass-effect border-white/10 p-4 mb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <span className="text-white font-medium">Show All Levels</span>
+                <Switch
+                  checked={showAllLevels}
+                  onCheckedChange={setShowAllLevels}
+                  className="data-[state=checked]:bg-purple-500"
+                />
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+                {showAllLevels ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                <span>{showAllLevels ? 'Showing all levels' : 'Showing unlocked levels only'}</span>
+              </div>
+            </div>
+          </Card>
+          
           <Card className="glass-effect border-white/10 p-4">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Your Progress in {sportName}</span>
@@ -216,7 +252,9 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
         {/* Level Overview Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {sportLevels.map((level) => {
+          {sportLevels
+            .filter(level => showAllLevels || isLevelUnlocked(level) || level.figures.some(figure => getFigureProgress(figure.id)))
+            .map((level) => {
             const isUnlocked = isLevelUnlocked(level);
             const progress = getLevelProgress(level);
             const figureCount = level.figures.length;
@@ -268,7 +306,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                           </span>
                         </div>
                         <p className="text-xs text-red-300 mt-1">
-                          Complete figures in unlocked levels to earn points
+                          Complete figures in unlocked levels (1 point × level number)
                         </p>
                       </div>
                     )}
@@ -280,7 +318,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                           <span className="text-green-400 font-medium">Unlocked!</span>
                         </div>
                         <p className="text-xs text-green-300 mt-1">
-                          You can practice and complete all figures in this level
+                          Complete figures to earn {level.level_number} points each
                         </p>
                       </div>
                     )}
@@ -309,7 +347,9 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
               </CardContent>
             </Card>
           ) : (
-            sportLevels.map((level) => {
+            sportLevels
+              .filter(level => showAllLevels || isLevelUnlocked(level) || level.figures.some(figure => getFigureProgress(figure.id)))
+              .map((level) => {
               const isUnlocked = isLevelUnlocked(level);
               const pointsNeeded = level.point_limit - userPoints;
               
