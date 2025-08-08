@@ -965,6 +965,7 @@ export type Database = {
       }
       sport_levels: {
         Row: {
+          challenge_id: string | null
           created_at: string
           created_by: string | null
           id: string
@@ -975,6 +976,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          challenge_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -985,6 +987,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          challenge_id?: string | null
           created_at?: string
           created_by?: string | null
           id?: string
@@ -994,7 +997,15 @@ export type Database = {
           sport_category?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "sport_levels_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscribers: {
         Row: {

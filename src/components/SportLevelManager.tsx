@@ -20,6 +20,16 @@ interface SportLevel {
   point_limit: number;
   created_at: string;
   figure_count: number;
+  challenge_id?: string;
+}
+
+interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  difficulty_level: string;
+  status: string;
+  premium: boolean;
 }
 
 interface Figure {
@@ -55,6 +65,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const { user } = useAuth();
   const [levels, setLevels] = useState<SportLevel[]>([]);
   const [figures, setFigures] = useState<Figure[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [selectedSport, setSelectedSport] = useState<string>('');
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
   const [isEditFiguresOpen, setIsEditFiguresOpen] = useState(false);
@@ -67,6 +78,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [levelName, setLevelName] = useState('');
   const [levelNumber, setLevelNumber] = useState<number>(0);
   const [pointLimit, setPointLimit] = useState<number>(0);
+  const [selectedChallenge, setSelectedChallenge] = useState<string>('');
   const [selectedFigures, setSelectedFigures] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
@@ -77,6 +89,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [editLevelName, setEditLevelName] = useState('');
   const [editLevelNumber, setEditLevelNumber] = useState<number>(0);
   const [editPointLimit, setEditPointLimit] = useState<number>(0);
+  const [editSelectedChallenge, setEditSelectedChallenge] = useState<string>('');
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -86,6 +99,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     }
     
     fetchFigures();
+    fetchChallenges();
     if (selectedSport) {
       fetchLevelsForSport();
       fetchUsedFiguresInSport();
@@ -107,12 +121,38 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     }
   };
 
+  const fetchChallenges = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('challenges')
+        .select('id, title, description, difficulty_level, status, premium')
+        .eq('status', 'published')
+        .order('title');
+
+      if (error) throw error;
+      setChallenges(data || []);
+    } catch (error) {
+      console.error('Error fetching challenges:', error);
+      toast.error('Failed to fetch challenges');
+    }
+  };
+
   const fetchLevelsForSport = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('sport_levels')
-        .select('*')
+        .select(`
+          *,
+          challenges(
+            id,
+            title,
+            description,
+            difficulty_level,
+            status,
+            premium
+          )
+        `)
         .eq('sport_category', selectedSport)
         .order('level_number');
 
@@ -218,6 +258,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
           level_number: levelNumber,
           level_name: levelName.trim(),
           point_limit: pointLimit,
+          challenge_id: selectedChallenge || null,
           created_by: user.id
         });
 
@@ -228,6 +269,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
       setLevelName('');
       setLevelNumber(0);
       setPointLimit(0);
+      setSelectedChallenge('');
       fetchLevelsForSport();
     } catch (error) {
       console.error('Error creating level:', error);
@@ -257,6 +299,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     setEditLevelName(level.level_name);
     setEditLevelNumber(level.level_number);
     setEditPointLimit(level.point_limit);
+    setEditSelectedChallenge(level.challenge_id || '');
     setIsEditLevelOpen(true);
   };
 
@@ -269,7 +312,8 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
         .update({
           level_name: editLevelName.trim(),
           level_number: editLevelNumber,
-          point_limit: editPointLimit
+          point_limit: editPointLimit,
+          challenge_id: editSelectedChallenge || null
         })
         .eq('id', selectedLevel.id);
 
@@ -452,6 +496,25 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                         className="bg-white/5 border-white/10 text-white"
                       />
                     </div>
+                    <div>
+                      <Label htmlFor="selectedChallenge" className="text-white">Associated Challenge (Optional)</Label>
+                      <Select value={selectedChallenge} onValueChange={setSelectedChallenge}>
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                          <SelectValue placeholder="Select a challenge" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-900 border-white/10">
+                          <SelectItem value="">No Challenge</SelectItem>
+                          {challenges.map((challenge) => (
+                            <SelectItem key={challenge.id} value={challenge.id}>
+                              <div className="flex items-center gap-2">
+                                <span>{challenge.title}</span>
+                                {challenge.premium && <Badge variant="secondary" className="text-xs">Premium</Badge>}
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                     <div className="flex gap-2">
                       <Button onClick={createLevel} className="flex-1">
                         <Save className="w-4 h-4 mr-2" />
@@ -574,6 +637,25 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                 placeholder="e.g., Beginner, Intermediate, Advanced"
                 className="bg-white/5 border-white/10 text-white"
               />
+            </div>
+            <div>
+              <Label htmlFor="editSelectedChallenge" className="text-white">Associated Challenge (Optional)</Label>
+              <Select value={editSelectedChallenge} onValueChange={setEditSelectedChallenge}>
+                <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectValue placeholder="Select a challenge" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900 border-white/10">
+                  <SelectItem value="">No Challenge</SelectItem>
+                  {challenges.map((challenge) => (
+                    <SelectItem key={challenge.id} value={challenge.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{challenge.title}</span>
+                        {challenge.premium && <Badge variant="secondary" className="text-xs">Premium</Badge>}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex gap-2">
               <Button onClick={updateLevel} className="flex-1">

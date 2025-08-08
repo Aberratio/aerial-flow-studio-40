@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Lock, CheckCircle, Circle, Crown, Eye, ExternalLink, EyeOff, Bookmark, AlertCircle, CircleMinus } from "lucide-react";
+import { ArrowLeft, Lock, CheckCircle, Circle, Crown, Eye, ExternalLink, EyeOff, Bookmark, AlertCircle, CircleMinus, Trophy } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FigurePreviewModal } from "@/components/FigurePreviewModal";
@@ -28,6 +28,17 @@ interface SportLevel {
   level_name: string;
   point_limit: number;
   figures: Figure[];
+  challenge_id?: string;
+  challenges?: Challenge;
+}
+
+interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  difficulty_level: string;
+  status: string;
+  premium: boolean;
 }
 
 interface UserProgress {
@@ -54,6 +65,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [showAllLevels, setShowAllLevels] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSportLevelsAndProgress();
@@ -64,7 +76,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     if (!user) return;
 
     try {
-      // Fetch sport levels with their figures
+      // Fetch sport levels with their figures and challenges
       const { data: levelsData, error: levelsError } = await supabase
         .from('sport_levels')
         .select(`
@@ -73,6 +85,15 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           level_number,
           level_name,
           point_limit,
+          challenge_id,
+          challenges (
+            id,
+            title,
+            description,
+            difficulty_level,
+            status,
+            premium
+          ),
           level_figures (
             figure_id,
             order_index,
@@ -91,13 +112,15 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
       if (levelsError) throw levelsError;
 
-      // Format the data to include figures directly in each level
+      // Format the data to include figures and challenges directly in each level
       const formattedLevels = levelsData?.map(level => ({
         id: level.id,
         sport_category: level.sport_category,
         level_number: level.level_number,
         level_name: level.level_name,
         point_limit: level.point_limit,
+        challenge_id: level.challenge_id,
+        challenges: level.challenges,
         figures: level.level_figures
           ?.sort((a, b) => a.order_index - b.order_index)
           ?.map(lf => lf.figures)
@@ -263,6 +286,68 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     return hasPremiumAccess;
   };
 
+  // Join challenge function
+  const joinChallenge = async (challengeId: string) => {
+    if (!user) return;
+    
+    setJoiningChallenge(challengeId);
+    
+    try {
+      // Check if user is already participating
+      const { data: existingParticipant } = await supabase
+        .from('challenge_participants')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('challenge_id', challengeId)
+        .single();
+
+      if (existingParticipant) {
+        toast({
+          title: "Already joined!",
+          description: "You're already participating in this challenge.",
+        });
+        return;
+      }
+
+      // Join the challenge
+      const { error } = await supabase
+        .from('challenge_participants')
+        .insert({
+          user_id: user.id,
+          challenge_id: challengeId,
+          status: 'active',
+          joined_at: new Date().toISOString(),
+          user_started_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+
+      // Generate calendar for the challenge
+      await supabase.rpc('generate_user_challenge_calendar', {
+        p_user_id: user.id,
+        p_challenge_id: challengeId,
+        p_start_date: new Date().toISOString().split('T')[0]
+      });
+
+      toast({
+        title: "Challenge joined!",
+        description: "You've successfully joined the challenge. Good luck!",
+      });
+      
+      // Navigate to challenge page
+      navigate(`/challenges/${challengeId}`);
+    } catch (error) {
+      console.error('Error joining challenge:', error);
+      toast({
+        title: "Error",
+        description: "Failed to join challenge. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setJoiningChallenge(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -403,6 +488,67 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                           <p className="text-xs text-green-300 mt-1">
                             Complete figures to earn {level.level_number} points each
                           </p>
+                        </div>
+                      )}
+
+                      {/* Challenge Section */}
+                      {level.challenges && (
+                        <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-400/20 rounded-lg p-4 mt-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Trophy className="w-5 h-5 text-yellow-400" />
+                                <h4 className="font-semibold text-white">Challenge Available</h4>
+                                {level.challenges.premium && (
+                                  <Badge className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 border border-yellow-400/30">
+                                    <Crown className="w-3 h-3 mr-1" />
+                                    Premium
+                                  </Badge>
+                                )}
+                              </div>
+                              <h5 className="text-lg font-bold text-purple-300 mb-1">{level.challenges.title}</h5>
+                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                                {level.challenges.description}
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <Badge variant="outline" className="border-purple-400/50 text-purple-300">
+                                  {level.challenges.difficulty_level}
+                                </Badge>
+                              </div>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              {isUnlocked ? (
+                                <Button
+                                  onClick={() => joinChallenge(level.challenges!.id)}
+                                  disabled={joiningChallenge === level.challenges!.id || (!hasPremiumAccess && level.challenges!.premium)}
+                                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                                >
+                                  {joiningChallenge === level.challenges!.id ? (
+                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                                  ) : (
+                                    <>
+                                      <Trophy className="w-4 h-4 mr-2" />
+                                      Join Challenge
+                                    </>
+                                  )}
+                                </Button>
+                              ) : (
+                                <Button
+                                  disabled
+                                  variant="outline"
+                                  className="border-gray-600 text-gray-400"
+                                >
+                                  <Lock className="w-4 h-4 mr-2" />
+                                  Unlock Level
+                                </Button>
+                              )}
+                              {!hasPremiumAccess && level.challenges!.premium && (
+                                <p className="text-xs text-yellow-400 text-center">
+                                  Premium required
+                                </p>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
