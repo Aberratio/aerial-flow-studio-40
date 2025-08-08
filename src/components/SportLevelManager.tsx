@@ -58,6 +58,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [selectedSport, setSelectedSport] = useState<string>('');
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
   const [isEditFiguresOpen, setIsEditFiguresOpen] = useState(false);
+  const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<SportLevel | null>(null);
   const [levelFigures, setLevelFigures] = useState<LevelFigure[]>([]);
   const [loading, setLoading] = useState(false);
@@ -71,6 +72,11 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('current');
   const [usedFiguresInSport, setUsedFiguresInSport] = useState<string[]>([]);
+  
+  // Edit level states
+  const [editLevelName, setEditLevelName] = useState('');
+  const [editLevelNumber, setEditLevelNumber] = useState<number>(0);
+  const [editPointLimit, setEditPointLimit] = useState<number>(0);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -246,6 +252,38 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     }
   };
 
+  const openEditLevel = (level: SportLevel) => {
+    setSelectedLevel(level);
+    setEditLevelName(level.level_name);
+    setEditLevelNumber(level.level_number);
+    setEditPointLimit(level.point_limit);
+    setIsEditLevelOpen(true);
+  };
+
+  const updateLevel = async () => {
+    if (!selectedLevel || !editLevelName.trim()) return;
+
+    try {
+      const { error } = await supabase
+        .from('sport_levels')
+        .update({
+          level_name: editLevelName.trim(),
+          level_number: editLevelNumber,
+          point_limit: editPointLimit
+        })
+        .eq('id', selectedLevel.id);
+
+      if (error) throw error;
+
+      toast.success('Level updated successfully');
+      setIsEditLevelOpen(false);
+      fetchLevelsForSport();
+    } catch (error) {
+      console.error('Error updating level:', error);
+      toast.error('Failed to update level');
+    }
+  };
+
   const openEditFigures = async (level: SportLevel) => {
     setSelectedLevel(level);
     await fetchLevelFigures(level.id);
@@ -334,24 +372,32 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
         </Button>
       </div>
 
-      {/* Sport Selection */}
+      {/* Sport Selection as Panels */}
       <Card className="glass-effect border-white/10">
         <CardHeader>
           <CardTitle className="text-white">Select Sport Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <Select value={selectedSport || undefined} onValueChange={setSelectedSport}>
-            <SelectTrigger className="bg-white/5 border-white/10 text-white">
-              <SelectValue placeholder="Choose a sport category" />
-            </SelectTrigger>
-            <SelectContent>
-              {SPORT_CATEGORIES.map(category => (
-                <SelectItem key={category.value} value={category.value}>
-                  {category.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {SPORT_CATEGORIES.map(category => (
+              <div
+                key={category.value}
+                onClick={() => setSelectedSport(category.value)}
+                className={`
+                  p-6 rounded-lg border cursor-pointer transition-all duration-200
+                  ${selectedSport === category.value 
+                    ? 'bg-primary/20 border-primary text-primary' 
+                    : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
+                  }
+                `}
+              >
+                <h3 className="font-semibold text-lg mb-2">{category.label}</h3>
+                <p className="text-sm opacity-70">
+                  Manage levels and figures for {category.label.toLowerCase()}
+                </p>
+              </div>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -438,20 +484,34 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                 {levels.map((level) => (
                   <div
                     key={level.id}
-                    className="flex items-center justify-between p-4 rounded-lg bg-white/5 border border-white/10"
+                    className="flex items-center justify-between p-6 rounded-lg bg-gradient-to-r from-white/5 to-white/10 border border-white/20 hover:border-white/30 transition-all duration-200"
                   >
                     <div className="flex items-center space-x-4">
-                      <Badge variant="secondary" className="text-lg font-bold">
-                        {level.level_number}
+                      <Badge variant="secondary" className="text-lg font-bold bg-primary/20 text-primary">
+                        Level {level.level_number}
                       </Badge>
                       <div>
-                        <h4 className="font-semibold text-white">{level.level_name}</h4>
+                        <h4 className="font-semibold text-white text-lg">{level.level_name}</h4>
                         <p className="text-sm text-muted-foreground">
                           {level.figure_count} figures assigned
                         </p>
                       </div>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="text-primary border-primary/50">
+                        {level.point_limit} pts
+                      </Badge>
+                    </div>
                     <div className="flex items-center space-x-2">
+                      <Button
+                        onClick={() => openEditLevel(level)}
+                        variant="outline"
+                        size="sm"
+                        className="border-white/10 text-white hover:bg-white/10"
+                      >
+                        <Edit className="w-4 h-4 mr-1" />
+                        Edit Level
+                      </Button>
                       <Button
                         onClick={() => openEditFigures(level)}
                         variant="outline"
@@ -476,6 +536,61 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
           </CardContent>
         </Card>
       )}
+
+      {/* Edit Level Dialog */}
+      <Dialog open={isEditLevelOpen} onOpenChange={setIsEditLevelOpen}>
+        <DialogContent className="bg-gray-900 border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-white">Edit Level</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="editLevelNumber" className="text-white">Level Number</Label>
+              <Input
+                id="editLevelNumber"
+                type="number"
+                value={editLevelNumber}
+                onChange={(e) => setEditLevelNumber(parseInt(e.target.value) || 0)}
+                className="bg-white/5 border-white/10 text-white"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editPointLimit" className="text-white">Point Limit</Label>
+              <Input
+                id="editPointLimit"
+                type="number"
+                value={editPointLimit}
+                onChange={(e) => setEditPointLimit(parseInt(e.target.value) || 0)}
+                placeholder="Points required to unlock"
+                className="bg-white/5 border-white/10 text-white"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editLevelName" className="text-white">Level Name</Label>
+              <Input
+                id="editLevelName"
+                value={editLevelName}
+                onChange={(e) => setEditLevelName(e.target.value)}
+                placeholder="e.g., Beginner, Intermediate, Advanced"
+                className="bg-white/5 border-white/10 text-white"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button onClick={updateLevel} className="flex-1">
+                <Save className="w-4 h-4 mr-2" />
+                Update Level
+              </Button>
+              <Button 
+                onClick={() => setIsEditLevelOpen(false)} 
+                variant="outline"
+                className="border-white/10"
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Figures Dialog */}
       <Dialog open={isEditFiguresOpen} onOpenChange={setIsEditFiguresOpen}>
