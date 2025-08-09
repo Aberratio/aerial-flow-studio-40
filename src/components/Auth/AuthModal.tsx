@@ -1,36 +1,46 @@
-import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
+import React, { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  mode: 'login' | 'register';
-  onModeChange: (mode: 'login' | 'register') => void;
+  mode: "login" | "register";
+  onModeChange: (mode: "login" | "register") => void;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeChange }) => {
+const AuthModal: React.FC<AuthModalProps> = ({
+  open,
+  onOpenChange,
+  mode,
+  onModeChange,
+}) => {
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    username: '',
-    confirmPassword: ''
+    email: "",
+    password: "",
+    username: "",
+    confirmPassword: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -40,15 +50,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
     try {
       await signIn(formData.email, formData.password);
-      toast({
-        title: "Welcome back!",
-        description: "You have been successfully signed in.",
-      });
       onOpenChange(false);
     } catch (error: any) {
       toast({
         title: "Sign in failed",
-        description: error.message || "Please check your credentials and try again.",
+        description:
+          error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
     } finally {
@@ -58,7 +65,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Password mismatch",
@@ -72,10 +79,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
 
     try {
       await signUp(formData.email, formData.password, formData.username);
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
-      });
+      // toast({
+      //   title: "Account created!",
+      //   description: "Please check your email to verify your account.",
+      // });
       onOpenChange(false);
     } catch (error: any) {
       toast({
@@ -92,15 +99,23 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm">
         <DialogHeader>
-          <DialogTitle className="text-white text-center">Welcome to IguanaFlow</DialogTitle>
+          <DialogTitle className="text-white text-center">
+            Welcome to IguanaFlow
+          </DialogTitle>
         </DialogHeader>
 
         <Tabs value={mode} onValueChange={onModeChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-white/5">
-            <TabsTrigger value="login" className="text-white data-[state=active]:bg-white/10">
+            <TabsTrigger
+              value="login"
+              className="text-white data-[state=active]:bg-white/10"
+            >
               Sign In
             </TabsTrigger>
-            <TabsTrigger value="register" className="text-white data-[state=active]:bg-white/10">
+            <TabsTrigger
+              value="register"
+              className="text-white data-[state=active]:bg-white/10"
+            >
               Sign Up
             </TabsTrigger>
           </TabsList>
@@ -108,7 +123,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
           <TabsContent value="login" className="space-y-4">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
-                <Label htmlFor="email" className="text-white">Email</Label>
+                <Label htmlFor="email" className="text-white">
+                  Email
+                </Label>
                 <Input
                   id="email"
                   name="email"
@@ -122,7 +139,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
               </div>
 
               <div>
-                <Label htmlFor="password" className="text-white">Password</Label>
+                <Label htmlFor="password" className="text-white">
+                  Password
+                </Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -141,7 +160,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white h-auto p-1"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -158,7 +181,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                     Signing in...
                   </>
                 ) : (
-                  'Sign In'
+                  "Sign In"
                 )}
               </Button>
             </form>
@@ -167,7 +190,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
           <TabsContent value="register" className="space-y-4">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div>
-                <Label htmlFor="signup-email" className="text-white">Email</Label>
+                <Label htmlFor="signup-email" className="text-white">
+                  Email
+                </Label>
                 <Input
                   id="signup-email"
                   name="email"
@@ -181,7 +206,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
               </div>
 
               <div>
-                <Label htmlFor="username" className="text-white">Username</Label>
+                <Label htmlFor="username" className="text-white">
+                  Username
+                </Label>
                 <Input
                   id="username"
                   name="username"
@@ -195,7 +222,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
               </div>
 
               <div>
-                <Label htmlFor="signup-password" className="text-white">Password</Label>
+                <Label htmlFor="signup-password" className="text-white">
+                  Password
+                </Label>
                 <div className="relative">
                   <Input
                     id="signup-password"
@@ -214,13 +243,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                     className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white h-auto p-1"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               </div>
 
               <div>
-                <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-white">
+                  Confirm Password
+                </Label>
                 <Input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -245,7 +280,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ open, onOpenChange, mode, onModeC
                     Creating account...
                   </>
                 ) : (
-                  'Create Account'
+                  "Create Account"
                 )}
               </Button>
             </form>
