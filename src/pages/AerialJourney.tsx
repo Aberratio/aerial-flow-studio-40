@@ -102,42 +102,48 @@ const AerialJourney = () => {
 
           const totalLevels = levelsData?.length || 0;
 
-          // Calculate user points for this specific sport category
+          // Calculate user points for this specific sport category using the same logic as SkillTree
           let userPoints = 0;
-          if (user) {
-            // Get all completed figures in this category
+          let unlockedLevels = 0;
+          
+          if (user && levelsData && levelsData.length > 0) {
+            // Get all completed figures for this sport category with their level information
             const { data: progressData } = await supabase
-              .from("figure_progress")
-              .select(
-                `
+              .from('figure_progress')
+              .select(`
                 status,
+                figure_id,
                 figures!inner(
                   id,
                   category,
                   level_figures!inner(
-                    sport_levels!inner(level_number)
+                    level_id
                   )
                 )
-              `
-              )
-              .eq("user_id", user.id)
-              .eq("status", "completed")
-              .eq("figures.category", category.key_name);
+              `)
+              .eq('user_id', user.id)
+              .eq('status', 'completed')
+              .eq('figures.category', category.key_name);
 
-            if (progressData) {
-              userPoints = progressData.reduce((total, progress) => {
-                // Get the level number for this figure
-                const levelNumber =
-                  progress.figures?.level_figures?.[0]?.sport_levels
-                    ?.level_number || 1;
-                return total + 1 * levelNumber; // 1 point × level number
-              }, 0);
+            // Calculate points iteratively, level by level (same as SkillTree)
+            for (const level of levelsData) {
+              // Check if this level is unlocked based on current calculated points
+              if (userPoints >= level.point_limit) {
+                unlockedLevels++;
+                
+                // Count points from completed figures in this unlocked level
+                const levelFigures = progressData?.filter(progress => {
+                  const levelId = progress.figures?.level_figures?.[0]?.level_id;
+                  return levelId === level.id;
+                }) || [];
+                
+                // Add points for each completed figure in this level
+                levelFigures.forEach(() => {
+                  userPoints += 1 * level.level_number; // 1 point × level number
+                });
+              }
             }
           }
-
-          const unlockedLevels =
-            levelsData?.filter((level) => userPoints >= level.point_limit)
-              .length || 0;
 
           return {
             ...category,
