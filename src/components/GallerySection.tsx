@@ -70,7 +70,7 @@ export const GallerySection: React.FC = () => {
       {mediaItems.map((item) => (
         <Dialog key={item.id}>
           <DialogTrigger asChild>
-            <div className="group relative aspect-[4/6] overflow-hidden rounded-2xl">
+            <div className="group relative aspect-[4/6] overflow-hidden rounded-2xl cursor-pointer">
               {item.media_type === 'video' ? (
                 <video
                   src={item.media_url}
@@ -93,16 +93,7 @@ export const GallerySection: React.FC = () => {
               
               {/* Subtle glow effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-transparent to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-              
-              {/* Floating play icon for videos */}
-              {item.media_type === 'video' && (
-                <div className="absolute top-3 right-3 opacity-70 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <PlayCircle className="w-5 h-5 text-white" />
-                  </div>
-                </div>
-              )}
-              
+          
               {/* Hover zoom indicator */}
               <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/20 transition-colors duration-300 rounded-2xl" />
             </div>
