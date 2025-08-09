@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, TreePine, Eye, EyeOff, Settings } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -54,6 +54,7 @@ const AerialJourney = () => {
   } | null>(null);
   const [showLevelManager, setShowLevelManager] = useState(false);
   const [showSportManager, setShowSportManager] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchAvailableSports();
@@ -150,6 +151,8 @@ const AerialJourney = () => {
       setAvailableSports(sportsArray);
     } catch (error) {
       console.error("Error fetching sports:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -247,6 +250,14 @@ const AerialJourney = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
@@ -312,7 +323,6 @@ const AerialJourney = () => {
           <CardContent>
             {filteredSports.length === 0 ? (
               <div className="text-center py-12">
-                <TreePine className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
                 <h3 className="text-xl font-semibold text-white mb-2">
                   No Sports Available
                 </h3>

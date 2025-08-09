@@ -295,13 +295,6 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     return userPoints >= level.point_limit;
   };
 
-  const getPointsForNextLevel = (currentLevel: SportLevel) => {
-    const nextLevel = sportLevels.find(
-      (l) => l.level_number === currentLevel.level_number + 1
-    );
-    return nextLevel ? nextLevel.point_limit - userPoints : 0;
-  };
-
   const getLevelProgress = (level: SportLevel) => {
     if (level.figures.length === 0) return 0;
 
