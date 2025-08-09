@@ -206,7 +206,7 @@ const AerialJourney = () => {
           const { data: figuresData } = await supabase
             .from("figures")
             .select("id")
-            .eq("category", category.name);
+            .eq("category", category.key_name);
 
           const count = figuresData?.length || 0;
 
@@ -214,7 +214,7 @@ const AerialJourney = () => {
           const { data: levelsData } = await supabase
             .from("sport_levels")
             .select("id, level_number, point_limit")
-            .eq("sport_category", category.name)
+            .eq("sport_category", category.key_name)
             .order("level_number", { ascending: true });
 
           const totalLevels = levelsData?.length || 0;
@@ -239,7 +239,7 @@ const AerialJourney = () => {
               )
               .eq("user_id", user.id)
               .eq("status", "completed")
-              .eq("figures.category", category.name);
+              .eq("figures.category", category.key_name);
 
             if (progressData) {
               userPoints = progressData.reduce((total, progress) => {
@@ -337,49 +337,10 @@ const AerialJourney = () => {
     setSelectedSkillTreeSport({ category, name });
   };
 
-  const getSportDisplayName = (category: string) => {
-    const sportMap: Record<string, string> = {
-      hoop: "Aerial Hoop",
-      pole: "Pole Dancing",
-      silks: "Aerial Silks",
-      hammock: "Aerial Hammock",
-      core: "Core Training",
-    };
-    return (
-      sportMap[category] || category.charAt(0).toUpperCase() + category.slice(1)
-    );
-  };
-
   // Filter sports based on user role
   const filteredSports = isAdmin
     ? availableSports // Admins see all sports
     : availableSports.filter((sport) => sport.is_published); // Regular users see only published sports
-
-  const getSportIcon = (sport: SportCategory) => {
-    // Use icon from database if available, otherwise fallback to default icons
-    if (sport.icon) {
-      return sport.icon;
-    }
-
-    // Fallback icons based on key_name or name
-    const iconMap: Record<string, string> = {
-      hoop: "🪩",
-      aerial_hoop: "🪩",
-      pole: "💃",
-      pole_dancing: "💃",
-      silks: "🎪",
-      aerial_silks: "🎪",
-      hammock: "🏺",
-      aerial_hammock: "🏺",
-      core: "💪",
-      core_training: "💪",
-    };
-    return (
-      iconMap[sport.key_name] ||
-      iconMap[sport.name.toLowerCase().replace(/\s+/g, "_")] ||
-      "🏃"
-    );
-  };
 
   const handleLevelSelect = (levelId: string) => {
     setSelectedLevel(levelId);
@@ -609,8 +570,8 @@ const AerialJourney = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredSports.map((sport) => {
-                    const displayName = getSportDisplayName(sport.name);
-                    const icon = getSportIcon(sport);
+                    const displayName = sport.name;
+                    const icon = sport.icon;
                     const hasLevels = (sport.totalLevels || 0) > 0;
                     const progressPercentage = hasLevels
                       ? Math.round(
@@ -629,7 +590,7 @@ const AerialJourney = () => {
                             : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
                         }`}
                         onClick={() =>
-                          handleSkillTreeView(sport.name, displayName)
+                          handleSkillTreeView(sport.key_name, displayName)
                         }
                       >
                         <CardContent className="p-6">
@@ -742,7 +703,10 @@ const AerialJourney = () => {
                               className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 text-white"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleSkillTreeView(sport.name, displayName);
+                                handleSkillTreeView(
+                                  sport.key_name,
+                                  displayName
+                                );
                               }}
                               disabled={!sport.is_published && !isAdmin}
                             >
