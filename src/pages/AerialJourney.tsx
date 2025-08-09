@@ -4,7 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Star, Trophy, Target, Zap, Crown, Award, Medal, TreePine, Users, Activity, Eye, EyeOff, Settings } from "lucide-react";
+import {
+  ArrowLeft,
+  Star,
+  Trophy,
+  Target,
+  Zap,
+  Crown,
+  Award,
+  Medal,
+  TreePine,
+  Users,
+  Activity,
+  Eye,
+  EyeOff,
+  Settings,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -28,20 +43,67 @@ interface UserJourney {
 }
 
 const SPORT_OPTIONS = [
-  { id: "hoop", name: "Aerial Hoop (Lyra)", icon: "🪩", description: "Graceful circular apparatus" },
-  { id: "pole", name: "Pole Dancing", icon: "💃", description: "Dynamic vertical performance" },
-  { id: "silks", name: "Aerial Silks", icon: "🎪", description: "Flowing fabric artistry" },
-  { id: "hammock", name: "Aerial Hammock", icon: "🏺", description: "Gentle supported practice" },
-  { id: "trapeze", name: "Flying Trapeze", icon: "🤸", description: "High-flying acrobatics" },
-  { id: "straps", name: "Aerial Straps", icon: "💪", description: "Upper body strength focus" },
-  { id: "general", name: "General Fitness", icon: "💪", description: "Just want to be strong and healthy" }
+  {
+    id: "hoop",
+    name: "Aerial Hoop (Lyra)",
+    icon: "🪩",
+    description: "Graceful circular apparatus",
+  },
+  {
+    id: "pole",
+    name: "Pole Dancing",
+    icon: "💃",
+    description: "Dynamic vertical performance",
+  },
+  {
+    id: "silks",
+    name: "Aerial Silks",
+    icon: "🎪",
+    description: "Flowing fabric artistry",
+  },
+  {
+    id: "hammock",
+    name: "Aerial Hammock",
+    icon: "🏺",
+    description: "Gentle supported practice",
+  },
+  {
+    id: "trapeze",
+    name: "Flying Trapeze",
+    icon: "🤸",
+    description: "High-flying acrobatics",
+  },
+  {
+    id: "straps",
+    name: "Aerial Straps",
+    icon: "💪",
+    description: "Upper body strength focus",
+  },
+  {
+    id: "general",
+    name: "General Fitness",
+    icon: "💪",
+    description: "Just want to be strong and healthy",
+  },
 ];
 
 const EXPERIENCE_LEVELS = [
   { id: "beginner", name: "Beginner", description: "New to aerial arts" },
-  { id: "intermediate", name: "Intermediate", description: "Some experience with basics" },
-  { id: "advanced", name: "Advanced", description: "Confident with complex moves" },
-  { id: "professional", name: "Professional", description: "Teaching or performing level" }
+  {
+    id: "intermediate",
+    name: "Intermediate",
+    description: "Some experience with basics",
+  },
+  {
+    id: "advanced",
+    name: "Advanced",
+    description: "Confident with complex moves",
+  },
+  {
+    id: "professional",
+    name: "Professional",
+    description: "Teaching or performing level",
+  },
 ];
 
 const GOALS = [
@@ -50,15 +112,40 @@ const GOALS = [
   { id: "performance", name: "Performance Skills", icon: "🎭" },
   { id: "confidence", name: "Build Confidence", icon: "✨" },
   { id: "community", name: "Connect with Community", icon: "👥" },
-  { id: "compete", name: "Competition Ready", icon: "🏆" }
+  { id: "compete", name: "Competition Ready", icon: "🏆" },
 ];
 
 const ACHIEVEMENT_BADGES = [
-  { id: "first_week", name: "First Week", icon: "🌟", description: "Completed your first week" },
-  { id: "consistency", name: "Consistency King", icon: "👑", description: "7 day training streak" },
-  { id: "strength_warrior", name: "Strength Warrior", icon: "⚔️", description: "Completed 50 strength exercises" },
-  { id: "flexibility_master", name: "Flexibility Master", icon: "🧘", description: "Mastered 10 flexibility moves" },
-  { id: "social_butterfly", name: "Social Butterfly", icon: "🦋", description: "Connected with 5 aerial friends" }
+  {
+    id: "first_week",
+    name: "First Week",
+    icon: "🌟",
+    description: "Completed your first week",
+  },
+  {
+    id: "consistency",
+    name: "Consistency King",
+    icon: "👑",
+    description: "7 day training streak",
+  },
+  {
+    id: "strength_warrior",
+    name: "Strength Warrior",
+    icon: "⚔️",
+    description: "Completed 50 strength exercises",
+  },
+  {
+    id: "flexibility_master",
+    name: "Flexibility Master",
+    icon: "🧘",
+    description: "Mastered 10 flexibility moves",
+  },
+  {
+    id: "social_butterfly",
+    name: "Social Butterfly",
+    icon: "🦋",
+    description: "Connected with 5 aerial friends",
+  },
 ];
 
 interface SportCategory {
@@ -85,10 +172,13 @@ const AerialJourney = () => {
   const [userJourney, setUserJourney] = useState<UserJourney | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [availableSports, setAvailableSports] = useState<SportCategory[]>([]);
-  const [selectedSkillTreeSport, setSelectedSkillTreeSport] = useState<{category: string, name: string} | null>(null);
+  const [selectedSkillTreeSport, setSelectedSkillTreeSport] = useState<{
+    category: string;
+    name: string;
+  } | null>(null);
   const [showLevelManager, setShowLevelManager] = useState(false);
   const [showSportManager, setShowSportManager] = useState(false);
-  
+
   // Form state
   const [selectedSport, setSelectedSport] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("");
@@ -103,9 +193,9 @@ const AerialJourney = () => {
     try {
       // Fetch sport categories from the new table
       const { data: categoriesData, error: categoriesError } = await supabase
-        .from('sport_categories')
-        .select('*')
-        .order('name');
+        .from("sport_categories")
+        .select("*")
+        .order("name");
 
       if (categoriesError) throw categoriesError;
 
@@ -114,28 +204,29 @@ const AerialJourney = () => {
         (categoriesData || []).map(async (category) => {
           // Count figures in this category
           const { data: figuresData } = await supabase
-            .from('figures')
-            .select('id')
-            .eq('category', category.name);
+            .from("figures")
+            .select("id")
+            .eq("category", category.name);
 
           const count = figuresData?.length || 0;
 
           // Get levels for this category
           const { data: levelsData } = await supabase
-            .from('sport_levels')
-            .select('id, level_number, point_limit')
-            .eq('sport_category', category.name)
-            .order('level_number', { ascending: true });
+            .from("sport_levels")
+            .select("id, level_number, point_limit")
+            .eq("sport_category", category.name)
+            .order("level_number", { ascending: true });
 
           const totalLevels = levelsData?.length || 0;
-          
+
           // Calculate user points for this specific sport category
           let userPoints = 0;
           if (user) {
             // Get all completed figures in this category
             const { data: progressData } = await supabase
-              .from('figure_progress')
-              .select(`
+              .from("figure_progress")
+              .select(
+                `
                 status,
                 figures!inner(
                   id,
@@ -144,75 +235,85 @@ const AerialJourney = () => {
                     sport_levels!inner(level_number)
                   )
                 )
-              `)
-              .eq('user_id', user.id)
-              .eq('status', 'completed')
-              .eq('figures.category', category.name);
+              `
+              )
+              .eq("user_id", user.id)
+              .eq("status", "completed")
+              .eq("figures.category", category.name);
 
             if (progressData) {
               userPoints = progressData.reduce((total, progress) => {
                 // Get the level number for this figure
-                const levelNumber = progress.figures?.level_figures?.[0]?.sport_levels?.level_number || 1;
-                return total + (1 * levelNumber); // 1 point × level number
+                const levelNumber =
+                  progress.figures?.level_figures?.[0]?.sport_levels
+                    ?.level_number || 1;
+                return total + 1 * levelNumber; // 1 point × level number
               }, 0);
             }
           }
 
-          const unlockedLevels = levelsData?.filter(level => userPoints >= level.point_limit).length || 0;
+          const unlockedLevels =
+            levelsData?.filter((level) => userPoints >= level.point_limit)
+              .length || 0;
 
           return {
             ...category,
             count,
             userPoints,
             totalLevels,
-            unlockedLevels
+            unlockedLevels,
           } as SportCategory;
         })
       );
 
       setAvailableSports(sportsArray);
     } catch (error) {
-      console.error('Error fetching sports:', error);
+      console.error("Error fetching sports:", error);
     }
   };
 
-  const handlePublishToggle = async (sportId: string, currentStatus: boolean) => {
+  const handlePublishToggle = async (
+    sportId: string,
+    currentStatus: boolean
+  ) => {
     try {
       const { error } = await supabase
-        .from('sport_categories')
+        .from("sport_categories")
         .update({ is_published: !currentStatus })
-        .eq('id', sportId);
+        .eq("id", sportId);
 
       if (error) throw error;
 
       // Update local state
-      setAvailableSports(prev => 
-        prev.map(sport => 
-          sport.id === sportId 
+      setAvailableSports((prev) =>
+        prev.map((sport) =>
+          sport.id === sportId
             ? { ...sport, is_published: !currentStatus }
             : sport
         )
       );
 
-      toast.success(`Sport ${!currentStatus ? 'published' : 'unpublished'} successfully`);
+      toast.success(
+        `Sport ${!currentStatus ? "published" : "unpublished"} successfully`
+      );
     } catch (error) {
-      console.error('Error updating sport status:', error);
-      toast.error('Failed to update sport status');
+      console.error("Error updating sport status:", error);
+      toast.error("Failed to update sport status");
     }
   };
 
   const checkExistingJourney = async () => {
     if (!user) return;
-    
+
     try {
       const { data, error } = await supabase
-        .from('user_journeys')
-        .select('*')
-        .eq('user_id', user.id)
+        .from("user_journeys")
+        .select("*")
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching journey:', error);
+        console.error("Error fetching journey:", error);
         return;
       }
 
@@ -221,7 +322,7 @@ const AerialJourney = () => {
         // Don't automatically go to dashboard, stay on main view
       }
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     } finally {
       setIsLoading(false);
     }
@@ -238,40 +339,46 @@ const AerialJourney = () => {
 
   const getSportDisplayName = (category: string) => {
     const sportMap: Record<string, string> = {
-      'hoop': 'Aerial Hoop',
-      'pole': 'Pole Dancing',
-      'silks': 'Aerial Silks',
-      'hammock': 'Aerial Hammock',
-      'core': 'Core Training'
+      hoop: "Aerial Hoop",
+      pole: "Pole Dancing",
+      silks: "Aerial Silks",
+      hammock: "Aerial Hammock",
+      core: "Core Training",
     };
-    return sportMap[category] || category.charAt(0).toUpperCase() + category.slice(1);
+    return (
+      sportMap[category] || category.charAt(0).toUpperCase() + category.slice(1)
+    );
   };
 
   // Filter sports based on user role
-  const filteredSports = isAdmin 
+  const filteredSports = isAdmin
     ? availableSports // Admins see all sports
-    : availableSports.filter(sport => sport.is_published); // Regular users see only published sports
+    : availableSports.filter((sport) => sport.is_published); // Regular users see only published sports
 
   const getSportIcon = (sport: SportCategory) => {
     // Use icon from database if available, otherwise fallback to default icons
     if (sport.icon) {
       return sport.icon;
     }
-    
+
     // Fallback icons based on key_name or name
     const iconMap: Record<string, string> = {
-      'hoop': '🪩',
-      'aerial_hoop': '🪩',
-      'pole': '💃',
-      'pole_dancing': '💃', 
-      'silks': '🎪',
-      'aerial_silks': '🎪',
-      'hammock': '🏺',
-      'aerial_hammock': '🏺',
-      'core': '💪',
-      'core_training': '💪'
+      hoop: "🪩",
+      aerial_hoop: "🪩",
+      pole: "💃",
+      pole_dancing: "💃",
+      silks: "🎪",
+      aerial_silks: "🎪",
+      hammock: "🏺",
+      aerial_hammock: "🏺",
+      core: "💪",
+      core_training: "💪",
     };
-    return iconMap[sport.key_name] || iconMap[sport.name.toLowerCase().replace(/\s+/g, '_')] || '🏃';
+    return (
+      iconMap[sport.key_name] ||
+      iconMap[sport.name.toLowerCase().replace(/\s+/g, "_")] ||
+      "🏃"
+    );
   };
 
   const handleLevelSelect = (levelId: string) => {
@@ -280,9 +387,9 @@ const AerialJourney = () => {
   };
 
   const handleGoalToggle = (goalId: string) => {
-    setSelectedGoals(prev => 
-      prev.includes(goalId) 
-        ? prev.filter(g => g !== goalId)
+    setSelectedGoals((prev) =>
+      prev.includes(goalId)
+        ? prev.filter((g) => g !== goalId)
         : [...prev, goalId]
     );
   };
@@ -292,7 +399,7 @@ const AerialJourney = () => {
 
     try {
       const { data, error } = await supabase
-        .from('user_journeys')
+        .from("user_journeys")
         .insert({
           user_id: user.id,
           sport_type: selectedSport,
@@ -300,7 +407,7 @@ const AerialJourney = () => {
           goals: selectedGoals,
           current_streak: 0,
           total_points: 0,
-          badges_earned: []
+          badges_earned: [],
         })
         .select()
         .single();
@@ -311,7 +418,7 @@ const AerialJourney = () => {
       setCurrentStep(4);
       toast.success("Welcome to your Aerial Journey! 🎉");
     } catch (error) {
-      console.error('Error creating journey:', error);
+      console.error("Error creating journey:", error);
       toast.error("Failed to create your journey");
     }
   };
@@ -364,7 +471,7 @@ const AerialJourney = () => {
         <div className="max-w-6xl mx-auto">
           <Button
             variant="ghost"
-            onClick={() => navigate('/home')}
+            onClick={() => navigate("/home")}
             className="mb-6 text-white hover:bg-white/10"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -381,50 +488,68 @@ const AerialJourney = () => {
           </div>
 
           {/* Action Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <Card className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
-              <CardContent className="p-6 text-center">
-                <TreePine className="w-12 h-12 mx-auto mb-4 text-green-400" />
-                <h3 className="text-xl font-bold text-white mb-2">Explore Skill Trees</h3>
-                <p className="text-muted-foreground text-sm">View all sports and their progression paths</p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
-              onClick={() => setCurrentStep(1)}
-            >
-              <CardContent className="p-6 text-center">
-                <Users className="w-12 h-12 mx-auto mb-4 text-blue-400" />
-                <h3 className="text-xl font-bold text-white mb-2">Setup Journey</h3>
-                <p className="text-muted-foreground text-sm">Personalize your aerial training experience</p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
-              onClick={() => setShowLevelManager(true)}
-            >
-              <CardContent className="p-6 text-center">
-                <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
-                <h3 className="text-xl font-bold text-white mb-2">Manage Levels</h3>
-                <p className="text-muted-foreground text-sm">Admin: Create and manage sport levels</p>
-              </CardContent>
-            </Card>
-
-            {userJourney && (
-              <Card 
-                className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
-                onClick={() => setCurrentStep(4)}
-              >
+          {isAdmin && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+              <Card className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
                 <CardContent className="p-6 text-center">
-                  <Activity className="w-12 h-12 mx-auto mb-4 text-purple-400" />
-                  <h3 className="text-xl font-bold text-white mb-2">My Dashboard</h3>
-                  <p className="text-muted-foreground text-sm">View your progress and achievements</p>
+                  <TreePine className="w-12 h-12 mx-auto mb-4 text-green-400" />
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Explore Skill Trees
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    View all sports and their progression paths
+                  </p>
                 </CardContent>
               </Card>
-            )}
-          </div>
+
+              <Card
+                className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
+                onClick={() => setCurrentStep(1)}
+              >
+                <CardContent className="p-6 text-center">
+                  <Users className="w-12 h-12 mx-auto mb-4 text-blue-400" />
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Setup Journey
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Personalize your aerial training experience
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card
+                className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
+                onClick={() => setShowLevelManager(true)}
+              >
+                <CardContent className="p-6 text-center">
+                  <Crown className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Manage Levels
+                  </h3>
+                  <p className="text-muted-foreground text-sm">
+                    Admin: Create and manage sport levels
+                  </p>
+                </CardContent>
+              </Card>
+
+              {userJourney && (
+                <Card
+                  className="glass-effect border-white/10 hover:border-purple-400/50 transition-all duration-300 hover:scale-105 cursor-pointer"
+                  onClick={() => setCurrentStep(4)}
+                >
+                  <CardContent className="p-6 text-center">
+                    <Activity className="w-12 h-12 mx-auto mb-4 text-purple-400" />
+                    <h3 className="text-xl font-bold text-white mb-2">
+                      My Dashboard
+                    </h3>
+                    <p className="text-muted-foreground text-sm">
+                      View your progress and achievements
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
 
           {/* Available Sports */}
           <Card className="glass-effect border-white/10 mb-8">
@@ -441,10 +566,9 @@ const AerialJourney = () => {
                     )}
                   </CardTitle>
                   <p className="text-muted-foreground">
-                    {isAdmin 
+                    {isAdmin
                       ? "All sports (published and draft). Use switches to publish/unpublish sports."
-                      : "Click on any sport to see its complete skill tree and your progression"
-                    }
+                      : "Click on any sport to see its complete skill tree and your progression"}
                   </p>
                 </div>
                 {isAdmin && (
@@ -473,12 +597,13 @@ const AerialJourney = () => {
               {filteredSports.length === 0 ? (
                 <div className="text-center py-12">
                   <TreePine className="w-16 h-16 mx-auto mb-4 text-muted-foreground/50" />
-                  <h3 className="text-xl font-semibold text-white mb-2">No Sports Available</h3>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    No Sports Available
+                  </h3>
                   <p className="text-muted-foreground">
-                    {isAdmin 
+                    {isAdmin
                       ? "No sport categories have been created yet. Use the Manage Sports button to add some."
-                      : "No sports are currently published. Check back later!"
-                    }
+                      : "No sports are currently published. Check back later!"}
                   </p>
                 </div>
               ) : (
@@ -487,17 +612,25 @@ const AerialJourney = () => {
                     const displayName = getSportDisplayName(sport.name);
                     const icon = getSportIcon(sport);
                     const hasLevels = (sport.totalLevels || 0) > 0;
-                    const progressPercentage = hasLevels ? Math.round(((sport.unlockedLevels || 0) / (sport.totalLevels || 1)) * 100) : 0;
-                    
+                    const progressPercentage = hasLevels
+                      ? Math.round(
+                          ((sport.unlockedLevels || 0) /
+                            (sport.totalLevels || 1)) *
+                            100
+                        )
+                      : 0;
+
                     return (
                       <Card
                         key={sport.id}
                         className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
-                          sport.is_published 
-                            ? 'bg-white/5 border-white/10 hover:border-purple-400/50' 
-                            : 'bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50'
+                          sport.is_published
+                            ? "bg-white/5 border-white/10 hover:border-purple-400/50"
+                            : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
                         }`}
-                        onClick={() => handleSkillTreeView(sport.name, displayName)}
+                        onClick={() =>
+                          handleSkillTreeView(sport.name, displayName)
+                        }
                       >
                         <CardContent className="p-6">
                           {/* Admin Controls */}
@@ -511,7 +644,12 @@ const AerialJourney = () => {
                                 )}
                                 <Switch
                                   checked={sport.is_published}
-                                  onCheckedChange={() => handlePublishToggle(sport.id, sport.is_published)}
+                                  onCheckedChange={() =>
+                                    handlePublishToggle(
+                                      sport.id,
+                                      sport.is_published
+                                    )
+                                  }
                                   onClick={(e) => e.stopPropagation()}
                                   className="scale-75"
                                 />
@@ -522,32 +660,38 @@ const AerialJourney = () => {
                           {/* Status Badge */}
                           {isAdmin && (
                             <div className="mb-3">
-                              <Badge 
+                              <Badge
                                 className={`text-xs ${
-                                  sport.is_published 
-                                    ? 'bg-green-500/20 text-green-400 border-green-400/30' 
-                                    : 'bg-orange-500/20 text-orange-400 border-orange-400/30'
+                                  sport.is_published
+                                    ? "bg-green-500/20 text-green-400 border-green-400/30"
+                                    : "bg-orange-500/20 text-orange-400 border-orange-400/30"
                                 }`}
                               >
-                                {sport.is_published ? 'Published' : 'Draft'}
+                                {sport.is_published ? "Published" : "Draft"}
                               </Badge>
                             </div>
                           )}
-                          
+
                           <div className="text-center mb-4">
                             <div className="text-4xl mb-3">{icon}</div>
-                            <h3 className="font-semibold text-white text-lg mb-2">{displayName}</h3>
+                            <h3 className="font-semibold text-white text-lg mb-2">
+                              {displayName}
+                            </h3>
                             {sport.description && (
-                              <p className="text-sm text-muted-foreground">{sport.description}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {sport.description}
+                              </p>
                             )}
                           </div>
-                          
+
                           <div className="space-y-3">
                             {/* Points Display */}
                             {user && (
                               <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-lg p-3">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-sm text-yellow-400 font-medium">Your Points</span>
+                                  <span className="text-sm text-yellow-400 font-medium">
+                                    Your Points
+                                  </span>
                                   <Badge className="bg-yellow-500/20 text-yellow-400">
                                     💰 {sport.userPoints || 0}
                                   </Badge>
@@ -559,28 +703,42 @@ const AerialJourney = () => {
                             {hasLevels && user && (
                               <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-lg p-3">
                                 <div className="flex items-center justify-between mb-2">
-                                  <span className="text-sm text-purple-400 font-medium">Level Progress</span>
+                                  <span className="text-sm text-purple-400 font-medium">
+                                    Level Progress
+                                  </span>
                                   <span className="text-xs text-purple-300">
-                                    {sport.unlockedLevels}/{sport.totalLevels} unlocked
+                                    {sport.unlockedLevels}/{sport.totalLevels}{" "}
+                                    unlocked
                                   </span>
                                 </div>
-                                <Progress value={progressPercentage} className="h-2" />
+                                <Progress
+                                  value={progressPercentage}
+                                  className="h-2"
+                                />
                               </div>
                             )}
 
                             <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">Available Figures</span>
-                              <Badge variant="secondary">{sport.count || 0}</Badge>
+                              <span className="text-sm text-muted-foreground">
+                                Available Figures
+                              </span>
+                              <Badge variant="secondary">
+                                {sport.count || 0}
+                              </Badge>
                             </div>
 
                             {hasLevels && (
                               <div className="flex items-center justify-between">
-                                <span className="text-sm text-muted-foreground">Skill Levels</span>
-                                <Badge variant="outline">{sport.totalLevels}</Badge>
+                                <span className="text-sm text-muted-foreground">
+                                  Skill Levels
+                                </span>
+                                <Badge variant="outline">
+                                  {sport.totalLevels}
+                                </Badge>
                               </div>
                             )}
-                            
-                            <Button 
+
+                            <Button
                               className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 text-white"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -589,7 +747,9 @@ const AerialJourney = () => {
                               disabled={!sport.is_published && !isAdmin}
                             >
                               <TreePine className="w-4 h-4 mr-2" />
-                              {sport.is_published || isAdmin ? 'View Skill Tree' : 'Coming Soon'}
+                              {sport.is_published || isAdmin
+                                ? "View Skill Tree"
+                                : "Coming Soon"}
                             </Button>
                           </div>
                         </CardContent>
@@ -630,8 +790,12 @@ const AerialJourney = () => {
 
           <Card className="glass-effect border-white/10 mb-8">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-white">Choose Your Aerial Discipline</CardTitle>
-              <p className="text-muted-foreground">What type of aerial training are you passionate about?</p>
+              <CardTitle className="text-2xl text-white">
+                Choose Your Aerial Discipline
+              </CardTitle>
+              <p className="text-muted-foreground">
+                What type of aerial training are you passionate about?
+              </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -643,8 +807,12 @@ const AerialJourney = () => {
                   >
                     <CardContent className="p-6 text-center">
                       <div className="text-4xl mb-3">{sport.icon}</div>
-                      <h3 className="font-semibold text-white mb-2">{sport.name}</h3>
-                      <p className="text-sm text-muted-foreground">{sport.description}</p>
+                      <h3 className="font-semibold text-white mb-2">
+                        {sport.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {sport.description}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -672,8 +840,12 @@ const AerialJourney = () => {
 
           <Card className="glass-effect border-white/10">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-white">What's Your Experience Level?</CardTitle>
-              <p className="text-muted-foreground">Help us customize your journey to your current skill level</p>
+              <CardTitle className="text-2xl text-white">
+                What's Your Experience Level?
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Help us customize your journey to your current skill level
+              </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -684,8 +856,12 @@ const AerialJourney = () => {
                     onClick={() => handleLevelSelect(level.id)}
                   >
                     <CardContent className="p-6 text-center">
-                      <h3 className="font-semibold text-white mb-2">{level.name}</h3>
-                      <p className="text-sm text-muted-foreground">{level.description}</p>
+                      <h3 className="font-semibold text-white mb-2">
+                        {level.name}
+                      </h3>
+                      <p className="text-sm text-muted-foreground">
+                        {level.description}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -713,8 +889,12 @@ const AerialJourney = () => {
 
           <Card className="glass-effect border-white/10">
             <CardHeader className="text-center">
-              <CardTitle className="text-2xl text-white">What Are Your Goals?</CardTitle>
-              <p className="text-muted-foreground">Select all that apply to personalize your experience</p>
+              <CardTitle className="text-2xl text-white">
+                What Are Your Goals?
+              </CardTitle>
+              <p className="text-muted-foreground">
+                Select all that apply to personalize your experience
+              </p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -723,8 +903,8 @@ const AerialJourney = () => {
                     key={goal.id}
                     className={`cursor-pointer transition-all duration-300 ${
                       selectedGoals.includes(goal.id)
-                        ? 'bg-purple-500/20 border-purple-400 scale-105'
-                        : 'bg-white/5 border-white/10 hover:border-purple-400/50'
+                        ? "bg-purple-500/20 border-purple-400 scale-105"
+                        : "bg-white/5 border-white/10 hover:border-purple-400/50"
                     }`}
                     onClick={() => handleGoalToggle(goal.id)}
                   >
@@ -735,7 +915,7 @@ const AerialJourney = () => {
                   </Card>
                 ))}
               </div>
-              
+
               <div className="text-center">
                 <Button
                   onClick={handleFinishSetup}
@@ -754,9 +934,13 @@ const AerialJourney = () => {
 
   // Journey Dashboard
   if (currentStep === 4 && userJourney) {
-    const selectedSportInfo = SPORT_OPTIONS.find(s => s.id === userJourney.sport_type);
-    const selectedLevelInfo = EXPERIENCE_LEVELS.find(l => l.id === userJourney.experience_level);
-    
+    const selectedSportInfo = SPORT_OPTIONS.find(
+      (s) => s.id === userJourney.sport_type
+    );
+    const selectedLevelInfo = EXPERIENCE_LEVELS.find(
+      (l) => l.id === userJourney.experience_level
+    );
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-pink-900/20 to-blue-900/20 p-4 md:p-6">
         <div className="max-w-6xl mx-auto">
@@ -783,23 +967,29 @@ const AerialJourney = () => {
             <Card className="glass-effect border-white/10">
               <CardContent className="p-6 text-center">
                 <Zap className="w-8 h-8 mx-auto mb-3 text-yellow-400" />
-                <h3 className="text-2xl font-bold text-white">{userJourney.current_streak}</h3>
+                <h3 className="text-2xl font-bold text-white">
+                  {userJourney.current_streak}
+                </h3>
                 <p className="text-muted-foreground">Day Streak</p>
               </CardContent>
             </Card>
-            
+
             <Card className="glass-effect border-white/10">
               <CardContent className="p-6 text-center">
                 <Star className="w-8 h-8 mx-auto mb-3 text-purple-400" />
-                <h3 className="text-2xl font-bold text-white">{userJourney.total_points}</h3>
+                <h3 className="text-2xl font-bold text-white">
+                  {userJourney.total_points}
+                </h3>
                 <p className="text-muted-foreground">Total Points</p>
               </CardContent>
             </Card>
-            
+
             <Card className="glass-effect border-white/10">
               <CardContent className="p-6 text-center">
                 <Award className="w-8 h-8 mx-auto mb-3 text-green-400" />
-                <h3 className="text-2xl font-bold text-white">{userJourney.badges_earned.length}</h3>
+                <h3 className="text-2xl font-bold text-white">
+                  {userJourney.badges_earned.length}
+                </h3>
                 <p className="text-muted-foreground">Badges Earned</p>
               </CardContent>
             </Card>
@@ -822,13 +1012,17 @@ const AerialJourney = () => {
                       key={badge.id}
                       className={`text-center p-4 rounded-lg border transition-all ${
                         isEarned
-                          ? 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-400/50'
-                          : 'bg-white/5 border-white/10 opacity-50'
+                          ? "bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border-yellow-400/50"
+                          : "bg-white/5 border-white/10 opacity-50"
                       }`}
                     >
                       <div className="text-3xl mb-2">{badge.icon}</div>
-                      <h4 className="font-semibold text-white text-sm mb-1">{badge.name}</h4>
-                      <p className="text-xs text-muted-foreground">{badge.description}</p>
+                      <h4 className="font-semibold text-white text-sm mb-1">
+                        {badge.name}
+                      </h4>
+                      <p className="text-xs text-muted-foreground">
+                        {badge.description}
+                      </p>
                       {isEarned && (
                         <Badge className="mt-2 bg-yellow-500/20 text-yellow-400">
                           Earned!
@@ -852,20 +1046,24 @@ const AerialJourney = () => {
             <CardContent>
               <div className="space-y-4">
                 {userJourney.goals.map((goalId) => {
-                  const goal = GOALS.find(g => g.id === goalId);
+                  const goal = GOALS.find((g) => g.id === goalId);
                   if (!goal) return null;
-                  
+
                   // Mock progress for demo
                   const progress = Math.floor(Math.random() * 100);
-                  
+
                   return (
                     <div key={goalId} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">
                           <span>{goal.icon}</span>
-                          <span className="text-white font-medium">{goal.name}</span>
+                          <span className="text-white font-medium">
+                            {goal.name}
+                          </span>
                         </div>
-                        <span className="text-muted-foreground text-sm">{progress}%</span>
+                        <span className="text-muted-foreground text-sm">
+                          {progress}%
+                        </span>
                       </div>
                       <Progress value={progress} className="h-2" />
                     </div>
