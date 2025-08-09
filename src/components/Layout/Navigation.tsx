@@ -8,12 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import IguanaLogo from '@/assets/iguana-logo.svg';
-
 interface NavigationProps {
   isOpen?: boolean;
   onClose?: () => void;
 }
-
 const Navigation: React.FC<NavigationProps> = ({
   isOpen = false,
   onClose
@@ -69,7 +67,6 @@ const Navigation: React.FC<NavigationProps> = ({
   // Check if user has premium access or admin override
   const hasPremiumAccess = user?.role && ['premium', 'trainer', 'admin'].includes(user.role);
   const isAdmin = user?.role === 'admin';
-  
   const freeNavItems = [{
     path: '/home',
     icon: LayoutDashboard,
@@ -102,7 +99,6 @@ const Navigation: React.FC<NavigationProps> = ({
     icon: Bell,
     label: 'Inbox'
   }];
-  
   const premiumNavItems = [{
     path: '/challenges',
     icon: Trophy,
@@ -125,11 +121,8 @@ const Navigation: React.FC<NavigationProps> = ({
     icon: Globe,
     label: 'Landing Page'
   }] : [];
-  
   const isActive = (path: string) => location.pathname === path;
-  
-  return (
-    <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
+  return <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
       <div className="flex flex-col h-full p-4 overflow-y-auto">
         {/* Logo */}
         <Link to="/home" onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 group ${isMobile ? 'mb-4 mt-16' : 'mb-8 mt-4'}`}>
@@ -142,14 +135,12 @@ const Navigation: React.FC<NavigationProps> = ({
         {/* Free Navigation Items */}
         <div className="flex-1 space-y-2">
           {freeNavItems.map(item => {
-            const Icon = item.icon;
-            return (
-              <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+          const Icon = item.icon;
+          return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                 <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
-              </Link>
-            );
-          })}
+              </Link>;
+        })}
 
           {/* User Section */}
           <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
@@ -158,20 +149,14 @@ const Navigation: React.FC<NavigationProps> = ({
           </div>
           
           {userNavItems.map(item => {
-            const Icon = item.icon;
-            const showUnreadBadge = item.path === '/inbox' && unreadCount > 0;
-            return (
-              <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+          const Icon = item.icon;
+          const showUnreadBadge = item.path === '/inbox' && unreadCount > 0;
+          return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                 <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
-                {showUnreadBadge && (
-                  <Badge className={`bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 rounded-full ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </Badge>
-                )}
-              </Link>
-            );
-          })}
+                {showUnreadBadge}
+              </Link>;
+        })}
 
           {/* Premium Section */}
           <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
@@ -180,43 +165,35 @@ const Navigation: React.FC<NavigationProps> = ({
             <span className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider ${isMobile ? 'block' : 'hidden lg:block'}`}>
               Premium
             </span>
-            {!hasPremiumAccess && (
-              <Badge className={`bg-yellow-500/20 text-yellow-400 text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
+            {!hasPremiumAccess && <Badge className={`bg-yellow-500/20 text-yellow-400 text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
                 Upgrade
-              </Badge>
-            )}
+              </Badge>}
           </div>
           
           {premiumNavItems.map(item => {
-            const Icon = item.icon;
-            const isDisabled = !hasPremiumAccess && !isAdmin;
-            return (
-              <Link key={item.path} to={isDisabled ? '/pricing' : item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) && !isDisabled ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : isDisabled ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+          const Icon = item.icon;
+          const isDisabled = !hasPremiumAccess && !isAdmin;
+          return <Link key={item.path} to={isDisabled ? '/pricing' : item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) && !isDisabled ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : isDisabled ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                 <Icon className={`w-5 h-5 flex-shrink-0 ${!isDisabled ? 'group-hover:scale-110' : ''} transition-transform`} />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
                 {isDisabled && <Lock className={`w-3 h-3 ml-auto text-muted-foreground/50 ${isMobile ? 'block' : 'hidden lg:block'}`} />}
-              </Link>
-            );
-          })}
+              </Link>;
+        })}
 
           {/* Admin Section */}
-          {adminItems.length > 0 && (
-            <>
+          {adminItems.length > 0 && <>
               <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
               <div className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2 ${isMobile ? 'block' : 'hidden lg:block'}`}>
                 Admin
               </div>
               {adminItems.map(item => {
-                const Icon = item.icon;
-                return (
-                  <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+            const Icon = item.icon;
+            return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                     <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                     <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
-                  </Link>
-                );
-              })}
-            </>
-          )}
+                  </Link>;
+          })}
+            </>}
         </div>
 
         {/* User Profile */}
@@ -236,9 +213,9 @@ const Navigation: React.FC<NavigationProps> = ({
             </Link>
           </div>
           <Button onClick={() => {
-            logout();
-            if (isMobile && onClose) onClose();
-          }} variant="ghost" size="sm" className="w-full mt-2 text-muted-foreground hover:text-white hover:bg-white/10 justify-start">
+          logout();
+          if (isMobile && onClose) onClose();
+        }} variant="ghost" size="sm" className="w-full mt-2 text-muted-foreground hover:text-white hover:bg-white/10 justify-start">
             <LogOut className="w-4 h-4 mr-3" />
             <span className={isMobile ? 'block' : 'hidden lg:block'}>Logout</span>
           </Button>
@@ -257,8 +234,6 @@ const Navigation: React.FC<NavigationProps> = ({
           </div>
         </div>
       </div>
-    </nav>
-  );
+    </nav>;
 };
-
 export default Navigation;
