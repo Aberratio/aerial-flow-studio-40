@@ -7,13 +7,10 @@ import { Badge } from '@/components/ui/badge';
 import { useUserActivities, UserActivity } from '@/hooks/useUserActivities';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+
 const Inbox = () => {
   const [filter, setFilter] = useState('all');
-  const {
-    activities,
-    loading,
-    markAllAsRead
-  } = useUserActivities();
+  const { activities, loading, markAllAsRead, markAsRead } = useUserActivities();
   const navigate = useNavigate();
 
   // Mark all activities as read when user opens inbox
@@ -54,6 +51,11 @@ const Inbox = () => {
     }
   };
   const handleActivityClick = (activity: UserActivity) => {
+    // Mark individual activity as read when clicked
+    if (!activity.is_read) {
+      markAsRead(activity.id);
+    }
+    
     const data = activity.activity_data || {};
     switch (activity.activity_type) {
       case 'like':
@@ -149,7 +151,7 @@ const Inbox = () => {
           {loading ? <div className="text-center py-8">
               <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
               <p className="text-muted-foreground mt-2">Loading activities...</p>
-            </div> : filteredActivities.map(activity => <Card key={activity.id} className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors" onClick={() => handleActivityClick(activity)}>
+            </div> : filteredActivities.map(activity => <Card key={activity.id} className={`glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors ${!activity.is_read ? 'bg-white/5' : ''}`} onClick={() => handleActivityClick(activity)}>
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-4">
                     {/* Icon */}
@@ -166,10 +168,15 @@ const Inbox = () => {
                     {/* Content */}
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-white">
-                            {getActivityContent(activity)}
-                          </p>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2">
+                            <p className={`${!activity.is_read ? 'text-white font-semibold' : 'text-white'}`}>
+                              {getActivityContent(activity)}
+                            </p>
+                            {!activity.is_read && (
+                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                            )}
+                          </div>
                           <div className="flex items-center space-x-2 mt-1">
                             <Clock className="w-3 h-3 text-muted-foreground" />
                             <span className="text-muted-foreground text-sm">

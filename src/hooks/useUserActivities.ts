@@ -94,6 +94,33 @@ export const useUserActivities = () => {
     };
   }, [user]);
 
+  const markAsRead = useCallback(async (activityId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('user_activities')
+        .update({ is_read: true })
+        .eq('id', activityId)
+        .eq('user_id', user.id);
+      
+      if (error) {
+        console.error('Error marking activity as read:', error);
+      } else {
+        // Update local state to reflect the change immediately
+        setActivities(prev => 
+          prev.map(activity => 
+            activity.id === activityId 
+              ? { ...activity, is_read: true }
+              : activity
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error marking activity as read:', error);
+    }
+  }, [user]);
+
   const markAllAsRead = useCallback(async () => {
     if (!user) return;
 
@@ -117,5 +144,5 @@ export const useUserActivities = () => {
     }
   }, [user]);
 
-  return { activities, loading, markAllAsRead };
+  return { activities, loading, markAllAsRead, markAsRead };
 };
