@@ -9,6 +9,7 @@ export interface UserActivity {
   target_user_id: string | null;
   points_awarded: number;
   created_at: string;
+  is_read: boolean;
   target_user?: {
     username: string;
     avatar_url: string | null;

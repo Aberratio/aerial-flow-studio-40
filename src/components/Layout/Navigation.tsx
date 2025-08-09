@@ -45,9 +45,16 @@ const Navigation: React.FC<NavigationProps> = ({
     };
     fetchUnreadCount();
 
-    // Set up real-time subscription for new activities
+    // Set up real-time subscription for new activities and updates
     const channel = supabase.channel('user_activities_changes').on('postgres_changes', {
       event: 'INSERT',
+      schema: 'public',
+      table: 'user_activities',
+      filter: `user_id=eq.${user?.id}`
+    }, () => {
+      fetchUnreadCount();
+    }).on('postgres_changes', {
+      event: 'UPDATE',
       schema: 'public',
       table: 'user_activities',
       filter: `user_id=eq.${user?.id}`
