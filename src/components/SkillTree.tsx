@@ -152,16 +152,30 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     if (!user) return;
 
     try {
-      // Calculate user points for this specific sport category
+      // Get all sport levels for this category, ordered by level number
+      const { data: levelsData } = await supabase
+        .from('sport_levels')
+        .select('id, level_number, point_limit')
+        .eq('sport_category', sportCategory)
+        .eq('status', 'published')
+        .order('level_number', { ascending: true });
+
+      if (!levelsData) {
+        setUserPoints(0);
+        return;
+      }
+
+      // Get all completed figures for this sport category with their level information
       const { data: progressData } = await supabase
         .from('figure_progress')
         .select(`
           status,
+          figure_id,
           figures!inner(
             id,
             category,
             level_figures!inner(
-              sport_levels!inner(level_number)
+              level_id
             )
           )
         `)
@@ -170,12 +184,23 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
         .eq('figures.category', sportCategory);
 
       let calculatedPoints = 0;
-      if (progressData) {
-        calculatedPoints = progressData.reduce((total, progress) => {
-          // Get the level number for this figure
-          const levelNumber = progress.figures?.level_figures?.[0]?.sport_levels?.level_number || 1;
-          return total + (1 * levelNumber); // 1 point × level number
-        }, 0);
+      
+      // Calculate points iteratively, level by level
+      // Start with level 1 (point_limit 0) and work our way up
+      for (const level of levelsData) {
+        // Check if this level is unlocked based on current calculated points
+        if (calculatedPoints >= level.point_limit) {
+          // Count points from completed figures in this unlocked level
+          const levelFigures = progressData?.filter(progress => {
+            const levelId = progress.figures?.level_figures?.[0]?.level_id;
+            return levelId === level.id;
+          }) || [];
+          
+          // Add points for each completed figure in this level
+          levelFigures.forEach(() => {
+            calculatedPoints += 1 * level.level_number; // 1 point × level number
+          });
+        }
       }
 
       setUserPoints(calculatedPoints);
