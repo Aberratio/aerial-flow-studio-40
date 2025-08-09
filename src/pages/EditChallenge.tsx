@@ -12,6 +12,7 @@ import {
   GripVertical,
   ChevronDown,
   ChevronRight,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 import {
@@ -50,6 +51,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import ExerciseManagement from "@/components/ExerciseManagement";
+import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 
 interface Achievement {
   id: string;
@@ -157,6 +159,8 @@ const EditChallenge = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imageUrl, setImageUrl] = useState<string>("");
   const [collapsedDays, setCollapsedDays] = useState<Set<number>>(new Set());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -466,6 +470,39 @@ const EditChallenge = () => {
           if (exerciseError) throw exerciseError;
         }
       }
+    }
+  };
+
+  const deleteChallenge = async () => {
+    if (!challengeId) return;
+
+    setIsDeleting(true);
+
+    try {
+      // Delete the challenge (this will cascade delete related data)
+      const { error } = await supabase
+        .from("challenges")
+        .delete()
+        .eq("id", challengeId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Challenge deleted successfully.",
+      });
+
+      navigate("/challenges");
+    } catch (error) {
+      console.error("Error deleting challenge:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete challenge.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
     }
   };
 
@@ -1132,9 +1169,21 @@ const EditChallenge = () => {
             </div>
 
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => navigate("/challenges")}>
-                Cancel
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => navigate("/challenges")}>
+                  Cancel
+                </Button>
+                
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteModal(true)}
+                  disabled={isLoading || isDeleting}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Challenge
+                </Button>
+              </div>
 
               <Button
                 onClick={saveChallenge}
@@ -1148,6 +1197,15 @@ const EditChallenge = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmDeleteModal
+        isOpen={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={deleteChallenge}
+        title="Delete Challenge"
+        description="Are you sure you want to delete this challenge? This action cannot be undone and will remove all associated training days and progress."
+        isLoading={isDeleting}
+      />
     </div>
   );
 };
