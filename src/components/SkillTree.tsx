@@ -484,7 +484,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
         <div className="mb-8">
           <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
-            {sportName} Skill Tree
+            {sportName} Skill Journey
           </h1>
           <div className="flex items-center flex-wrap gap-4 mb-4">
             <Badge variant="secondary">💰 {userPoints} Points</Badge>
@@ -537,7 +537,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           </Card>
         </div>
 
-        {/* Skill Tree by Levels */}
+        {/* Skill Journey by Levels */}
         <div className="space-y-8">
           {sportLevels.length === 0 ? (
             <Card className="glass-effect border-white/10">
