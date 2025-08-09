@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/card";
 import AuthModal from "@/components/Auth/AuthModal";
 import CookiesBanner from "@/components/CookiesBanner";
+import { GallerySection } from "@/components/GallerySection";
 import { supabase } from "@/integrations/supabase/client";
 import IguanaLogo from "@/assets/iguana-logo.svg";
 import {
@@ -433,6 +434,25 @@ const Landing = () => {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Media Gallery Section */}
+      <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10" id="gallery">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 animate-fade-in-up">
+              See IguanaFlow in{" "}
+              <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
+                Action
+              </span>
+            </h2>
+            <p className="text-base sm:text-xl text-gray-400 max-w-3xl mx-auto animate-fade-in-up animation-delay-200">
+              Discover how our platform helps aerial athletes achieve their goals through structured training and expert guidance.
+            </p>
+          </div>
+          
+          <GallerySection />
         </div>
       </section>
 

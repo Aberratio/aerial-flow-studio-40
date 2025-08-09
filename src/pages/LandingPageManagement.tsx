@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Save, Upload, Eye, EyeOff, Plus, Trash2, Move, Settings } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Loader2, Upload, ImageIcon, Plus, PlayCircle, Trash2 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,63 +25,90 @@ interface LandingPageSection {
   updated_at: string;
 }
 
+interface GalleryMedia {
+  id: string;
+  title: string;
+  description: string | null;
+  media_url: string;
+  media_type: 'image' | 'video';
+  thumbnail_url: string | null;
+  display_order: number;
+  is_active: boolean;
+  created_by: string | null;
+}
+
 const LandingPageManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { userRole } = useUserRole();
+  
   const [sections, setSections] = useState<LandingPageSection[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [galleryMedia, setGalleryMedia] = useState<GalleryMedia[]>([]);
+  const [loading, setLoading] = useState(true);
   const [imageUploading, setImageUploading] = useState(false);
+  const [showAddMediaModal, setShowAddMediaModal] = useState(false);
+  const [newMediaTitle, setNewMediaTitle] = useState('');
+  const [newMediaDescription, setNewMediaDescription] = useState('');
+  const [newMediaType, setNewMediaType] = useState<'image' | 'video'>('image');
 
-  // Fetch data
   useEffect(() => {
-    if (userRole === 'admin') {
-      fetchData();
-    } else {
-      setIsLoading(false);
-    }
-  }, [userRole]);
+    fetchData();
+    fetchGalleryMedia();
+  }, []);
 
-  // Render access denied if not admin
   if (userRole !== 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Card className="p-8">
-          <CardContent className="text-center">
-            <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
-            <p className="text-muted-foreground">You need admin privileges to access this page.</p>
-          </CardContent>
-        </Card>
+        <div className="text-center text-white">
+          <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
+          <p>You need admin privileges to access this page.</p>
+        </div>
       </div>
     );
   }
 
   const fetchData = async () => {
-    setIsLoading(true);
     try {
-      // Fetch sections
-      const { data: sectionsData, error: sectionsError } = await supabase
+      const { data, error } = await supabase
         .from('landing_page_sections')
         .select('*')
         .order('display_order');
 
-      if (sectionsError) throw sectionsError;
-      setSections(sectionsData || []);
-
+      if (error) throw error;
+      setSections(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
-        description: error.message || "Failed to fetch data",
+        description: error.message || "Failed to fetch sections",
         variant: "destructive"
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const fetchGalleryMedia = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('gallery_media')
+        .select('*')
+        .order('display_order');
+
+      if (error) throw error;
+      setGalleryMedia((data || []) as GalleryMedia[]);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to fetch gallery media",
+        variant: "destructive"
+      });
     }
   };
 
   const handleImageUpload = async (sectionId: string, file: File) => {
-    setImageUploading(true);
     try {
+      setImageUploading(true);
+
       const fileExt = file.name.split('.').pop();
       const fileName = `landing-${sectionId}-${Date.now()}.${fileExt}`;
       
@@ -94,7 +122,6 @@ const LandingPageManagement = () => {
         .from('posts')
         .getPublicUrl(`landing-page/${fileName}`);
 
-      // Update section with new image URL
       const { error: updateError } = await supabase
         .from('landing_page_sections')
         .update({ image_url: publicUrl })
@@ -102,7 +129,6 @@ const LandingPageManagement = () => {
 
       if (updateError) throw updateError;
 
-      // Update local state
       setSections(prev => prev.map(section => 
         section.id === sectionId 
           ? { ...section, image_url: publicUrl }
@@ -122,6 +148,114 @@ const LandingPageManagement = () => {
       });
     } finally {
       setImageUploading(false);
+    }
+  };
+
+  const handleAddMedia = async (file: File) => {
+    try {
+      setImageUploading(true);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `gallery/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('posts')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('posts')
+        .getPublicUrl(filePath);
+
+      const { error: insertError } = await supabase
+        .from('gallery_media')
+        .insert({
+          title: newMediaTitle,
+          description: newMediaDescription || null,
+          media_url: publicUrl,
+          media_type: newMediaType,
+          display_order: galleryMedia.length,
+          created_by: user?.id
+        });
+
+      if (insertError) throw insertError;
+
+      await fetchGalleryMedia();
+
+      setNewMediaTitle('');
+      setNewMediaDescription('');
+      setNewMediaType('image');
+      setShowAddMediaModal(false);
+
+      toast({
+        title: "Success",
+        description: "Media added successfully"
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add media",
+        variant: "destructive"
+      });
+    } finally {
+      setImageUploading(false);
+    }
+  };
+
+  const deleteMedia = async (mediaId: string) => {
+    try {
+      const { error } = await supabase
+        .from('gallery_media')
+        .delete()
+        .eq('id', mediaId);
+
+      if (error) throw error;
+
+      setGalleryMedia(prev => prev.filter(item => item.id !== mediaId));
+
+      toast({
+        title: "Success",
+        description: "Media deleted successfully"
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete media",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const toggleMediaActive = async (mediaId: string, isActive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('gallery_media')
+        .update({ is_active: isActive })
+        .eq('id', mediaId);
+
+      if (error) throw error;
+
+      setGalleryMedia(prev => prev.map(item => 
+        item.id === mediaId 
+          ? { ...item, is_active: isActive }
+          : item
+      ));
+
+      toast({
+        title: "Success",
+        description: `Media ${isActive ? 'activated' : 'deactivated'}`
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update media",
+        variant: "destructive"
+      });
     }
   };
 
@@ -177,7 +311,6 @@ const LandingPageManagement = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Image Upload */}
           {section.section_type === 'hero' && (
             <div className="space-y-4">
               <Label className="text-white">Hero Image</Label>
@@ -198,7 +331,7 @@ const LandingPageManagement = () => {
                   ) : (
                     <div className="w-full h-64 bg-white/5 border-2 border-dashed border-white/20 rounded-lg flex items-center justify-center">
                       <div className="text-center">
-                        <Camera className="w-8 h-8 text-white/40 mx-auto mb-2" />
+                        <ImageIcon className="w-8 h-8 text-white/40 mx-auto mb-2" />
                         <p className="text-white/40 text-sm">No image uploaded</p>
                       </div>
                     </div>
@@ -225,7 +358,7 @@ const LandingPageManagement = () => {
                       asChild
                     >
                       <span>
-                        <Camera className="w-4 h-4 mr-2" />
+                        <Upload className="w-4 h-4 mr-2" />
                         {imageUploading ? 'Uploading...' : 'Upload New Image'}
                       </span>
                     </Button>
@@ -237,21 +370,15 @@ const LandingPageManagement = () => {
               </div>
             </div>
           )}
-
-          <div className="space-y-4">
-            <p className="text-white/60 text-sm">
-              Note: Landing page content is now hardcoded in English. To modify content, update the Landing.tsx component directly.
-            </p>
-          </div>
         </CardContent>
       </Card>
     );
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
+        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
       </div>
     );
   }
@@ -259,29 +386,152 @@ const LandingPageManagement = () => {
   return (
     <div className="min-h-screen p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-white">Landing Page Management</h1>
-            <p className="text-muted-foreground mt-2">
-              Manage your landing page sections and content
+            <p className="text-white/60 mt-2">
+              Manage your landing page sections and gallery content
             </p>
           </div>
         </div>
 
-        <Separator className="bg-white/10" />
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+          </div>
+        ) : (
+          <div className="grid gap-6">
+            {sections.map(renderSectionEditor)}
+          </div>
+        )}
 
-        {/* Sections List */}
-        <div className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold text-white flex items-center">
-              <Settings className="w-5 h-5 mr-2" />
-              Landing Page Sections
-            </h2>
+        {/* Gallery Media Management Section */}
+        <div className="mt-12">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">Gallery Media Management</h2>
+            <Dialog open={showAddMediaModal} onOpenChange={setShowAddMediaModal}>
+              <DialogTrigger asChild>
+                <Button className="bg-purple-600 hover:bg-purple-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Media
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="glass-effect border-white/10">
+                <DialogHeader>
+                  <DialogTitle className="text-white">Add New Media</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-white">Title</Label>
+                    <Input
+                      value={newMediaTitle}
+                      onChange={(e) => setNewMediaTitle(e.target.value)}
+                      placeholder="Enter media title"
+                      className="bg-white/5 border-white/20 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Description (Optional)</Label>
+                    <Textarea
+                      value={newMediaDescription}
+                      onChange={(e) => setNewMediaDescription(e.target.value)}
+                      placeholder="Enter media description"
+                      className="bg-white/5 border-white/20 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-white">Media Type</Label>
+                    <Select value={newMediaType} onValueChange={(value: 'image' | 'video') => setNewMediaType(value)}>
+                      <SelectTrigger className="bg-white/5 border-white/20 text-white">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="image">Image</SelectItem>
+                        <SelectItem value="video">Video</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label className="text-white">Upload File</Label>
+                    <Input
+                      type="file"
+                      accept={newMediaType === 'image' ? "image/*" : "video/*"}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file && newMediaTitle.trim()) {
+                          handleAddMedia(file);
+                        } else if (!newMediaTitle.trim()) {
+                          toast({
+                            title: "Error",
+                            description: "Please enter a title first",
+                            variant: "destructive"
+                          });
+                        }
+                      }}
+                      className="bg-white/5 border-white/20 text-white"
+                      disabled={imageUploading || !newMediaTitle.trim()}
+                    />
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
-          <div className="space-y-6">
-            {sections.map(renderSectionEditor)}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {galleryMedia.map((media) => (
+              <Card key={media.id} className="glass-effect border-white/10">
+                <CardContent className="p-0">
+                  <div className="relative aspect-video">
+                    {media.media_type === 'video' ? (
+                      <video
+                        src={media.media_url}
+                        className="w-full h-full object-cover rounded-t-lg"
+                        muted
+                      />
+                    ) : (
+                      <img
+                        src={media.media_url}
+                        alt={media.title}
+                        className="w-full h-full object-cover rounded-t-lg"
+                      />
+                    )}
+                    <div className="absolute top-2 right-2 bg-black/50 rounded-full p-1">
+                      {media.media_type === 'video' ? (
+                        <PlayCircle className="w-4 h-4 text-white" />
+                      ) : (
+                        <ImageIcon className="w-4 h-4 text-white" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-white font-semibold truncate">{media.title}</h3>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={media.is_active}
+                          onCheckedChange={(checked) => toggleMediaActive(media.id, checked)}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteMedia(media.id)}
+                          className="text-red-400 hover:text-red-300 p-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    {media.description && (
+                      <p className="text-gray-300 text-sm line-clamp-2">{media.description}</p>
+                    )}
+                    <div className="flex items-center justify-between mt-2 text-xs text-gray-400">
+                      <span>{media.is_active ? 'Active' : 'Inactive'}</span>
+                      <span>Order: {media.display_order}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </div>
