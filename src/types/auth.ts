@@ -24,9 +24,6 @@ export interface AuthContextType {
   isLoading: boolean;
   isFirstLogin: boolean;
   setIsFirstLogin: (value: boolean) => void;
-  showIntroModal: boolean;
-  setShowIntroModal: (value: boolean) => void;
-  markIntroAsComplete: () => Promise<void>;
   refetchCounts: () => void;
   refreshUser: () => Promise<void>;
   // Backward compatibility

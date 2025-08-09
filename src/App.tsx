@@ -38,7 +38,7 @@ import FigureOfTheDay from "@/pages/FigureOfTheDay";
 import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
 import PremiumRoute from "@/components/PremiumRoute";
-import IntroductionModal from "@/components/IntroductionModal";
+
 
 
 const queryClient = new QueryClient();
@@ -49,9 +49,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
   const {
     user,
     isLoading,
-    showIntroModal,
-    setShowIntroModal,
-    markIntroAsComplete,
   } = useAuth();
 
   if (isLoading) {
@@ -66,16 +63,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
     return <Navigate to="/" replace />;
   }
 
-  return (
-    <>
-      <AppLayout>{children}</AppLayout>
-      <IntroductionModal
-        open={showIntroModal}
-        onClose={() => setShowIntroModal(false)}
-        onComplete={markIntroAsComplete}
-      />
-    </>
-  );
+  return <AppLayout>{children}</AppLayout>;
 };
 
 const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -102,9 +90,6 @@ const ConditionalLayout: React.FC<{ children: React.ReactNode }> = ({
   const {
     user,
     isLoading,
-    showIntroModal,
-    setShowIntroModal,
-    markIntroAsComplete,
   } = useAuth();
 
   if (isLoading) {
@@ -117,16 +102,7 @@ const ConditionalLayout: React.FC<{ children: React.ReactNode }> = ({
 
   // If user is logged in, wrap with AppLayout, otherwise render directly
   if (user) {
-    return (
-      <>
-        <AppLayout>{children}</AppLayout>
-        <IntroductionModal
-          open={showIntroModal}
-          onClose={() => setShowIntroModal(false)}
-          onComplete={markIntroAsComplete}
-        />
-      </>
-    );
+    return <AppLayout>{children}</AppLayout>;
   }
 
   return <>{children}</>;

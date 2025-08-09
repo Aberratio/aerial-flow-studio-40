@@ -798,7 +798,6 @@ export type Database = {
           bio: string | null
           created_at: string | null
           email: string | null
-          has_seen_intro: boolean | null
           id: string
           last_login_at: string | null
           login_count: number | null
@@ -812,7 +811,6 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           email?: string | null
-          has_seen_intro?: boolean | null
           id: string
           last_login_at?: string | null
           login_count?: number | null
@@ -826,7 +824,6 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           email?: string | null
-          has_seen_intro?: boolean | null
           id?: string
           last_login_at?: string | null
           login_count?: number | null
