@@ -38,9 +38,14 @@ interface GalleryMedia {
 }
 
 const LandingPageManagement = () => {
+  console.log('LandingPageManagement component initializing...');
+  
   const { user } = useAuth();
+  console.log('User from useAuth:', user);
+  
   const { toast } = useToast();
   const { userRole } = useUserRole();
+  console.log('User role:', userRole);
   
   const [sections, setSections] = useState<LandingPageSection[]>([]);
   const [galleryMedia, setGalleryMedia] = useState<GalleryMedia[]>([]);
@@ -52,11 +57,15 @@ const LandingPageManagement = () => {
   const [newMediaType, setNewMediaType] = useState<'image' | 'video'>('image');
 
   useEffect(() => {
+    console.log('LandingPageManagement useEffect triggered');
     fetchData();
     fetchGalleryMedia();
   }, []);
 
+  console.log('Checking userRole before render:', userRole);
+  
   if (userRole !== 'admin') {
+    console.log('Access denied - user role is not admin:', userRole);
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-white">
