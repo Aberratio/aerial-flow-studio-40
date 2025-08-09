@@ -83,6 +83,7 @@ const CreateChallengeModal = ({
 }: CreateChallengeModalProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [level, setLevel] = useState<number>(1);
   const [difficultyLevel, setDifficultyLevel] = useState("intermediate");
   const [type, setType] = useState("manual");
   const [startDate, setStartDate] = useState<Date>();
@@ -122,6 +123,7 @@ const CreateChallengeModal = ({
   const resetForm = () => {
     setTitle("");
     setDescription("");
+    setLevel(1);
     setDifficultyLevel("intermediate");
     setType("manual");
     setStartDate(undefined);
@@ -192,6 +194,7 @@ const CreateChallengeModal = ({
       const challengeData = {
         title: title.trim(),
         description: description.trim() || null,
+        level: level,
         difficulty_level: difficultyLevel,
         type: type,
         start_date: startDate?.toISOString(),
@@ -482,6 +485,18 @@ const CreateChallengeModal = ({
                 />
               </div>
             )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="level">Level</Label>
+            <Input
+              id="level"
+              type="number"
+              min="1"
+              value={level}
+              onChange={(e) => setLevel(parseInt(e.target.value) || 1)}
+              placeholder="Enter challenge level"
+            />
           </div>
 
           <div className="space-y-2">

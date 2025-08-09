@@ -145,6 +145,7 @@ const EditChallenge = () => {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState<Date>();
   const [endDate, setEndDate] = useState<Date>();
+  const [level, setLevel] = useState<number>(1);
   const [difficultyLevel, setDifficultyLevel] = useState("intermediate");
   const [type, setType] = useState("manual");
   const [isPublished, setIsPublished] = useState(false);
@@ -205,6 +206,7 @@ const EditChallenge = () => {
       setDescription(challengeData.description || "");
       setStartDate(new Date(challengeData.start_date));
       setEndDate(new Date(challengeData.end_date));
+      setLevel(challengeData.level || 1);
       setDifficultyLevel(challengeData.difficulty_level || "intermediate");
       setType(challengeData.type || "manual");
       setImageUrl(challengeData.image_url || "");
@@ -346,6 +348,7 @@ const EditChallenge = () => {
           description: description.trim() || null,
           start_date: startDate.toISOString(),
           end_date: endDate.toISOString(),
+          level: level,
           difficulty_level: difficultyLevel,
           type: type,
           image_url: uploadedImageUrl || null,
@@ -640,6 +643,21 @@ const EditChallenge = () => {
                 placeholder="Describe your challenge..."
                 rows={4}
                 maxLength={500}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="level" className="text-white">
+                Level
+              </Label>
+              <Input
+                id="level"
+                type="number"
+                min="1"
+                value={level}
+                onChange={(e) => setLevel(parseInt(e.target.value) || 1)}
+                className="bg-black/20 border-white/10 text-white placeholder-white/50"
+                placeholder="Enter challenge level"
               />
             </div>
 

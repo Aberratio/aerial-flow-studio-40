@@ -32,6 +32,7 @@ interface Challenge {
   title: string;
   description: string;
   difficulty_level?: string;
+  level?: number;
   start_date: string;
   end_date: string;
   status: string;
@@ -402,13 +403,21 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   : challenge.status}
               </Badge>
             </div>
-            <div className="absolute bottom-4 left-4">
+            <div className="absolute bottom-4 left-4 flex gap-2">
               <Badge
                 variant="outline"
                 className="border-white/30 text-white/90"
               >
                 {challenge.training_days?.length || 0} Training Days
               </Badge>
+              {challenge.level && (
+                <Badge
+                  variant="outline"
+                  className="border-purple-400/50 text-purple-300 bg-purple-500/20"
+                >
+                  Level {challenge.level}
+                </Badge>
+              )}
             </div>
           </div>
 
@@ -497,57 +506,34 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   Training Overview
                 </h3>
 
-                {/* Daily Duration */}
+                {/* Daily Time Commitment */}
                 <div className="space-y-3">
                   <h4 className="text-md font-medium text-white">
                     Daily Time Commitment
                   </h4>
-                  <div className="space-y-2">
-                    {(() => {
-                      const duration = calculateDailyDuration();
-                      if (duration.min === 0 && duration.max === 0) {
-                        return (
-                          <div className="text-muted-foreground">
-                            <p>Duration information not available</p>
-                          </div>
-                        );
-                      }
-                      return (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <Card className="glass-effect border-white/10 p-3">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-green-400" />
-                              <div>
-                                <div className="text-sm font-medium text-white">
-                                  Shortest Day
-                                </div>
-                                <div className="text-xs text-green-400">
-                                  {duration.shortest} minutes
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                          <Card className="glass-effect border-white/10 p-3">
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-orange-400" />
-                              <div>
-                                <div className="text-sm font-medium text-white">
-                                  Longest Day
-                                </div>
-                                <div className="text-xs text-orange-400">
-                                  {duration.longest} minutes
-                                </div>
-                              </div>
-                            </div>
-                          </Card>
-                        </div>
-                      );
-                    })()}
-                  </div>
+                  <Card className="glass-effect border-white/10 p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-purple-400" />
+                        <span className="text-sm text-muted-foreground">
+                          Training Time
+                        </span>
+                      </div>
+                      <div className="text-white font-semibold">
+                        {(() => {
+                          const { min, max } = calculateDailyDuration();
+                          if (min === max) {
+                            return `${min} min`;
+                          }
+                          return `${min}-${max} min`;
+                        })()}
+                      </div>
+                    </div>
+                  </Card>
                 </div>
 
                 {/* Exercises Included */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <h4 className="text-md font-medium text-white">
                     Exercises Included
                   </h4>
