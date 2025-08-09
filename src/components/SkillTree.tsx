@@ -66,10 +66,12 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const [showAllLevels, setShowAllLevels] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
   const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
+  const [userChallengeParticipations, setUserChallengeParticipations] = useState<{[challengeId: string]: boolean}>({});
 
   useEffect(() => {
     fetchSportLevelsAndProgress();
     fetchUserPoints();
+    fetchUserChallengeParticipations();
   }, [sportCategory, user]);
 
   const fetchSportLevelsAndProgress = async () => {
@@ -179,6 +181,28 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
       setUserPoints(calculatedPoints);
     } catch (error) {
       console.error('Error:', error);
+    }
+  };
+
+  const fetchUserChallengeParticipations = async () => {
+    if (!user) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('challenge_participants')
+        .select('challenge_id')
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      const participations: {[challengeId: string]: boolean} = {};
+      data?.forEach(participant => {
+        participations[participant.challenge_id] = true;
+      });
+      
+      setUserChallengeParticipations(participations);
+    } catch (error) {
+      console.error('Error fetching challenge participations:', error);
     }
   };
 
@@ -352,6 +376,12 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
         description: "You've successfully joined the challenge. Good luck!",
       });
       
+      // Update local state
+      setUserChallengeParticipations(prev => ({
+        ...prev,
+        [challengeId]: true
+      }));
+      
       // Navigate to challenge page
       navigate(`/challenges/${challengeId}`);
     } catch (error) {
@@ -400,19 +430,20 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           </div>
           
           {/* Toggle for showing all levels */}
-          <Card className="glass-effect border-white/10 p-4 mb-4">
-            <div className="flex items-center justify-between">
+          <Card className="glass-effect border-white/10 p-3 md:p-4 mb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex items-center space-x-3">
-                <span className="text-white font-medium">Show All Levels</span>
+                <span className="text-white font-medium text-sm md:text-base">Show All Levels</span>
                 <Switch
                   checked={showAllLevels}
                   onCheckedChange={setShowAllLevels}
-                  className="data-[state=checked]:bg-purple-500"
+                  className="data-[state=checked]:bg-purple-500 scale-90 md:scale-100"
                 />
               </div>
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                {showAllLevels ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                <span>{showAllLevels ? 'Showing all levels' : 'Showing unlocked levels only'}</span>
+              <div className="flex items-center space-x-2 text-xs md:text-sm text-muted-foreground">
+                {showAllLevels ? <Eye className="w-3 h-3 md:w-4 md:h-4" /> : <EyeOff className="w-3 h-3 md:w-4 md:h-4" />}
+                <span className="hidden sm:inline">{showAllLevels ? 'Showing all levels' : 'Showing unlocked levels only'}</span>
+                <span className="sm:hidden">{showAllLevels ? 'All levels' : 'Unlocked only'}</span>
               </div>
             </div>
           </Card>
@@ -511,53 +542,72 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
                       {/* Challenge Section */}
                       {level.challenges && (
-                        <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-400/20 rounded-lg p-4 mt-4">
-                          <div className="flex items-start justify-between gap-4">
+                        <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-400/20 rounded-lg p-3 md:p-4 mt-4">
+                          <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-4">
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <Trophy className="w-5 h-5 text-yellow-400" />
-                                <h4 className="font-semibold text-white">Challenge Available</h4>
+                              <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                <Trophy className="w-4 h-4 md:w-5 md:h-5 text-yellow-400" />
+                                <h4 className="font-semibold text-white text-sm md:text-base">Challenge Available</h4>
                                 {level.challenges.premium && (
-                                  <Badge className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 border border-yellow-400/30">
+                                  <Badge className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 text-yellow-400 border border-yellow-400/30 text-xs">
                                     <Crown className="w-3 h-3 mr-1" />
                                     Premium
                                   </Badge>
                                 )}
                               </div>
-                              <h5 className="text-lg font-bold text-purple-300 mb-1">{level.challenges.title}</h5>
-                              <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                              <h5 className="text-base md:text-lg font-bold text-purple-300 mb-1">{level.challenges.title}</h5>
+                              <p className="text-xs md:text-sm text-muted-foreground mb-3 line-clamp-2">
                                 {level.challenges.description}
                               </p>
                               <div className="flex items-center gap-2">
-                                <Badge variant="outline" className="border-purple-400/50 text-purple-300">
+                                <Badge variant="outline" className="border-purple-400/50 text-purple-300 text-xs">
                                   {level.challenges.difficulty_level}
                                 </Badge>
                               </div>
                             </div>
-                            <div className="flex flex-col gap-2">
+                            <div className="flex flex-row md:flex-col gap-2 w-full md:w-auto">
                               {isUnlocked ? (
-                                <Button
-                                  onClick={() => joinChallenge(level.challenges!.id)}
-                                  disabled={joiningChallenge === level.challenges!.id || (!hasPremiumAccess && level.challenges!.premium)}
-                                  className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
-                                >
-                                  {joiningChallenge === level.challenges!.id ? (
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                                  ) : (
-                                    <>
-                                      <Trophy className="w-4 h-4 mr-2" />
-                                      Join Challenge
-                                    </>
-                                  )}
-                                </Button>
+                                userChallengeParticipations[level.challenges!.id] ? (
+                                  <div className="flex flex-col md:flex-col gap-2 w-full">
+                                    <Button
+                                      onClick={() => navigate(`/challenges/${level.challenges!.id}`)}
+                                      variant="outline"
+                                      className="border-green-400/50 text-green-400 hover:bg-green-400/10 text-xs md:text-sm px-3 py-2 h-auto"
+                                    >
+                                      <Eye className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                                      <span className="hidden sm:inline">View Challenge</span>
+                                      <span className="sm:hidden">View</span>
+                                    </Button>
+                                    <div className="text-xs text-green-400 text-center">
+                                      Already participating
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <Button
+                                    onClick={() => joinChallenge(level.challenges!.id)}
+                                    disabled={joiningChallenge === level.challenges!.id || (!hasPremiumAccess && level.challenges!.premium)}
+                                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white text-xs md:text-sm px-3 py-2 h-auto"
+                                  >
+                                    {joiningChallenge === level.challenges!.id ? (
+                                      <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-white" />
+                                    ) : (
+                                      <>
+                                        <Trophy className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                                        <span className="hidden sm:inline">Join Challenge</span>
+                                        <span className="sm:hidden">Join</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                )
                               ) : (
                                 <Button
                                   disabled
                                   variant="outline"
-                                  className="border-gray-600 text-gray-400"
+                                  className="border-gray-600 text-gray-400 text-xs md:text-sm px-3 py-2 h-auto"
                                 >
-                                  <Lock className="w-4 h-4 mr-2" />
-                                  Unlock Level
+                                  <Lock className="w-3 h-3 md:w-4 md:h-4 mr-1 md:mr-2" />
+                                  <span className="hidden sm:inline">Unlock Level</span>
+                                  <span className="sm:hidden">Unlock</span>
                                 </Button>
                               )}
                               {!hasPremiumAccess && level.challenges!.premium && (
@@ -578,7 +628,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                           No figures assigned to this level yet.
                         </p>
                       ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4">
                           {level.figures.map((figure) => {
                             const progress = getFigureProgress(figure.id);
                             const isCompleted = progress?.status === 'completed';
