@@ -1500,6 +1500,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       get_next_available_challenge_day: {
         Args: { p_user_id: string; p_challenge_id: string }
         Returns: {
