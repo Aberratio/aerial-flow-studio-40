@@ -8,27 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-const SPORT_OPTIONS = [{
-  value: 'hoop',
-  label: 'Aerial Hoop',
-  emoji: '🪩'
-}, {
-  value: 'pole',
-  label: 'Pole Dancing',
-  emoji: '💃'
-}, {
-  value: 'silks',
-  label: 'Aerial Silks',
-  emoji: '🎭'
-}, {
-  value: 'hammock',
-  label: 'Aerial Hammock',
-  emoji: '🛏️'
-}, {
-  value: 'core',
-  label: 'Core Training',
-  emoji: '💪'
-}];
+
 const ACTIVITY_OPTIONS = [{
   id: 'challenge',
   title: 'Challenge',
@@ -78,31 +58,56 @@ const ACTIVITY_OPTIONS = [{
   bgColor: 'bg-pink-500/20',
   link: '/feed'
 }];
+
+interface SportCategory {
+  id: string;
+  name: string;
+  description?: string;
+}
+
 const Index = () => {
-  const {
-    user
-  } = useAuth();
-  const {
-    toast
-  } = useToast();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const [selectedSports, setSelectedSports] = useState<string[]>([]);
+  
   const [userSports, setUserSports] = useState<string[]>([]);
+  const [selectedSports, setSelectedSports] = useState<string[]>([]);
+  const [availableSports, setAvailableSports] = useState<SportCategory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
   useEffect(() => {
     if (user) {
       fetchUserProfile();
+      fetchAvailableSports();
     }
   }, [user]);
+
+  const fetchAvailableSports = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sport_categories')
+        .select('id, name, description')
+        .eq('is_published', true)
+        .order('name');
+      
+      if (error) throw error;
+      setAvailableSports(data || []);
+    } catch (error) {
+      console.error('Error fetching available sports:', error);
+    }
+  };
+
   const fetchUserProfile = async () => {
     if (!user) return;
     try {
       setLoading(true);
-      const {
-        data,
-        error
-      } = await supabase.from('profiles').select('sports').eq('id', user.id).single();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('sports')
+        .eq('id', user.id)
+        .single();
+      
       if (error) throw error;
       const sports = data?.sports || [];
       setUserSports(sports);
@@ -113,18 +118,24 @@ const Index = () => {
       setLoading(false);
     }
   };
-  const handleSportToggle = (sportValue: string) => {
-    setSelectedSports(prev => prev.includes(sportValue) ? prev.filter(s => s !== sportValue) : [...prev, sportValue]);
+
+  const handleSportToggle = (sportId: string) => {
+    setSelectedSports(prev => 
+      prev.includes(sportId) 
+        ? prev.filter(s => s !== sportId) 
+        : [...prev, sportId]
+    );
   };
+
   const saveSports = async () => {
     if (!user) return;
     try {
       setSaving(true);
-      const {
-        error
-      } = await supabase.from('profiles').update({
-        sports: selectedSports
-      }).eq('id', user.id);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ sports: selectedSports })
+        .eq('id', user.id);
+      
       if (error) throw error;
       setUserSports(selectedSports);
       toast({
@@ -142,15 +153,19 @@ const Index = () => {
       setSaving(false);
     }
   };
+
   if (loading) {
-    return <div className="min-h-screen p-6 flex items-center justify-center">
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="text-white">Loading...</div>
-      </div>;
+      </div>
+    );
   }
 
   // Show sport selection if user has no sports selected
-  if (userSports.length === 0) {
-    return <div className="min-h-screen p-6">
+  if (userSports.length === 0 && availableSports.length > 0) {
+    return (
+      <div className="min-h-screen p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold text-white mb-4">
@@ -159,9 +174,7 @@ const Index = () => {
             <p className="text-xl text-muted-foreground mb-2">
               Let's get started by choosing the sports you want to train
             </p>
-            <p className="text-muted-foreground">
-              You can always change these later in your profile settings
-            </p>
+            <p className="text-muted-foreground">Choose the sports you want to train in from our available categories:</p>
           </div>
 
           <Card className="glass-effect border-white/10 mb-8">
@@ -172,36 +185,75 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-                {SPORT_OPTIONS.map(sport => <div key={sport.value} onClick={() => handleSportToggle(sport.value)} className={`
-                      p-6 rounded-lg border cursor-pointer transition-all duration-200
-                      ${selectedSports.includes(sport.value) ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}
-                    `}>
-                    <div className="flex items-center space-x-3">
-                      <Checkbox checked={selectedSports.includes(sport.value)} onChange={() => handleSportToggle(sport.value)} className="pointer-events-none" />
-                      <div className="text-3xl">{sport.emoji}</div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{sport.label}</h3>
-                        <p className="text-sm opacity-70">
-                          Aerial fitness and artistry
-                        </p>
+                {availableSports.map(sport => (
+                  <Card 
+                    key={sport.id} 
+                    className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
+                      selectedSports.includes(sport.id) 
+                        ? 'ring-2 ring-primary bg-primary/10' 
+                        : 'bg-background/50 hover:bg-background/70'
+                    }`}
+                    onClick={() => handleSportToggle(sport.id)}
+                  >
+                    <CardContent className="p-4 text-center">
+                      <div className="mb-2">
+                        <Checkbox 
+                          checked={selectedSports.includes(sport.id)} 
+                          className="pointer-events-none" 
+                        />
                       </div>
-                    </div>
-                  </div>)}
+                      <h3 className="font-semibold text-lg">{sport.name}</h3>
+                      {sport.description && (
+                        <p className="text-sm text-muted-foreground mt-1">{sport.description}</p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-
-              <div className="text-center">
-                <Button onClick={saveSports} disabled={selectedSports.length === 0 || saving} size="lg" className="min-w-32">
-                  {saving ? "Saving..." : `Save ${selectedSports.length} Sport${selectedSports.length === 1 ? '' : 's'}`}
-                </Button>
-              </div>
+              
+              {availableSports.length === 0 && (
+                <div className="text-center text-muted-foreground py-8">
+                  <p>No sports are currently available. Please check back later!</p>
+                </div>
+              )}
+              
+              {availableSports.length > 0 && (
+                <div className="flex justify-center">
+                  <Button 
+                    onClick={saveSports} 
+                    disabled={saving || selectedSports.length === 0} 
+                    className="px-8"
+                  >
+                    {saving ? 'Saving...' : 'Save Sports Preferences'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
-      </div>;
+      </div>
+    );
+  }
+
+  // Show message if no sports are available
+  if (userSports.length === 0 && availableSports.length === 0) {
+    return (
+      <div className="min-h-screen p-6 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-white mb-4">
+            Welcome to IguanaFlow! 🎭
+          </h1>
+          <p className="text-muted-foreground">
+            No sports are currently available. Please check back later!
+          </p>
+        </div>
+      </div>
+    );
   }
 
   // Show activity options if user has sports selected
-  return <div className="min-h-screen p-6">
+  return (
+    <div className="min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">
@@ -213,13 +265,20 @@ const Index = () => {
           
           <div className="flex flex-wrap gap-2 mt-4">
             <span className="text-sm text-muted-foreground">Your sports:</span>
-            {userSports.map(sport => {
-            const sportOption = SPORT_OPTIONS.find(s => s.value === sport);
-            return <Badge key={sport} variant="secondary" className="bg-primary/20 text-primary">
-                  {sportOption?.emoji} {sportOption?.label}
-                </Badge>;
-          })}
-            <Button variant="ghost" size="sm" onClick={() => setUserSports([])} className="text-muted-foreground hover:text-white">
+            {userSports.map(sportId => {
+              const sport = availableSports.find(s => s.id === sportId);
+              return (
+                <Badge key={sportId} variant="secondary" className="bg-primary/20 text-primary">
+                  {sport?.name || sportId}
+                </Badge>
+              );
+            })}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setUserSports([])} 
+              className="text-muted-foreground hover:text-white"
+            >
               Change sports
             </Button>
           </div>
@@ -227,8 +286,9 @@ const Index = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {ACTIVITY_OPTIONS.map(activity => {
-          const Icon = activity.icon;
-          return <Link key={activity.id} to={activity.link}>
+            const Icon = activity.icon;
+            return (
+              <Link key={activity.id} to={activity.link}>
                 <Card className="glass-effect border-white/10 hover-lift group cursor-pointer h-full">
                   <CardContent className="p-6 text-center h-full flex flex-col">
                     <div className={`w-16 h-16 rounded-full ${activity.bgColor} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
@@ -242,17 +302,15 @@ const Index = () => {
                     <p className="text-muted-foreground text-sm mb-4 flex-grow">
                       {activity.description}
                     </p>
-                    
-                    
                   </CardContent>
                 </Card>
-              </Link>;
-        })}
+              </Link>
+            );
+          })}
         </div>
-
-        {/* Quick Stats */}
-        
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;

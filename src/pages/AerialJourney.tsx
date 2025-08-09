@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SkillTree from "@/components/SkillTree";
 import SportLevelManager from "@/components/SportLevelManager";
+import SportCategoryManager from "@/components/SportCategoryManager";
 
 interface UserJourney {
   id: string;
@@ -84,6 +85,7 @@ const AerialJourney = () => {
   const [availableSports, setAvailableSports] = useState<SportCategory[]>([]);
   const [selectedSkillTreeSport, setSelectedSkillTreeSport] = useState<{category: string, name: string} | null>(null);
   const [showLevelManager, setShowLevelManager] = useState(false);
+  const [showSportManager, setShowSportManager] = useState(false);
   
   // Form state
   const [selectedSport, setSelectedSport] = useState("");
@@ -320,6 +322,17 @@ const AerialJourney = () => {
     );
   }
 
+  // Show sport category manager if selected
+  if (showSportManager) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-pink-900/20 to-blue-900/20 p-4 md:p-6">
+        <div className="max-w-6xl mx-auto">
+          <SportCategoryManager onClose={() => setShowSportManager(false)} />
+        </div>
+      </div>
+    );
+  }
+
   // Show skill tree if sport is selected
   if (selectedSkillTreeSport) {
     return (
@@ -338,11 +351,11 @@ const AerialJourney = () => {
         <div className="max-w-6xl mx-auto">
           <Button
             variant="ghost"
-            onClick={() => navigate('/summary')}
+            onClick={() => navigate('/home')}
             className="mb-6 text-white hover:bg-white/10"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
+            Back to Home
           </Button>
 
           <div className="text-center mb-8">
@@ -422,14 +435,24 @@ const AerialJourney = () => {
                   </p>
                 </div>
                 {isAdmin && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowLevelManager(true)}
-                    className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Manage Sports
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowSportManager(true)}
+                      className="border-green-400/30 text-green-400 hover:bg-green-400/10"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Manage Sports
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowLevelManager(true)}
+                      className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+                    >
+                      <Settings className="w-4 h-4 mr-2" />
+                      Manage Levels
+                    </Button>
+                  </div>
                 )}
               </div>
             </CardHeader>
