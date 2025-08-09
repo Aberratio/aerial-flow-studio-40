@@ -61,8 +61,10 @@ const ACTIVITY_OPTIONS = [{
 
 interface SportCategory {
   id: string;
+  key_name?: string;
   name: string;
   description?: string;
+  icon?: string;
 }
 
 const Index = () => {
@@ -87,7 +89,7 @@ const Index = () => {
     try {
       const { data, error } = await supabase
         .from('sport_categories')
-        .select('id, name, description')
+        .select('id, key_name, name, description, icon')
         .eq('is_published', true)
         .order('name');
       
@@ -96,6 +98,28 @@ const Index = () => {
     } catch (error) {
       console.error('Error fetching available sports:', error);
     }
+  };
+
+  const getSportIcon = (sport: SportCategory) => {
+    // Use icon from database if available, otherwise fallback to default icons
+    if (sport.icon) {
+      return sport.icon;
+    }
+    
+    // Fallback icons based on key_name or name
+    const iconMap: Record<string, string> = {
+      'hoop': '🪩',
+      'aerial_hoop': '🪩',
+      'pole': '💃',
+      'pole_dancing': '💃', 
+      'silks': '🎪',
+      'aerial_silks': '🎪',
+      'hammock': '🏺',
+      'aerial_hammock': '🏺',
+      'core': '💪',
+      'core_training': '💪'
+    };
+    return iconMap[sport.key_name] || iconMap[sport.name.toLowerCase().replace(/\s+/g, '_')] || '🏃';
   };
 
   const fetchUserProfile = async () => {
@@ -196,6 +220,7 @@ const Index = () => {
                     onClick={() => handleSportToggle(sport.id)}
                   >
                     <CardContent className="p-4 text-center">
+                      <div className="text-3xl mb-2">{getSportIcon(sport)}</div>
                       <div className="mb-2">
                         <Checkbox 
                           checked={selectedSports.includes(sport.id)} 
@@ -268,7 +293,8 @@ const Index = () => {
             {userSports.map(sportId => {
               const sport = availableSports.find(s => s.id === sportId);
               return (
-                <Badge key={sportId} variant="secondary" className="bg-primary/20 text-primary">
+                <Badge key={sportId} variant="secondary" className="bg-primary/20 text-primary flex items-center gap-1">
+                  {sport?.icon && <span>{sport.icon}</span>}
                   {sport?.name || sportId}
                 </Badge>
               );

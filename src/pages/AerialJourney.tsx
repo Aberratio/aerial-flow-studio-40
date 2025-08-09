@@ -63,8 +63,10 @@ const ACHIEVEMENT_BADGES = [
 
 interface SportCategory {
   id: string;
+  key_name?: string;
   name: string;
   description?: string;
+  icon?: string;
   image_url?: string;
   is_published: boolean;
   created_at: string;
@@ -250,15 +252,26 @@ const AerialJourney = () => {
     ? availableSports // Admins see all sports
     : availableSports.filter(sport => sport.is_published); // Regular users see only published sports
 
-  const getSportIcon = (category: string) => {
+  const getSportIcon = (sport: SportCategory) => {
+    // Use icon from database if available, otherwise fallback to default icons
+    if (sport.icon) {
+      return sport.icon;
+    }
+    
+    // Fallback icons based on key_name or name
     const iconMap: Record<string, string> = {
       'hoop': '🪩',
+      'aerial_hoop': '🪩',
       'pole': '💃',
+      'pole_dancing': '💃', 
       'silks': '🎪',
+      'aerial_silks': '🎪',
       'hammock': '🏺',
-      'core': '💪'
+      'aerial_hammock': '🏺',
+      'core': '💪',
+      'core_training': '💪'
     };
-    return iconMap[category] || '🏃';
+    return iconMap[sport.key_name] || iconMap[sport.name.toLowerCase().replace(/\s+/g, '_')] || '🏃';
   };
 
   const handleLevelSelect = (levelId: string) => {
@@ -472,7 +485,7 @@ const AerialJourney = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredSports.map((sport) => {
                     const displayName = getSportDisplayName(sport.name);
-                    const icon = getSportIcon(sport.name);
+                    const icon = getSportIcon(sport);
                     const hasLevels = (sport.totalLevels || 0) > 0;
                     const progressPercentage = hasLevels ? Math.round(((sport.unlockedLevels || 0) / (sport.totalLevels || 1)) * 100) : 0;
                     

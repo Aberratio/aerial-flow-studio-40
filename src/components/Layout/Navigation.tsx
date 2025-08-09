@@ -75,6 +75,10 @@ const Navigation: React.FC<NavigationProps> = ({
     path: '/library',
     icon: BookOpen,
     label: 'Library'
+  }, {
+    path: '/aerial-journey',
+    icon: Trophy,
+    label: 'Aerial Journey'
   }];
 
   // User-related items
@@ -106,10 +110,6 @@ const Navigation: React.FC<NavigationProps> = ({
 
   // Admin-only items
   const adminItems = user?.role === 'admin' ? [{
-    path: '/aerial-journey',
-    icon: Trophy,
-    label: 'Aerial Journey'
-  }, {
     path: '/admin/achievements',
     icon: Settings,
     label: 'Achievements'
