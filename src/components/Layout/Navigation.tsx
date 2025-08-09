@@ -75,14 +75,17 @@ const Navigation: React.FC<NavigationProps> = ({
     path: '/library',
     icon: BookOpen,
     label: 'Library'
+  }];
+
+  // User-related items
+  const userNavItems = [{
+    path: '/profile',
+    icon: User,
+    label: 'Profile'
   }, {
     path: '/friends',
     icon: Users,
     label: 'Friends'
-  }, {
-    path: '/profile',
-    icon: User,
-    label: 'Profile'
   }, {
     path: '/inbox',
     icon: Bell,
@@ -137,6 +140,28 @@ const Navigation: React.FC<NavigationProps> = ({
               <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
                 <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
+              </Link>
+            );
+          })}
+
+          {/* User Section */}
+          <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
+          <div className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2 ${isMobile ? 'block' : 'hidden lg:block'}`}>
+            User
+          </div>
+          
+          {userNavItems.map(item => {
+            const Icon = item.icon;
+            const showUnreadBadge = item.path === '/inbox' && unreadCount > 0;
+            return (
+              <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+                <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
+                {showUnreadBadge && (
+                  <Badge className={`bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 rounded-full ${isMobile ? 'block' : 'hidden lg:block'}`}>
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Badge>
+                )}
               </Link>
             );
           })}
