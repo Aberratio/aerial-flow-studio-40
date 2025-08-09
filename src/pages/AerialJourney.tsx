@@ -4,22 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import {
-  ArrowLeft,
-  Star,
-  Trophy,
-  Target,
-  Zap,
-  Award,
-  TreePine,
-  Eye,
-  EyeOff,
-  Settings,
-} from "lucide-react";
+import { ArrowLeft, TreePine, Eye, EyeOff, Settings } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
-import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SkillTree from "@/components/SkillTree";
@@ -105,12 +93,13 @@ const AerialJourney = () => {
           // Calculate user points for this specific sport category using the same logic as SkillTree
           let userPoints = 0;
           let unlockedLevels = 0;
-          
+
           if (user && levelsData && levelsData.length > 0) {
             // Get all completed figures for this sport category with their level information
             const { data: progressData } = await supabase
-              .from('figure_progress')
-              .select(`
+              .from("figure_progress")
+              .select(
+                `
                 status,
                 figure_id,
                 figures!inner(
@@ -120,23 +109,26 @@ const AerialJourney = () => {
                     level_id
                   )
                 )
-              `)
-              .eq('user_id', user.id)
-              .eq('status', 'completed')
-              .eq('figures.category', category.key_name);
+              `
+              )
+              .eq("user_id", user.id)
+              .eq("status", "completed")
+              .eq("figures.category", category.key_name);
 
             // Calculate points iteratively, level by level (same as SkillTree)
             for (const level of levelsData) {
               // Check if this level is unlocked based on current calculated points
               if (userPoints >= level.point_limit) {
                 unlockedLevels++;
-                
+
                 // Count points from completed figures in this unlocked level
-                const levelFigures = progressData?.filter(progress => {
-                  const levelId = progress.figures?.level_figures?.[0]?.level_id;
-                  return levelId === level.id;
-                }) || [];
-                
+                const levelFigures =
+                  progressData?.filter((progress) => {
+                    const levelId =
+                      progress.figures?.level_figures?.[0]?.level_id;
+                    return levelId === level.id;
+                  }) || [];
+
                 // Add points for each completed figure in this level
                 levelFigures.forEach(() => {
                   userPoints += 1 * level.level_number; // 1 point × level number
@@ -256,7 +248,7 @@ const AerialJourney = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-pink-900/20 to-blue-900/20 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 p-4 md:p-6">
       <div className="max-w-6xl mx-auto">
         <Button
           variant="ghost"
@@ -282,7 +274,6 @@ const AerialJourney = () => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-white flex items-center">
-                  <TreePine className="w-5 h-5 mr-2" />
                   Explore Skill Trees by Sport
                   {isAdmin && (
                     <Badge className="ml-2 bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
@@ -475,14 +466,14 @@ const AerialJourney = () => {
                           )}
 
                           <Button
-                            className="w-full bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-400/30 hover:from-purple-500/30 hover:to-pink-500/30 text-white"
+                            variant="primary"
+                            className="w-full"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleSkillTreeView(sport.key_name, displayName);
                             }}
                             disabled={!sport.is_published && !isAdmin}
                           >
-                            <TreePine className="w-4 h-4 mr-2" />
                             {sport.is_published || isAdmin
                               ? "View Skill Tree"
                               : "Coming Soon"}
