@@ -68,9 +68,7 @@ export const GallerySection: React.FC = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
       {mediaItems.map((item) => (
-        <Dialog key={item.id}>
-          <DialogTrigger asChild>
-            <div className="group relative aspect-[4/6] overflow-hidden rounded-2xl cursor-pointer">
+            <div className="group relative aspect-[4/6] overflow-hidden rounded-2xl">
               {item.media_type === 'video' ? (
                 <video
                   src={item.media_url}
@@ -93,37 +91,11 @@ export const GallerySection: React.FC = () => {
               
               {/* Subtle glow effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-transparent to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-          
+              
+    
               {/* Hover zoom indicator */}
               <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/20 transition-colors duration-300 rounded-2xl" />
             </div>
-          </DialogTrigger>
-          
-          <DialogContent className="max-w-5xl max-h-[90vh] bg-black/95 border-white/10">
-            <div className="space-y-4">
-              {item.media_type === 'video' ? (
-                <video
-                  src={item.media_url}
-                  controls
-                  className="w-full max-h-[80vh] rounded-xl object-contain"
-                  autoPlay
-                >
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
-                <img
-                  src={item.media_url}
-                  alt=""
-                  className="w-full max-h-[80vh] object-contain rounded-xl"
-                />
-              )}
-              
-              {item.description && (
-                <p className="text-gray-300 text-center px-4">{item.description}</p>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
       ))}
     </div>
   );
