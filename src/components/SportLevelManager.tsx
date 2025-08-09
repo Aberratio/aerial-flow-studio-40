@@ -54,19 +54,14 @@ interface SportLevelManagerProps {
   onClose: () => void;
 }
 
-const SPORT_CATEGORIES = [
-  { value: 'hoop', label: 'Aerial Hoop' },
-  { value: 'pole', label: 'Pole Dancing' },
-  { value: 'silks', label: 'Aerial Silks' },
-  { value: 'hammock', label: 'Aerial Hammock' },
-  { value: 'core', label: 'Core Training' }
-];
+// Remove the hardcoded SPORT_CATEGORIES since we'll use the database
 
 const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const { user } = useAuth();
   const [levels, setLevels] = useState<SportLevel[]>([]);
   const [figures, setFigures] = useState<Figure[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [sportCategories, setSportCategories] = useState<Array<{key_name: string, name: string}>>([]);
   const [selectedSport, setSelectedSport] = useState<string>('');
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
   const [isEditFiguresOpen, setIsEditFiguresOpen] = useState(false);
@@ -103,11 +98,30 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     
     fetchFigures();
     fetchChallenges();
+    fetchSportCategories();
+  }, [user]);
+
+  const fetchSportCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('sport_categories')
+        .select('key_name, name')
+        .order('name');
+      
+      if (error) throw error;
+      setSportCategories(data || []);
+    } catch (error) {
+      console.error('Error fetching sport categories:', error);
+      toast.error('Failed to load sport categories');
+    }
+  };
+
+  useEffect(() => {
     if (selectedSport) {
       fetchLevelsForSport();
       fetchUsedFiguresInSport();
     }
-  }, [user, selectedSport]);
+  }, [selectedSport]);
 
   const fetchFigures = async () => {
     try {
@@ -412,7 +426,10 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
 
   const getAvailableCategories = () => {
     const categories = [...new Set(figures.map(f => f.category))].filter(Boolean);
-    return categories.map(cat => SPORT_CATEGORIES.find(sc => sc.value === cat) || { value: cat, label: cat });
+    return categories.map(cat => {
+      const sportCategory = sportCategories.find(sc => sc.key_name === cat);
+      return { value: cat, label: sportCategory?.name || cat };
+    });
   };
 
   return (
@@ -431,25 +448,30 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {SPORT_CATEGORIES.map(category => (
+            {sportCategories.map(category => (
               <div
-                key={category.value}
-                onClick={() => setSelectedSport(category.value)}
+                key={category.key_name}
+                onClick={() => setSelectedSport(category.key_name)}
                 className={`
                   p-6 rounded-lg border cursor-pointer transition-all duration-200
-                  ${selectedSport === category.value 
+                  ${selectedSport === category.key_name 
                     ? 'bg-primary/20 border-primary text-primary' 
                     : 'bg-white/5 border-white/10 text-white hover:bg-white/10'
                   }
                 `}
               >
-                <h3 className="font-semibold text-lg mb-2">{category.label}</h3>
+                <h3 className="font-semibold text-lg mb-2">{category.name}</h3>
                 <p className="text-sm opacity-70">
-                  Manage levels and figures for {category.label.toLowerCase()}
+                  Manage levels and figures for {category.name.toLowerCase()}
                 </p>
               </div>
             ))}
           </div>
+          {sportCategories.length === 0 && (
+            <p className="text-center text-muted-foreground py-4">
+              No sport categories available. Please create some in the Sport Categories Management first.
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -458,7 +480,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-white">
-                Levels for {SPORT_CATEGORIES.find(c => c.value === selectedSport)?.label}
+                Levels for {sportCategories.find(c => c.key_name === selectedSport)?.name || selectedSport}
               </CardTitle>
               <Dialog open={isCreateLevelOpen} onOpenChange={setIsCreateLevelOpen}>
                 <DialogTrigger asChild>
@@ -840,7 +862,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                           
                           {figure.category !== selectedSport && (
                             <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-300 border-blue-400/30">
-                              {SPORT_CATEGORIES.find(c => c.value === figure.category)?.label || figure.category}
+                              {sportCategories.find(c => c.key_name === figure.category)?.name || figure.category}
                             </Badge>
                           )}
                         </div>

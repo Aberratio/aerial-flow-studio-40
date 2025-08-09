@@ -932,9 +932,12 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          icon: string | null
           id: string
+          image_file_url: string | null
           image_url: string | null
           is_published: boolean
+          key_name: string
           name: string
           updated_at: string
         }
@@ -942,9 +945,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
+          image_file_url?: string | null
           image_url?: string | null
           is_published?: boolean
+          key_name: string
           name: string
           updated_at?: string
         }
@@ -952,9 +958,12 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          icon?: string | null
           id?: string
+          image_file_url?: string | null
           image_url?: string | null
           is_published?: boolean
+          key_name?: string
           name?: string
           updated_at?: string
         }

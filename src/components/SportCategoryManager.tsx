@@ -14,7 +14,8 @@ import {
   Eye, 
   EyeOff,
   Upload,
-  ArrowLeft
+  ArrowLeft,
+  Image as ImageIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -22,9 +23,12 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface SportCategory {
   id: string;
+  key_name: string;
   name: string;
   description?: string;
+  icon?: string;
   image_url?: string;
+  image_file_url?: string;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -40,10 +44,14 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
   const [isLoading, setIsLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
+    key_name: '',
     name: '',
     description: '',
+    icon: '',
     image_url: '',
+    image_file: null as File | null,
     is_published: false
   });
 
@@ -68,19 +76,55 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
     }
   };
 
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      setUploadingImage(true);
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `sport-categories/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('challenges')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('challenges')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast.error('Failed to upload image');
+      return null;
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   const handleCreate = async () => {
-    if (!formData.name.trim()) {
-      toast.error('Sport name is required');
+    if (!formData.key_name.trim() || !formData.name.trim()) {
+      toast.error('Key name and display name are required');
       return;
     }
 
     try {
+      let imageFileUrl = null;
+      if (formData.image_file) {
+        imageFileUrl = await handleImageUpload(formData.image_file);
+        if (!imageFileUrl) return; // Upload failed
+      }
+
       const { data, error } = await supabase
         .from('sport_categories')
         .insert({
+          key_name: formData.key_name.trim().toLowerCase().replace(/\s+/g, '_'),
           name: formData.name.trim(),
           description: formData.description.trim() || null,
+          icon: formData.icon.trim() || null,
           image_url: formData.image_url.trim() || null,
+          image_file_url: imageFileUrl,
           is_published: formData.is_published,
           created_by: user?.id
         })
@@ -91,7 +135,15 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
 
       setSports(prev => [...prev, data]);
       setIsCreating(false);
-      setFormData({ name: '', description: '', image_url: '', is_published: false });
+      setFormData({ 
+        key_name: '', 
+        name: '', 
+        description: '', 
+        icon: '', 
+        image_url: '', 
+        image_file: null, 
+        is_published: false 
+      });
       toast.success('Sport category created successfully');
     } catch (error) {
       console.error('Error creating sport:', error);
@@ -100,20 +152,31 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
   };
 
   const handleUpdate = async (id: string) => {
-    if (!formData.name.trim()) {
-      toast.error('Sport name is required');
+    if (!formData.key_name.trim() || !formData.name.trim()) {
+      toast.error('Key name and display name are required');
       return;
     }
 
     try {
+      let imageFileUrl = formData.image_file ? await handleImageUpload(formData.image_file) : undefined;
+      if (formData.image_file && !imageFileUrl) return; // Upload failed
+
+      const updateData: any = {
+        key_name: formData.key_name.trim().toLowerCase().replace(/\s+/g, '_'),
+        name: formData.name.trim(),
+        description: formData.description.trim() || null,
+        icon: formData.icon.trim() || null,
+        image_url: formData.image_url.trim() || null,
+        is_published: formData.is_published
+      };
+
+      if (imageFileUrl) {
+        updateData.image_file_url = imageFileUrl;
+      }
+
       const { data, error } = await supabase
         .from('sport_categories')
-        .update({
-          name: formData.name.trim(),
-          description: formData.description.trim() || null,
-          image_url: formData.image_url.trim() || null,
-          is_published: formData.is_published
-        })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -122,7 +185,15 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
 
       setSports(prev => prev.map(sport => sport.id === id ? data : sport));
       setEditingId(null);
-      setFormData({ name: '', description: '', image_url: '', is_published: false });
+      setFormData({ 
+        key_name: '', 
+        name: '', 
+        description: '', 
+        icon: '', 
+        image_url: '', 
+        image_file: null, 
+        is_published: false 
+      });
       toast.success('Sport category updated successfully');
     } catch (error) {
       console.error('Error updating sport:', error);
@@ -174,9 +245,12 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
   const startEdit = (sport: SportCategory) => {
     setEditingId(sport.id);
     setFormData({
+      key_name: sport.key_name || '',
       name: sport.name,
       description: sport.description || '',
+      icon: sport.icon || '',
       image_url: sport.image_url || '',
+      image_file: null,
       is_published: sport.is_published
     });
   };
@@ -184,7 +258,15 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
   const cancelEdit = () => {
     setEditingId(null);
     setIsCreating(false);
-    setFormData({ name: '', description: '', image_url: '', is_published: false });
+    setFormData({ 
+      key_name: '', 
+      name: '', 
+      description: '', 
+      icon: '', 
+      image_url: '', 
+      image_file: null, 
+      is_published: false 
+    });
   };
 
   if (isLoading) {
@@ -233,7 +315,17 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="text-sm text-white font-medium">Name *</label>
+              <label className="text-sm text-white font-medium">Key Name (Database) *</label>
+              <Input
+                value={formData.key_name}
+                onChange={(e) => setFormData(prev => ({ ...prev, key_name: e.target.value }))}
+                placeholder="e.g., aerial_hoop, pole_dancing"
+                className="bg-white/5 border-white/20 text-white"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Used for database references. Will be converted to lowercase with underscores.</p>
+            </div>
+            <div>
+              <label className="text-sm text-white font-medium">Display Name *</label>
               <Input
                 value={formData.name}
                 onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -251,13 +343,51 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
               />
             </div>
             <div>
-              <label className="text-sm text-white font-medium">Image URL</label>
+              <label className="text-sm text-white font-medium">Icon (Emoji or Unicode)</label>
+              <Input
+                value={formData.icon}
+                onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                placeholder="🪩 or other emoji/icon"
+                className="bg-white/5 border-white/20 text-white"
+              />
+            </div>
+            <div>
+              <label className="text-sm text-white font-medium">External Image URL</label>
               <Input
                 value={formData.image_url}
                 onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                 placeholder="https://example.com/image.jpg"
                 className="bg-white/5 border-white/20 text-white"
               />
+            </div>
+            <div>
+              <label className="text-sm text-white font-medium">Upload Image File</label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setFormData(prev => ({ ...prev, image_file: file }));
+                    }
+                  }}
+                  className="hidden"
+                  id="image-upload-create"
+                />
+                <label 
+                  htmlFor="image-upload-create"
+                  className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/20 rounded-md cursor-pointer hover:bg-white/10 transition-colors"
+                >
+                  <ImageIcon className="w-4 h-4" />
+                  Choose File
+                </label>
+                {formData.image_file && (
+                  <span className="text-sm text-muted-foreground">
+                    {formData.image_file.name}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <Switch
@@ -267,9 +397,13 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
               <label className="text-sm text-white">Publish immediately</label>
             </div>
             <div className="flex gap-2">
-              <Button onClick={handleCreate} className="bg-green-600 hover:bg-green-700">
+              <Button 
+                onClick={handleCreate} 
+                disabled={uploadingImage}
+                className="bg-green-600 hover:bg-green-700"
+              >
                 <Save className="w-4 h-4 mr-2" />
-                Create
+                {uploadingImage ? 'Uploading...' : 'Create'}
               </Button>
               <Button variant="outline" onClick={cancelEdit}>
                 <X className="w-4 h-4 mr-2" />
@@ -289,7 +423,15 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
                 // Edit Form
                 <div className="space-y-4">
                   <div>
-                    <label className="text-sm text-white font-medium">Name *</label>
+                    <label className="text-sm text-white font-medium">Key Name (Database) *</label>
+                    <Input
+                      value={formData.key_name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, key_name: e.target.value }))}
+                      className="bg-white/5 border-white/20 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-white font-medium">Display Name *</label>
                     <Input
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
@@ -305,12 +447,49 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
                     />
                   </div>
                   <div>
-                    <label className="text-sm text-white font-medium">Image URL</label>
+                    <label className="text-sm text-white font-medium">Icon</label>
+                    <Input
+                      value={formData.icon}
+                      onChange={(e) => setFormData(prev => ({ ...prev, icon: e.target.value }))}
+                      className="bg-white/5 border-white/20 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-white font-medium">External Image URL</label>
                     <Input
                       value={formData.image_url}
                       onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
                       className="bg-white/5 border-white/20 text-white"
                     />
+                  </div>
+                  <div>
+                    <label className="text-sm text-white font-medium">Upload New Image</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setFormData(prev => ({ ...prev, image_file: file }));
+                          }
+                        }}
+                        className="hidden"
+                        id={`image-upload-edit-${sport.id}`}
+                      />
+                      <label 
+                        htmlFor={`image-upload-edit-${sport.id}`}
+                        className="flex items-center gap-2 px-3 py-2 bg-white/5 border border-white/20 rounded-md cursor-pointer hover:bg-white/10 transition-colors"
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                        Choose File
+                      </label>
+                      {formData.image_file && (
+                        <span className="text-sm text-muted-foreground">
+                          {formData.image_file.name}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Switch
@@ -320,9 +499,13 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
                     <label className="text-sm text-white">Published</label>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => handleUpdate(sport.id)} className="bg-blue-600 hover:bg-blue-700">
+                    <Button 
+                      onClick={() => handleUpdate(sport.id)} 
+                      disabled={uploadingImage}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
                       <Save className="w-4 h-4 mr-2" />
-                      Save
+                      {uploadingImage ? 'Uploading...' : 'Save'}
                     </Button>
                     <Button variant="outline" onClick={cancelEdit}>
                       <X className="w-4 h-4 mr-2" />
@@ -335,7 +518,15 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-xl font-semibold text-white">{sport.name}</h3>
+                      <h3 className="text-xl font-semibold text-white flex items-center gap-2">
+                        {sport.icon && <span className="text-2xl">{sport.icon}</span>}
+                        {sport.name}
+                        {sport.key_name && (
+                          <code className="text-xs bg-white/10 px-2 py-1 rounded text-muted-foreground">
+                            {sport.key_name}
+                          </code>
+                        )}
+                      </h3>
                       <Badge
                         variant={sport.is_published ? "default" : "secondary"}
                         className={sport.is_published ? "bg-green-500/20 text-green-400 border-green-400/30" : "bg-orange-500/20 text-orange-400 border-orange-400/30"}
@@ -358,7 +549,12 @@ const SportCategoryManager: React.FC<SportCategoryManagerProps> = ({ onClose }) 
                     )}
                     {sport.image_url && (
                       <p className="text-sm text-muted-foreground mt-1">
-                        Image: {sport.image_url}
+                        External Image: {sport.image_url}
+                      </p>
+                    )}
+                    {sport.image_file_url && (
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Uploaded Image: Available
                       </p>
                     )}
                   </div>
