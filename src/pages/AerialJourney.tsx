@@ -273,7 +273,7 @@ const AerialJourney = () => {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-white flex items-center">
+                <CardTitle className="text-white flex items-center mb-2">
                   Explore Skill Trees by Sport
                   {isAdmin && (
                     <Badge className="ml-2 bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
