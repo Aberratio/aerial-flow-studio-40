@@ -23,6 +23,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SkillTree from "@/components/SkillTree";
@@ -168,6 +169,7 @@ const AerialJourney = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
+  const { hasPremiumAccess } = useSubscriptionStatus();
   const [currentStep, setCurrentStep] = useState(0); // Start with main view
   const [userJourney, setUserJourney] = useState<UserJourney | null>(null);
   const [isLoading, setIsLoading] = useState(true);

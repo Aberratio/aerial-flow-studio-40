@@ -183,9 +183,15 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   };
 
   const handleFigureClick = (figure: Figure, canPractice: boolean) => {
-    if (canPractice) {
+    if (canPractice && canAccessFigure(figure)) {
       setSelectedFigure(figure);
       setIsPreviewModalOpen(true);
+    } else if (canPractice && !canAccessFigure(figure)) {
+      toast({
+        title: "Premium Required",
+        description: "This exercise requires a premium subscription to access.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -224,6 +230,17 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const updateFigureStatus = async (figureId: string, status: string, event: React.MouseEvent) => {
     event.stopPropagation();
     if (!user) return;
+
+    // Check if figure requires premium access
+    const figure = sportLevels.flatMap(level => level.figures).find(f => f.id === figureId);
+    if (figure && !canAccessFigure(figure)) {
+      toast({
+        title: "Premium Required",
+        description: "This exercise requires a premium subscription to track progress.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       setUpdatingStatus(figureId);
@@ -578,7 +595,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                     : 'bg-gray-900/50 border-gray-700/50 cursor-not-allowed'
                                 }`}
                                 title={!canPractice ? `Unlock this level with ${level.point_limit} points to practice this figure` : ''}
-                                onClick={() => handleFigureClick(figure, canPractice)}
+                                onClick={() => handleFigureClick(figure, canPractice && canAccessFigure(figure))}
                               >
                                 <CardContent className="p-4">
                                   {/* Figure Image */}
@@ -605,24 +622,28 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                       </div>
                                     )}
                                     
-                                    {/* Status Badge Overlay */}
-                                    <div className="absolute top-2 right-2">
-                                      {canPractice ? (
-                                        isCompleted ? (
-                                          <div className="bg-green-500 rounded-full p-1">
-                                            <CheckCircle className="w-4 h-4 text-white" />
-                                          </div>
-                                        ) : (
-                                          <div className="bg-gray-600 rounded-full p-1">
-                                            <Circle className="w-4 h-4 text-white" />
-                                          </div>
-                                        )
-                                      ) : (
-                                        <div className="bg-red-500 rounded-full p-1">
-                                          <Lock className="w-4 h-4 text-white" />
-                                        </div>
-                                      )}
-                                    </div>
+                                     {/* Status Badge Overlay */}
+                                     <div className="absolute top-2 right-2">
+                                       {canPractice && canAccessFigure(figure) ? (
+                                         isCompleted ? (
+                                           <div className="bg-green-500 rounded-full p-1">
+                                             <CheckCircle className="w-4 h-4 text-white" />
+                                           </div>
+                                         ) : (
+                                           <div className="bg-gray-600 rounded-full p-1">
+                                             <Circle className="w-4 h-4 text-white" />
+                                           </div>
+                                         )
+                                       ) : !canAccessFigure(figure) ? (
+                                         <div className="bg-yellow-500 rounded-full p-1">
+                                           <Crown className="w-4 h-4 text-white" />
+                                         </div>
+                                       ) : (
+                                         <div className="bg-red-500 rounded-full p-1">
+                                           <Lock className="w-4 h-4 text-white" />
+                                         </div>
+                                       )}
+                                     </div>
                                   </div>
 
                                   <div className="flex items-start justify-between mb-2">
@@ -659,68 +680,76 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                     )}
                                    </div>
 
-                                   {/* Completion Status Buttons - Show for unlocked levels */}
-                                   {canPractice && (
-                                     <div className="mt-3 space-y-2">
-                                       {/* Quick Status Buttons */}
-                                       <div className="flex gap-1">
-                                         <Button
-                                           size="sm"
-                                           variant={progress?.status === 'completed' ? 'default' : 'outline'}
-                                           className="flex-1 text-xs h-6 px-1"
-                                           onClick={(e) => updateFigureStatus(figure.id, 'completed', e)}
-                                           disabled={updatingStatus === figure.id}
-                                         >
-                                           <CheckCircle className="w-3 h-3" />
-                                         </Button>
-                                         <Button
-                                           size="sm"
-                                           variant={progress?.status === 'for_later' ? 'default' : 'outline'}
-                                           className="flex-1 text-xs h-6 px-1"
-                                           onClick={(e) => updateFigureStatus(figure.id, 'for_later', e)}
-                                           disabled={updatingStatus === figure.id}
-                                         >
-                                           <Bookmark className="w-3 h-3" />
-                                         </Button>
-                                         <Button
-                                           size="sm"
-                                           variant={progress?.status === 'failed' ? 'default' : 'outline'}
-                                           className="flex-1 text-xs h-6 px-1"
-                                           onClick={(e) => updateFigureStatus(figure.id, 'failed', e)}
-                                           disabled={updatingStatus === figure.id}
-                                         >
-                                           <AlertCircle className="w-3 h-3" />
-                                         </Button>
-                                       </div>
-                                       
-                                       {/* Action Buttons */}
-                                       <div className="flex gap-2">
-                                         <Button
-                                           size="sm"
-                                           variant="outline"
-                                           className="flex-1 text-xs h-8"
-                                           onClick={(e) => {
-                                             e.stopPropagation();
-                                             handleFigureClick(figure, canPractice);
-                                           }}
-                                         >
-                                           <Eye className="w-3 h-3 mr-1" />
-                                           Preview
-                                         </Button>
-                                         <Button
-                                           size="sm"
-                                           variant="ghost"
-                                           className="text-xs h-8 px-2"
-                                           onClick={(e) => {
-                                             e.stopPropagation();
-                                             navigate(`/exercise/${figure.id}`);
-                                           }}
-                                         >
-                                           <ExternalLink className="w-3 h-3" />
-                                         </Button>
-                                       </div>
-                                     </div>
-                                   )}
+                                    {/* Completion Status Buttons - Show for unlocked levels and accessible figures */}
+                                    {canPractice && canAccessFigure(figure) && (
+                                      <div className="mt-3 space-y-2">
+                                        {/* Quick Status Buttons */}
+                                        <div className="flex gap-1">
+                                          <Button
+                                            size="sm"
+                                            variant={progress?.status === 'completed' ? 'default' : 'outline'}
+                                            className="flex-1 text-xs h-6 px-1"
+                                            onClick={(e) => updateFigureStatus(figure.id, 'completed', e)}
+                                            disabled={updatingStatus === figure.id}
+                                          >
+                                            <CheckCircle className="w-3 h-3" />
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant={progress?.status === 'for_later' ? 'default' : 'outline'}
+                                            className="flex-1 text-xs h-6 px-1"
+                                            onClick={(e) => updateFigureStatus(figure.id, 'for_later', e)}
+                                            disabled={updatingStatus === figure.id}
+                                          >
+                                            <Bookmark className="w-3 h-3" />
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant={progress?.status === 'failed' ? 'default' : 'outline'}
+                                            className="flex-1 text-xs h-6 px-1"
+                                            onClick={(e) => updateFigureStatus(figure.id, 'failed', e)}
+                                            disabled={updatingStatus === figure.id}
+                                          >
+                                            <AlertCircle className="w-3 h-3" />
+                                          </Button>
+                                        </div>
+                                        
+                                        {/* Action Buttons */}
+                                        <div className="flex gap-2">
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            className="flex-1 text-xs h-8"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleFigureClick(figure, canPractice);
+                                            }}
+                                          >
+                                            <Eye className="w-3 h-3 mr-1" />
+                                            Preview
+                                          </Button>
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            className="text-xs h-8 px-2"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              if (canAccessFigure(figure)) {
+                                                navigate(`/exercise/${figure.id}`);
+                                              } else {
+                                                toast({
+                                                  title: "Premium Required",
+                                                  description: "This exercise requires a premium subscription to access.",
+                                                  variant: "destructive",
+                                                });
+                                              }
+                                            }}
+                                          >
+                                            <ExternalLink className="w-3 h-3" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
 
                                    {/* Premium Block for Free Users */}
                                    {canPractice && requiresPremiumAccess(figure) && !hasPremiumAccess && (
