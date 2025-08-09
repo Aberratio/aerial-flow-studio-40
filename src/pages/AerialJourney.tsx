@@ -174,6 +174,7 @@ const AerialJourney = () => {
   const [userJourney, setUserJourney] = useState<UserJourney | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [availableSports, setAvailableSports] = useState<SportCategory[]>([]);
+  const [userSelectedSports, setUserSelectedSports] = useState<string[]>([]);
   const [selectedSkillTreeSport, setSelectedSkillTreeSport] = useState<{
     category: string;
     name: string;
@@ -189,6 +190,7 @@ const AerialJourney = () => {
   useEffect(() => {
     checkExistingJourney();
     fetchAvailableSports();
+    fetchUserProfile();
   }, [user, navigate]);
 
   const fetchAvailableSports = async () => {
@@ -274,6 +276,23 @@ const AerialJourney = () => {
     }
   };
 
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('sports')
+        .eq('id', user.id)
+        .single();
+      
+      if (error) throw error;
+      setUserSelectedSports(data?.sports || []);
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+    }
+  };
+
   const handlePublishToggle = async (
     sportId: string,
     currentStatus: boolean
@@ -339,10 +358,15 @@ const AerialJourney = () => {
     setSelectedSkillTreeSport({ category, name });
   };
 
-  // Filter sports based on user role
+  // Filter sports based on user role and selected sports
   const filteredSports = isAdmin
     ? availableSports // Admins see all sports
-    : availableSports.filter((sport) => sport.is_published); // Regular users see only published sports
+    : availableSports.filter((sport) => {
+        // Regular users see only published sports that they have selected in their profile
+        const isPublished = sport.is_published;
+        const isUserSport = userSelectedSports.includes(sport.id);
+        return isPublished && isUserSport;
+      });
 
   const handleLevelSelect = (levelId: string) => {
     setSelectedLevel(levelId);
@@ -566,8 +590,19 @@ const AerialJourney = () => {
                   <p className="text-muted-foreground">
                     {isAdmin
                       ? "No sport categories have been created yet. Use the Manage Sports button to add some."
-                      : "No sports are currently published. Check back later!"}
+                      : userSelectedSports.length === 0
+                      ? "You haven't selected any sports yet. Please go to your profile and choose the sports you want to train in."
+                      : "No sports from your selection are currently published. Check back later!"}
                   </p>
+                  {!isAdmin && userSelectedSports.length === 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/home")}
+                      className="mt-4 border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+                    >
+                      Go to Home Page
+                    </Button>
+                  )}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
