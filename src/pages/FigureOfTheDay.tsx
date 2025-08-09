@@ -129,15 +129,70 @@ const FigureOfTheDay = () => {
 
   if (!figure) {
     return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">
-            No Figure Available
-          </h1>
-          <Button onClick={() => navigate("/")} variant="outline">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
+      <div className="min-h-screen p-3 sm:p-6">
+        <div className="max-w-2xl mx-auto">
+          {/* Breadcrumb */}
+          <div className="mb-4">
+            <Button
+              onClick={() => navigate("/home")}
+              variant="ghost"
+              size="sm"
+              className="text-white hover:text-primary p-0 h-auto"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Home
+            </Button>
+          </div>
+
+          {/* Empty State Card */}
+          <Card className="glass-effect border-white/10 text-center">
+            <CardContent className="p-8 sm:p-12">
+              <div className="mb-6">
+                <Target className="w-16 h-16 mx-auto mb-4 text-purple-400 opacity-60" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">
+                  No Figure Available Today
+                </h1>
+                <p className="text-muted-foreground text-lg mb-6">
+                  We couldn't find any figures for your selected sports
+                </p>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-lg p-6 mb-6 border border-purple-500/20">
+                <h3 className="text-white font-semibold mb-3 flex items-center justify-center gap-2">
+                  <BookOpen className="w-5 h-5 text-purple-400" />
+                  Expand Your Journey
+                </h3>
+                <p className="text-muted-foreground mb-4">
+                  Add more sports to your profile to discover exciting new figures and techniques
+                </p>
+                <Button 
+                  onClick={() => navigate("/profile")}
+                  className="bg-purple-500 hover:bg-purple-600 text-white"
+                >
+                  Update Sports Preferences
+                </Button>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={() => navigate("/library")}
+                  className="flex-1"
+                >
+                  <BookOpen className="w-4 h-4 mr-2" />
+                  Browse Library
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={fetchFigureOfTheDay}
+                  className="flex-1"
+                >
+                  <Target className="w-4 h-4 mr-2" />
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     );
