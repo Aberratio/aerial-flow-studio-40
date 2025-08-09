@@ -19,7 +19,7 @@ import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { format, subMonths, subDays, subWeeks } from "date-fns";
+import { format, subMonths, subWeeks } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Challenges = () => {
@@ -496,47 +496,6 @@ const Challenges = () => {
               </Button>
             )}
           </div>
-        </div>
-
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
-          {[
-            {
-              label: "Active Challenges",
-              value: stats.activeChallenges.toString(),
-              icon: Trophy,
-            },
-            {
-              label: "Completed",
-              value: stats.completedChallenges.toString(),
-              icon: CalendarIcon,
-            },
-            {
-              label: "Total Participants",
-              value: stats.totalParticipants.toLocaleString(),
-              icon: Users,
-            },
-            {
-              label: "Avg Training Days",
-              value: stats.averageTrainingDays,
-              icon: Clock,
-            },
-          ].map((stat, index) => {
-            const Icon = stat.icon;
-            return (
-              <Card key={index} className="glass-effect border-white/10">
-                <CardContent className="p-3 sm:p-6 text-center">
-                  <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 mx-auto mb-2 sm:mb-3" />
-                  <div className="gradient-text text-lg sm:text-2xl font-bold">
-                    {stat.value}
-                  </div>
-                  <div className="text-muted-foreground text-xs sm:text-sm">
-                    {stat.label}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
         </div>
 
         {/* Challenge Tabs */}
