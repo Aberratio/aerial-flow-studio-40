@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Trophy, BookOpen, Dumbbell, Users, Home, CheckCircle, ArrowRight, Target, Play, Library } from "lucide-react";
+import { Trophy, BookOpen, Dumbbell, Users, Home, CheckCircle, ArrowRight, Target, Play, Library, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const ACTIVITY_OPTIONS = [{
   id: 'challenge',
@@ -71,6 +72,7 @@ const Index = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const [userSports, setUserSports] = useState<string[]>([]);
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
@@ -310,22 +312,48 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
           {ACTIVITY_OPTIONS.map(activity => {
             const Icon = activity.icon;
-            return (
-              <Link key={activity.id} to={activity.link}>
-                <Card className="glass-effect border-white/10 hover-lift group cursor-pointer h-full">
-                  <CardContent className="p-6 text-center h-full flex flex-col">
-                    <div className={`w-16 h-16 rounded-full ${activity.bgColor} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
-                      <Icon className={`w-8 h-8 ${activity.color}`} />
+            const isTraining = activity.id === 'training';
+            const isLocked = isTraining; // Training is locked (in development)
+            
+            if (isLocked) {
+              return (
+                <Card key={activity.id} className="glass-effect border-white/10 cursor-not-allowed h-full opacity-60 relative">
+                  <CardContent className={`text-center h-full flex flex-col ${isMobile ? 'p-3' : 'p-6'}`}>
+                    <div className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} rounded-full ${activity.bgColor} flex items-center justify-center mx-auto mb-4 relative`}>
+                      <Icon className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${activity.color}`} />
+                      <div className="absolute -top-1 -right-1 bg-muted rounded-full p-1">
+                        <Lock className="w-3 h-3 text-muted-foreground" />
+                      </div>
                     </div>
                     
-                    <h3 className="font-semibold text-white mb-2 text-lg">
+                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-sm' : 'text-lg'}`}>
                       {activity.title}
                     </h3>
                     
-                    <p className="text-muted-foreground text-sm mb-4 flex-grow">
+                    <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} mb-4 flex-grow`}>
+                      Coming Soon
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            }
+
+            return (
+              <Link key={activity.id} to={activity.link}>
+                <Card className="glass-effect border-white/10 hover-lift group cursor-pointer h-full">
+                  <CardContent className={`text-center h-full flex flex-col ${isMobile ? 'p-3' : 'p-6'}`}>
+                    <div className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} rounded-full ${activity.bgColor} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
+                      <Icon className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${activity.color}`} />
+                    </div>
+                    
+                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-sm' : 'text-lg'}`}>
+                      {activity.title}
+                    </h3>
+                    
+                    <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} mb-4 flex-grow`}>
                       {activity.description}
                     </p>
                   </CardContent>
