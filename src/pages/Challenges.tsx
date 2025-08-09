@@ -97,30 +97,28 @@ const Challenges = () => {
           const { data: progressData } = await supabase
             .from("user_challenge_calendar_days")
             .select(
-              "challenge_id, training_day_id, exercises_completed, total_exercises"
+              "challenge_id, status, day_number"
             )
             .eq("user_id", user.id)
             .in("challenge_id", participatingChallengeIds);
 
-          // Get total training days for each challenge
-          const { data: trainingDaysData } = await supabase
-            .from("challenge_training_days")
-            .select("challenge_id, id")
+          // Get total calendar days for each challenge
+          const { data: calendarDaysData } = await supabase
+            .from("user_challenge_calendar_days")
+            .select("challenge_id, day_number")
+            .eq("user_id", user.id)
             .in("challenge_id", participatingChallengeIds);
 
-          // Calculate progress percentage for each challenge
-          const challengeTrainingDays =
-            trainingDaysData?.reduce((acc, day) => {
+          // Calculate progress percentage for each challenge based on completed calendar days
+          const challengeTotalDays =
+            calendarDaysData?.reduce((acc, day) => {
               acc[day.challenge_id] = (acc[day.challenge_id] || 0) + 1;
               return acc;
             }, {}) || {};
 
           const challengeCompletedDays =
             progressData?.reduce((acc, progress) => {
-              if (
-                progress.exercises_completed === progress.total_exercises &&
-                progress.total_exercises > 0
-              ) {
+              if (progress.status === 'completed' || progress.status === 'rest') {
                 acc[progress.challenge_id] =
                   (acc[progress.challenge_id] || 0) + 1;
               }
@@ -129,7 +127,7 @@ const Challenges = () => {
 
           participatingChallengeIds.forEach((challengeId) => {
             const completedDays = challengeCompletedDays[challengeId] || 0;
-            const totalDays = challengeTrainingDays[challengeId] || 1;
+            const totalDays = challengeTotalDays[challengeId] || 1;
             userProgress[challengeId] = Math.round(
               (completedDays / totalDays) * 100
             );
@@ -171,6 +169,7 @@ const Challenges = () => {
             description: challenge.description,
             start_date: challenge.start_date,
             end_date: challenge.end_date,
+            level: challenge.level,
             status,
             created_by: challenge.created_by,
             premium: challenge.premium || false,
@@ -617,8 +616,7 @@ const Challenges = () => {
                             <div className="flex justify-between text-sm">
                               <span className="text-white">Progress</span>
                               <span className="text-muted-foreground">
-                                {challenge.userProgress}% complete (nie działa
-                                jeszcze)
+                                {challenge.userProgress}% complete
                               </span>
                             </div>
                             <Progress
@@ -640,11 +638,21 @@ const Challenges = () => {
                             {challenge.participants.toLocaleString()}
                           </div>
                         </div>
-                        <Badge
-                          className={getDifficultyColor(challenge.difficulty)}
-                        >
-                          {challenge.difficulty}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          {challenge.level && (
+                            <Badge
+                              variant="outline"
+                              className="border-purple-400/50 text-purple-300 bg-purple-500/20"
+                            >
+                              Level {challenge.level}
+                            </Badge>
+                          )}
+                          <Badge
+                            className={getDifficultyColor(challenge.difficulty)}
+                          >
+                            {challenge.difficulty}
+                          </Badge>
+                        </div>
                       </div>
 
                       {/* Action Buttons */}
