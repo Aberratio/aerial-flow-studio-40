@@ -70,7 +70,7 @@ export const GallerySection: React.FC = () => {
       {mediaItems.map((item) => (
         <Dialog key={item.id}>
           <DialogTrigger asChild>
-            <div className="group relative aspect-[4/5] overflow-hidden rounded-2xl cursor-pointer">
+            <div className="group relative aspect-[4/6] overflow-hidden rounded-2xl cursor-pointer">
               {item.media_type === 'video' ? (
                 <video
                   src={item.media_url}
