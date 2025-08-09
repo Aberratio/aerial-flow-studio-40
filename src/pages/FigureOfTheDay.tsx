@@ -79,30 +79,27 @@ const FigureOfTheDay = () => {
       if (figuresError) throw figuresError;
 
       if (!figures || figures.length === 0) {
-        toast({
-          title: "No figures available",
-          description: "No figures found for your selected sports",
-          variant: "destructive",
-        });
-        navigate("/");
+        // If no free figures and user has premium access, try premium figures
+        if (hasPremiumAccess) {
+          const { data: premiumFigures, error: premiumError } = await supabase
+            .from("figures")
+            .select("*")
+            .in("category", categories?.map((category) => category.key_name) || []);
+
+          if (premiumError) throw premiumError;
+
+          if (premiumFigures && premiumFigures.length > 0) {
+            const randomIndex = Math.floor(Math.random() * premiumFigures.length);
+            setFigure(premiumFigures[randomIndex]);
+            return;
+          }
+        }
+        
+        // No figures available - let the component show the fallback UI
+        setFigure(null);
         return;
       }
 
-      // If no free figures, try premium figures for premium users
-      if ((!figures || figures.length === 0) && hasPremiumAccess) {
-        const { data: premiumFigures, error: premiumError } = await supabase
-          .from("figures")
-          .select("*")
-          .in("category", userSports);
-
-        if (premiumError) throw premiumError;
-
-        if (premiumFigures && premiumFigures.length > 0) {
-          const randomIndex = Math.floor(Math.random() * premiumFigures.length);
-          setFigure(premiumFigures[randomIndex]);
-          return;
-        }
-      }
 
       // Select random figure from free figures
       const randomIndex = Math.floor(Math.random() * figures.length);
