@@ -42,7 +42,6 @@ export const CreateExerciseModal = ({
     instructions: "",
     difficulty_level: "",
     category: "",
-    level: "",
     type: "",
     image_url: "",
     video_url: "",
@@ -62,7 +61,6 @@ export const CreateExerciseModal = ({
         instructions: editingFigure.instructions || "",
         difficulty_level: editingFigure.difficulty_level || "",
         category: editingFigure.category || "",
-        level: editingFigure.level || "",
         type: editingFigure.type || "",
         image_url: editingFigure.image_url || "",
         video_url: editingFigure.video_url || "",
@@ -77,7 +75,6 @@ export const CreateExerciseModal = ({
         instructions: "",
         difficulty_level: "",
         category: "",
-        level: "",
         type: "",
         image_url: "",
         video_url: "",
@@ -162,7 +159,6 @@ export const CreateExerciseModal = ({
             instructions: formData.instructions.trim() || null,
             difficulty_level: formData.difficulty_level || null,
             category: formData.category || null,
-            level: formData.level || null,
             type: formData.type || null,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
@@ -181,7 +177,6 @@ export const CreateExerciseModal = ({
           instructions: formData.instructions.trim() || null,
           difficulty_level: formData.difficulty_level || null,
           category: formData.category || null,
-          level: formData.level || null,
           type: formData.type || null,
           image_url: imageUrl || null,
           video_url: videoUrl || null,
@@ -208,7 +203,6 @@ export const CreateExerciseModal = ({
         instructions: "",
         difficulty_level: "",
         category: "",
-        level: "",
         type: "",
         image_url: "",
         video_url: "",
@@ -370,7 +364,7 @@ export const CreateExerciseModal = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="category" className="text-white">
                 Category (Optional)
@@ -414,28 +408,6 @@ export const CreateExerciseModal = ({
               </Select>
             </div>
 
-            <div>
-              <Label htmlFor="level" className="text-white">
-                Level (Optional)
-              </Label>
-              <Select
-                value={formData.level}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, level: value }))
-                }
-              >
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="Select level" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Level 1</SelectItem>
-                  <SelectItem value="2">Level 2</SelectItem>
-                  <SelectItem value="3">Level 3</SelectItem>
-                  <SelectItem value="4">Level 4</SelectItem>
-                  <SelectItem value="5">Level 5</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div>

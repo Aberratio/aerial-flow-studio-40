@@ -384,7 +384,6 @@ export type Database = {
           id: string
           image_url: string | null
           instructions: string | null
-          level: string | null
           name: string
           premium: boolean
           synonyms: string[] | null
@@ -402,7 +401,6 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
-          level?: string | null
           name: string
           premium?: boolean
           synonyms?: string[] | null
@@ -420,7 +418,6 @@ export type Database = {
           id?: string
           image_url?: string | null
           instructions?: string | null
-          level?: string | null
           name?: string
           premium?: boolean
           synonyms?: string[] | null
