@@ -421,15 +421,15 @@ const CreateChallengeModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
             <Plus className="w-5 h-5" />
             Create New Challenge
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
             <Label htmlFor="title">Challenge Title *</Label>
             <Input
@@ -526,7 +526,7 @@ const CreateChallengeModal = ({
             </select>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Start Date *</Label>
               <Popover>
@@ -534,7 +534,7 @@ const CreateChallengeModal = ({
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal text-sm",
                       !startDate && "text-muted-foreground"
                     )}
                   >
@@ -566,7 +566,7 @@ const CreateChallengeModal = ({
                   <Button
                     variant="outline"
                     className={cn(
-                      "w-full justify-start text-left font-normal",
+                      "w-full justify-start text-left font-normal text-sm",
                       !endDate && "text-muted-foreground"
                     )}
                   >
@@ -600,11 +600,11 @@ const CreateChallengeModal = ({
                 Challenge Achievements
               </Label>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-40 overflow-y-auto border rounded-lg p-4">
+            <div className="grid grid-cols-1 gap-2 max-h-32 sm:max-h-40 overflow-y-auto border rounded-lg p-3 sm:p-4">
               {achievements.map((achievement) => (
                 <div
                   key={achievement.id}
-                  className="flex items-center space-x-3"
+                  className="flex items-center space-x-2 sm:space-x-3"
                 >
                   <Checkbox
                     id={achievement.id}
@@ -613,10 +613,10 @@ const CreateChallengeModal = ({
                   />
                   <Label
                     htmlFor={achievement.id}
-                    className="flex-1 text-sm cursor-pointer"
+                    className="flex-1 text-xs sm:text-sm cursor-pointer"
                   >
                     <div className="flex items-center gap-2">
-                      <span>{achievement.icon}</span>
+                      <span className="text-sm">{achievement.icon}</span>
                       <div>
                         <div className="font-medium">{achievement.name}</div>
                         <div className="text-xs text-muted-foreground">
@@ -649,9 +649,9 @@ const CreateChallengeModal = ({
               </Button>
             </div>
 
-            <div className="space-y-3 max-h-60 overflow-y-auto">
+            <div className="space-y-3 max-h-48 sm:max-h-60 overflow-y-auto">
               {trainingDays.map((day, index) => (
-                <div key={index} className="border rounded-lg p-4 space-y-3">
+                <div key={index} className="border rounded-lg p-3 sm:p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-medium">
                       Day {index + 1}
@@ -666,7 +666,7 @@ const CreateChallengeModal = ({
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label className="text-xs">Date</Label>
                       <Popover>
@@ -778,29 +778,31 @@ const CreateChallengeModal = ({
             </div>
           </div>
 
-          <div className="flex justify-between pt-4">
-            <Button variant="outline" onClick={handleClose}>
+          <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
+            <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
               Cancel
             </Button>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 variant="outline"
                 onClick={saveDraft}
                 disabled={isLoading}
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <Save className="w-4 h-4" />
-                Save Draft
+                <span className="hidden sm:inline">Save Draft</span>
+                <span className="sm:hidden">Draft</span>
               </Button>
 
               <Button
                 onClick={publishChallenge}
                 disabled={isLoading}
-                className="flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
+                className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 w-full sm:w-auto"
               >
                 <Globe className="w-4 h-4" />
-                Publish Challenge
+                <span className="hidden sm:inline">Publish Challenge</span>
+                <span className="sm:hidden">Publish</span>
               </Button>
             </div>
           </div>
