@@ -300,19 +300,22 @@ const ChallengePreview = () => {
 
     setIsJoining(true);
     try {
+      const startDate = new Date();
+      
       const { data, error } = await supabase
         .from("challenge_participants")
         .insert({
           challenge_id: challengeId,
           user_id: user.id,
           status: "active",
-          user_started_at: new Date().toISOString(),
+          user_started_at: startDate.toISOString(),
         })
         .select()
         .single();
 
       if (error) throw error;
 
+      // Update state immediately
       setIsParticipant(true);
       setUserParticipant(data);
       setChallenge((prev) =>
@@ -324,17 +327,20 @@ const ChallengePreview = () => {
           : null
       );
 
+      // Generate calendar immediately after joining
+      console.log("Generating calendar for new participant...");
+      await generateCalendar(startDate);
+      console.log("Calendar generated successfully");
+
       toast({
         title: "Success",
-        description: "You've joined the challenge!",
+        description: "You've joined the challenge and your training schedule is ready!",
       });
 
-      // Generate calendar and redirect to first day
-      const startDate = new Date();
-      await generateCalendar(startDate);
-      
-      // Navigate to the challenge overview instead of staying on this page
-      navigate(`/challenges/${challengeId}`);
+      // Small delay to ensure calendar generation is complete
+      setTimeout(() => {
+        navigate(`/challenges/${challengeId}`);
+      }, 500);
       
     } catch (error) {
       console.error("Error joining challenge:", error);
