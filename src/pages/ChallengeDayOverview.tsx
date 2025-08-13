@@ -19,9 +19,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
+import { useChallengeAccess } from "@/hooks/useChallengeAccess";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useAchievementChecker } from "@/hooks/useAchievementChecker";
 import { AchievementEarnedModal } from "@/components/AchievementEarnedModal";
+import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
 
 interface Exercise {
   id: string;
@@ -59,6 +62,7 @@ interface Challenge {
   start_date: string;
   end_date: string;
   status: string;
+  premium?: boolean;
   created_by: string;
   type?: string;
 }
@@ -117,8 +121,11 @@ const ChallengeDayOverview = () => {
   const [showStartDateModal, setShowStartDateModal] = useState(false);
   const [restDayAction, setRestDayAction] = useState(false);
   const [failedDayAction, setFailedDayAction] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
+  const { hasPremiumAccess } = useSubscriptionStatus();
+  const { userPurchases, checkChallengeAccess } = useChallengeAccess();
 
   // Use the new refactored challenge calendar hook
   const {
@@ -166,6 +173,15 @@ const ChallengeDayOverview = () => {
 
       if (challengeError) throw challengeError;
       setChallenge(challengeData);
+
+      // Check if challenge is premium and user has access
+      if (challengeData.premium) {
+        const hasAccess = await checkChallengeAccess(challengeId!);
+        if (!hasAccess) {
+          setIsPurchaseModalOpen(true);
+          return;
+        }
+      }
 
       // Fetch user challenge calendar details
       const {
@@ -703,6 +719,23 @@ const ChallengeDayOverview = () => {
           </div>
         )}
       </div>
+
+      {/* Challenge Purchase Modal */}
+      {challenge && (
+        <ChallengePurchaseModal
+          isOpen={isPurchaseModalOpen}
+          onClose={() => navigate(`/challenges/${challengeId}`)}
+          challenge={{
+            id: challenge.id,
+            title: challenge.title,
+            description: challenge.description,
+          }}
+          onPurchaseSuccess={() => {
+            setIsPurchaseModalOpen(false);
+            fetchChallengeAndDay();
+          }}
+        />
+      )}
 
       <AchievementEarnedModal
         achievement={newAchievement}

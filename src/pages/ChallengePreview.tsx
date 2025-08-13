@@ -44,9 +44,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
+import { useChallengeAccess } from "@/hooks/useChallengeAccess";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { isDayLocked } from "@/lib/utils";
+import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
 import {
   format,
   parseISO,
@@ -69,6 +72,7 @@ interface Challenge {
   start_date: string;
   end_date: string;
   status: string;
+  premium?: boolean;
   image_url?: string;
   type: string;
   created_by?: string;
@@ -126,6 +130,8 @@ const ChallengePreview = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { canCreateChallenges } = useUserRole();
+  const { hasPremiumAccess } = useSubscriptionStatus();
+  const { userPurchases, refreshPurchases, checkChallengeAccess } = useChallengeAccess();
   const isTablet = useIsTablet();
   const isMobile = useIsMobile();
   const [challenge, setChallenge] = useState<Challenge | null>(null);
@@ -134,6 +140,7 @@ const ChallengePreview = () => {
   const [isParticipant, setIsParticipant] = useState(false);
   const [userParticipant, setUserParticipant] = useState<any>(null);
   const [isResettingProgress, setIsResettingProgress] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(
     new Date()
   );
@@ -279,6 +286,15 @@ const ChallengePreview = () => {
 
   const joinChallenge = async () => {
     if (!challengeId || !user?.id || isParticipant) return;
+
+    // Check if challenge is premium and user has access
+    if (challenge?.premium) {
+      const hasAccess = await checkChallengeAccess(challengeId);
+      if (!hasAccess) {
+        setIsPurchaseModalOpen(true);
+        return;
+      }
+    }
 
     setIsJoining(true);
     try {
@@ -1619,6 +1635,24 @@ const ChallengePreview = () => {
           </Card>
         )}
       </div>
+
+      {/* Challenge Purchase Modal */}
+      {challenge && (
+        <ChallengePurchaseModal
+          isOpen={isPurchaseModalOpen}
+          onClose={() => setIsPurchaseModalOpen(false)}
+          challenge={{
+            id: challenge.id,
+            title: challenge.title,
+            description: challenge.description,
+            image: challenge.image_url,
+          }}
+          onPurchaseSuccess={() => {
+            refreshPurchases();
+            setIsPurchaseModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };

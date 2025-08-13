@@ -215,9 +215,7 @@ const AppRoutes = () => {
         path="/challenges/:challengeId"
         element={
           <ProtectedRoute>
-            <PremiumRoute>
-              <ChallengePreview />
-            </PremiumRoute>
+            <ChallengePreview />
           </ProtectedRoute>
         }
       />
@@ -259,10 +257,7 @@ const AppRoutes = () => {
         path="/challenge/:challengeId/day/:dayId"
         element={
           <ProtectedRoute>
-            <PremiumRoute>
-              <ChallengeDayOverview />
-              {/* <ChallengeDayOverviewRefactored /> */}
-            </PremiumRoute>
+            <ChallengeDayOverview />
           </ProtectedRoute>
         }
       />
@@ -270,9 +265,7 @@ const AppRoutes = () => {
         path="/challenge/:challengeId/day/:dayId/timer"
         element={
           <ProtectedRoute>
-            <PremiumRoute>
-              <ChallengeDayTimer />
-            </PremiumRoute>
+            <ChallengeDayTimer />
           </ProtectedRoute>
         }
       />
@@ -280,9 +273,7 @@ const AppRoutes = () => {
         path="/training-session"
         element={
           <ProtectedRoute>
-            <PremiumRoute>
-              <TrainingSessionPageWrapper />
-            </PremiumRoute>
+            <TrainingSessionPageWrapper />
           </ProtectedRoute>
         }
       />
@@ -290,9 +281,7 @@ const AppRoutes = () => {
         path="/challenges/:challengeId/edit"
         element={
           <ProtectedRoute>
-            <PremiumRoute>
-              <EditChallenge />
-            </PremiumRoute>
+            <EditChallenge />
           </ProtectedRoute>
         }
       />
