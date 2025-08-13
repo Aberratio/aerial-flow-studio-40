@@ -40,6 +40,7 @@ interface Challenge {
   status: string;
   created_by: string;
   image_url?: string;
+  premium?: boolean;
   achievements?: Array<{
     id: string;
     name: string;
@@ -664,10 +665,78 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 <Button
                   className="flex-1"
                   variant="primary"
-                  onClick={() => {
+                  onClick={async () => {
                     if (challenge.status === "published") {
-                      onClose();
-                      navigate(`/challenges/${challenge.id}`);
+                      // Check if it's a "Join Challenge" action (no user participation yet)
+                      const challengeStatus = initialChallenge?.status;
+                      
+                      if (challengeStatus === "not-started" || challengeStatus === "available") {
+                        // User is joining the challenge - replicate the join logic from Challenges page
+                        if (!user) return;
+
+                        // Check if challenge is premium and user has access
+                        if (challenge.premium) {
+                          // This would need access to the checkChallengeAccess function
+                          // For now, we'll navigate and let the challenge page handle it
+                        }
+
+                        // Automatically start today
+                        const today = new Date();
+                        
+                        try {
+                          const { error, data } = await supabase
+                            .from("challenge_participants")
+                            .insert({
+                              challenge_id: challenge.id,
+                              user_id: user.id,
+                              status: "active",
+                              user_started_at: today.toISOString(),
+                            })
+                            .select();
+                          
+                          if (error) throw error;
+
+                          console.log("User joined challenge from modal, now generating calendar...");
+                          
+                          // Generate calendar after successful join
+                          try {
+                            const { error: calendarError } = await supabase.rpc("generate_user_challenge_calendar", {
+                              p_user_id: user.id,
+                              p_challenge_id: challenge.id,
+                              p_start_date: today.toISOString().split("T")[0],
+                            });
+
+                            if (calendarError) {
+                              console.error("Error generating calendar:", calendarError);
+                            } else {
+                              console.log("Calendar generated successfully");
+                            }
+                          } catch (calendarGenError) {
+                            console.error("Error in calendar generation:", calendarGenError);
+                          }
+
+                          // Small delay to ensure calendar generation completes
+                          await new Promise(resolve => setTimeout(resolve, 500));
+
+                          onClose();
+                          navigate(`/challenges/${challenge.id}`);
+                          toast({
+                            title: "Success!",
+                            description: "You've joined the challenge. Good luck!",
+                          });
+                        } catch (error) {
+                          console.error("Error joining challenge:", error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to join challenge. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
+                      } else {
+                        // Just navigate for other statuses
+                        onClose();
+                        navigate(`/challenges/${challenge.id}`);
+                      }
                     }
                   }}
                   disabled={challenge.status !== "published"}

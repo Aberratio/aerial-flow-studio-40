@@ -351,6 +351,28 @@ const Challenges = () => {
       
       if (error) throw error;
 
+      console.log("User joined challenge, now generating calendar...");
+      
+      // Generate calendar after successful join
+      try {
+        const { error: calendarError } = await supabase.rpc("generate_user_challenge_calendar", {
+          p_user_id: user.id,
+          p_challenge_id: challengeId,
+          p_start_date: today.toISOString().split("T")[0],
+        });
+
+        if (calendarError) {
+          console.error("Error generating calendar:", calendarError);
+        } else {
+          console.log("Calendar generated successfully");
+        }
+      } catch (calendarGenError) {
+        console.error("Error in calendar generation:", calendarGenError);
+      }
+
+      // Small delay to ensure calendar generation completes
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Navigate to the challenge day overview using the challenge_id
       if (data && data.length > 0) {
         navigate(`/challenges/${data[0].challenge_id}`);
@@ -589,18 +611,22 @@ const Challenges = () => {
                           {challenge.difficulty}
                         </Badge>
                       </div>
-                      {/* Progress Bar (only show for active challenges) */}
-                      {challenge.status === "active" && challenge.userProgress !== undefined && (
-                        <div className="mb-4">
-                          <div className="flex justify-between text-sm mb-2">
-                            <span className="text-white">Progress</span>
-                            <span className="text-muted-foreground">
-                              {challenge.userProgress}% complete
-                            </span>
-                          </div>
-                          <Progress value={challenge.userProgress} className="h-2" />
+                      {/* Progress Bar */}
+                      <div className="mb-4">
+                        <div className="flex justify-between text-sm mb-2">
+                          <span className="text-white">Progress</span>
+                          <span className="text-muted-foreground">
+                            {challenge.status === "active" && challenge.userProgress !== undefined 
+                              ? `${challenge.userProgress}% complete`
+                              : "0% complete"
+                            }
+                          </span>
                         </div>
-                      )}
+                        <Progress 
+                          value={challenge.status === "active" && challenge.userProgress !== undefined ? challenge.userProgress : 0} 
+                          className="h-2" 
+                        />
+                      </div>
 
                       {/* Action Buttons */}
                       <div className="flex gap-2">
