@@ -576,7 +576,7 @@ const Challenges = () => {
                   <Card
                     key={challenge.id}
                     className={`glass-effect border-white/10 hover-lift overflow-hidden cursor-pointer relative ${
-                      isPremiumLocked ? 'opacity-60' : ''
+                      isPremiumLocked ? 'opacity-70' : ''
                     }`}
                     onClick={() => {
                       if (isPremiumLocked) {
@@ -587,13 +587,13 @@ const Challenges = () => {
                       }
                     }}
                   >
-                    {/* Premium Overlay */}
+                    {/* Premium Overlay - only on image area */}
                     {isPremiumLocked && (
-                      <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                        <div className="text-center">
-                          <Crown className="w-12 h-12 text-yellow-400 mx-auto mb-2" />
-                          <p className="text-white font-semibold text-lg">Premium Challenge</p>
-                          <p className="text-gray-300 text-sm">Unlock to access</p>
+                      <div className="absolute top-0 left-0 right-0 h-48 bg-black/20 backdrop-blur-[0.5px] z-10 flex items-center justify-center">
+                        <div className="text-center bg-black/60 backdrop-blur-sm rounded-lg p-4 border border-yellow-400/30">
+                          <Crown className="w-10 h-10 text-yellow-400 mx-auto mb-2" />
+                          <p className="text-white font-semibold text-base">Premium Challenge</p>
+                          <p className="text-yellow-200 text-sm">Click to unlock</p>
                         </div>
                       </div>
                     )}
@@ -602,50 +602,44 @@ const Challenges = () => {
                       <img
                         src={challenge.image}
                         alt={challenge.title}
-                        className={`w-full h-full object-cover ${isPremiumLocked ? 'grayscale' : ''}`}
+                        className={`w-full h-full object-cover ${isPremiumLocked ? 'grayscale brightness-75' : ''}`}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                       
                       {/* Top badges */}
                       <div className="absolute top-3 right-3 flex flex-col gap-1">
                         {challenge.premium && (
-                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
+                          <Badge className="bg-yellow-500/90 text-yellow-900 border-yellow-400 text-xs font-semibold">
                             Premium
                           </Badge>
                         )}
-                        <Badge className={getStatusColor(challenge.status) + " text-xs"}>
+                        <Badge className={getStatusColor(challenge.status) + " text-xs font-medium"}>
                           {challenge.status.replace("-", " ")}
                         </Badge>
                       </div>
-                      
-                      {/* Bottom info overlay */}
-                      <div className="absolute bottom-3 left-3 right-3">
-                        <div className="flex items-end justify-between">
-                          <div>
-                            <h3 className="text-white font-bold text-lg mb-1 line-clamp-1">
-                              {challenge.title}
-                            </h3>
-                            <div className="flex items-center gap-3 text-xs text-white/80">
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {challenge.duration} days
-                              </div>
-                              {challenge.level && (
-                                <div className="flex items-center gap-1">
-                                  <Trophy className="w-3 h-3" />
-                                  Level {challenge.level}
-                                </div>
-                              )}
-                              <Badge className={getDifficultyColor(challenge.difficulty) + " text-xs px-2 py-0.5"}>
-                                {challenge.difficulty}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
                     </div>
 
-                    <CardContent className="p-4">
+                    {/* Challenge Info - Below image */}
+                    <div className="p-4 pb-3">
+                      <h3 className="text-white font-bold text-xl mb-3 line-clamp-2">
+                        {challenge.title}
+                      </h3>
+                      
+                      <div className="flex items-center gap-4 text-sm text-white/90 mb-4">
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-4 h-4" />
+                          <span className="font-medium">{challenge.duration} days</span>
+                        </div>
+                        {challenge.level && (
+                          <div className="flex items-center gap-1.5">
+                            <Trophy className="w-4 h-4" />
+                            <span className="font-medium">Level {challenge.level}</span>
+                          </div>
+                        )}
+                        <Badge className={getDifficultyColor(challenge.difficulty) + " text-xs font-medium px-2 py-1"}>
+                          {challenge.difficulty}
+                        </Badge>
+                      </div>
                       {/* Progress Bar (only show for active challenges) */}
                       {challenge.status === "active" && challenge.userProgress !== undefined && (
                         <div className="mb-4">
@@ -703,7 +697,7 @@ const Challenges = () => {
                             : getButtonText(challenge.status)}
                         </Button>
                       </div>
-                    </CardContent>
+                    </div>
                   </Card>
                 );
                 })
