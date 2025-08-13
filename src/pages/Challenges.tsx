@@ -5,6 +5,7 @@ import {
   Users,
   Clock,
   Plus,
+  Crown,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,11 +75,6 @@ const Challenges = () => {
       // If not admin, only show published challenges
       if (!isAdmin) {
         challengeQuery = challengeQuery.eq("status", "published");
-      }
-
-      // Filter out premium challenges for non-premium users
-      if (!hasPremiumAccess && !isAdmin) {
-        challengeQuery = challengeQuery.eq("premium", false);
       }
 
       const { data: allChallenges, error } = await challengeQuery;
@@ -573,17 +569,40 @@ const Challenges = () => {
                   </p>
                 </div>
               ) : (
-                challenges.map((challenge) => (
+                challenges.map((challenge) => {
+                  const isPremiumLocked = challenge.premium && !hasPremiumAccess && !userPurchases[challenge.id];
+                  
+                  return (
                   <Card
                     key={challenge.id}
-                    className="glass-effect border-white/10 hover-lift overflow-hidden cursor-pointer"
-                    onClick={() => openChallengeModal(challenge)}
+                    className={`glass-effect border-white/10 hover-lift overflow-hidden cursor-pointer relative ${
+                      isPremiumLocked ? 'opacity-60' : ''
+                    }`}
+                    onClick={() => {
+                      if (isPremiumLocked) {
+                        setChallengeToPurchase(challenge);
+                        setIsPurchaseModalOpen(true);
+                      } else {
+                        openChallengeModal(challenge);
+                      }
+                    }}
                   >
+                    {/* Premium Overlay */}
+                    {isPremiumLocked && (
+                      <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px] z-10 flex items-center justify-center">
+                        <div className="text-center">
+                          <Crown className="w-12 h-12 text-yellow-400 mx-auto mb-2" />
+                          <p className="text-white font-semibold text-lg">Premium Challenge</p>
+                          <p className="text-gray-300 text-sm">Unlock to access</p>
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="relative h-48">
                       <img
                         src={challenge.image}
                         alt={challenge.title}
-                        className="w-full h-full object-cover"
+                        className={`w-full h-full object-cover ${isPremiumLocked ? 'grayscale' : ''}`}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       <div className="absolute top-4 right-4 flex flex-col gap-2">
@@ -591,7 +610,7 @@ const Challenges = () => {
                           {challenge.status.replace("-", " ")}
                         </Badge>
                         {challenge.premium && (
-                          <Badge className="bg-gray-500 text-white border-gray-500/30 font-semibold shadow-lg">
+                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 font-semibold shadow-lg">
                             Premium 👑
                           </Badge>
                         )}
@@ -676,10 +695,15 @@ const Challenges = () => {
                             className="flex-1 border-white/20 text-white hover:bg-white/10"
                             onClick={(e) => {
                               e.stopPropagation();
-                              openChallengeModal(challenge);
+                              if (isPremiumLocked) {
+                                setChallengeToPurchase(challenge);
+                                setIsPurchaseModalOpen(true);
+                              } else {
+                                openChallengeModal(challenge);
+                              }
                             }}
                           >
-                            Preview
+                            {isPremiumLocked ? "Unlock" : "Preview"}
                           </Button>
                           <Button
                             variant="primary"
@@ -701,7 +725,7 @@ const Challenges = () => {
                               }
                             }}
                           >
-                            {challenge.premium && !(hasPremiumAccess || userPurchases[challenge.id])
+                            {isPremiumLocked
                               ? "Unlock Challenge"
                               : getButtonText(challenge.status)}
                           </Button>
@@ -712,15 +736,21 @@ const Challenges = () => {
                           className="w-full"
                           onClick={(e) => {
                             e.stopPropagation();
-                            openChallengeModal(challenge);
+                            if (isPremiumLocked) {
+                              setChallengeToPurchase(challenge);
+                              setIsPurchaseModalOpen(true);
+                            } else {
+                              openChallengeModal(challenge);
+                            }
                           }}
                         >
-                          {getButtonText(challenge.status)}
+                          {isPremiumLocked ? "Unlock Challenge" : getButtonText(challenge.status)}
                         </Button>
                       )}
                     </CardContent>
                   </Card>
-                ))
+                );
+                })
               )}
             </div>
           </TabsContent>
