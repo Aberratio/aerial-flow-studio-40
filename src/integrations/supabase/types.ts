@@ -187,6 +187,53 @@ export type Database = {
           },
         ]
       }
+      challenge_redemption_codes: {
+        Row: {
+          challenge_id: string | null
+          code: string
+          created_at: string | null
+          created_by: string | null
+          current_uses: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          challenge_id?: string | null
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          challenge_id?: string | null
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_redemption_codes_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_training_days: {
         Row: {
           challenge_id: string
@@ -1393,6 +1440,56 @@ export type Database = {
           },
         ]
       }
+      user_challenge_purchases: {
+        Row: {
+          challenge_id: string
+          created_at: string | null
+          currency: string | null
+          id: string
+          payment_amount: number | null
+          purchase_type: string
+          purchased_at: string | null
+          redemption_code: string | null
+          stripe_session_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_amount?: number | null
+          purchase_type: string
+          purchased_at?: string | null
+          redemption_code?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_amount?: number | null
+          purchase_type?: string
+          purchased_at?: string | null
+          redemption_code?: string | null
+          stripe_session_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_challenge_purchases_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_follows: {
         Row: {
           created_at: string | null
@@ -1611,6 +1708,10 @@ export type Database = {
       update_user_login_tracking: {
         Args: { user_id: string }
         Returns: undefined
+      }
+      user_has_challenge_access: {
+        Args: { p_user_id: string; p_challenge_id: string }
+        Returns: boolean
       }
     }
     Enums: {

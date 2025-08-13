@@ -52,5 +52,9 @@ enable_confirmations = false
 enabled = true
 ip_version = "ipv4"
 
+# Edge function configurations
+[functions.handle-stripe-webhook]
+verify_jwt = false
+
 [analytics]
 enabled = false

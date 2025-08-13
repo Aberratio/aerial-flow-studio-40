@@ -14,8 +14,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import ChallengePreviewModal from "@/components/ChallengePreviewModal";
 import CreateChallengeModal from "@/components/CreateChallengeModal";
+import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
+import { useChallengeAccess } from "@/hooks/useChallengeAccess";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -27,6 +29,8 @@ const Challenges = () => {
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [challengeToPurchase, setChallengeToPurchase] = useState(null);
   const [challenges, setChallenges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
@@ -48,6 +52,7 @@ const Challenges = () => {
     isLoading: roleLoading,
   } = useUserRole();
   const { hasPremiumAccess } = useSubscriptionStatus();
+  const { userPurchases, refreshPurchases, checkChallengeAccess } = useChallengeAccess();
   const { user } = useAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
@@ -323,13 +328,14 @@ const Challenges = () => {
     }
 
     // Check if challenge is premium and user has access
-    if (challenge.premium && !hasPremiumAccess) {
-      toast({
-        title: "Premium Required",
-        description: "This challenge requires a premium subscription to join.",
-        variant: "destructive",
-      });
-      return;
+    if (challenge.premium) {
+      const hasAccess = await checkChallengeAccess(challengeId);
+      if (!hasAccess) {
+        // Show purchase modal instead of toast
+        setChallengeToPurchase(challenge);
+        setIsPurchaseModalOpen(true);
+        return;
+      }
     }
 
     setSelectedChallenge(challenge);
@@ -673,9 +679,16 @@ const Challenges = () => {
                           <Button
                             variant="primary"
                             className="flex-1"
-                            disabled={challenge.premium && !hasPremiumAccess}
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               e.stopPropagation();
+                              if (challenge.premium) {
+                                const hasAccess = await checkChallengeAccess(challenge.id);
+                                if (!hasAccess) {
+                                  setChallengeToPurchase(challenge);
+                                  setIsPurchaseModalOpen(true);
+                                  return;
+                                }
+                              }
                               if (challenge.status === "active") {
                                 navigate(`/challenges/${challenge.id}`);
                               } else {
@@ -683,8 +696,8 @@ const Challenges = () => {
                               }
                             }}
                           >
-                            {challenge.premium && !hasPremiumAccess
-                              ? "Premium Required"
+                            {challenge.premium && !(hasPremiumAccess || userPurchases[challenge.id])
+                              ? "Unlock Challenge"
                               : getButtonText(challenge.status)}
                           </Button>
                         </div>
@@ -723,6 +736,22 @@ const Challenges = () => {
         onClose={() => setIsCreateModalOpen(false)}
         onChallengeCreated={fetchChallenges}
       />
+
+      {/* Challenge Purchase Modal */}
+      {challengeToPurchase && (
+        <ChallengePurchaseModal
+          isOpen={isPurchaseModalOpen}
+          onClose={() => {
+            setIsPurchaseModalOpen(false);
+            setChallengeToPurchase(null);
+          }}
+          challenge={challengeToPurchase}
+          onPurchaseSuccess={() => {
+            refreshPurchases();
+            fetchChallenges();
+          }}
+        />
+      )}
 
       {/* Start Date Picker Modal */}
       {showStartDatePicker && (
