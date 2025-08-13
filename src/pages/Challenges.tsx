@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  Calendar as CalendarIcon,
   Trophy,
   Users,
   Clock,
@@ -22,7 +21,6 @@ import { useChallengeAccess } from "@/hooks/useChallengeAccess";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { format, subMonths, subWeeks } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Challenges = () => {
@@ -35,10 +33,6 @@ const Challenges = () => {
   const [challenges, setChallenges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("all");
-  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-  const [selectedStartDate, setSelectedStartDate] = useState<
-    Date | undefined
-  >();
   const [stats, setStats] = useState({
     activeChallenges: 0,
     completedChallenges: 0,
@@ -339,31 +333,20 @@ const Challenges = () => {
       }
     }
 
-    setSelectedChallenge(challenge);
-    // allow the user to set the start challenge date
-    setShowStartDatePicker(true);
-  };
-
-  const addChallengeParticipant = async () => {
-    if (!selectedChallenge) {
-      toast({
-        title: "Error",
-        description: "No challenge selected. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    // Automatically start today
+    const today = new Date();
+    
     try {
       const { error, data } = await supabase
         .from("challenge_participants")
         .insert({
-          challenge_id: selectedChallenge.id,
+          challenge_id: challengeId,
           user_id: user.id,
           status: "active",
-          user_started_at: selectedStartDate?.toISOString(),
+          user_started_at: today.toISOString(),
         })
         .select();
+      
       if (error) throw error;
 
       // Navigate to the challenge day overview using the challenge_id
@@ -389,6 +372,7 @@ const Challenges = () => {
       });
     }
   };
+
 
   const closeChallengeModal = () => {
     setIsModalOpen(false);
@@ -441,43 +425,6 @@ const Challenges = () => {
     }
   };
 
-  const handleStartDateConfirm = async () => {
-    if (selectedStartDate) {
-      await addChallengeParticipant();
-      setShowStartDatePicker(false);
-      setSelectedStartDate(undefined);
-    } else {
-      toast({
-        title: "Error",
-        description: "Please select a start date.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Mobile date options for quick selection
-  const getMobileDateOptions = () => {
-    const today = new Date();
-    const oneMonthAgo = subMonths(today, 1);
-
-    return [
-      {
-        label: "Today",
-        value: today,
-        description: "Start your challenge today",
-      },
-      {
-        label: "1 week ago",
-        value: subWeeks(today, 1),
-        description: "For testing purposes",
-      },
-      {
-        label: "1 month ago",
-        value: oneMonthAgo,
-        description: "For testing purposes",
-      },
-    ];
-  };
 
   return (
     <div className="min-h-screen p-4 sm:p-6">
@@ -738,82 +685,6 @@ const Challenges = () => {
         />
       )}
 
-      {/* Start Date Picker Modal */}
-      {showStartDatePicker && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <Card className="glass-effect border-white/10 max-w-md w-full">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center text-lg sm:text-xl">
-                <CalendarIcon className="w-5 h-5 mr-2" />
-                Choose Challenge Start Date
-              </CardTitle>
-              <p className="text-muted-foreground text-sm sm:text-base">
-                Select when you want to start this challenge (up to 1 month ago)
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-3">
-                  <div className="text-sm text-muted-foreground mb-3">
-                    Choose when to start your challenge:
-                  </div>
-                  {getMobileDateOptions().map((option, index) => (
-                    <Button
-                      key={index}
-                      variant={
-                        selectedStartDate?.toDateString() ===
-                        option.value.toDateString()
-                          ? "primary"
-                          : "outline"
-                      }
-                      onClick={() => setSelectedStartDate(option.value)}
-                      className={`w-full p-4 h-auto flex flex-col items-start justify-start text-left ${
-                        selectedStartDate?.toDateString() ===
-                        option.value.toDateString()
-                          ? "border-primary bg-primary/10"
-                          : "border-white/20 bg-black/20 hover:bg-white/10"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <span className="font-medium text-base">
-                          {option.label}
-                        </span>
-                        <span className="text-xs opacity-70">
-                          {format(option.value, "MMM d")}
-                        </span>
-                      </div>
-                      <span className="text-xs text-muted-foreground mt-1">
-                        {option.description}
-                      </span>
-                    </Button>
-                  ))}
-                </div>
-
-                <div className="flex space-x-2 pt-2">
-                  <Button
-                    variant="primary"
-                    onClick={handleStartDateConfirm}
-                    disabled={!selectedStartDate}
-                    className="flex-1"
-                  >
-                    {isMobile ? "Start Challenge" : "Confirm & Start Challenge"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setShowStartDatePicker(false);
-                      setSelectedStartDate(undefined);
-                    }}
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 };
