@@ -328,6 +328,14 @@ const ChallengePreview = () => {
         title: "Success",
         description: "You've joined the challenge!",
       });
+
+      // Generate calendar and redirect to first day
+      const startDate = new Date();
+      await generateCalendar(startDate);
+      
+      // Navigate to the challenge overview instead of staying on this page
+      navigate(`/challenges/${challengeId}`);
+      
     } catch (error) {
       console.error("Error joining challenge:", error);
       toast({
