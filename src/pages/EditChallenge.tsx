@@ -51,6 +51,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import ExerciseManagement from "@/components/ExerciseManagement";
+import RedemptionCodeManagement from "@/components/RedemptionCodeManagement";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 
 interface Achievement {
@@ -1225,6 +1226,14 @@ const EditChallenge = () => {
                 )}
               </div>
             </div>
+
+            {/* Redemption Codes Section - only show for premium challenges */}
+            {isPremium && challengeId && (
+              <RedemptionCodeManagement 
+                challengeId={challengeId}
+                challengeTitle={title}
+              />
+            )}
 
             <div className="flex justify-between pt-4">
               <div className="flex gap-2">
