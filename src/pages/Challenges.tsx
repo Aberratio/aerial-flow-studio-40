@@ -76,6 +76,11 @@ const Challenges = () => {
         challengeQuery = challengeQuery.eq("status", "published");
       }
 
+      // Filter out premium challenges for non-premium users
+      if (!hasPremiumAccess && !isAdmin) {
+        challengeQuery = challengeQuery.eq("premium", false);
+      }
+
       const { data: allChallenges, error } = await challengeQuery;
       if (error) throw error;
 

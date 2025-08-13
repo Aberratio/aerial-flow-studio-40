@@ -80,6 +80,10 @@ const Navigation: React.FC<NavigationProps> = ({
     icon: BookOpen,
     label: 'Library'
   }, {
+    path: '/challenges',
+    icon: Trophy,
+    label: 'Challenges'
+  }, {
     path: '/aerial-journey',
     icon: Trophy,
     label: 'Aerial Journey'
@@ -100,11 +104,6 @@ const Navigation: React.FC<NavigationProps> = ({
     label: 'Inbox'
   }];
   const premiumNavItems = [{
-    path: '/challenges',
-    icon: Trophy,
-    label: 'Challenges',
-    premium: false // Now accessible to all users
-  }, {
     path: '/training',
     icon: Dumbbell,
     label: 'Training',
