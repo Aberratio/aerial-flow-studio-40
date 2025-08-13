@@ -7,6 +7,7 @@ import {
   ChevronRight,
   X,
   Play,
+  ZoomIn,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ChallengeDetailsModal } from "@/components/ChallengeDetailsModal";
+import ExerciseImageModal from "@/components/ExerciseImageModal";
 import RetakeChallengeModal from "@/components/RetakeChallengeModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -98,6 +100,13 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRetakeModalOpen, setIsRetakeModalOpen] = useState(false);
+  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
+  const [selectedExercise, setSelectedExercise] = useState<{
+    name: string;
+    image_url?: string;
+    difficulty_level: string;
+    instructions?: string;
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRetaking, setIsRetaking] = useState(false);
   const { user } = useAuth();
@@ -206,7 +215,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   const getUniqueExercisesWithImages = () => {
     const exerciseMap = new Map<
       string,
-      { name: string; image_url?: string; difficulty_level: string }
+      { name: string; image_url?: string; difficulty_level: string; instructions?: string }
     >();
 
     challenge.training_days?.forEach((day) => {
@@ -217,6 +226,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               name: exercise.figure.name,
               image_url: exercise.figure.image_url,
               difficulty_level: exercise.figure.difficulty_level,
+              instructions: exercise.figure.instructions,
             });
           }
         });
@@ -336,6 +346,16 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     } finally {
       setIsRetaking(false);
     }
+  };
+
+  const handleExerciseClick = (exercise: {
+    name: string;
+    image_url?: string;
+    difficulty_level: string;
+    instructions?: string;
+  }) => {
+    setSelectedExercise(exercise);
+    setIsExerciseModalOpen(true);
   };
 
   if (isLoading) {
@@ -550,29 +570,39 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                           {exercises.map((exercise, index) => (
                             <div
                               key={index}
-                              className="flex items-center gap-2 p-2 rounded-lg glass-effect border-white/10"
+                              className="relative group cursor-pointer"
+                              onClick={() => handleExerciseClick(exercise)}
                             >
-                              {exercise.image_url ? (
-                                <img
-                                  src={exercise.image_url}
-                                  alt={exercise.name}
-                                  className="w-10 h-10 rounded-md object-cover"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded-md bg-purple-500/20 flex items-center justify-center">
-                                  <Trophy className="w-5 h-5 text-purple-400" />
+                              <div className="flex items-center gap-2 p-2 rounded-lg glass-effect border-white/10 hover:border-white/20 transition-all">
+                                <div className="relative">
+                                  {exercise.image_url ? (
+                                    <>
+                                      <img
+                                        src={exercise.image_url}
+                                        alt={exercise.name}
+                                        className="w-10 h-10 rounded-md object-cover"
+                                      />
+                                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
+                                        <ZoomIn className="w-4 h-4 text-white" />
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <div className="w-10 h-10 rounded-md bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                                      <Trophy className="w-5 h-5 text-purple-400" />
+                                    </div>
+                                  )}
                                 </div>
-                              )}
-                              <div className="flex-1 min-w-0">
-                                <div className="text-sm font-medium text-white truncate">
-                                  {exercise.name}
+                                <div className="flex-1 min-w-0">
+                                  <div className="text-sm font-medium text-white truncate group-hover:text-purple-300 transition-colors">
+                                    {exercise.name}
+                                  </div>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs bg-white/10 text-white/70"
+                                  >
+                                    {exercise.difficulty_level}
+                                  </Badge>
                                 </div>
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs bg-white/10 text-white/70"
-                                >
-                                  {exercise.difficulty_level}
-                                </Badge>
                               </div>
                             </div>
                           ))}
@@ -698,6 +728,16 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
         onConfirm={handleRetakeChallenge}
         challengeTitle={challenge?.title || ""}
         isLoading={isRetaking}
+      />
+
+      {/* Exercise Image Modal */}
+      <ExerciseImageModal
+        exercise={selectedExercise}
+        isOpen={isExerciseModalOpen}
+        onClose={() => {
+          setIsExerciseModalOpen(false);
+          setSelectedExercise(null);
+        }}
       />
     </Dialog>
   );
