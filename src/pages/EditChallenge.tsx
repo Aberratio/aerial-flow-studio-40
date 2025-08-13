@@ -150,6 +150,8 @@ const EditChallenge = () => {
   const [type, setType] = useState("manual");
   const [isPublished, setIsPublished] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
+  const [priceUsd, setPriceUsd] = useState(999); // $9.99 in cents
+  const [pricePln, setPricePln] = useState(3999); // 39.99 PLN in cents
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>(
     []
   );
@@ -212,6 +214,8 @@ const EditChallenge = () => {
       setImageUrl(challengeData.image_url || "");
       setIsPublished(challengeData.status === "published");
       setIsPremium(challengeData.premium || false);
+      setPriceUsd(challengeData.price_usd || 999);
+      setPricePln(challengeData.price_pln || 3999);
 
       // Set selected achievements
       setSelectedAchievements(
@@ -354,6 +358,8 @@ const EditChallenge = () => {
           image_url: uploadedImageUrl || null,
           status: isPublished ? "published" : "draft",
           premium: isPremium,
+          price_usd: isPremium ? priceUsd : null,
+          price_pln: isPremium ? pricePln : null,
         })
         .eq("id", challengeId);
 
@@ -861,6 +867,40 @@ const EditChallenge = () => {
                     {isPremium ? "Premium" : "Free"}
                   </Badge>
                 </div>
+
+                {/* Price Settings - only show when premium is enabled */}
+                {isPremium && (
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="price-usd">Price USD (cents)</Label>
+                      <Input
+                        id="price-usd"
+                        type="number"
+                        value={priceUsd}
+                        onChange={(e) => setPriceUsd(Number(e.target.value))}
+                        placeholder="999"
+                        className="bg-white/5 border-white/20"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        ${(priceUsd / 100).toFixed(2)} USD
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="price-pln">Price PLN (cents)</Label>
+                      <Input
+                        id="price-pln"
+                        type="number"
+                        value={pricePln}
+                        onChange={(e) => setPricePln(Number(e.target.value))}
+                        placeholder="3999"
+                        className="bg-white/5 border-white/20"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        {(pricePln / 100).toFixed(2)} PLN
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

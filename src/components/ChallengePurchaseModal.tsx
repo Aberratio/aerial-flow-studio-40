@@ -36,6 +36,8 @@ interface ChallengePurchaseModalProps {
     title: string;
     description?: string;
     image?: string;
+    price_usd?: number;
+    price_pln?: number;
   };
   onPurchaseSuccess?: () => void;
 }
@@ -53,8 +55,14 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
   const { toast } = useToast();
 
   const prices = {
-    usd: { amount: "9.99", symbol: "$" },
-    pln: { amount: "39.99", symbol: "zł" },
+    usd: { 
+      amount: ((challenge.price_usd || 999) / 100).toFixed(2), 
+      symbol: "$" 
+    },
+    pln: { 
+      amount: ((challenge.price_pln || 3999) / 100).toFixed(2), 
+      symbol: "zł" 
+    },
   };
 
   const handlePurchase = async () => {

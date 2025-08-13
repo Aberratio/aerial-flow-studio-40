@@ -34,7 +34,7 @@ serve(async (req) => {
     // Get challenge details
     const { data: challenge, error: challengeError } = await supabaseClient
       .from("challenges")
-      .select("title, premium")
+      .select("title, premium, price_usd, price_pln")
       .eq("id", challengeId)
       .single();
 
@@ -69,10 +69,10 @@ serve(async (req) => {
       customerId = customers.data[0].id;
     }
 
-    // Set price based on currency
+    // Use challenge-specific prices or fallback to defaults
     const prices = {
-      usd: 999, // $9.99
-      pln: 3999, // 39.99 PLN
+      usd: challenge.price_usd || 999, // Default $9.99
+      pln: challenge.price_pln || 3999, // Default 39.99 PLN
     };
 
     const amount = prices[currency as keyof typeof prices] || prices.usd;

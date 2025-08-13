@@ -37,6 +37,7 @@ import FigureOfTheDay from "@/pages/FigureOfTheDay";
 
 import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
+import RedemptionCodeManager from "@/pages/RedemptionCodeManager";
 import PremiumRoute from "@/components/PremiumRoute";
 
 
@@ -314,6 +315,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <LandingPageManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/redemption-codes"
+        element={
+          <ProtectedRoute>
+            <RedemptionCodeManager />
           </ProtectedRoute>
         }
       />

@@ -73,6 +73,8 @@ interface Challenge {
   end_date: string;
   status: string;
   premium?: boolean;
+  price_usd?: number;
+  price_pln?: number;
   image_url?: string;
   type: string;
   created_by?: string;
@@ -1646,6 +1648,8 @@ const ChallengePreview = () => {
             title: challenge.title,
             description: challenge.description,
             image: challenge.image_url,
+            price_usd: challenge.price_usd,
+            price_pln: challenge.price_pln,
           }}
           onPurchaseSuccess={() => {
             refreshPurchases();

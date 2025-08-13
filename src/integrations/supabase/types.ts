@@ -286,6 +286,8 @@ export type Database = {
           image_url: string | null
           level: number | null
           premium: boolean
+          price_pln: number | null
+          price_usd: number | null
           start_date: string
           status: string
           title: string
@@ -302,6 +304,8 @@ export type Database = {
           image_url?: string | null
           level?: number | null
           premium?: boolean
+          price_pln?: number | null
+          price_usd?: number | null
           start_date: string
           status?: string
           title: string
@@ -318,6 +322,8 @@ export type Database = {
           image_url?: string | null
           level?: number | null
           premium?: boolean
+          price_pln?: number | null
+          price_usd?: number | null
           start_date?: string
           status?: string
           title?: string
