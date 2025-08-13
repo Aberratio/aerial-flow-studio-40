@@ -173,6 +173,8 @@ const Challenges = () => {
             status,
             created_by: challenge.created_by,
             premium: challenge.premium || false,
+            price_usd: challenge.price_usd,
+            price_pln: challenge.price_pln,
             duration: 28,
             participants: participantCounts[challenge.id] || 0,
             difficulty: challenge.difficulty_level

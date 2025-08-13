@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Globe, LayoutDashboard } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Globe, LayoutDashboard, Plane } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -85,7 +85,7 @@ const Navigation: React.FC<NavigationProps> = ({
     label: 'Challenges'
   }, {
     path: '/aerial-journey',
-    icon: Trophy,
+    icon: Plane,
     label: 'Aerial Journey'
   }];
 
