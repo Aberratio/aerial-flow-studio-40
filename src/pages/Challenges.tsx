@@ -605,135 +605,66 @@ const Challenges = () => {
                         className={`w-full h-full object-cover ${isPremiumLocked ? 'grayscale' : ''}`}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      <div className="absolute top-4 right-4 flex flex-col gap-2">
-                        <Badge className={getStatusColor(challenge.status)}>
-                          {challenge.status.replace("-", " ")}
-                        </Badge>
+                      
+                      {/* Top badges */}
+                      <div className="absolute top-3 right-3 flex flex-col gap-1">
                         {challenge.premium && (
-                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 font-semibold shadow-lg">
-                            Premium 👑
+                          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30 text-xs">
+                            Premium
                           </Badge>
                         )}
-                      </div>
-                      <div className="absolute bottom-4 left-4">
-                        <Badge
-                          variant="outline"
-                          className="border-white/30 text-white/90 mb-2"
-                        >
-                          {challenge.category}
+                        <Badge className={getStatusColor(challenge.status) + " text-xs"}>
+                          {challenge.status.replace("-", " ")}
                         </Badge>
+                      </div>
+                      
+                      {/* Bottom info overlay */}
+                      <div className="absolute bottom-3 left-3 right-3">
+                        <div className="flex items-end justify-between">
+                          <div>
+                            <h3 className="text-white font-bold text-lg mb-1 line-clamp-1">
+                              {challenge.title}
+                            </h3>
+                            <div className="flex items-center gap-3 text-xs text-white/80">
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3 h-3" />
+                                {challenge.duration} days
+                              </div>
+                              {challenge.level && (
+                                <div className="flex items-center gap-1">
+                                  <Trophy className="w-3 h-3" />
+                                  Level {challenge.level}
+                                </div>
+                              )}
+                              <Badge className={getDifficultyColor(challenge.difficulty) + " text-xs px-2 py-0.5"}>
+                                {challenge.difficulty}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <CardTitle className="text-white text-xl mb-2">
-                            {challenge.title}
-                          </CardTitle>
-                          <p className="text-muted-foreground text-sm">
-                            {challenge.description}
-                          </p>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                      {/* Progress Bar (only show for in-progress challenges) */}
-                      {challenge.status === "active" &&
-                        challenge.userProgress !== undefined && (
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span className="text-white">Progress</span>
-                              <span className="text-muted-foreground">
-                                {challenge.userProgress}% complete
-                              </span>
-                            </div>
-                            <Progress
-                              value={challenge.userProgress}
-                              className="h-2"
-                            />
+                    <CardContent className="p-4">
+                      {/* Progress Bar (only show for active challenges) */}
+                      {challenge.status === "active" && challenge.userProgress !== undefined && (
+                        <div className="mb-4">
+                          <div className="flex justify-between text-sm mb-2">
+                            <span className="text-white">Progress</span>
+                            <span className="text-muted-foreground">
+                              {challenge.userProgress}% complete
+                            </span>
                           </div>
-                        )}
-
-                      {/* Challenge Details */}
-                      <div className="flex items-center justify-between text-sm">
-                        <div className="flex items-center space-x-4">
-                          <div className="flex items-center text-muted-foreground">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {challenge.duration}
-                          </div>
-                          <div className="flex items-center text-muted-foreground">
-                            <Users className="w-4 h-4 mr-1" />
-                            {challenge.participants.toLocaleString()}
-                          </div>
+                          <Progress value={challenge.userProgress} className="h-2" />
                         </div>
-                        <div className="flex items-center gap-2">
-                          {challenge.level && (
-                            <Badge
-                              variant="outline"
-                              className="border-purple-400/50 text-purple-300 bg-purple-500/20"
-                            >
-                              Level {challenge.level}
-                            </Badge>
-                          )}
-                          <Badge
-                            className={getDifficultyColor(challenge.difficulty)}
-                          >
-                            {challenge.difficulty}
-                          </Badge>
-                        </div>
-                      </div>
+                      )}
 
                       {/* Action Buttons */}
-                      {challenge.status === "not-started" ||
-                      challenge.status === "available" ||
-                      challenge.status === "active" ? (
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <Button
-                            variant="outline"
-                            className="flex-1 border-white/20 text-white hover:bg-white/10"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (isPremiumLocked) {
-                                setChallengeToPurchase(challenge);
-                                setIsPurchaseModalOpen(true);
-                              } else {
-                                openChallengeModal(challenge);
-                              }
-                            }}
-                          >
-                            {isPremiumLocked ? "Unlock" : "Preview"}
-                          </Button>
-                          <Button
-                            variant="primary"
-                            className="flex-1"
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              if (challenge.premium) {
-                                const hasAccess = await checkChallengeAccess(challenge.id);
-                                if (!hasAccess) {
-                                  setChallengeToPurchase(challenge);
-                                  setIsPurchaseModalOpen(true);
-                                  return;
-                                }
-                              }
-                              if (challenge.status === "active") {
-                                navigate(`/challenges/${challenge.id}`);
-                              } else {
-                                handleJoinChallenge(challenge.id);
-                              }
-                            }}
-                          >
-                            {isPremiumLocked
-                              ? "Unlock Challenge"
-                              : getButtonText(challenge.status)}
-                          </Button>
-                        </div>
-                      ) : (
+                      <div className="flex gap-2">
                         <Button
-                          variant="primary"
-                          className="w-full"
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 border-white/20 text-white hover:bg-white/10"
                           onClick={(e) => {
                             e.stopPropagation();
                             if (isPremiumLocked) {
@@ -744,9 +675,34 @@ const Challenges = () => {
                             }
                           }}
                         >
-                          {isPremiumLocked ? "Unlock Challenge" : getButtonText(challenge.status)}
+                          {isPremiumLocked ? "Unlock" : "Preview"}
                         </Button>
-                      )}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          className="flex-1"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (challenge.premium) {
+                              const hasAccess = await checkChallengeAccess(challenge.id);
+                              if (!hasAccess) {
+                                setChallengeToPurchase(challenge);
+                                setIsPurchaseModalOpen(true);
+                                return;
+                              }
+                            }
+                            if (challenge.status === "active") {
+                              navigate(`/challenges/${challenge.id}`);
+                            } else {
+                              handleJoinChallenge(challenge.id);
+                            }
+                          }}
+                        >
+                          {isPremiumLocked
+                            ? "Unlock"
+                            : getButtonText(challenge.status)}
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 );
