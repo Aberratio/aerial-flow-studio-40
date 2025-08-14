@@ -50,6 +50,7 @@ const Landing = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [heroImage, setHeroImage] = useState<string | null>(null);
   const [absChallengesImage, setAbsChallengesImage] = useState<string | null>(null);
+  const [showAbsChallenges, setShowAbsChallenges] = useState(false);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
   const [allDataLoaded, setAllDataLoaded] = useState(false);
   useEffect(() => {
@@ -64,7 +65,10 @@ const Landing = () => {
 
   // Check if all data is loaded
   useEffect(() => {
-    if (heroImage !== null && absChallengesImage !== null && pricingPlans.length > 0) {
+    // Hero image can be null (fallback image will be used)
+    // Abs challenges can be null if section is disabled
+    // Only require pricing plans to be loaded
+    if (heroImage !== undefined && absChallengesImage !== undefined && pricingPlans.length > 0) {
       setAllDataLoaded(true);
     }
   }, [heroImage, absChallengesImage, pricingPlans]);
@@ -87,16 +91,20 @@ const Landing = () => {
     try {
       const { data: absChallengesSection } = await supabase
         .from("landing_page_sections")
-        .select("image_url")
+        .select("image_url, is_active")
         .eq("section_key", "abs_challenges")
         .single();
-      if (absChallengesSection?.image_url) {
-        setAbsChallengesImage(absChallengesSection.image_url);
+      
+      if (absChallengesSection?.is_active) {
+        setShowAbsChallenges(true);
+        setAbsChallengesImage(absChallengesSection.image_url || null);
       } else {
+        setShowAbsChallenges(false);
         setAbsChallengesImage(null);
       }
     } catch (error) {
       console.error("Error loading abs challenges image:", error);
+      setShowAbsChallenges(false);
       setAbsChallengesImage(null);
     }
   };
@@ -458,85 +466,87 @@ const Landing = () => {
       </section>
 
       {/* Abs Challenges Section */}
-      <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-            <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
-              <div className="space-y-4 sm:space-y-6">
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight animate-fade-in-up">
-                  Build Your{" "}
-                  <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
-                    Core Strength
-                  </span>{" "}
-                  with Challenges
-                </h2>
-                <p className="text-base sm:text-xl text-gray-400 leading-relaxed animate-fade-in-up animation-delay-200">
-                  Transform your core with our specialized abs challenges. Structured programs designed to build strength, 
-                  improve stability, and enhance your aerial performance through progressive training.
-                </p>
-              </div>
-              
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0 animate-bounce-in animation-delay-400">
-                <Button
-                  variant="default"
-                  size="lg"
-                  onClick={() => openAuth("register")}
-                  className="text-base sm:text-lg px-6 sm:px-8"
-                >
-                  Start Core Training
-                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
-              </div>
+      {showAbsChallenges && (
+        <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+              <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
+                <div className="space-y-4 sm:space-y-6">
+                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight animate-fade-in-up">
+                    Build Your{" "}
+                    <span className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent">
+                      Core Strength
+                    </span>{" "}
+                    with Challenges
+                  </h2>
+                  <p className="text-base sm:text-xl text-gray-400 leading-relaxed animate-fade-in-up animation-delay-200">
+                    Transform your core with our specialized abs challenges. Structured programs designed to build strength, 
+                    improve stability, and enhance your aerial performance through progressive training.
+                  </p>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 max-w-md mx-auto lg:mx-0 animate-bounce-in animation-delay-400">
+                  <Button
+                    variant="default"
+                    size="lg"
+                    onClick={() => openAuth("register")}
+                    className="text-base sm:text-lg px-6 sm:px-8"
+                  >
+                    Start Core Training
+                    <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                </div>
 
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-6 sm:pt-8 max-w-md mx-auto lg:mx-0 animate-scale-in animation-delay-600">
-                <div className="text-center">
-                  <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-xl sm:text-2xl font-bold">
-                    30+
+                <div className="grid grid-cols-3 gap-4 sm:gap-6 pt-6 sm:pt-8 max-w-md mx-auto lg:mx-0 animate-scale-in animation-delay-600">
+                  <div className="text-center">
+                    <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-xl sm:text-2xl font-bold">
+                      30+
+                    </div>
+                    <div className="text-gray-400 text-xs sm:text-sm">
+                      Core Exercises
+                    </div>
                   </div>
-                  <div className="text-gray-400 text-xs sm:text-sm">
-                    Core Exercises
+                  <div className="text-center">
+                    <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-xl sm:text-2xl font-bold">
+                      28
+                    </div>
+                    <div className="text-gray-400 text-xs sm:text-sm">
+                      Day Programs
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-xl sm:text-2xl font-bold">
+                      100%
+                    </div>
+                    <div className="text-gray-400 text-xs sm:text-sm">
+                      Core Focus
+                    </div>
                   </div>
                 </div>
-                <div className="text-center">
-                  <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-xl sm:text-2xl font-bold">
-                    28
-                  </div>
-                  <div className="text-gray-400 text-xs sm:text-sm">
-                    Day Programs
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="bg-gradient-to-r from-purple-500 via-violet-500 to-purple-700 bg-clip-text text-transparent text-xl sm:text-2xl font-bold">
-                    100%
-                  </div>
-                  <div className="text-gray-400 text-xs sm:text-sm">
-                    Core Focus
-                  </div>
-                </div>
               </div>
-            </div>
 
-            <div className="relative order-first lg:order-last animate-scale-in animation-delay-800 floating">
-              <div className="relative z-10">
-                <img
-                  src={
-                    absChallengesImage ||
-                    "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=800&fit=crop"
-                  }
-                  alt="Core strength training for aerial athletes"
-                  className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[500px] sm:w-[450px] sm:h-[550px] lg:w-[500px] lg:h-[600px] object-cover glass-effect-intense"
-                />
+              <div className="relative order-first lg:order-last animate-scale-in animation-delay-800 floating">
+                <div className="relative z-10">
+                  <img
+                    src={
+                      absChallengesImage ||
+                      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=800&fit=crop"
+                    }
+                    alt="Core strength training for aerial athletes"
+                    className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[500px] sm:w-[450px] sm:h-[550px] lg:w-[500px] lg:h-[600px] object-cover glass-effect-intense"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
+
+                {/* Floating decorative elements */}
+                <div className="absolute -top-6 -left-6 w-12 h-12 bg-gradient-to-r from-purple-600 to-violet-600 rounded-full blur-lg animate-pulse"></div>
+                <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur-md animate-pulse animation-delay-400"></div>
+                <div className="absolute top-1/3 -right-8 w-6 h-6 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-sm animate-pulse animation-delay-800"></div>
               </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
-
-              {/* Floating decorative elements */}
-              <div className="absolute -top-6 -left-6 w-12 h-12 bg-gradient-to-r from-purple-600 to-violet-600 rounded-full blur-lg animate-pulse"></div>
-              <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full blur-md animate-pulse animation-delay-400"></div>
-              <div className="absolute top-1/3 -right-8 w-6 h-6 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full blur-sm animate-pulse animation-delay-800"></div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Media Gallery Section */}
       <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10" id="gallery">
