@@ -3,6 +3,7 @@ import { supabase } from "../integrations/supabase/client";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "./use-toast";
 import { useAchievementChecker } from "./useAchievementChecker";
+import { useUserRole } from "./useUserRole";
 
 export interface CalendarDay {
   id: string;
@@ -38,6 +39,7 @@ export const useChallengeCalendar = (challengeId: string) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { checkChallengeCompletionAchievements } = useAchievementChecker();
+  const { isAdmin } = useUserRole();
   const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
   const [nextAvailableDay, setNextAvailableDay] =
     useState<NextAvailableDay | null>(null);
@@ -271,6 +273,9 @@ export const useChallengeCalendar = (challengeId: string) => {
     async (calendarDate: string): Promise<boolean> => {
       if (!user?.id || !challengeId) return false;
 
+      // Admin users can access any challenge day
+      if (isAdmin) return true;
+
       try {
         const { data, error: accessError } = await supabase.rpc(
           "can_access_challenge_day",
@@ -289,7 +294,7 @@ export const useChallengeCalendar = (challengeId: string) => {
         return false;
       }
     },
-    [user?.id, challengeId]
+    [user?.id, challengeId, isAdmin]
   );
 
   // Get calendar day by date
