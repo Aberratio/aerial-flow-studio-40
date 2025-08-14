@@ -131,7 +131,7 @@ const ChallengePreview = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { canCreateChallenges } = useUserRole();
+  const { canCreateChallenges, isAdmin } = useUserRole();
   const { hasPremiumAccess } = useSubscriptionStatus();
   const { userPurchases, refreshPurchases, checkChallengeAccess } = useChallengeAccess();
   const isTablet = useIsTablet();
@@ -500,7 +500,7 @@ const ChallengePreview = () => {
     if (
       dayInfo &&
       dayInfo.isAccessible &&
-      !isDayLocked(dayInfo.trainingDay.day_number, calendarDays)
+      !isDayLocked(dayInfo.trainingDay.day_number, calendarDays, isAdmin)
     ) {
       navigate(`/challenge/${challengeId}/day/${dayInfo.id}`);
     }
@@ -1287,7 +1287,8 @@ const ChallengePreview = () => {
                             if (trainingDay) {
                               const isLocked = isDayLocked(
                                 trainingDay.day_number,
-                                calendarDays
+                                calendarDays,
+                                isAdmin
                               );
                               if (!isLocked) {
                                 lastUnlockedIndex = index;
@@ -1340,7 +1341,8 @@ const ChallengePreview = () => {
                           const isRest = trainingDay.is_rest_day;
                           const isLocked = isDayLocked(
                             trainingDay.day_number,
-                            calendarDays
+                            calendarDays,
+                            isAdmin
                           );
 
                           return (
@@ -1500,7 +1502,8 @@ const ChallengePreview = () => {
 
                             const isLocked = isDayLocked(
                               trainingDay.day_number,
-                              calendarDays
+                              calendarDays,
+                              isAdmin
                             );
 
                             return (
@@ -1571,10 +1574,11 @@ const ChallengePreview = () => {
                           return (
                             !dayInfo ||
                             !dayInfo.isAccessible ||
-                            isAfter(date, new Date()) ||
+                            (!isAdmin && isAfter(date, new Date())) ||
                             isDayLocked(
                               dayInfo.trainingDay.day_number,
-                              calendarDays
+                              calendarDays,
+                              isAdmin
                             )
                           );
                         }}

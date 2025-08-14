@@ -11,8 +11,12 @@ export function isDayLocked(
   calendarDays: Array<{
     day_number: number;
     status: string;
-  }>
+  }>,
+  isAdmin?: boolean
 ): boolean {
+  // Admin users can access any day
+  if (isAdmin) return false;
+  
   // Day 1 is never locked
   if (dayNumber === 1) return false;
 
