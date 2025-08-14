@@ -332,10 +332,11 @@ const LandingPageManagement = () => {
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
-          {(section.section_type === 'hero' || section.section_type === 'gallery') && (
+          {(section.section_type === 'hero' || section.section_type === 'gallery' || section.section_type === 'challenges') && (
             <div className="space-y-4">
               <Label className="text-white">
-                {section.section_type === 'hero' ? 'Hero Image' : 'Section Image'}
+                {section.section_type === 'hero' ? 'Hero Image' : 
+                 section.section_type === 'challenges' ? 'Challenges Section Image' : 'Section Image'}
               </Label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">

@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1604,7 +1604,7 @@ export type Database = {
     }
     Functions: {
       add_points_to_user: {
-        Args: { user_id: string; points: number }
+        Args: { points: number; user_id: string }
         Returns: undefined
       }
       are_users_friends: {
@@ -1612,24 +1612,24 @@ export type Database = {
         Returns: boolean
       }
       award_challenge_completion_points: {
-        Args: { p_user_id: string; p_challenge_id: string }
+        Args: { p_challenge_id: string; p_user_id: string }
         Returns: undefined
       }
       can_access_challenge_day: {
         Args: {
-          p_user_id: string
-          p_challenge_id: string
           p_calendar_date: string
+          p_challenge_id: string
+          p_user_id: string
         }
         Returns: boolean
       }
       create_activity_with_points: {
         Args: {
-          user_id: string
-          activity_type: string
           activity_data?: Json
-          target_user_id?: string
+          activity_type: string
           points?: number
+          target_user_id?: string
+          user_id: string
         }
         Returns: undefined
       }
@@ -1639,9 +1639,9 @@ export type Database = {
       }
       generate_user_challenge_calendar: {
         Args: {
-          p_user_id: string
           p_challenge_id: string
           p_start_date: string
+          p_user_id: string
         }
         Returns: undefined
       }
@@ -1650,64 +1650,64 @@ export type Database = {
         Returns: string
       }
       get_next_available_challenge_day: {
-        Args: { p_user_id: string; p_challenge_id: string }
+        Args: { p_challenge_id: string; p_user_id: string }
         Returns: {
+          attempt_number: number
           calendar_date: string
-          training_day_id: string
           day_number: number
           is_rest_day: boolean
           is_retry: boolean
-          attempt_number: number
           total_exercises: number
+          training_day_id: string
         }[]
       }
       get_next_training_day: {
-        Args: { p_user_id: string; p_challenge_id: string }
+        Args: { p_challenge_id: string; p_user_id: string }
         Returns: {
+          is_rest_day: boolean
+          last_failed_day_id: string
           next_day_id: string
           next_day_number: number
-          is_rest_day: boolean
           should_retry: boolean
-          last_failed_day_id: string
         }[]
       }
       get_user_challenge_calendar: {
-        Args: { p_user_id: string; p_challenge_id: string }
+        Args: { p_challenge_id: string; p_user_id: string }
         Returns: {
-          id: string
-          calendar_date: string
-          training_day_id: string
-          day_number: number
-          title: string
-          description: string
-          is_rest_day: boolean
-          status: string
-          is_retry: boolean
           attempt_number: number
-          exercises_completed: number
-          total_exercises: number
-          notes: string
+          calendar_date: string
           completed_at: string
-          is_today: boolean
-          is_past: boolean
+          day_number: number
+          description: string
+          exercises_completed: number
+          id: string
           is_accessible: boolean
+          is_past: boolean
+          is_rest_day: boolean
+          is_retry: boolean
+          is_today: boolean
+          notes: string
+          status: string
+          title: string
+          total_exercises: number
+          training_day_id: string
         }[]
       }
       handle_challenge_day_status_change: {
         Args: {
-          p_user_id: string
-          p_challenge_id: string
           p_calendar_date: string
+          p_challenge_id: string
           p_new_status: string
           p_notes?: string
+          p_user_id: string
         }
         Returns: undefined
       }
       reset_user_challenge_progress: {
         Args: {
-          p_user_id: string
           p_challenge_id: string
           p_new_start_date: string
+          p_user_id: string
         }
         Returns: undefined
       }
@@ -1716,7 +1716,7 @@ export type Database = {
         Returns: undefined
       }
       user_has_challenge_access: {
-        Args: { p_user_id: string; p_challenge_id: string }
+        Args: { p_challenge_id: string; p_user_id: string }
         Returns: boolean
       }
     }
