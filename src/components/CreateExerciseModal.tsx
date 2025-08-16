@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface CreateExerciseModalProps {
   isOpen: boolean;
@@ -51,6 +52,7 @@ export const CreateExerciseModal = ({
   });
   const [tagInput, setTagInput] = useState("");
   const [synonymInput, setSynonymInput] = useState("");
+  const { isTrainer } = useUserRole();
 
   // Update form when editing a figure
   useEffect(() => {
@@ -171,7 +173,7 @@ export const CreateExerciseModal = ({
 
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("figures").insert({
+        const { data: figureData, error } = await supabase.from("figures").insert({
           name: formData.name.trim(),
           description: formData.description.trim() || null,
           instructions: formData.instructions.trim() || null,
@@ -184,9 +186,24 @@ export const CreateExerciseModal = ({
           synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
           premium: formData.premium,
           created_by: user.id,
-        });
+        }).select().single();
 
         if (error) throw error;
+
+        // Add trainer as expert for the exercise if they are a trainer
+        if (isTrainer && figureData) {
+          const { error: expertError } = await supabase
+            .from("figure_experts")
+            .insert({
+              figure_id: figureData.id,
+              expert_user_id: user.id,
+              added_by: user.id,
+            });
+
+          if (expertError) {
+            console.warn("Failed to add trainer as expert:", expertError);
+          }
+        }
       }
 
       toast({
@@ -320,36 +337,15 @@ export const CreateExerciseModal = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="premium" className="text-white">
-                Access Level
-              </Label>
-              <div className="flex items-center space-x-3 mt-2">
-                <Switch
-                  id="premium"
-                  checked={formData.premium}
-                  onCheckedChange={(checked) => {
-                    console.log("Premium switch changed to:", checked);
-                    setFormData((prev) => ({ ...prev, premium: checked }));
-                  }}
-                />
-                <Label htmlFor="premium" className="text-white cursor-pointer">
-                  {formData.premium ? "Premium" : "Free"}
-                </Label>
-                <div className="text-xs text-white/60 ml-2">
-                  Current: {formData.premium ? "Premium" : "Free"}
-                </div>
-              </div>
-            </div>
-
-            <div>
               <Label htmlFor="difficulty" className="text-white">
-                Difficulty Level (Optional)
+                Difficulty Level *
               </Label>
               <Select
                 value={formData.difficulty_level}
                 onValueChange={(value) =>
                   setFormData((prev) => ({ ...prev, difficulty_level: value }))
                 }
+                required
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select difficulty" />
@@ -362,18 +358,17 @@ export const CreateExerciseModal = ({
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="category" className="text-white">
-                Category (Optional)
+                Category *
               </Label>
               <Select
                 value={formData.category}
                 onValueChange={(value) =>
                   setFormData((prev) => ({ ...prev, category: value }))
                 }
+                required
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select category" />
@@ -387,195 +382,243 @@ export const CreateExerciseModal = ({
                 </SelectContent>
               </Select>
             </div>
-
-            <div>
-              <Label htmlFor="type" className="text-white">
-                Type (Optional)
-              </Label>
-              <Select
-                value={formData.type}
-                onValueChange={(value) =>
-                  setFormData((prev) => ({ ...prev, type: value }))
-                }
-              >
-                <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="Select type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="single figure">Single Figure</SelectItem>
-                  <SelectItem value="combo">Combo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
           </div>
 
           <div>
-            <Label htmlFor="description" className="text-white">
-              Description (Optional)
+            <Label htmlFor="type" className="text-white">
+              Type *
             </Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
+            <Select
+              value={formData.type}
+              onValueChange={(value) =>
+                setFormData((prev) => ({ ...prev, type: value }))
               }
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-              placeholder="Brief description of the exercise"
-              rows={3}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="instructions" className="text-white">
-              Instructions (Optional)
-            </Label>
-            <Textarea
-              id="instructions"
-              value={formData.instructions}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  instructions: e.target.value,
-                }))
-              }
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-              placeholder="Step-by-step instructions"
-              rows={4}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="tags" className="text-white">
-              Tags (Optional)
-            </Label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  id="tags"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Add a tag and press Enter"
-                />
-                <Button
-                  type="button"
-                  onClick={addTag}
-                  variant="outline"
-                  className="border-white/10 text-white hover:bg-white/10"
-                >
-                  Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.tags.map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="bg-white/10 text-white border-white/20 cursor-pointer"
-                    onClick={() => removeTag(tag)}
-                  >
-                    {tag} ✕
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="synonyms" className="text-white">
-              Synonyms (Optional)
-            </Label>
-            <p className="text-sm text-white/60 mb-2">
-              Alternative names for this exercise
-            </p>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <Input
-                  id="synonyms"
-                  value={synonymInput}
-                  onChange={(e) => setSynonymInput(e.target.value)}
-                  onKeyPress={handleSynonymKeyPress}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Add a synonym and press Enter"
-                />
-                <Button
-                  type="button"
-                  onClick={addSynonym}
-                  variant="outline"
-                  className="border-white/10 text-white hover:bg-white/10"
-                >
-                  Add
-                </Button>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {formData.synonyms.map((synonym, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="bg-blue-500/20 text-blue-300 border-blue-500/30 cursor-pointer"
-                    onClick={() => removeSynonym(synonym)}
-                  >
-                    {synonym} ✕
-                  </Badge>
-                ))}
-              </div>
-            </div>
+              required
+            >
+              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="single figure">Single Figure</SelectItem>
+                <SelectItem value="combo">Combo</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="image" className="text-white">
+              <Label htmlFor="image-upload" className="text-white">
                 Exercise Image *
               </Label>
               <div className="space-y-2">
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="bg-white/5 border-white/10 text-white file:bg-white/10 file:text-white file:border-0"
-                />
-                {imageFile && (
-                  <p className="text-sm text-green-400">
-                    Image selected: {imageFile.name}
-                  </p>
-                )}
-                {formData.image_url && !imageFile && (
-                  <p className="text-sm text-white/60">Current image URL set</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("image-upload")?.click()}
+                    className="border-white/10 text-white hover:bg-white/10"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Image
+                  </Button>
+                  {imageFile && (
+                    <span className="text-sm text-white/60">{imageFile.name}</span>
+                  )}
+                </div>
+                {(formData.image_url || imageFile) && (
+                  <div className="text-sm text-green-400">
+                    {imageFile ? "New image selected" : "Image uploaded"}
+                  </div>
                 )}
               </div>
             </div>
 
             <div>
-              <Label htmlFor="video" className="text-white">
-                Video (Optional)
+              <Label htmlFor="video-upload" className="text-white">
+                Exercise Video (Optional)
               </Label>
               <div className="space-y-2">
-                <Input
-                  id="video"
-                  type="file"
-                  accept="video/*"
-                  onChange={handleVideoUpload}
-                  className="bg-white/5 border-white/10 text-white file:bg-white/10 file:text-white file:border-0"
-                />
-                {videoFile && (
-                  <p className="text-sm text-green-400">
-                    Video selected: {videoFile.name}
-                  </p>
-                )}
-                {formData.video_url && !videoFile && (
-                  <p className="text-sm text-white/60">Current video URL set</p>
+                <div className="flex items-center gap-2">
+                  <input
+                    id="video-upload"
+                    type="file"
+                    accept="video/*"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("video-upload")?.click()}
+                    className="border-white/10 text-white hover:bg-white/10"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Upload Video
+                  </Button>
+                  {videoFile && (
+                    <span className="text-sm text-white/60">{videoFile.name}</span>
+                  )}
+                </div>
+                {(formData.video_url || videoFile) && (
+                  <div className="text-sm text-green-400">
+                    {videoFile ? "New video selected" : "Video uploaded"}
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end space-x-4">
+          {!isTrainer && (
+            <>
+              <div>
+                <Label htmlFor="premium" className="text-white">
+                  Access Level
+                </Label>
+                <div className="flex items-center space-x-3 mt-2">
+                  <Switch
+                    id="premium"
+                    checked={formData.premium}
+                    onCheckedChange={(checked) => {
+                      console.log("Premium switch changed to:", checked);
+                      setFormData((prev) => ({ ...prev, premium: checked }));
+                    }}
+                  />
+                  <Label htmlFor="premium" className="text-white cursor-pointer">
+                    {formData.premium ? "Premium" : "Free"}
+                  </Label>
+                  <div className="text-xs text-white/60 ml-2">
+                    Current: {formData.premium ? "Premium" : "Free"}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="description" className="text-white">
+                  Description (Optional)
+                </Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  placeholder="Brief description of the exercise"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="instructions" className="text-white">
+                  Instructions (Optional)
+                </Label>
+                <Textarea
+                  id="instructions"
+                  value={formData.instructions}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      instructions: e.target.value,
+                    }))
+                  }
+                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  placeholder="Step-by-step instructions"
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="tags" className="text-white">
+                  Tags (Optional)
+                </Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="tags"
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                      placeholder="Add a tag and press Enter"
+                    />
+                    <Button
+                      type="button"
+                      onClick={addTag}
+                      variant="outline"
+                      className="border-white/10 text-white hover:bg-white/10"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.tags.map((tag, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="bg-white/10 text-white border-white/20 cursor-pointer"
+                        onClick={() => removeTag(tag)}
+                      >
+                        {tag} ✕
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="synonyms" className="text-white">
+                  Synonyms (Optional)
+                </Label>
+                <p className="text-sm text-white/60 mb-2">
+                  Alternative names for this exercise
+                </p>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="synonyms"
+                      value={synonymInput}
+                      onChange={(e) => setSynonymInput(e.target.value)}
+                      onKeyPress={handleSynonymKeyPress}
+                      className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                      placeholder="Add a synonym and press Enter"
+                    />
+                    <Button
+                      type="button"
+                      onClick={addSynonym}
+                      variant="outline"
+                      className="border-white/10 text-white hover:bg-white/10"
+                    >
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.synonyms.map((synonym, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="bg-blue-500/20 text-blue-300 border-blue-500/30 cursor-pointer"
+                        onClick={() => removeSynonym(synonym)}
+                      >
+                        {synonym} ✕
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"
               variant="outline"
@@ -586,19 +629,16 @@ export const CreateExerciseModal = ({
             </Button>
             <Button
               type="submit"
-              variant="primary"
               disabled={isLoading}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   {editingFigure ? "Updating..." : "Creating..."}
                 </>
-              ) : editingFigure ? (
-                "Update Exercise"
               ) : (
-                "Create Exercise"
+                editingFigure ? "Update Exercise" : "Create Exercise"
               )}
             </Button>
           </div>
