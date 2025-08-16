@@ -65,9 +65,7 @@ const Library = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [selectedExperts, setSelectedExperts] = useState<string[]>([]);
-  const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>(
-    []
-  );
+  const [selectedContentTypes, setSelectedContentTypes] = useState<string[]>([]);
   const [selectedVideoTypes, setSelectedVideoTypes] = useState<string[]>([]);
   const [extendedFiltersOpen, setExtendedFiltersOpen] = useState(false);
   const [filtersCollapsed, setFiltersCollapsed] = useState(isMobile);
@@ -485,18 +483,19 @@ const Library = () => {
           {/* Filters Section */}
           <Collapsible open={isMobile ? !filtersCollapsed : true} onOpenChange={isMobile ? (open) => setFiltersCollapsed(!open) : undefined}>
             {isMobile && (
-              <CollapsibleTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between mb-3"
-                >
-                  <span className="flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    Filters
-                  </span>
-                  {filtersCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
-                </Button>
-              </CollapsibleTrigger>
+              <div className="border border-white/10 rounded-lg bg-white/5 mb-3">
+                <CollapsibleTrigger asChild>
+                  <div className="w-full p-4 cursor-pointer hover:bg-white/10 transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Filter className="w-5 h-5 text-white" />
+                        <span className="text-white font-medium">Filters</span>
+                      </div>
+                      {filtersCollapsed ? <ChevronDown className="w-5 h-5 text-white" /> : <ChevronUp className="w-5 h-5 text-white" />}
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+              </div>
             )}
             <CollapsibleContent>
               <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'}`}>
@@ -814,25 +813,128 @@ const Library = () => {
                 </Popover>
               </div>
 
-              {/* Extended Filters Toggle */}
-              <Collapsible open={extendedFiltersOpen} onOpenChange={setExtendedFiltersOpen}>
-                <CollapsibleTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="w-full text-white hover:bg-white/10 justify-center mt-4"
-                  >
-                    <span className="flex items-center gap-2">
-                      Extended Filters
-                      {extendedFiltersOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </span>
-                  </Button>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="space-y-4 mt-4 p-4 bg-white/5 rounded-lg">
-                    {/* Expert Filter */}
+              {/* Extended Filters */}
+              {isMobile ? (
+                // On mobile, show extended filters directly
+                <div className="space-y-4 mt-4 p-4 bg-white/5 rounded-lg">
+                  {/* Expert Filter */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-white/80">
+                      Experts
+                    </label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
+                        >
+                          <span className="truncate">
+                            {selectedExperts.length === 0
+                              ? "All Experts"
+                              : selectedExperts.includes("all")
+                              ? "All Experts"
+                              : selectedExperts.includes("no_expert")
+                              ? "No Expert"
+                              : selectedExperts.length === 1
+                              ? availableExperts.find(e => e.id === selectedExperts[0])?.username || "Selected"
+                              : `${selectedExperts.length} Selected`}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            {selectedExperts.length > 0 &&
+                              !selectedExperts.includes("all") && (
+                                <span className="bg-purple-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                                  {selectedExperts.length}
+                                </span>
+                              )}
+                            <ChevronDown className="w-4 h-4" />
+                          </div>
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
+                        <div className="space-y-3">
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="all-experts"
+                              checked={selectedExperts.includes("all")}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedExperts(["all"]);
+                                } else {
+                                  setSelectedExperts([]);
+                                }
+                              }}
+                            />
+                            <label
+                              htmlFor="all-experts"
+                              className="text-white font-medium text-sm"
+                            >
+                              All Experts
+                            </label>
+                          </div>
+                          <div className="border-t border-white/10 pt-2 space-y-2 max-h-40 overflow-y-auto">
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id="no-expert"
+                                checked={selectedExperts.includes("no_expert")}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedExperts((prev) => [
+                                      ...prev.filter((e) => e !== "all"),
+                                      "no_expert",
+                                    ]);
+                                  } else {
+                                    setSelectedExperts((prev) =>
+                                      prev.filter((e) => e !== "no_expert")
+                                    );
+                                  }
+                                }}
+                              />
+                              <label
+                                htmlFor="no-expert"
+                                className="text-white text-sm"
+                              >
+                                No Expert
+                              </label>
+                            </div>
+                            {availableExperts.map((expert) => (
+                              <div
+                                key={expert.id}
+                                className="flex items-center space-x-2"
+                              >
+                                <Checkbox
+                                  id={`expert-${expert.id}`}
+                                  checked={selectedExperts.includes(expert.id)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSelectedExperts((prev) => [
+                                        ...prev.filter((e) => e !== "all"),
+                                        expert.id,
+                                      ]);
+                                    } else {
+                                      setSelectedExperts((prev) =>
+                                        prev.filter((e) => e !== expert.id)
+                                      );
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`expert-${expert.id}`}
+                                  className="text-white text-sm"
+                                >
+                                  {expert.username}
+                                </label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    {/* Tags Filter */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-white/80">
-                        Experts
+                        Tags
                       </label>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -841,103 +943,47 @@ const Library = () => {
                             className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
                           >
                             <span className="truncate">
-                              {selectedExperts.length === 0
-                                ? "All Experts"
-                                : selectedExperts.includes("all")
-                                ? "All Experts"
-                                : selectedExperts.includes("no_expert")
-                                ? "No Expert"
-                                : selectedExperts.length === 1
-                                ? availableExperts.find(e => e.id === selectedExperts[0])?.username || "Selected"
-                                : `${selectedExperts.length} Selected`}
+                              {selectedTags.length === 0
+                                ? "All Tags"
+                                : selectedTags.length === 1
+                                ? selectedTags[0]
+                                : `${selectedTags.length} Selected`}
                             </span>
                             <div className="flex items-center gap-1">
-                              {selectedExperts.length > 0 &&
-                                !selectedExperts.includes("all") && (
-                                  <span className="bg-purple-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
-                                    {selectedExperts.length}
-                                  </span>
-                                )}
+                              {selectedTags.length > 0 && (
+                                <span className="bg-purple-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                                  {selectedTags.length}
+                                </span>
+                              )}
                               <ChevronDown className="w-4 h-4" />
                             </div>
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
-                          <div className="space-y-3">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="all-experts"
-                                checked={selectedExperts.includes("all")}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedExperts(["all"]);
-                                  } else {
-                                    setSelectedExperts([]);
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor="all-experts"
-                                className="text-white font-medium text-sm"
-                              >
-                                All Experts
-                              </label>
-                            </div>
-                            <div className="border-t border-white/10 pt-2 space-y-2 max-h-40 overflow-y-auto">
-                              <div className="flex items-center space-x-2">
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {availableTags.map((tag) => (
+                              <div key={tag} className="flex items-center space-x-2">
                                 <Checkbox
-                                  id="no-expert"
-                                  checked={selectedExperts.includes("no_expert")}
+                                  id={`tag-${tag}`}
+                                  checked={selectedTags.includes(tag)}
                                   onCheckedChange={(checked) => {
                                     if (checked) {
-                                      setSelectedExperts((prev) => [
-                                        ...prev.filter((e) => e !== "all"),
-                                        "no_expert",
-                                      ]);
+                                      setSelectedTags((prev) => [...prev, tag]);
                                     } else {
-                                      setSelectedExperts((prev) =>
-                                        prev.filter((e) => e !== "no_expert")
+                                      setSelectedTags((prev) =>
+                                        prev.filter((t) => t !== tag)
                                       );
                                     }
                                   }}
                                 />
                                 <label
-                                  htmlFor="no-expert"
+                                  htmlFor={`tag-${tag}`}
                                   className="text-white text-sm"
                                 >
-                                  No Expert
+                                  {tag}
                                 </label>
                               </div>
-                              {availableExperts.map((expert) => (
-                                <div
-                                  key={expert.id}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <Checkbox
-                                    id={`expert-${expert.id}`}
-                                    checked={selectedExperts.includes(expert.id)}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        setSelectedExperts((prev) => [
-                                          ...prev.filter((e) => e !== "all"),
-                                          expert.id,
-                                        ]);
-                                      } else {
-                                        setSelectedExperts((prev) =>
-                                          prev.filter((e) => e !== expert.id)
-                                        );
-                                      }
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={`expert-${expert.id}`}
-                                    className="text-white text-sm"
-                                  >
-                                    {expert.username}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
+                            ))}
                           </div>
                         </PopoverContent>
                       </Popover>
@@ -955,12 +1001,12 @@ const Library = () => {
                             className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
                           >
                             <span className="truncate">
-                              {selectedContentTypes.length === 0
-                                ? "All Content"
-                                : selectedContentTypes.includes("all")
+                              {selectedContentTypes.length === 0 ||
+                              selectedContentTypes.includes("all")
                                 ? "All Content"
                                 : selectedContentTypes.length === 1
-                                ? selectedContentTypes[0].charAt(0).toUpperCase() + selectedContentTypes[0].slice(1)
+                                ? selectedContentTypes[0].charAt(0).toUpperCase() +
+                                  selectedContentTypes[0].slice(1)
                                 : `${selectedContentTypes.length} Selected`}
                             </span>
                             <div className="flex items-center gap-1">
@@ -975,60 +1021,40 @@ const Library = () => {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
-                          <div className="space-y-3">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="all-content-types"
-                                checked={selectedContentTypes.includes("all")}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedContentTypes(["all"]);
-                                  } else {
-                                    setSelectedContentTypes([]);
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor="all-content-types"
-                                className="text-white font-medium text-sm"
-                              >
-                                All Content
-                              </label>
-                            </div>
-                            <div className="border-t border-white/10 pt-2 space-y-2">
-                              {contentTypes.slice(1).map((type) => (
-                                <div
-                                  key={type}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <Checkbox
-                                    id={`content-${type}`}
-                                    checked={selectedContentTypes.includes(type)}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
+                          <div className="space-y-2">
+                            {contentTypes.map((type) => (
+                              <div key={type} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`content-${type}`}
+                                  checked={selectedContentTypes.includes(type)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      if (type === "all") {
+                                        setSelectedContentTypes(["all"]);
+                                      } else {
                                         setSelectedContentTypes((prev) => [
                                           ...prev.filter((t) => t !== "all"),
                                           type,
                                         ]);
-                                      } else {
-                                        setSelectedContentTypes((prev) =>
-                                          prev.filter((t) => t !== type)
-                                        );
                                       }
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={`content-${type}`}
-                                    className="text-white text-sm capitalize flex items-center gap-2"
-                                  >
-                                    {type === "premium" && (
-                                      <Crown className="w-3 h-3 text-yellow-400" />
-                                    )}
-                                    {type}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
+                                    } else {
+                                      setSelectedContentTypes((prev) =>
+                                        prev.filter((t) => t !== type)
+                                      );
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`content-${type}`}
+                                  className="text-white text-sm capitalize flex items-center gap-2"
+                                >
+                                  {type === "premium" && (
+                                    <Crown className="w-3 h-3 text-yellow-400" />
+                                  )}
+                                  {type === "all" ? "All Content" : type}
+                                </label>
+                              </div>
+                            ))}
                           </div>
                         </PopoverContent>
                       </Popover>
@@ -1037,7 +1063,7 @@ const Library = () => {
                     {/* Video Type Filter */}
                     <div className="space-y-2">
                       <label className="text-sm font-medium text-white/80">
-                        Video Content
+                        Video Availability
                       </label>
                       <Popover>
                         <PopoverTrigger asChild>
@@ -1046,16 +1072,11 @@ const Library = () => {
                             className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
                           >
                             <span className="truncate">
-                              {selectedVideoTypes.length === 0
-                                ? "All Videos"
-                                : selectedVideoTypes.includes("all")
+                              {selectedVideoTypes.length === 0 ||
+                              selectedVideoTypes.includes("all")
                                 ? "All Videos"
                                 : selectedVideoTypes.length === 1
-                                ? selectedVideoTypes[0]
-                                    .replace("_", " ")
-                                    .split(" ")
-                                    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-                                    .join(" ")
+                                ? selectedVideoTypes[0].replace("_", " ")
                                 : `${selectedVideoTypes.length} Selected`}
                             </span>
                             <div className="flex items-center gap-1">
@@ -1070,67 +1091,378 @@ const Library = () => {
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
-                          <div className="space-y-3">
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="all-video-types"
-                                checked={selectedVideoTypes.includes("all")}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    setSelectedVideoTypes(["all"]);
-                                  } else {
-                                    setSelectedVideoTypes([]);
-                                  }
-                                }}
-                              />
-                              <label
-                                htmlFor="all-video-types"
-                                className="text-white font-medium text-sm"
-                              >
-                                All Videos
-                              </label>
-                            </div>
-                            <div className="border-t border-white/10 pt-2 space-y-2">
-                              {videoTypes.slice(1).map((type) => (
-                                <div
-                                  key={type}
-                                  className="flex items-center space-x-2"
-                                >
-                                  <Checkbox
-                                    id={`video-${type}`}
-                                    checked={selectedVideoTypes.includes(type)}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
+                          <div className="space-y-2">
+                            {videoTypes.map((type) => (
+                              <div key={type} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`video-${type}`}
+                                  checked={selectedVideoTypes.includes(type)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      if (type === "all") {
+                                        setSelectedVideoTypes(["all"]);
+                                      } else {
                                         setSelectedVideoTypes((prev) => [
                                           ...prev.filter((t) => t !== "all"),
                                           type,
                                         ]);
-                                      } else {
-                                        setSelectedVideoTypes((prev) =>
-                                          prev.filter((t) => t !== type)
-                                        );
                                       }
-                                    }}
-                                  />
-                                  <label
-                                    htmlFor={`video-${type}`}
-                                    className="text-white text-sm capitalize flex items-center gap-2"
-                                  >
-                                    {type === "with_video" && (
-                                      <Play className="w-3 h-3 text-blue-400" />
-                                    )}
-                                    {type.replace("_", " ")}
-                                  </label>
-                                </div>
-                              ))}
-                            </div>
+                                    } else {
+                                      setSelectedVideoTypes((prev) =>
+                                        prev.filter((t) => t !== type)
+                                      );
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`video-${type}`}
+                                  className="text-white text-sm capitalize flex items-center gap-2"
+                                >
+                                  {type === "with_video" && (
+                                    <Play className="w-3 h-3 text-blue-400" />
+                                  )}
+                                  {type.replace("_", " ")}
+                                </label>
+                              </div>
+                            ))}
                           </div>
                         </PopoverContent>
                       </Popover>
                     </div>
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
+                </div>
+              ) : (
+                // On desktop, show collapsible extended filters
+                <Collapsible open={extendedFiltersOpen} onOpenChange={setExtendedFiltersOpen}>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full text-white hover:bg-white/10 justify-center mt-4"
+                    >
+                      <span className="flex items-center gap-2">
+                        Extended Filters
+                        {extendedFiltersOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                      </span>
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="space-y-4 mt-4 p-4 bg-white/5 rounded-lg">
+                      {/* Expert Filter */}
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-white/80">
+                          Experts
+                        </label>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
+                            >
+                              <span className="truncate">
+                                {selectedExperts.length === 0
+                                  ? "All Experts"
+                                  : selectedExperts.includes("all")
+                                  ? "All Experts"
+                                  : selectedExperts.includes("no_expert")
+                                  ? "No Expert"
+                                  : selectedExperts.length === 1
+                                  ? availableExperts.find(e => e.id === selectedExperts[0])?.username || "Selected"
+                                  : `${selectedExperts.length} Selected`}
+                              </span>
+                              <div className="flex items-center gap-1">
+                                {selectedExperts.length > 0 &&
+                                  !selectedExperts.includes("all") && (
+                                    <span className="bg-purple-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                                      {selectedExperts.length}
+                                    </span>
+                                  )}
+                                <ChevronDown className="w-4 h-4" />
+                              </div>
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
+                            <div className="space-y-3">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id="all-experts"
+                                  checked={selectedExperts.includes("all")}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSelectedExperts(["all"]);
+                                    } else {
+                                      setSelectedExperts([]);
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor="all-experts"
+                                  className="text-white font-medium text-sm"
+                                >
+                                  All Experts
+                                </label>
+                              </div>
+                              <div className="border-t border-white/10 pt-2 space-y-2 max-h-40 overflow-y-auto">
+                                <div className="flex items-center space-x-2">
+                                  <Checkbox
+                                    id="no-expert"
+                                    checked={selectedExperts.includes("no_expert")}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        setSelectedExperts((prev) => [
+                                          ...prev.filter((e) => e !== "all"),
+                                          "no_expert",
+                                        ]);
+                                      } else {
+                                        setSelectedExperts((prev) =>
+                                          prev.filter((e) => e !== "no_expert")
+                                        );
+                                      }
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor="no-expert"
+                                    className="text-white text-sm"
+                                  >
+                                    No Expert
+                                  </label>
+                                </div>
+                                {availableExperts.map((expert) => (
+                                  <div
+                                    key={expert.id}
+                                    className="flex items-center space-x-2"
+                                  >
+                                    <Checkbox
+                                      id={`expert-${expert.id}`}
+                                      checked={selectedExperts.includes(expert.id)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          setSelectedExperts((prev) => [
+                                            ...prev.filter((e) => e !== "all"),
+                                            expert.id,
+                                          ]);
+                                        } else {
+                                          setSelectedExperts((prev) =>
+                                            prev.filter((e) => e !== expert.id)
+                                          );
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`expert-${expert.id}`}
+                                      className="text-white text-sm"
+                                    >
+                                      {expert.username}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </Popover>
+                        </div>
+
+                        {/* Tags Filter */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-white/80">
+                            Tags
+                          </label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
+                              >
+                                <span className="truncate">
+                                  {selectedTags.length === 0
+                                    ? "All Tags"
+                                    : selectedTags.length === 1
+                                    ? selectedTags[0]
+                                    : `${selectedTags.length} Selected`}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  {selectedTags.length > 0 && (
+                                    <span className="bg-purple-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                                      {selectedTags.length}
+                                    </span>
+                                  )}
+                                  <ChevronDown className="w-4 h-4" />
+                                </div>
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
+                              <div className="space-y-2 max-h-40 overflow-y-auto">
+                                {availableTags.map((tag) => (
+                                  <div key={tag} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`tag-${tag}`}
+                                      checked={selectedTags.includes(tag)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          setSelectedTags((prev) => [...prev, tag]);
+                                        } else {
+                                          setSelectedTags((prev) =>
+                                            prev.filter((t) => t !== tag)
+                                          );
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`tag-${tag}`}
+                                      className="text-white text-sm"
+                                    >
+                                      {tag}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        {/* Content Type Filter */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-white/80">
+                            Content Type
+                          </label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
+                              >
+                                <span className="truncate">
+                                  {selectedContentTypes.length === 0 ||
+                                  selectedContentTypes.includes("all")
+                                    ? "All Content"
+                                    : selectedContentTypes.length === 1
+                                    ? selectedContentTypes[0].charAt(0).toUpperCase() +
+                                      selectedContentTypes[0].slice(1)
+                                    : `${selectedContentTypes.length} Selected`}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  {selectedContentTypes.length > 0 &&
+                                    !selectedContentTypes.includes("all") && (
+                                      <span className="bg-purple-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                                        {selectedContentTypes.length}
+                                      </span>
+                                    )}
+                                  <ChevronDown className="w-4 h-4" />
+                                </div>
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
+                              <div className="space-y-2">
+                                {contentTypes.map((type) => (
+                                  <div key={type} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`content-${type}`}
+                                      checked={selectedContentTypes.includes(type)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          if (type === "all") {
+                                            setSelectedContentTypes(["all"]);
+                                          } else {
+                                            setSelectedContentTypes((prev) => [
+                                              ...prev.filter((t) => t !== "all"),
+                                              type,
+                                            ]);
+                                          }
+                                        } else {
+                                          setSelectedContentTypes((prev) =>
+                                            prev.filter((t) => t !== type)
+                                          );
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`content-${type}`}
+                                      className="text-white text-sm capitalize flex items-center gap-2"
+                                    >
+                                      {type === "premium" && (
+                                        <Crown className="w-3 h-3 text-yellow-400" />
+                                      )}
+                                      {type === "all" ? "All Content" : type}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
+                        {/* Video Type Filter */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-white/80">
+                            Video Availability
+                          </label>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="outline"
+                                className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10 justify-between h-10"
+                              >
+                                <span className="truncate">
+                                  {selectedVideoTypes.length === 0 ||
+                                  selectedVideoTypes.includes("all")
+                                    ? "All Videos"
+                                    : selectedVideoTypes.length === 1
+                                    ? selectedVideoTypes[0].replace("_", " ")
+                                    : `${selectedVideoTypes.length} Selected`}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  {selectedVideoTypes.length > 0 &&
+                                    !selectedVideoTypes.includes("all") && (
+                                      <span className="bg-purple-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                                        {selectedVideoTypes.length}
+                                      </span>
+                                    )}
+                                  <ChevronDown className="w-4 h-4" />
+                                </div>
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
+                              <div className="space-y-2">
+                                {videoTypes.map((type) => (
+                                  <div key={type} className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id={`video-${type}`}
+                                      checked={selectedVideoTypes.includes(type)}
+                                      onCheckedChange={(checked) => {
+                                        if (checked) {
+                                          if (type === "all") {
+                                            setSelectedVideoTypes(["all"]);
+                                          } else {
+                                            setSelectedVideoTypes((prev) => [
+                                              ...prev.filter((t) => t !== "all"),
+                                              type,
+                                            ]);
+                                          }
+                                        } else {
+                                          setSelectedVideoTypes((prev) =>
+                                            prev.filter((t) => t !== type)
+                                          );
+                                        }
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`video-${type}`}
+                                      className="text-white text-sm capitalize flex items-center gap-2"
+                                    >
+                                      {type === "with_video" && (
+                                        <Play className="w-3 h-3 text-blue-400" />
+                                      )}
+                                      {type.replace("_", " ")}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
             </CollapsibleContent>
           </Collapsible>
 
