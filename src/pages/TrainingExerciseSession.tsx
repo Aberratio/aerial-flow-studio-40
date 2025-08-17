@@ -10,15 +10,21 @@ import {
   CheckCircle,
   Circle,
   Timer,
-  Hand
+  Hand,
+  Play,
+  Pause,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useSpeech } from '@/hooks/useSpeech';
 
 interface TrainingSession {
   id: string;
@@ -47,6 +53,15 @@ interface Exercise {
   order_index?: number;
 }
 
+interface TimerSegment {
+  type: "exercise" | "rest";
+  exerciseIndex: number;
+  setIndex: number;
+  duration: number;
+  exerciseName: string;
+  exerciseNotes?: string;
+}
+
 const TrainingExerciseSession = () => {
   const { sessionId } = useParams();
   const navigate = useNavigate();
@@ -59,6 +74,22 @@ const TrainingExerciseSession = () => {
   const [currentSection, setCurrentSection] = useState<'warmup' | 'figures' | 'stretching'>('warmup');
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
   const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
+
+  // Timer-specific states
+  const [segments, setSegments] = useState<TimerSegment[]>([]);
+  const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [audioMode, setAudioMode] = useState<"sound" | "no_sound" | "minimal_sound">(() => {
+    const saved = localStorage.getItem("trainingTimerAudioMode");
+    return (saved as "sound" | "no_sound" | "minimal_sound") || "minimal_sound";
+  });
+  const [hasAnnouncedSegment, setHasAnnouncedSegment] = useState(false);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [isPreparingToStart, setIsPreparingToStart] = useState(false);
+  const [preparationTime, setPreparationTime] = useState(10);
+
+  const { speak } = useSpeech(audioMode === "sound");
 
   // Fetch session data from database
   useEffect(() => {
@@ -108,6 +139,11 @@ const TrainingExerciseSession = () => {
           figures: data.figures || [],
           stretching_exercises: data.stretching_exercises || []
         });
+
+        // If it's a timer session, generate timer segments
+        if (data.type === 'timer') {
+          generateTimerSegments(data);
+        }
       } catch (error) {
         console.error('Error fetching session:', error);
         toast({
@@ -123,6 +159,164 @@ const TrainingExerciseSession = () => {
 
     fetchSession();
   }, [sessionId, user?.id, isAdmin, navigate, toast]);
+
+  // Timer functions
+  const playBeep = (type: "countdown" | "transition" | "ready" = "countdown") => {
+    if (audioMode !== "minimal_sound") return;
+    
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    if (type === "countdown") {
+      oscillator.frequency.value = 1000;
+    } else if (type === "transition") {
+      oscillator.frequency.value = 800;
+    } else {
+      oscillator.frequency.value = 600;
+    }
+    
+    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.1);
+  };
+
+  const generateTimerSegments = (sessionData: TrainingSession) => {
+    const timerSegments: TimerSegment[] = [];
+    let exerciseIndex = 0;
+
+    // Process all exercise sections
+    const allSections = [
+      { exercises: sessionData.warmup_exercises, name: 'warmup' },
+      { exercises: sessionData.figures, name: 'figures' },
+      { exercises: sessionData.stretching_exercises, name: 'stretching' }
+    ];
+
+    allSections.forEach(section => {
+      if (Array.isArray(section.exercises)) {
+        section.exercises.forEach((exercise: any) => {
+          const exerciseName = typeof exercise === 'string' ? exercise : exercise.name;
+          const sets = exercise.sets || 1;
+          const holdTime = exercise.hold_time_seconds || 30;
+          const restTime = exercise.rest_time_seconds || 15;
+
+          for (let setIndex = 1; setIndex <= sets; setIndex++) {
+            // Exercise segment
+            timerSegments.push({
+              type: "exercise",
+              exerciseIndex,
+              setIndex,
+              duration: holdTime,
+              exerciseName: `${exerciseName} (Set ${setIndex}/${sets})`,
+              exerciseNotes: exercise.notes
+            });
+
+            // Rest segment (except for last set of last exercise)
+            if (setIndex < sets || exerciseIndex < allSections.reduce((total, s) => total + (Array.isArray(s.exercises) ? s.exercises.length : 0), 0) - 1) {
+              timerSegments.push({
+                type: "rest",
+                exerciseIndex,
+                setIndex,
+                duration: restTime,
+                exerciseName: "Rest"
+              });
+            }
+          }
+          exerciseIndex++;
+        });
+      }
+    });
+
+    setSegments(timerSegments);
+    if (timerSegments.length > 0) {
+      setTimeRemaining(timerSegments[0].duration);
+    }
+  };
+
+  // Timer effects
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isPreparingToStart && preparationTime > 0) {
+      interval = setInterval(() => {
+        setPreparationTime(prev => {
+          if (prev <= 1) {
+            setIsPreparingToStart(false);
+            setIsRunning(true);
+            playBeep("ready");
+            speak("Let's start!");
+            return 0;
+          }
+          if (prev <= 3) playBeep("countdown");
+          return prev - 1;
+        });
+      }, 1000);
+    } else if (isRunning && !isCompleted && timeRemaining > 0) {
+      interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (prev <= 1) {
+            handleSegmentComplete();
+            return 0;
+          }
+          if (prev <= 3) playBeep("countdown");
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [isRunning, isPreparingToStart, preparationTime, timeRemaining, isCompleted]);
+
+  const handleSegmentComplete = () => {
+    const isLastSegment = currentSegmentIndex >= segments.length - 1;
+
+    if (isLastSegment) {
+      setIsCompleted(true);
+      setIsRunning(false);
+      playBeep("ready");
+      speak("Training complete! Great job!");
+      return;
+    }
+
+    setCurrentSegmentIndex(prev => prev + 1);
+    setTimeRemaining(segments[currentSegmentIndex + 1].duration);
+    setHasAnnouncedSegment(false);
+    playBeep("transition");
+  };
+
+  useEffect(() => {
+    if (isRunning && !hasAnnouncedSegment && segments[currentSegmentIndex]) {
+      const segment = segments[currentSegmentIndex];
+      if (segment.type === "exercise") {
+        speak(`${segment.exerciseName}`);
+      } else {
+        speak("Rest time");
+      }
+      setHasAnnouncedSegment(true);
+    }
+  }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, segments, speak]);
+
+  const startTimer = () => {
+    setIsPreparingToStart(true);
+    setPreparationTime(10);
+  };
+
+  const toggleTimer = () => {
+    setIsRunning(!isRunning);
+  };
+
+  const toggleAudioMode = () => {
+    const modes: ("sound" | "no_sound" | "minimal_sound")[] = ["sound", "minimal_sound", "no_sound"];
+    const currentIndex = modes.indexOf(audioMode);
+    const nextMode = modes[(currentIndex + 1) % modes.length];
+    setAudioMode(nextMode);
+    localStorage.setItem("trainingTimerAudioMode", nextMode);
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -227,6 +421,12 @@ const TrainingExerciseSession = () => {
     navigate(`/training/${sessionId}`);
   };
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -242,6 +442,209 @@ const TrainingExerciseSession = () => {
     return null;
   }
 
+  // Timer Mode UI
+  if (session.type === 'timer') {
+    const currentSegment = segments[currentSegmentIndex];
+    const totalTime = segments.reduce((sum, segment) => sum + segment.duration, 0);
+    const elapsed = segments.slice(0, currentSegmentIndex).reduce((sum, segment) => sum + segment.duration, 0) + 
+                   (currentSegment ? currentSegment.duration - timeRemaining : 0);
+    const progress = totalTime > 0 ? (elapsed / totalTime) * 100 : 0;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
+        <div className="container mx-auto px-4 py-6 max-w-4xl">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => navigate(`/training/${sessionId}`)}
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+              <div>
+                <div className="flex items-center space-x-3 mb-2">
+                  <h1 className="text-2xl font-bold text-white">{session.title}</h1>
+                  <Badge variant="outline" className="border-white/20 text-white/70">
+                    <Timer className="w-3 h-3 mr-1" />
+                    Timer Mode
+                  </Badge>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleAudioMode}
+                className="border-white/20 text-white hover:bg-white/10"
+                title={`Audio: ${audioMode}`}
+              >
+                {audioMode === "no_sound" ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </Button>
+            </div>
+          </div>
+
+          {/* Overall Progress */}
+          <Card className="glass-effect border-white/10 mb-6">
+            <CardContent className="pt-6">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm text-white/70">
+                  <span>Overall Progress</span>
+                  <span>{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} className="h-2" />
+                <div className="flex justify-between text-xs text-white/60">
+                  <span>Segment {currentSegmentIndex + 1} of {segments.length}</span>
+                  <span>{formatTime(Math.floor(elapsed))} / {formatTime(totalTime)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {isCompleted ? (
+            /* Completion Screen */
+            <Card className="glass-effect border-white/10 text-center">
+              <CardContent className="py-12">
+                <div className="space-y-6">
+                  <CheckCircle className="w-16 h-16 text-green-400 mx-auto" />
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">Training Complete!</h2>
+                    <p className="text-white/70">Congratulations! You've completed your training session.</p>
+                  </div>
+                  <Button
+                    onClick={handleFinishSession}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Finish Session
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : isPreparingToStart ? (
+            /* Preparation Screen */
+            <Card className="glass-effect border-white/10 text-center">
+              <CardContent className="py-12">
+                <div className="space-y-6">
+                  <div className="relative">
+                    <div className="w-32 h-32 rounded-full border-4 border-primary/20 flex items-center justify-center mx-auto">
+                      <span className="text-5xl font-bold text-white">{preparationTime}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Get Ready!</h2>
+                    <p className="text-white/70">Your training session will begin in {preparationTime} seconds</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : currentSegment ? (
+            /* Active Timer Display */
+            <Card className="glass-effect border-white/10">
+              <CardContent className="py-12 text-center">
+                <div className="space-y-8">
+                  {/* Timer Circle */}
+                  <div className="relative">
+                    <div className="w-48 h-48 rounded-full border-8 border-white/10 flex items-center justify-center mx-auto relative">
+                      <div 
+                        className="absolute inset-0 rounded-full border-8 border-transparent"
+                        style={{
+                          borderTopColor: currentSegment.type === "exercise" ? '#10b981' : '#f59e0b',
+                          borderRightColor: currentSegment.type === "exercise" ? '#10b981' : '#f59e0b',
+                          transform: `rotate(${((currentSegment.duration - timeRemaining) / currentSegment.duration) * 360}deg)`,
+                          transition: 'transform 1s linear'
+                        }}
+                      />
+                      <div className="text-center">
+                        <div className="text-5xl font-bold text-white">
+                          {formatTime(timeRemaining)}
+                        </div>
+                        <div className="text-lg text-white/60 mt-2">
+                          {currentSegment.type === "exercise" ? "Exercise" : "Rest"}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Exercise Info */}
+                  <div className="space-y-4">
+                    <Badge 
+                      className={`text-lg px-4 py-2 ${
+                        currentSegment.type === "exercise" 
+                          ? "bg-green-500 text-white" 
+                          : "bg-yellow-500 text-white"
+                      }`}
+                    >
+                      {currentSegment.type === "exercise" ? <Target className="w-4 h-4 mr-2" /> : <Clock className="w-4 h-4 mr-2" />}
+                      {currentSegment.type === "exercise" ? "Exercise Time" : "Rest Time"}
+                    </Badge>
+
+                    <h2 className="text-3xl font-bold text-white">
+                      {currentSegment.exerciseName}
+                    </h2>
+
+                    {currentSegment.exerciseNotes && (
+                      <p className="text-white/70 italic max-w-md mx-auto">
+                        {currentSegment.exerciseNotes}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Controls */}
+                  <div className="flex items-center justify-center space-x-4">
+                    <Button
+                      onClick={toggleTimer}
+                      size="lg"
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                    >
+                      {isRunning ? (
+                        <>
+                          <Pause className="w-5 h-5 mr-2" />
+                          Pause
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-5 h-5 mr-2" />
+                          Resume
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            /* Start Screen */
+            <Card className="glass-effect border-white/10 text-center">
+              <CardContent className="py-12">
+                <div className="space-y-6">
+                  <Timer className="w-16 h-16 text-primary mx-auto" />
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-2">Ready to Start?</h2>
+                    <p className="text-white/70">Your timer-based training session is ready to begin</p>
+                  </div>
+                  <Button
+                    onClick={startTimer}
+                    size="lg"
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                  >
+                    <Play className="w-5 h-5 mr-2" />
+                    Start Training
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Manual Mode UI (existing implementation)
   const currentExercises = getSectionExercises();
   const currentExercise = currentExercises[currentExerciseIndex];
   const isLastSection = currentSection === 'stretching';
@@ -270,11 +673,8 @@ const TrainingExerciseSession = () => {
                   {session.difficulty_level}
                 </Badge>
                 <Badge variant="outline" className="border-white/20 text-white/70">
-                  {session.type === 'timer' ? (
-                    <><Timer className="w-3 h-3 mr-1" />Timer Mode</>
-                  ) : (
-                    <><Hand className="w-3 h-3 mr-1" />Manual Mode</>
-                  )}
+                  <Hand className="w-3 h-3 mr-1" />
+                  Manual Mode
                 </Badge>
               </div>
             </div>
