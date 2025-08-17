@@ -39,81 +39,88 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
           {/* Session Image */}
           <div className="relative">
             <img
-              src={session.thumbnail}
+              src={session.thumbnail_url || "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=400&h=300&fit=crop"}
               alt={session.title}
               className="w-full h-48 object-cover rounded-lg"
             />
-            <Badge className={`absolute top-2 right-2 ${getDifficultyColor(session.difficulty)} text-white`}>
-              {session.difficulty}
+            <Badge className={`absolute top-2 right-2 ${getDifficultyColor(session.difficulty_level || 'Beginner')} text-white`}>
+              {session.difficulty_level || 'Beginner'}
             </Badge>
           </div>
 
           {/* Session Info */}
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center text-white">
-              <Users className="w-5 h-5 mr-2 text-primary" />
-              <span>Instructor: {session.instructor}</span>
-            </div>
-            <div className="flex items-center text-white">
               <Clock className="w-5 h-5 mr-2 text-primary" />
-              <span>{session.duration} minutes</span>
+              <span>{session.duration_minutes || 45} minutes</span>
             </div>
-            <div className="flex items-center text-white">
-              <Target className="w-5 h-5 mr-2 text-primary" />
-              <span>{session.participants} participants</span>
-            </div>
-            <div className="flex items-center text-white">
-              <Music className="w-5 h-5 mr-2 text-primary" />
-              <span>{session.playlist}</span>
-            </div>
+            {session.playlist && (
+              <div className="flex items-center text-white">
+                <Music className="w-5 h-5 mr-2 text-primary" />
+                <span>{session.playlist}</span>
+              </div>
+            )}
           </div>
+
+          {/* Session Description */}
+          {session.description && (
+            <div className="bg-white/5 p-4 rounded-lg">
+              <p className="text-muted-foreground">{session.description}</p>
+            </div>
+          )}
 
           {/* Session Structure */}
           <div className="space-y-4">
-            <div className="bg-white/5 p-4 rounded-lg">
-              <div className="flex items-center mb-2">
-                <Zap className="w-5 h-5 mr-2 text-yellow-500" />
-                <h3 className="font-semibold text-white">Warm-up</h3>
+            {session.warmup_exercises && session.warmup_exercises.length > 0 && (
+              <div className="bg-white/5 p-4 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <Zap className="w-5 h-5 mr-2 text-yellow-500" />
+                  <h3 className="font-semibold text-white">Warm-up</h3>
+                </div>
+                <ul className="text-muted-foreground space-y-1">
+                  {session.warmup_exercises.map((item: string, index: number) => (
+                    <li key={index} className="flex items-center">
+                      <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="text-muted-foreground space-y-1">
-                {session.warmup.map((item: string, index: number) => (
-                  <li key={index} className="flex items-center">
-                    <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            )}
 
-            <div className="bg-white/5 p-4 rounded-lg">
-              <div className="flex items-center mb-2">
-                <Target className="w-5 h-5 mr-2 text-purple-500" />
-                <h3 className="font-semibold text-white">Figures & Combos</h3>
+            {session.figures && session.figures.length > 0 && (
+              <div className="bg-white/5 p-4 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <Target className="w-5 h-5 mr-2 text-purple-500" />
+                  <h3 className="font-semibold text-white">Figures & Combos</h3>
+                </div>
+                <ul className="text-muted-foreground space-y-1">
+                  {session.figures.map((item: string, index: number) => (
+                    <li key={index} className="flex items-center">
+                      <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="text-muted-foreground space-y-1">
-                {session.figures.map((item: string, index: number) => (
-                  <li key={index} className="flex items-center">
-                    <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            )}
 
-            <div className="bg-white/5 p-4 rounded-lg">
-              <div className="flex items-center mb-2">
-                <Heart className="w-5 h-5 mr-2 text-pink-500" />
-                <h3 className="font-semibold text-white">Stretching</h3>
+            {session.stretching_exercises && session.stretching_exercises.length > 0 && (
+              <div className="bg-white/5 p-4 rounded-lg">
+                <div className="flex items-center mb-2">
+                  <Heart className="w-5 h-5 mr-2 text-pink-500" />
+                  <h3 className="font-semibold text-white">Stretching</h3>
+                </div>
+                <ul className="text-muted-foreground space-y-1">
+                  {session.stretching_exercises.map((item: string, index: number) => (
+                    <li key={index} className="flex items-center">
+                      <span className="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="text-muted-foreground space-y-1">
-                {session.stretching.map((item: string, index: number) => (
-                  <li key={index} className="flex items-center">
-                    <span className="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
+            )}
           </div>
 
           {/* Action Buttons */}
