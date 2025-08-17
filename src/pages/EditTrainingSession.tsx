@@ -7,7 +7,11 @@ import {
   EyeOff, 
   Clock,
   Target,
-  Loader2
+  Loader2,
+  Timer,
+  Hand,
+  Crown,
+  DollarSign
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,6 +26,7 @@ import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SessionExerciseManager } from '@/components/SessionExerciseManager';
+import TrainingRedemptionCodeManagement from '@/components/TrainingRedemptionCodeManagement';
 
 const EditTrainingSession = () => {
   const { sessionId } = useParams();
@@ -41,7 +46,9 @@ const EditTrainingSession = () => {
     difficulty_level: '',
     playlist: '',
     thumbnail_url: '',
-    published: false
+    published: false,
+    type: 'timer',
+    premium: false
   });
 
   const [sessionExercises, setSessionExercises] = useState({
@@ -87,7 +94,9 @@ const EditTrainingSession = () => {
           difficulty_level: data.difficulty_level || '',
           playlist: data.playlist || '',
           thumbnail_url: data.thumbnail_url || '',
-          published: data.published || false
+          published: data.published || false,
+          type: data.type || 'timer',
+          premium: data.premium || false
         });
       } catch (error) {
         console.error('Error fetching session:', error);
@@ -123,6 +132,8 @@ const EditTrainingSession = () => {
         playlist: formData.playlist,
         thumbnail_url: formData.thumbnail_url,
         published: formData.published,
+        type: formData.type,
+        premium: formData.premium,
         updated_at: new Date().toISOString()
       };
 
@@ -282,6 +293,44 @@ const EditTrainingSession = () => {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="type" className="text-white">Training Type</Label>
+                    <Select value={formData.type} onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}>
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="timer">
+                          <div className="flex items-center">
+                            <Timer className="w-4 h-4 mr-2" />
+                            Timer Mode
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="manual">
+                          <div className="flex items-center">
+                            <Hand className="w-4 h-4 mr-2" />
+                            Manual Mode
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-end">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={formData.premium}
+                        onCheckedChange={(checked) => setFormData(prev => ({ ...prev, premium: checked }))}
+                        id="premium-toggle"
+                      />
+                      <Label htmlFor="premium-toggle" className="text-white flex items-center space-x-1">
+                        <Crown className="w-4 h-4 text-yellow-400" />
+                        <span>Premium</span>
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <Label htmlFor="playlist" className="text-white">Recommended Playlist</Label>
                   <Input
@@ -311,6 +360,14 @@ const EditTrainingSession = () => {
               sessionId={sessionId}
               onExercisesChange={setSessionExercises}
             />
+
+            {/* Redemption Codes Section - only show for premium sessions */}
+            {formData.premium && (
+              <TrainingRedemptionCodeManagement 
+                trainingSessionId={sessionId}
+                onCodesUpdate={() => {}}
+              />
+            )}
           </div>
 
           {/* Sidebar */}
@@ -327,19 +384,36 @@ const EditTrainingSession = () => {
                     alt="Session preview"
                     className="w-full h-32 object-cover rounded-lg"
                   />
-                  {formData.difficulty_level && (
-                    <Badge className={`absolute top-2 right-2 ${
-                      formData.difficulty_level === 'Beginner' ? 'bg-green-500' :
-                      formData.difficulty_level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
-                    } text-white`}>
-                      {formData.difficulty_level}
+                  <div className="absolute top-2 right-2 flex space-x-1">
+                    {formData.difficulty_level && (
+                      <Badge className={`${
+                        formData.difficulty_level === 'Beginner' ? 'bg-green-500' :
+                        formData.difficulty_level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
+                      } text-white`}>
+                        {formData.difficulty_level}
+                      </Badge>
+                    )}
+                    {formData.premium && (
+                      <Badge className="bg-yellow-500 text-white">
+                        <Crown className="w-3 h-3 mr-1" />
+                        Premium
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="absolute top-2 left-2 flex space-x-1">
+                    <Badge variant="outline" className="border-white/20 text-white/70 bg-black/30">
+                      {formData.type === 'timer' ? (
+                        <><Timer className="w-3 h-3 mr-1" />Timer</>
+                      ) : (
+                        <><Hand className="w-3 h-3 mr-1" />Manual</>
+                      )}
                     </Badge>
-                  )}
-                  {!formData.published && (
-                    <Badge className="absolute top-2 left-2 bg-orange-500/20 text-orange-400">
-                      Draft
-                    </Badge>
-                  )}
+                    {!formData.published && (
+                      <Badge className="bg-orange-500/20 text-orange-400">
+                        Draft
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <div className="mt-4 space-y-2">
                   <h3 className="text-white font-semibold">{formData.title || 'Untitled Session'}</h3>

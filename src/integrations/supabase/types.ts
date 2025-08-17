@@ -1207,6 +1207,60 @@ export type Database = {
           },
         ]
       }
+      training_redemption_codes: {
+        Row: {
+          code: string
+          created_at: string | null
+          created_by: string | null
+          current_uses: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean | null
+          max_uses: number | null
+          training_session_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          training_session_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string | null
+          created_by?: string | null
+          current_uses?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_uses?: number | null
+          training_session_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_redemption_codes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_redemption_codes_training_session_id_fkey"
+            columns: ["training_session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_session_figures: {
         Row: {
           figure_id: string
@@ -1266,6 +1320,7 @@ export type Database = {
           figures: Json | null
           id: string
           playlist: string | null
+          premium: boolean
           published: boolean | null
           stretching_exercises: Json | null
           thumbnail_url: string | null
@@ -1285,6 +1340,7 @@ export type Database = {
           figures?: Json | null
           id?: string
           playlist?: string | null
+          premium?: boolean
           published?: boolean | null
           stretching_exercises?: Json | null
           thumbnail_url?: string | null
@@ -1304,6 +1360,7 @@ export type Database = {
           figures?: Json | null
           id?: string
           playlist?: string | null
+          premium?: boolean
           published?: boolean | null
           stretching_exercises?: Json | null
           thumbnail_url?: string | null
@@ -1621,6 +1678,63 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_training_purchases: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          id: string
+          payment_amount: number | null
+          purchase_type: string
+          purchased_at: string | null
+          redemption_code: string | null
+          stripe_session_id: string | null
+          training_session_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_amount?: number | null
+          purchase_type: string
+          purchased_at?: string | null
+          redemption_code?: string | null
+          stripe_session_id?: string | null
+          training_session_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          payment_amount?: number | null
+          purchase_type?: string
+          purchased_at?: string | null
+          redemption_code?: string | null
+          stripe_session_id?: string | null
+          training_session_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_training_purchases_training_session_id_fkey"
+            columns: ["training_session_id"]
+            isOneToOne: false
+            referencedRelation: "training_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_training_purchases_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
