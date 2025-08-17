@@ -26,6 +26,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { SessionExerciseManager } from '@/components/SessionExerciseManager';
 
 const EditTrainingSession = () => {
   const { sessionId } = useParams();
@@ -56,6 +57,8 @@ const EditTrainingSession = () => {
     figure: '',
     stretch: ''
   });
+
+  const [sessionExercises, setSessionExercises] = useState<any[]>([]);
 
   // Redirect if not admin
   useEffect(() => {
@@ -488,6 +491,12 @@ const EditTrainingSession = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Exercise Management */}
+            <SessionExerciseManager 
+              sessionId={sessionId || ''}
+              onExercisesChange={setSessionExercises}
+            />
 
             {/* Session Stats */}
             <Card className="glass-effect border-white/10">
