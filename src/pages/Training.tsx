@@ -96,8 +96,7 @@ const Training = () => {
   };
 
   const handleEditSession = (session: any) => {
-    setEditingSession(session);
-    setShowCreateSession(true);
+    navigate(`/training/${session.id}/edit`);
   };
 
   const handleDeleteSession = async (sessionId: string) => {

@@ -22,6 +22,7 @@ import Inbox from "./pages/Inbox";
 import FriendProfile from "@/pages/FriendProfileReal";
 import Friends from "@/pages/Friends";
 import Training from "@/pages/Training";
+import EditTrainingSession from "@/pages/EditTrainingSession";
 import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
 import MyJourney from "@/pages/MyJourney";
 import EditChallenge from "@/pages/EditChallenge";
@@ -251,6 +252,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Training />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training/:sessionId/edit"
+        element={
+          <ProtectedRoute>
+            <EditTrainingSession />
           </ProtectedRoute>
         }
       />

@@ -1,0 +1,546 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, 
+  Save, 
+  Eye, 
+  EyeOff, 
+  Plus, 
+  X, 
+  Upload,
+  Clock,
+  Users,
+  Target,
+  Loader2
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserRole } from '@/hooks/useUserRole';
+import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+const EditTrainingSession = () => {
+  const { sessionId } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { isAdmin, isLoading: roleLoading } = useUserRole();
+  const { toast } = useToast();
+  
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    duration_minutes: '',
+    difficulty_level: '',
+    warmup_exercises: [] as string[],
+    figures: [] as string[],
+    stretching_exercises: [] as string[],
+    playlist: '',
+    thumbnail_url: '',
+    published: false
+  });
+
+  const [currentInputs, setCurrentInputs] = useState({
+    warmup: '',
+    figure: '',
+    stretch: ''
+  });
+
+  // Redirect if not admin
+  useEffect(() => {
+    if (!roleLoading && !isAdmin) {
+      navigate('/training');
+    }
+  }, [isAdmin, roleLoading, navigate]);
+
+  // Fetch session data
+  useEffect(() => {
+    const fetchSession = async () => {
+      if (!sessionId) {
+        navigate('/training');
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('training_sessions')
+          .select('*')
+          .eq('id', sessionId)
+          .single();
+
+        if (error) throw error;
+        
+        if (!data) {
+          navigate('/training');
+          return;
+        }
+
+        setSession(data);
+        setFormData({
+          title: data.title || '',
+          description: data.description || '',
+          duration_minutes: data.duration_minutes?.toString() || '',
+          difficulty_level: data.difficulty_level || '',
+          warmup_exercises: Array.isArray(data.warmup_exercises) ? data.warmup_exercises.filter((item): item is string => typeof item === 'string') : [],
+          figures: Array.isArray(data.figures) ? data.figures.filter((item): item is string => typeof item === 'string') : [],
+          stretching_exercises: Array.isArray(data.stretching_exercises) ? data.stretching_exercises.filter((item): item is string => typeof item === 'string') : [],
+          playlist: data.playlist || '',
+          thumbnail_url: data.thumbnail_url || '',
+          published: data.published || false
+        });
+      } catch (error) {
+        console.error('Error fetching session:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load training session.",
+          variant: "destructive",
+        });
+        navigate('/training');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (sessionId && !roleLoading && isAdmin) {
+      fetchSession();
+    }
+  }, [sessionId, isAdmin, roleLoading, navigate, toast]);
+
+  const addItem = (type: 'warmup_exercises' | 'figures' | 'stretching_exercises', item: string) => {
+    if (item.trim()) {
+      setFormData(prev => ({
+        ...prev,
+        [type]: [...prev[type], item.trim()]
+      }));
+      
+      // Clear the input
+      if (type === 'warmup_exercises') setCurrentInputs(prev => ({ ...prev, warmup: '' }));
+      if (type === 'figures') setCurrentInputs(prev => ({ ...prev, figure: '' }));
+      if (type === 'stretching_exercises') setCurrentInputs(prev => ({ ...prev, stretch: '' }));
+    }
+  };
+
+  const removeItem = (type: 'warmup_exercises' | 'figures' | 'stretching_exercises', index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      [type]: prev[type].filter((_, i) => i !== index)
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!user || !sessionId) return;
+    
+    setSaving(true);
+    try {
+      const sessionData = {
+        title: formData.title,
+        description: formData.description,
+        duration_minutes: parseInt(formData.duration_minutes) || null,
+        difficulty_level: formData.difficulty_level,
+        warmup_exercises: formData.warmup_exercises,
+        figures: formData.figures,
+        stretching_exercises: formData.stretching_exercises,
+        playlist: formData.playlist,
+        thumbnail_url: formData.thumbnail_url,
+        published: formData.published,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('training_sessions')
+        .update(sessionData)
+        .eq('id', sessionId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Session Updated",
+        description: "Training session has been updated successfully.",
+      });
+      
+      navigate('/training');
+    } catch (error) {
+      console.error('Error saving session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save session. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (roleLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Loading training session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate('/training')}
+              className="border-white/20 text-white hover:bg-white/10"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Edit Training Session</h1>
+              <p className="text-muted-foreground">Modify your training session details and content</p>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2">
+              <Switch
+                checked={formData.published}
+                onCheckedChange={(checked) => setFormData(prev => ({ ...prev, published: checked }))}
+                id="published-toggle"
+              />
+              <Label htmlFor="published-toggle" className="text-white flex items-center space-x-1">
+                {formData.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                <span>{formData.published ? 'Published' : 'Draft'}</span>
+              </Label>
+            </div>
+            
+            <Button
+              onClick={handleSave}
+              disabled={saving || !formData.title}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" />
+                  Save Changes
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Basic Information */}
+            <Card className="glass-effect border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center">
+                  <Target className="w-5 h-5 mr-2 text-primary" />
+                  Basic Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="title" className="text-white">Session Title *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Enter an engaging session title"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="description" className="text-white">Description</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Describe what participants can expect from this session..."
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                    rows={4}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="duration" className="text-white">Duration (minutes)</Label>
+                    <Input
+                      id="duration"
+                      type="number"
+                      value={formData.duration_minutes}
+                      onChange={(e) => setFormData(prev => ({ ...prev, duration_minutes: e.target.value }))}
+                      placeholder="45"
+                      className="bg-white/5 border-white/10 text-white"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="difficulty" className="text-white">Difficulty Level</Label>
+                    <Select value={formData.difficulty_level} onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}>
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                        <SelectValue placeholder="Select difficulty" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Beginner">Beginner</SelectItem>
+                        <SelectItem value="Intermediate">Intermediate</SelectItem>
+                        <SelectItem value="Advanced">Advanced</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="playlist" className="text-white">Recommended Playlist</Label>
+                  <Input
+                    id="playlist"
+                    value={formData.playlist}
+                    onChange={(e) => setFormData(prev => ({ ...prev, playlist: e.target.value }))}
+                    placeholder="Spotify playlist name or link"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="thumbnail" className="text-white">Thumbnail URL</Label>
+                  <Input
+                    id="thumbnail"
+                    value={formData.thumbnail_url}
+                    onChange={(e) => setFormData(prev => ({ ...prev, thumbnail_url: e.target.value }))}
+                    placeholder="https://example.com/image.jpg"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Session Structure */}
+            <Card className="glass-effect border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white">Session Structure</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Warm-up */}
+                <div>
+                  <Label className="text-white text-lg font-semibold mb-3 block">Warm-up Exercises</Label>
+                  <div className="flex gap-2 mb-3">
+                    <Input
+                      value={currentInputs.warmup}
+                      onChange={(e) => setCurrentInputs(prev => ({ ...prev, warmup: e.target.value }))}
+                      placeholder="Add warm-up exercise"
+                      className="bg-white/5 border-white/10 text-white flex-1"
+                      onKeyPress={(e) => e.key === 'Enter' && addItem('warmup_exercises', currentInputs.warmup)}
+                    />
+                    <Button
+                      onClick={() => addItem('warmup_exercises', currentInputs.warmup)}
+                      variant="outline"
+                      className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.warmup_exercises.map((item, index) => (
+                      <Badge key={index} variant="secondary" className="bg-yellow-500/20 text-yellow-400 px-3 py-1">
+                        {item}
+                        <button
+                          onClick={() => removeItem('warmup_exercises', index)}
+                          className="ml-2 hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator className="bg-white/10" />
+
+                {/* Figures */}
+                <div>
+                  <Label className="text-white text-lg font-semibold mb-3 block">Figures & Combos</Label>
+                  <div className="flex gap-2 mb-3">
+                    <Input
+                      value={currentInputs.figure}
+                      onChange={(e) => setCurrentInputs(prev => ({ ...prev, figure: e.target.value }))}
+                      placeholder="Add figure or combo"
+                      className="bg-white/5 border-white/10 text-white flex-1"
+                      onKeyPress={(e) => e.key === 'Enter' && addItem('figures', currentInputs.figure)}
+                    />
+                    <Button
+                      onClick={() => addItem('figures', currentInputs.figure)}
+                      variant="outline"
+                      className="border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.figures.map((item, index) => (
+                      <Badge key={index} variant="secondary" className="bg-purple-500/20 text-purple-400 px-3 py-1">
+                        {item}
+                        <button
+                          onClick={() => removeItem('figures', index)}
+                          className="ml-2 hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <Separator className="bg-white/10" />
+
+                {/* Stretching */}
+                <div>
+                  <Label className="text-white text-lg font-semibold mb-3 block">Stretching Routine</Label>
+                  <div className="flex gap-2 mb-3">
+                    <Input
+                      value={currentInputs.stretch}
+                      onChange={(e) => setCurrentInputs(prev => ({ ...prev, stretch: e.target.value }))}
+                      placeholder="Add stretching exercise"
+                      className="bg-white/5 border-white/10 text-white flex-1"
+                      onKeyPress={(e) => e.key === 'Enter' && addItem('stretching_exercises', currentInputs.stretch)}
+                    />
+                    <Button
+                      onClick={() => addItem('stretching_exercises', currentInputs.stretch)}
+                      variant="outline"
+                      className="border-pink-500/50 text-pink-400 hover:bg-pink-500/10"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {formData.stretching_exercises.map((item, index) => (
+                      <Badge key={index} variant="secondary" className="bg-pink-500/20 text-pink-400 px-3 py-1">
+                        {item}
+                        <button
+                          onClick={() => removeItem('stretching_exercises', index)}
+                          className="ml-2 hover:text-red-400 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Preview */}
+            <Card className="glass-effect border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white">Preview</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="relative">
+                  <img
+                    src={formData.thumbnail_url || "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=400&h=300&fit=crop"}
+                    alt="Session preview"
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
+                  {formData.difficulty_level && (
+                    <Badge className={`absolute top-2 right-2 ${
+                      formData.difficulty_level === 'Beginner' ? 'bg-green-500' :
+                      formData.difficulty_level === 'Intermediate' ? 'bg-yellow-500' : 'bg-red-500'
+                    } text-white`}>
+                      {formData.difficulty_level}
+                    </Badge>
+                  )}
+                  {!formData.published && (
+                    <Badge className="absolute top-2 left-2 bg-orange-500/20 text-orange-400">
+                      Draft
+                    </Badge>
+                  )}
+                </div>
+                <div className="mt-4 space-y-2">
+                  <h3 className="text-white font-semibold">{formData.title || 'Untitled Session'}</h3>
+                  <p className="text-muted-foreground text-sm line-clamp-2">
+                    {formData.description || 'No description provided'}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Session Stats */}
+            <Card className="glass-effect border-white/10">
+              <CardHeader>
+                <CardTitle className="text-white">Session Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Clock className="w-4 h-4 text-blue-400" />
+                    <span className="text-muted-foreground">Duration</span>
+                  </div>
+                  <span className="text-white font-medium">
+                    {formData.duration_minutes || 0} min
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-yellow-400" />
+                    <span className="text-muted-foreground">Warm-up</span>
+                  </div>
+                  <span className="text-white font-medium">
+                    {formData.warmup_exercises.length} exercises
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-purple-400" />
+                    <span className="text-muted-foreground">Figures</span>
+                  </div>
+                  <span className="text-white font-medium">
+                    {formData.figures.length} items
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Target className="w-4 h-4 text-pink-400" />
+                    <span className="text-muted-foreground">Stretching</span>
+                  </div>
+                  <span className="text-white font-medium">
+                    {formData.stretching_exercises.length} exercises
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default EditTrainingSession;
