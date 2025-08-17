@@ -88,6 +88,7 @@ const TrainingExerciseSession = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isPreparingToStart, setIsPreparingToStart] = useState(false);
   const [preparationTime, setPreparationTime] = useState(10);
+  const [exerciseImages, setExerciseImages] = useState<Record<string, string>>({});
 
   const { speak } = useSpeech(audioMode === "sound");
 
@@ -159,6 +160,52 @@ const TrainingExerciseSession = () => {
 
     fetchSession();
   }, [sessionId, user?.id, isAdmin, navigate, toast]);
+
+  // Fetch exercise images from figures library
+  useEffect(() => {
+    const fetchExerciseImages = async () => {
+      if (!session) return;
+      
+      const exerciseNames = new Set<string>();
+      
+      // Collect all exercise names from all sections
+      const allExercises = [
+        ...(Array.isArray(session.warmup_exercises) ? session.warmup_exercises : []),
+        ...(Array.isArray(session.figures) ? session.figures : []),
+        ...(Array.isArray(session.stretching_exercises) ? session.stretching_exercises : [])
+      ];
+      
+      allExercises.forEach(exercise => {
+        if (exercise.name) {
+          exerciseNames.add(exercise.name);
+        }
+      });
+
+      if (exerciseNames.size === 0) return;
+
+      // Fetch figure images for all exercise names
+      const { data: figures, error } = await supabase
+        .from('figures')
+        .select('name, image_url')
+        .in('name', Array.from(exerciseNames));
+
+      if (error) {
+        console.error('Error fetching exercise images:', error);
+        return;
+      }
+
+      const imageMap: Record<string, string> = {};
+      figures?.forEach(figure => {
+        if (figure.image_url) {
+          imageMap[figure.name] = figure.image_url;
+        }
+      });
+
+      setExerciseImages(imageMap);
+    };
+
+    fetchExerciseImages();
+  }, [session]);
 
   // Timer functions
   const playBeep = (type: "countdown" | "transition" | "ready" = "countdown") => {
@@ -650,11 +697,19 @@ const TrainingExerciseSession = () => {
                           <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
                             <Hand className="w-32 h-32 md:w-40 md:h-40 text-green-400" />
                           </div>
-                        ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
-                            <span className="text-6xl md:text-8xl">🏃‍♂️</span>
-                          </div>
-                        )}
+                         ) : (
+                           <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
+                             {exerciseImages[currentSegment.exerciseName] ? (
+                               <img 
+                                 src={exerciseImages[currentSegment.exerciseName]} 
+                                 alt={currentSegment.exerciseName}
+                                 className="w-full h-full object-cover"
+                               />
+                             ) : (
+                               <span className="text-6xl md:text-8xl">🏃‍♂️</span>
+                             )}
+                           </div>
+                         )}
                       </div>
 
                       <div className="absolute top-4 left-4">
