@@ -23,6 +23,7 @@ import FriendProfile from "@/pages/FriendProfileReal";
 import Friends from "@/pages/Friends";
 import Training from "@/pages/Training";
 import TrainingSessionDetail from "@/pages/TrainingSessionDetail";
+import TrainingExerciseSession from "@/pages/TrainingExerciseSession";
 import EditTrainingSession from "@/pages/EditTrainingSession";
 import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
 import MyJourney from "@/pages/MyJourney";
@@ -261,6 +262,14 @@ const AppRoutes = () => {
          element={
            <ProtectedRoute>
              <TrainingSessionDetail />
+           </ProtectedRoute>
+         }
+       />
+       <Route
+         path="/training/:sessionId/session"
+         element={
+           <ProtectedRoute>
+             <TrainingExerciseSession />
            </ProtectedRoute>
          }
        />

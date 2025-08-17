@@ -127,7 +127,7 @@ const TrainingSessionDetail = () => {
 
   const handleStartTraining = () => {
     if (session) {
-      setShowTrainingSession(true);
+      navigate(`/training/${session.id}/session`);
     }
   };
 
