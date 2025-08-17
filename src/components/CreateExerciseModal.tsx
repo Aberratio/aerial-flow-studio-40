@@ -29,6 +29,7 @@ interface CreateExerciseModalProps {
   onClose: () => void;
   onExerciseCreated?: () => void;
   editingFigure?: any;
+  isTrainingSpecial?: boolean;
 }
 
 export const CreateExerciseModal = ({
@@ -36,6 +37,7 @@ export const CreateExerciseModal = ({
   onClose,
   onExerciseCreated,
   editingFigure,
+  isTrainingSpecial = false,
 }: CreateExerciseModalProps) => {
   const [formData, setFormData] = useState({
     name: "",
@@ -374,11 +376,20 @@ export const CreateExerciseModal = ({
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="silks">Silks</SelectItem>
-                  <SelectItem value="hoop">Hoop</SelectItem>
-                  <SelectItem value="pole">Pole</SelectItem>
-                  <SelectItem value="hammock">Hammock</SelectItem>
-                  <SelectItem value="core">Core</SelectItem>
+                  {isTrainingSpecial ? (
+                    <>
+                      <SelectItem value="warm_up">Warm Up</SelectItem>
+                      <SelectItem value="stretching">Stretching</SelectItem>
+                    </>
+                  ) : (
+                    <>
+                      <SelectItem value="silks">Silks</SelectItem>
+                      <SelectItem value="hoop">Hoop</SelectItem>
+                      <SelectItem value="pole">Pole</SelectItem>
+                      <SelectItem value="hammock">Hammock</SelectItem>
+                      <SelectItem value="core">Core</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -399,8 +410,17 @@ export const CreateExerciseModal = ({
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="single figure">Single Figure</SelectItem>
-                <SelectItem value="combo">Combo</SelectItem>
+                {isTrainingSpecial ? (
+                  <>
+                    <SelectItem value="warm_up">Warm Up</SelectItem>
+                    <SelectItem value="stretching">Stretching</SelectItem>
+                  </>
+                ) : (
+                  <>
+                    <SelectItem value="single figure">Single Figure</SelectItem>
+                    <SelectItem value="combo">Combo</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>

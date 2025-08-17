@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { TrainingDetailsModal } from "@/components/TrainingDetailsModal";
 import { TrainingSessionPage } from "@/components/TrainingSessionPage";
 import { CreateTrainingModal } from "@/components/CreateTrainingModal";
+import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +32,7 @@ const Training = () => {
   const [showSessionDetails, setShowSessionDetails] = useState(false);
   const [showTrainingSession, setShowTrainingSession] = useState(false);
   const [editingSession, setEditingSession] = useState<any>(null);
+  const [showCreateExercise, setShowCreateExercise] = useState(false);
   const [sessions, setSessions] = useState([
     {
       id: 1,
@@ -204,13 +206,25 @@ const Training = () => {
               </p>
             </div>
             {user?.role === "trainer" || user?.role === "admin" ? (
-              <Button
-                onClick={() => setShowCreateSession(true)}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto"
-              >
-                <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                Create Session
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                <Button
+                  onClick={() => setShowCreateSession(true)}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                >
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Create Session
+                </Button>
+                {isAdmin && (
+                  <Button
+                    onClick={() => setShowCreateExercise(true)}
+                    variant="outline"
+                    className="border-white/20 text-white hover:bg-white/10"
+                  >
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                    Create Exercise
+                  </Button>
+                )}
+              </div>
             ) : null}
           </div>
         </div>
@@ -385,6 +399,19 @@ const Training = () => {
         }}
         onSave={handleCreateSession}
         editingSession={editingSession}
+      />
+
+      <CreateExerciseModal
+        isOpen={showCreateExercise}
+        onClose={() => setShowCreateExercise(false)}
+        onExerciseCreated={() => {
+          setShowCreateExercise(false);
+          toast({
+            title: "Exercise Created",
+            description: "Special exercise has been created successfully.",
+          });
+        }}
+        isTrainingSpecial={true}
       />
     </div>
   );
