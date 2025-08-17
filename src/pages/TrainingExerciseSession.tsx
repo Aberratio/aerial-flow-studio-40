@@ -205,19 +205,19 @@ const TrainingExerciseSession = () => {
           const holdTime = exercise.hold_time_seconds || 30;
           const restTime = exercise.rest_time_seconds || 15;
 
-          for (let setIndex = 1; setIndex <= sets; setIndex++) {
+          for (let setIndex = 0; setIndex < sets; setIndex++) {
             // Exercise segment
             timerSegments.push({
               type: "exercise",
               exerciseIndex,
               setIndex,
               duration: holdTime,
-              exerciseName: `${exerciseName} (Set ${setIndex}/${sets})`,
+              exerciseName: sets > 1 ? `${exerciseName} (Set ${setIndex + 1}/${sets})` : exerciseName,
               exerciseNotes: exercise.notes
             });
 
             // Rest segment (except for last set of last exercise)
-            if (setIndex < sets || exerciseIndex < allSections.reduce((total, s) => total + (Array.isArray(s.exercises) ? s.exercises.length : 0), 0) - 1) {
+            if (setIndex < sets - 1 || exerciseIndex < allSections.reduce((total, s) => total + (Array.isArray(s.exercises) ? s.exercises.length : 0), 0) - 1) {
               timerSegments.push({
                 type: "rest",
                 exerciseIndex,
@@ -238,6 +238,29 @@ const TrainingExerciseSession = () => {
     }
   };
 
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const formatTimeNatural = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    if (mins === 0) {
+      return `${secs} seconds`;
+    } else if (mins === 1 && secs === 0) {
+      return "1 minute";
+    } else if (mins === 1) {
+      return `1 minute and ${secs} seconds`;
+    } else if (secs === 0) {
+      return `${mins} minutes`;
+    } else {
+      return `${mins} minutes and ${secs} seconds`;
+    }
+  };
+
   // Timer effects
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -245,78 +268,130 @@ const TrainingExerciseSession = () => {
     if (isPreparingToStart && preparationTime > 0) {
       interval = setInterval(() => {
         setPreparationTime(prev => {
+          if (audioMode === "sound") {
+            if (prev > 2 && prev < 7) {
+              speak((prev - 1).toString());
+            } else if (prev === 2) {
+              speak("1... Begin!");
+            }
+          } else if (audioMode === "minimal_sound") {
+            if (prev <= 5 && prev > 0) {
+              playBeep("ready");
+            }
+          }
+
           if (prev <= 1) {
             setIsPreparingToStart(false);
             setIsRunning(true);
-            playBeep("ready");
-            speak("Let's start!");
+            setPreparationTime(10);
             return 0;
           }
-          if (prev <= 3) playBeep("countdown");
-          return prev - 1;
-        });
-      }, 1000);
-    } else if (isRunning && !isCompleted && timeRemaining > 0) {
-      interval = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            handleSegmentComplete();
-            return 0;
-          }
-          if (prev <= 3) playBeep("countdown");
           return prev - 1;
         });
       }, 1000);
     }
 
     return () => clearInterval(interval);
-  }, [isRunning, isPreparingToStart, preparationTime, timeRemaining, isCompleted]);
+  }, [isPreparingToStart, preparationTime, audioMode, speak]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    if (isRunning && !isPreparingToStart && timeRemaining > 0) {
+      interval = setInterval(() => {
+        setTimeRemaining(prev => {
+          if (audioMode === "sound" && prev <= 7 && prev > 1) {
+            speak((prev - 2).toString());
+          }
+          
+          if (audioMode === "minimal_sound" && currentSegmentIndex < segments.length && prev <= 5 && prev > 0) {
+            const currentSegment = segments[currentSegmentIndex];
+            if (currentSegment?.type === "exercise") {
+              playBeep("countdown");
+            } else if (currentSegment?.type === "rest") {
+              playBeep("transition");
+            }
+          }
+
+          if (prev <= 1) {
+            handleSegmentComplete();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(interval);
+  }, [isRunning, isPreparingToStart, timeRemaining, currentSegmentIndex, segments, audioMode]);
+
+  useEffect(() => {
+    if (!isRunning || !segments[currentSegmentIndex]) return;
+
+    const currentSegment = segments[currentSegmentIndex];
+
+    if (!hasAnnouncedSegment && audioMode === "sound") {
+      setHasAnnouncedSegment(true);
+
+      if (currentSegment.type === "exercise") {
+        const duration = formatTimeNatural(currentSegment.duration);
+        const notes = currentSegment.exerciseNotes
+          ? `, ${currentSegment.exerciseNotes}`
+          : "";
+        speak(`${currentSegment.exerciseName}, ${duration}${notes}`);
+      } else {
+        const duration = formatTimeNatural(currentSegment.duration);
+        speak(`Rest time, ${duration}`);
+      }
+    }
+  }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, segments, audioMode, speak]);
+
+  useEffect(() => {
+    setHasAnnouncedSegment(false);
+  }, [currentSegmentIndex]);
 
   const handleSegmentComplete = () => {
-    const isLastSegment = currentSegmentIndex >= segments.length - 1;
+    const currentSegment = segments[currentSegmentIndex];
 
-    if (isLastSegment) {
+    if (currentSegmentIndex >= segments.length - 1) {
       setIsCompleted(true);
       setIsRunning(false);
-      playBeep("ready");
-      speak("Training complete! Great job!");
+      if (audioMode === "sound") {
+        speak("Training completed! Great job!");
+      }
       return;
     }
 
-    setCurrentSegmentIndex(prev => prev + 1);
-    setTimeRemaining(segments[currentSegmentIndex + 1].duration);
-    setHasAnnouncedSegment(false);
-    playBeep("transition");
+    const nextIndex = currentSegmentIndex + 1;
+    const nextSegment = segments[nextIndex];
+
+    setCurrentSegmentIndex(nextIndex);
+    setTimeRemaining(nextSegment.duration);
   };
 
-  useEffect(() => {
-    if (isRunning && !hasAnnouncedSegment && segments[currentSegmentIndex]) {
-      const segment = segments[currentSegmentIndex];
-      if (segment.type === "exercise") {
-        speak(`${segment.exerciseName}`);
-      } else {
-        speak("Rest time");
-      }
-      setHasAnnouncedSegment(true);
+  const handlePlayPause = () => {
+    if (isPreparingToStart) {
+      setIsPreparingToStart(false);
+      setPreparationTime(10);
+    } else {
+      setIsRunning(!isRunning);
     }
-  }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, segments, speak]);
-
-  const startTimer = () => {
-    setIsPreparingToStart(true);
-    setPreparationTime(10);
   };
 
-  const toggleTimer = () => {
-    setIsRunning(!isRunning);
+  const handleSkip = () => {
+    if (currentSegmentIndex < segments.length - 1) {
+      handleSegmentComplete();
+    }
   };
 
   const toggleAudioMode = () => {
-    const modes: ("sound" | "no_sound" | "minimal_sound")[] = ["sound", "minimal_sound", "no_sound"];
+    const modes: ("sound" | "no_sound" | "minimal_sound")[] = ["minimal_sound", "sound", "no_sound"];
     const currentIndex = modes.indexOf(audioMode);
     const nextMode = modes[(currentIndex + 1) % modes.length];
     setAudioMode(nextMode);
     localStorage.setItem("trainingTimerAudioMode", nextMode);
   };
+
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -421,12 +496,6 @@ const TrainingExerciseSession = () => {
     navigate(`/training/${sessionId}`);
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -445,178 +514,285 @@ const TrainingExerciseSession = () => {
   // Timer Mode UI
   if (session.type === 'timer') {
     const currentSegment = segments[currentSegmentIndex];
-    const totalTime = segments.reduce((sum, segment) => sum + segment.duration, 0);
-    const elapsed = segments.slice(0, currentSegmentIndex).reduce((sum, segment) => sum + segment.duration, 0) + 
-                   (currentSegment ? currentSegment.duration - timeRemaining : 0);
-    const progress = totalTime > 0 ? (elapsed / totalTime) * 100 : 0;
+    const totalSegments = segments.length;
+    const progress = totalSegments > 0 ? ((currentSegmentIndex + 1) / totalSegments) * 100 : 0;
+
+    const ProgressBar = ({ className }: { className?: string }) => (
+      <div className={`space-y-2 ${className || ''}`}>
+        <div className="flex justify-between text-sm text-white/70">
+          <span>Progress</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <Progress value={progress} className="h-2" />
+        <div className="flex justify-between text-xs text-white/60">
+          <span>Segment {currentSegmentIndex + 1} of {totalSegments}</span>
+        </div>
+      </div>
+    );
+
+    const NextUp = ({ className }: { className?: string }) => {
+      const nextSegment = segments[currentSegmentIndex + 1];
+      if (!nextSegment) return null;
+
+      return (
+        <Card className={`glass-effect border-white/10 ${className || ''}`}>
+          <CardContent className="p-4">
+            <h3 className="text-lg font-semibold text-white mb-3">Next Up</h3>
+            <div className="flex items-center space-x-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                nextSegment.type === "exercise" ? "bg-blue-500/20" : "bg-green-500/20"
+              }`}>
+                {nextSegment.type === "exercise" ? (
+                  <Target className="w-5 h-5 text-blue-400" />
+                ) : (
+                  <Clock className="w-5 h-5 text-green-400" />
+                )}
+              </div>
+              <div className="flex-1">
+                <div className="text-white font-medium">
+                  {nextSegment.exerciseName}
+                </div>
+                <div className="text-sm text-white/60">
+                  {formatTimeNatural(nextSegment.duration)}
+                </div>
+                {nextSegment.type === "exercise" && nextSegment.exerciseNotes && (
+                  <div className="text-xs text-primary/80 mt-1 bg-primary/10 rounded px-2 py-1 border border-primary/20">
+                    {nextSegment.exerciseNotes}
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    };
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
-        <div className="container mx-auto px-4 py-6 max-w-4xl">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
+        <div>
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
               <Button
-                variant="outline"
-                size="icon"
+                variant="ghost"
                 onClick={() => navigate(`/training/${sessionId}`)}
-                className="border-white/20 text-white hover:bg-white/10"
+                className="text-white hover:bg-white/10 gap-2"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-5 h-5" />
+                <span className="hidden sm:inline">Back to Session</span>
+                <span className="sm:hidden">Back</span>
               </Button>
-              <div>
-                <div className="flex items-center space-x-3 mb-2">
-                  <h1 className="text-2xl font-bold text-white">{session.title}</h1>
-                  <Badge variant="outline" className="border-white/20 text-white/70">
-                    <Timer className="w-3 h-3 mr-1" />
-                    Timer Mode
-                  </Badge>
+
+              <div className="flex items-center gap-3">
+                <div className="hidden sm:flex items-center gap-2 text-sm text-white/70">
+                  <span>{currentSegmentIndex + 1} / {totalSegments}</span>
                 </div>
+
+                <Button
+                  variant="ghost"
+                  onClick={toggleAudioMode}
+                  className={`text-white hover:bg-white/10 transition-all ${
+                    audioMode === "sound" ? "bg-primary/20 text-primary" : 
+                    audioMode === "minimal_sound" ? "bg-yellow-500/20 text-yellow-400" : "bg-white/5"
+                  }`}
+                  title={
+                    audioMode === "sound" ? "Full sound mode" :
+                    audioMode === "minimal_sound" ? "Minimal sound mode (beeps only)" :
+                    "No sound mode"
+                  }
+                >
+                  {audioMode === "sound" ? (
+                    <Volume2 className="w-5 h-5" />
+                  ) : audioMode === "minimal_sound" ? (
+                    <div className="w-5 h-5 flex items-center justify-center">
+                      <div className="w-3 h-3 bg-current rounded-full animate-pulse"></div>
+                    </div>
+                  ) : (
+                    <VolumeX className="w-5 h-5" />
+                  )}
+                </Button>
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleAudioMode}
-                className="border-white/20 text-white hover:bg-white/10"
-                title={`Audio: ${audioMode}`}
-              >
-                {audioMode === "no_sound" ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              </Button>
             </div>
           </div>
+        </div>
 
-          {/* Overall Progress */}
-          <Card className="glass-effect border-white/10 mb-6">
-            <CardContent className="pt-6">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm text-white/70">
-                  <span>Overall Progress</span>
-                  <span>{Math.round(progress)}%</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-                <div className="flex justify-between text-xs text-white/60">
-                  <span>Segment {currentSegmentIndex + 1} of {segments.length}</span>
-                  <span>{formatTime(Math.floor(elapsed))} / {formatTime(totalTime)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="container mx-auto px-4 py-1 max-w-4xl">
+          <ProgressBar className="hidden sm:block mb-8" />
           {isCompleted ? (
             /* Completion Screen */
-            <Card className="glass-effect border-white/10 text-center">
-              <CardContent className="py-12">
-                <div className="space-y-6">
-                  <CheckCircle className="w-16 h-16 text-green-400 mx-auto" />
-                  <div>
-                    <h2 className="text-3xl font-bold text-white mb-2">Training Complete!</h2>
-                    <p className="text-white/70">Congratulations! You've completed your training session.</p>
-                  </div>
-                  <Button
-                    onClick={handleFinishSession}
-                    className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Finish Session
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : isPreparingToStart ? (
-            /* Preparation Screen */
-            <Card className="glass-effect border-white/10 text-center">
-              <CardContent className="py-12">
-                <div className="space-y-6">
-                  <div className="relative">
-                    <div className="w-32 h-32 rounded-full border-4 border-primary/20 flex items-center justify-center mx-auto">
-                      <span className="text-5xl font-bold text-white">{preparationTime}</span>
+            <div className="text-center py-12">
+              <Card className="glass-effect border-white/10">
+                <CardContent className="py-12">
+                  <div className="space-y-6">
+                    <CheckCircle className="w-16 h-16 text-green-400 mx-auto" />
+                    <div>
+                      <h2 className="text-3xl font-bold text-white mb-2">Training Complete!</h2>
+                      <p className="text-white/70">Congratulations! You've completed your training session.</p>
                     </div>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-white mb-2">Get Ready!</h2>
-                    <p className="text-white/70">Your training session will begin in {preparationTime} seconds</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ) : currentSegment ? (
-            /* Active Timer Display */
-            <Card className="glass-effect border-white/10">
-              <CardContent className="py-12 text-center">
-                <div className="space-y-8">
-                  {/* Timer Circle */}
-                  <div className="relative">
-                    <div className="w-48 h-48 rounded-full border-8 border-white/10 flex items-center justify-center mx-auto relative">
-                      <div 
-                        className="absolute inset-0 rounded-full border-8 border-transparent"
-                        style={{
-                          borderTopColor: currentSegment.type === "exercise" ? '#10b981' : '#f59e0b',
-                          borderRightColor: currentSegment.type === "exercise" ? '#10b981' : '#f59e0b',
-                          transform: `rotate(${((currentSegment.duration - timeRemaining) / currentSegment.duration) * 360}deg)`,
-                          transition: 'transform 1s linear'
-                        }}
-                      />
-                      <div className="text-center">
-                        <div className="text-5xl font-bold text-white">
-                          {formatTime(timeRemaining)}
-                        </div>
-                        <div className="text-lg text-white/60 mt-2">
-                          {currentSegment.type === "exercise" ? "Exercise" : "Rest"}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Exercise Info */}
-                  <div className="space-y-4">
-                    <Badge 
-                      className={`text-lg px-4 py-2 ${
-                        currentSegment.type === "exercise" 
-                          ? "bg-green-500 text-white" 
-                          : "bg-yellow-500 text-white"
-                      }`}
-                    >
-                      {currentSegment.type === "exercise" ? <Target className="w-4 h-4 mr-2" /> : <Clock className="w-4 h-4 mr-2" />}
-                      {currentSegment.type === "exercise" ? "Exercise Time" : "Rest Time"}
-                    </Badge>
-
-                    <h2 className="text-3xl font-bold text-white">
-                      {currentSegment.exerciseName}
-                    </h2>
-
-                    {currentSegment.exerciseNotes && (
-                      <p className="text-white/70 italic max-w-md mx-auto">
-                        {currentSegment.exerciseNotes}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Controls */}
-                  <div className="flex items-center justify-center space-x-4">
                     <Button
-                      onClick={toggleTimer}
-                      size="lg"
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+                      onClick={handleFinishSession}
+                      className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
                     >
-                      {isRunning ? (
-                        <>
-                          <Pause className="w-5 h-5 mr-2" />
-                          Pause
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-5 h-5 mr-2" />
-                          Resume
-                        </>
-                      )}
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Finish Session
                     </Button>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
+          ) : currentSegment ? (
+            <div className="grid lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                <Card className="glass-effect border-white/10 overflow-hidden">
+                  <CardContent className="p-0">
+                    <div className="relative">
+                      <div className="aspect-square max-w-2xl mx-auto bg-gray-900/50 rounded-lg overflow-hidden">
+                        {currentSegment.type === "rest" ? (
+                          <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
+                            <Hand className="w-32 h-32 md:w-40 md:h-40 text-green-400" />
+                          </div>
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
+                            <span className="text-6xl md:text-8xl">🏃‍♂️</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="absolute top-4 left-4">
+                        <Badge
+                          className={`text-sm font-medium ${
+                            currentSegment.type === "exercise"
+                              ? "bg-blue-500/90 text-white border-0"
+                              : "bg-green-500/90 text-white border-0"
+                          }`}
+                        >
+                          {currentSegment.type === "exercise" ? "Exercise" : "Rest Period"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="p-4 sm:p-6 text-center bg-gradient-to-t from-black/30 to-transparent">
+                      <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
+                        {currentSegment.exerciseName}
+                      </h2>
+
+                      {currentSegment.type === "exercise" && currentSegment.exerciseNotes && (
+                        <div className="mb-3 sm:mb-4 px-2">
+                          <p className="text-sm sm:text-base text-primary/90 bg-primary/10 rounded-lg p-2 sm:p-3 border border-primary/20">
+                            {currentSegment.exerciseNotes}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="relative mb-4 sm:mb-6">
+                        {isPreparingToStart ? (
+                          <div className="flex flex-col items-center">
+                            <div className="text-lg sm:text-xl text-white/70 mb-2">Get Ready!</div>
+                            <div className="text-6xl sm:text-7xl md:text-9xl font-mono font-bold text-yellow-400 mb-2 animate-pulse">
+                              {preparationTime}
+                            </div>
+                            <div className="text-sm sm:text-base text-white/60">Training starts in...</div>
+                          </div>
+                        ) : (
+                          <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
+                            {formatTime(timeRemaining)}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-row justify-center gap-4">
+                        <Button onClick={handlePlayPause} size="lg" className="bg-primary hover:bg-primary/80">
+                          {isPreparingToStart ? (
+                            <>
+                              <Pause className="w-6 h-6 mr-3" />
+                              Cancel
+                            </>
+                          ) : isRunning ? (
+                            <>
+                              <Pause className="w-6 h-6 mr-3" />
+                              Pause
+                            </>
+                          ) : (
+                            <>
+                              <Play className="w-6 h-6 mr-3" />
+                              Start
+                            </>
+                          )}
+                        </Button>
+
+                        {!isCompleted && (
+                          <Button onClick={handleSkip} variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+                            Skip
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <NextUp className="block sm:hidden" />
+              <ProgressBar className="block sm:hidden" />
+
+              <div className="space-y-4">
+                <Card className="glass-effect border-white/10">
+                  <CardContent className="p-4">
+                    <h3 className="text-lg font-semibold text-white mb-3">Current</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Type:</span>
+                        <span className="text-white">
+                          {currentSegment.type === "exercise" ? "Exercise" : "Rest"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Duration:</span>
+                        <span className="text-white">{formatTimeNatural(currentSegment.duration)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Segment:</span>
+                        <span className="text-white font-medium">
+                          {currentSegmentIndex + 1} of {totalSegments}
+                        </span>
+                      </div>
+                      {currentSegment.type === "exercise" && currentSegment.exerciseNotes && (
+                        <div className="pt-3 border-t border-white/10">
+                          <div className="text-white/70 text-xs mb-1">Notes:</div>
+                          <div className="text-white text-xs bg-primary/10 rounded p-2 border border-primary/20">
+                            {currentSegment.exerciseNotes}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <NextUp className="hidden sm:block" />
+
+                <Card className="glass-effect border-white/10">
+                  <CardContent className="p-4">
+                    <h3 className="text-lg font-semibold text-white mb-3">Stats</h3>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Total Segments:</span>
+                        <span className="text-white">{totalSegments}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Exercise Segments:</span>
+                        <span className="text-white">
+                          {segments.filter((s) => s.type === "exercise").length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-white/70">Completed:</span>
+                        <span className="text-white">
+                          {currentSegmentIndex} / {totalSegments}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
           ) : (
             /* Start Screen */
             <Card className="glass-effect border-white/10 text-center">
@@ -628,7 +804,10 @@ const TrainingExerciseSession = () => {
                     <p className="text-white/70">Your timer-based training session is ready to begin</p>
                   </div>
                   <Button
-                    onClick={startTimer}
+                    onClick={() => {
+                      setIsPreparingToStart(true);
+                      setPreparationTime(10);
+                    }}
                     size="lg"
                     className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
                   >
