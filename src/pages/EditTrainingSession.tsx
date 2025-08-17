@@ -5,11 +5,7 @@ import {
   Save, 
   Eye, 
   EyeOff, 
-  Plus, 
-  X, 
-  Upload,
   Clock,
-  Users,
   Target,
   Loader2
 } from 'lucide-react';
@@ -21,7 +17,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useToast } from '@/hooks/use-toast';
@@ -44,18 +39,9 @@ const EditTrainingSession = () => {
     description: '',
     duration_minutes: '',
     difficulty_level: '',
-    warmup_exercises: [] as string[],
-    figures: [] as string[],
-    stretching_exercises: [] as string[],
     playlist: '',
     thumbnail_url: '',
     published: false
-  });
-
-  const [currentInputs, setCurrentInputs] = useState({
-    warmup: '',
-    figure: '',
-    stretch: ''
   });
 
   const [sessionExercises, setSessionExercises] = useState<any[]>([]);
@@ -95,9 +81,6 @@ const EditTrainingSession = () => {
           description: data.description || '',
           duration_minutes: data.duration_minutes?.toString() || '',
           difficulty_level: data.difficulty_level || '',
-          warmup_exercises: Array.isArray(data.warmup_exercises) ? data.warmup_exercises.filter((item): item is string => typeof item === 'string') : [],
-          figures: Array.isArray(data.figures) ? data.figures.filter((item): item is string => typeof item === 'string') : [],
-          stretching_exercises: Array.isArray(data.stretching_exercises) ? data.stretching_exercises.filter((item): item is string => typeof item === 'string') : [],
           playlist: data.playlist || '',
           thumbnail_url: data.thumbnail_url || '',
           published: data.published || false
@@ -120,27 +103,6 @@ const EditTrainingSession = () => {
     }
   }, [sessionId, isAdmin, roleLoading, navigate, toast]);
 
-  const addItem = (type: 'warmup_exercises' | 'figures' | 'stretching_exercises', item: string) => {
-    if (item.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        [type]: [...prev[type], item.trim()]
-      }));
-      
-      // Clear the input
-      if (type === 'warmup_exercises') setCurrentInputs(prev => ({ ...prev, warmup: '' }));
-      if (type === 'figures') setCurrentInputs(prev => ({ ...prev, figure: '' }));
-      if (type === 'stretching_exercises') setCurrentInputs(prev => ({ ...prev, stretch: '' }));
-    }
-  };
-
-  const removeItem = (type: 'warmup_exercises' | 'figures' | 'stretching_exercises', index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      [type]: prev[type].filter((_, i) => i !== index)
-    }));
-  };
-
   const handleSave = async () => {
     if (!user || !sessionId) return;
     
@@ -162,9 +124,7 @@ const EditTrainingSession = () => {
         description: formData.description,
         duration_minutes: parseInt(formData.duration_minutes) || null,
         difficulty_level: formData.difficulty_level,
-        warmup_exercises: formData.warmup_exercises,
-        figures: exerciseData, // Use the structured exercise data from SessionExerciseManager
-        stretching_exercises: formData.stretching_exercises,
+        figures: exerciseData, // Use only structured exercise data from library
         playlist: formData.playlist,
         thumbnail_url: formData.thumbnail_url,
         published: formData.published,
@@ -227,7 +187,7 @@ const EditTrainingSession = () => {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-white">Edit Training Session</h1>
-              <p className="text-muted-foreground">Modify your training session details and content</p>
+              <p className="text-muted-foreground">Modify your training session details and exercises</p>
             </div>
           </div>
           
@@ -351,119 +311,11 @@ const EditTrainingSession = () => {
               </CardContent>
             </Card>
 
-            {/* Session Structure */}
-            <Card className="glass-effect border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">Session Structure</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Warm-up */}
-                <div>
-                  <Label className="text-white text-lg font-semibold mb-3 block">Warm-up Exercises</Label>
-                  <div className="flex gap-2 mb-3">
-                    <Input
-                      value={currentInputs.warmup}
-                      onChange={(e) => setCurrentInputs(prev => ({ ...prev, warmup: e.target.value }))}
-                      placeholder="Add warm-up exercise"
-                      className="bg-white/5 border-white/10 text-white flex-1"
-                      onKeyPress={(e) => e.key === 'Enter' && addItem('warmup_exercises', currentInputs.warmup)}
-                    />
-                    <Button
-                      onClick={() => addItem('warmup_exercises', currentInputs.warmup)}
-                      variant="outline"
-                      className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.warmup_exercises.map((item, index) => (
-                      <Badge key={index} variant="secondary" className="bg-yellow-500/20 text-yellow-400 px-3 py-1">
-                        {item}
-                        <button
-                          onClick={() => removeItem('warmup_exercises', index)}
-                          className="ml-2 hover:text-red-400 transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator className="bg-white/10" />
-
-                {/* Figures */}
-                <div>
-                  <Label className="text-white text-lg font-semibold mb-3 block">Figures & Combos</Label>
-                  <div className="flex gap-2 mb-3">
-                    <Input
-                      value={currentInputs.figure}
-                      onChange={(e) => setCurrentInputs(prev => ({ ...prev, figure: e.target.value }))}
-                      placeholder="Add figure or combo"
-                      className="bg-white/5 border-white/10 text-white flex-1"
-                      onKeyPress={(e) => e.key === 'Enter' && addItem('figures', currentInputs.figure)}
-                    />
-                    <Button
-                      onClick={() => addItem('figures', currentInputs.figure)}
-                      variant="outline"
-                      className="border-purple-500/50 text-purple-400 hover:bg-purple-500/10"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.figures.map((item, index) => (
-                      <Badge key={index} variant="secondary" className="bg-purple-500/20 text-purple-400 px-3 py-1">
-                        {item}
-                        <button
-                          onClick={() => removeItem('figures', index)}
-                          className="ml-2 hover:text-red-400 transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <Separator className="bg-white/10" />
-
-                {/* Stretching */}
-                <div>
-                  <Label className="text-white text-lg font-semibold mb-3 block">Stretching Routine</Label>
-                  <div className="flex gap-2 mb-3">
-                    <Input
-                      value={currentInputs.stretch}
-                      onChange={(e) => setCurrentInputs(prev => ({ ...prev, stretch: e.target.value }))}
-                      placeholder="Add stretching exercise"
-                      className="bg-white/5 border-white/10 text-white flex-1"
-                      onKeyPress={(e) => e.key === 'Enter' && addItem('stretching_exercises', currentInputs.stretch)}
-                    />
-                    <Button
-                      onClick={() => addItem('stretching_exercises', currentInputs.stretch)}
-                      variant="outline"
-                      className="border-pink-500/50 text-pink-400 hover:bg-pink-500/10"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.stretching_exercises.map((item, index) => (
-                      <Badge key={index} variant="secondary" className="bg-pink-500/20 text-pink-400 px-3 py-1">
-                        {item}
-                        <button
-                          onClick={() => removeItem('stretching_exercises', index)}
-                          className="ml-2 hover:text-red-400 transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Exercise Management */}
+            <SessionExerciseManager
+              sessionId={sessionId}
+              onExercisesChange={setSessionExercises}
+            />
           </div>
 
           {/* Sidebar */}
@@ -503,12 +355,6 @@ const EditTrainingSession = () => {
               </CardContent>
             </Card>
 
-            {/* Exercise Management */}
-            <SessionExerciseManager 
-              sessionId={sessionId || ''}
-              onExercisesChange={setSessionExercises}
-            />
-
             {/* Session Stats */}
             <Card className="glass-effect border-white/10">
               <CardHeader>
@@ -527,31 +373,11 @@ const EditTrainingSession = () => {
                 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-yellow-400" />
-                    <span className="text-muted-foreground">Warm-up</span>
-                  </div>
-                  <span className="text-white font-medium">
-                    {formData.warmup_exercises.length} exercises
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
                     <Target className="w-4 h-4 text-purple-400" />
-                    <span className="text-muted-foreground">Figures</span>
+                    <span className="text-muted-foreground">Exercises</span>
                   </div>
                   <span className="text-white font-medium">
-                    {formData.figures.length} items
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-pink-400" />
-                    <span className="text-muted-foreground">Stretching</span>
-                  </div>
-                  <span className="text-white font-medium">
-                    {formData.stretching_exercises.length} exercises
+                    {sessionExercises.length} exercises
                   </span>
                 </div>
               </CardContent>
