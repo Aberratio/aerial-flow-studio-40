@@ -146,13 +146,24 @@ const EditTrainingSession = () => {
     
     setSaving(true);
     try {
+      // Convert session exercises to the format expected in the session structure
+      const exerciseData = sessionExercises.map(ex => ({
+        id: ex.figure_id,
+        name: ex.exercise?.name || '',
+        sets: ex.sets || 1,
+        reps: ex.reps || 1,
+        hold_time_seconds: ex.hold_time_seconds || 30,
+        notes: ex.notes || '',
+        order_index: ex.order_index
+      }));
+
       const sessionData = {
         title: formData.title,
         description: formData.description,
         duration_minutes: parseInt(formData.duration_minutes) || null,
         difficulty_level: formData.difficulty_level,
         warmup_exercises: formData.warmup_exercises,
-        figures: formData.figures,
+        figures: exerciseData, // Use the structured exercise data from SessionExerciseManager
         stretching_exercises: formData.stretching_exercises,
         playlist: formData.playlist,
         thumbnail_url: formData.thumbnail_url,
@@ -169,7 +180,7 @@ const EditTrainingSession = () => {
       
       toast({
         title: "Session Updated",
-        description: "Training session has been updated successfully.",
+        description: "Training session updated with exercises successfully.",
       });
       
       navigate('/training');
