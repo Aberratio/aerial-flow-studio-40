@@ -44,7 +44,11 @@ const EditTrainingSession = () => {
     published: false
   });
 
-  const [sessionExercises, setSessionExercises] = useState<any[]>([]);
+  const [sessionExercises, setSessionExercises] = useState({
+    warmup: [],
+    training: [],
+    stretching: []
+  });
 
   // Redirect if not admin
   useEffect(() => {
@@ -108,23 +112,14 @@ const EditTrainingSession = () => {
     
     setSaving(true);
     try {
-      // Convert session exercises to the format expected in the session structure
-      const exerciseData = sessionExercises.map(ex => ({
-        id: ex.figure_id,
-        name: ex.exercise?.name || '',
-        sets: ex.sets || 1,
-        reps: ex.reps || 1,
-        hold_time_seconds: ex.hold_time_seconds || 30,
-        notes: ex.notes || '',
-        order_index: ex.order_index
-      }));
-
       const sessionData = {
         title: formData.title,
         description: formData.description,
         duration_minutes: parseInt(formData.duration_minutes) || null,
         difficulty_level: formData.difficulty_level,
-        figures: exerciseData, // Use only structured exercise data from library
+        warmup_exercises: sessionExercises.warmup,
+        figures: sessionExercises.training,
+        stretching_exercises: sessionExercises.stretching,
         playlist: formData.playlist,
         thumbnail_url: formData.thumbnail_url,
         published: formData.published,
@@ -371,15 +366,15 @@ const EditTrainingSession = () => {
                   </span>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Target className="w-4 h-4 text-purple-400" />
-                    <span className="text-muted-foreground">Exercises</span>
-                  </div>
-                  <span className="text-white font-medium">
-                    {sessionExercises.length} exercises
-                  </span>
-                </div>
+                 <div className="flex items-center justify-between">
+                   <div className="flex items-center space-x-2">
+                     <Target className="w-4 h-4 text-purple-400" />
+                     <span className="text-muted-foreground">Exercises</span>
+                   </div>
+                   <span className="text-white font-medium">
+                     {sessionExercises.warmup.length + sessionExercises.training.length + sessionExercises.stretching.length} exercises
+                   </span>
+                 </div>
               </CardContent>
             </Card>
           </div>
