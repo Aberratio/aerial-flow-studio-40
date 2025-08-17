@@ -1644,6 +1644,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      can_view_user_content: {
+        Args: { content_owner_id: string; viewer_id: string }
+        Returns: boolean
+      }
       create_activity_with_points: {
         Args: {
           activity_data?: Json
