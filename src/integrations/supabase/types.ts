@@ -1261,33 +1261,54 @@ export type Database = {
           created_at: string | null
           date_scheduled: string | null
           description: string | null
+          difficulty_level: string | null
           duration_minutes: number | null
+          figures: Json | null
           id: string
+          playlist: string | null
+          published: boolean | null
+          stretching_exercises: Json | null
+          thumbnail_url: string | null
           title: string
           updated_at: string | null
           user_id: string
+          warmup_exercises: Json | null
         }
         Insert: {
           completed?: boolean | null
           created_at?: string | null
           date_scheduled?: string | null
           description?: string | null
+          difficulty_level?: string | null
           duration_minutes?: number | null
+          figures?: Json | null
           id?: string
+          playlist?: string | null
+          published?: boolean | null
+          stretching_exercises?: Json | null
+          thumbnail_url?: string | null
           title: string
           updated_at?: string | null
           user_id: string
+          warmup_exercises?: Json | null
         }
         Update: {
           completed?: boolean | null
           created_at?: string | null
           date_scheduled?: string | null
           description?: string | null
+          difficulty_level?: string | null
           duration_minutes?: number | null
+          figures?: Json | null
           id?: string
+          playlist?: string | null
+          published?: boolean | null
+          stretching_exercises?: Json | null
+          thumbnail_url?: string | null
           title?: string
           updated_at?: string | null
           user_id?: string
+          warmup_exercises?: Json | null
         }
         Relationships: [
           {

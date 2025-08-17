@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Play,
@@ -22,6 +22,7 @@ import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 const Training = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -33,50 +34,37 @@ const Training = () => {
   const [showTrainingSession, setShowTrainingSession] = useState(false);
   const [editingSession, setEditingSession] = useState<any>(null);
   const [showCreateExercise, setShowCreateExercise] = useState(false);
-  const [sessions, setSessions] = useState([
-    {
-      id: 1,
-      title: "Beginner Aerial Hoop Flow",
-      instructor: "aerial_grace",
-      duration: 45,
-      difficulty: "Beginner",
-      participants: 12,
-      warmup: ["Shoulder rolls", "Wrist circles", "Hip circles"],
-      figures: ["Basic mount", "Back attitude", "Stag hang"],
-      stretching: ["Shoulder stretch", "Hip flexor stretch", "Backbend prep"],
-      playlist: "Chill Aerial Vibes",
-      thumbnail:
-        "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=400&h=300&fit=crop",
-    },
-    {
-      id: 2,
-      title: "Advanced Silk Combos",
-      instructor: "silk_master",
-      duration: 60,
-      difficulty: "Advanced",
-      participants: 8,
-      warmup: ["Dynamic stretching", "Core activation", "Arm circles"],
-      figures: ["Catchers", "Foot locks", "Attitude drops"],
-      stretching: ["Deep hip stretch", "Shoulder opening", "Spinal twist"],
-      playlist: "Epic Aerial Beats",
-      thumbnail:
-        "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop",
-    },
-    {
-      id: 3,
-      title: "Flexibility & Conditioning",
-      instructor: "pole_phoenix",
-      duration: 30,
-      difficulty: "Intermediate",
-      participants: 15,
-      warmup: ["Joint mobility", "Light cardio", "Breath work"],
-      figures: ["Split prep", "Backbend variations", "Shoulder flexibility"],
-      stretching: ["Deep splits", "Chest opening", "Hip flexor release"],
-      playlist: "Relaxing Stretch Mix",
-      thumbnail:
-        "https://images.unsplash.com/photo-1506629905496-4d3e5b9e7e59?w=400&h=300&fit=crop",
-    },
-  ]);
+  const [sessions, setSessions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch sessions from database
+  const fetchSessions = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('training_sessions')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setSessions(data || []);
+    } catch (error) {
+      console.error('Error fetching sessions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load training sessions.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isAdmin && !roleLoading) {
+      fetchSessions();
+    }
+  }, [isAdmin, roleLoading]);
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "Beginner":
@@ -93,7 +81,7 @@ const Training = () => {
     setSelectedSession(session);
     setShowSessionDetails(true);
   };
-  const handleStartTraining = (sessionId: number) => {
+  const handleStartTraining = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (session) {
       setSelectedSession(session);
@@ -101,34 +89,39 @@ const Training = () => {
       setShowTrainingSession(true);
     }
   };
-  const handleCreateSession = (newSession: any) => {
-    if (editingSession) {
-      setSessions((prev) =>
-        prev.map((s) => (s.id === editingSession.id ? newSession : s))
-      );
-      toast({
-        title: "Session Updated",
-        description: "Your training session has been updated successfully.",
-      });
-      setEditingSession(null);
-    } else {
-      setSessions((prev) => [...prev, newSession]);
-      toast({
-        title: "Session Created",
-        description: "Your training session has been created successfully.",
-      });
-    }
+
+  const handleCreateSession = () => {
+    fetchSessions();
+    setEditingSession(null);
   };
+
   const handleEditSession = (session: any) => {
     setEditingSession(session);
     setShowCreateSession(true);
   };
-  const handleDeleteSession = (sessionId: number) => {
-    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-    toast({
-      title: "Session Deleted",
-      description: "The training session has been deleted.",
-    });
+
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      const { error } = await supabase
+        .from('training_sessions')
+        .delete()
+        .eq('id', sessionId);
+      
+      if (error) throw error;
+      
+      await fetchSessions();
+      toast({
+        title: "Session Deleted",
+        description: "The training session has been deleted.",
+      });
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete session.",
+        variant: "destructive",
+      });
+    }
   };
   if (showTrainingSession && selectedSession) {
     return (
@@ -245,9 +238,9 @@ const Training = () => {
           <Card className="glass-effect border-white/10">
             <CardContent className="p-3 sm:p-6 text-center">
               <Users className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-green-500" />
-              <h3 className="text-lg sm:text-2xl font-bold text-white">35</h3>
+              <h3 className="text-lg sm:text-2xl font-bold text-white">{sessions.filter(s => s.published).length}</h3>
               <p className="text-muted-foreground text-xs sm:text-sm">
-                Total Participants
+                Published Sessions
               </p>
             </CardContent>
           </Card>
@@ -279,18 +272,24 @@ const Training = () => {
             >
               <div className="relative">
                 <img
-                  src={session.thumbnail}
+                  src={session.thumbnail_url || "https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=400&h=300&fit=crop"}
                   alt={session.title}
                   className="w-full h-32 sm:h-48 object-cover rounded-t-lg cursor-pointer"
                   onClick={() => handleSessionClick(session)}
                 />
                 <Badge
                   className={`absolute top-2 right-2 ${getDifficultyColor(
-                    session.difficulty
+                    session.difficulty_level || "Beginner"
                   )} text-white text-xs`}
                 >
-                  {session.difficulty}
+                  {session.difficulty_level || "Beginner"}
                 </Badge>
+                
+                {!session.published && (
+                  <Badge className="absolute top-2 left-16 bg-orange-500/20 text-orange-400 text-xs">
+                    Draft
+                  </Badge>
+                )}
 
                 {/* Trainer Actions */}
                 {(user?.role === "trainer" || user?.role === "admin") && (
@@ -322,49 +321,53 @@ const Training = () => {
                   {session.title}
                 </h3>
                 <p className="text-muted-foreground mb-3 sm:mb-4 text-sm">
-                  by {session.instructor}
+                  {session.description}
                 </p>
 
                 <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                     <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    {session.duration} minutes
+                    {session.duration_minutes || 45} minutes
                   </div>
-                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
-                    <Users className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    {session.participants} participants
-                  </div>
-                  <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
-                    <Music className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    {session.playlist}
-                  </div>
+                  {session.playlist && (
+                    <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+                      <Music className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                      {session.playlist}
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2 mb-3 sm:mb-4">
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                      Warm-up
-                    </h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {session.warmup.join(", ")}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                      Figures
-                    </h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {session.figures.join(", ")}
-                    </p>
-                  </div>
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                      Stretching
-                    </h4>
-                    <p className="text-xs text-muted-foreground line-clamp-2">
-                      {session.stretching.join(", ")}
-                    </p>
-                  </div>
+                  {session.warmup_exercises && session.warmup_exercises.length > 0 && (
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
+                        Warm-up
+                      </h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {session.warmup_exercises.join(", ")}
+                      </p>
+                    </div>
+                  )}
+                  {session.figures && session.figures.length > 0 && (
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
+                        Figures
+                      </h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {session.figures.join(", ")}
+                      </p>
+                    </div>
+                  )}
+                  {session.stretching_exercises && session.stretching_exercises.length > 0 && (
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
+                        Stretching
+                      </h4>
+                      <p className="text-xs text-muted-foreground line-clamp-2">
+                        {session.stretching_exercises.join(", ")}
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <Button

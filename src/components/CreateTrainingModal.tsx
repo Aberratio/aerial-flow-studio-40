@@ -5,13 +5,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface CreateTrainingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (session: any) => void;
+  onSave: () => void;
   editingSession?: any;
 }
 
@@ -21,15 +25,21 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
   onSave,
   editingSession
 }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [loading, setLoading] = useState(false);
+  
   const [formData, setFormData] = useState({
     title: '',
+    description: '',
     duration: '',
-    difficulty: '',
-    warmup: [] as string[],
+    difficulty_level: '',
+    warmup_exercises: [] as string[],
     figures: [] as string[],
-    stretching: [] as string[],
+    stretching_exercises: [] as string[],
     playlist: '',
-    thumbnail: ''
+    thumbnail_url: '',
+    published: false
   });
 
   const [currentWarmup, setCurrentWarmup] = useState('');
@@ -40,65 +50,108 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
     if (editingSession) {
       setFormData({
         title: editingSession.title || '',
-        duration: editingSession.duration?.toString() || '',
-        difficulty: editingSession.difficulty || '',
-        warmup: editingSession.warmup || [],
+        description: editingSession.description || '',
+        duration: editingSession.duration_minutes?.toString() || '',
+        difficulty_level: editingSession.difficulty_level || '',
+        warmup_exercises: editingSession.warmup_exercises || [],
         figures: editingSession.figures || [],
-        stretching: editingSession.stretching || [],
+        stretching_exercises: editingSession.stretching_exercises || [],
         playlist: editingSession.playlist || '',
-        thumbnail: editingSession.thumbnail || ''
+        thumbnail_url: editingSession.thumbnail_url || '',
+        published: editingSession.published || false
       });
     } else {
       setFormData({
         title: '',
+        description: '',
         duration: '',
-        difficulty: '',
-        warmup: [],
+        difficulty_level: '',
+        warmup_exercises: [],
         figures: [],
-        stretching: [],
+        stretching_exercises: [],
         playlist: '',
-        thumbnail: ''
+        thumbnail_url: '',
+        published: false
       });
     }
   }, [editingSession, isOpen]);
 
-  const addItem = (type: 'warmup' | 'figures' | 'stretching', item: string) => {
+  const addItem = (type: 'warmup_exercises' | 'figures' | 'stretching_exercises', item: string) => {
     if (item.trim()) {
       setFormData(prev => ({
         ...prev,
         [type]: [...prev[type], item.trim()]
       }));
       
-      if (type === 'warmup') setCurrentWarmup('');
+      if (type === 'warmup_exercises') setCurrentWarmup('');
       if (type === 'figures') setCurrentFigure('');
-      if (type === 'stretching') setCurrentStretch('');
+      if (type === 'stretching_exercises') setCurrentStretch('');
     }
   };
 
-  const removeItem = (type: 'warmup' | 'figures' | 'stretching', index: number) => {
+  const removeItem = (type: 'warmup_exercises' | 'figures' | 'stretching_exercises', index: number) => {
     setFormData(prev => ({
       ...prev,
       [type]: prev[type].filter((_, i) => i !== index)
     }));
   };
 
-  const handleSubmit = () => {
-    const session = {
-      id: editingSession?.id || Date.now(),
-      title: formData.title,
-      duration: parseInt(formData.duration),
-      difficulty: formData.difficulty,
-      warmup: formData.warmup,
-      figures: formData.figures,
-      stretching: formData.stretching,
-      playlist: formData.playlist,
-      thumbnail: formData.thumbnail || 'https://images.unsplash.com/photo-1518594023387-5565c8f3d1ce?w=400&h=300&fit=crop',
-      instructor: 'You',
-      participants: editingSession?.participants || 0
-    };
+  const handleSubmit = async () => {
+    if (!user) return;
     
-    onSave(session);
-    onClose();
+    setLoading(true);
+    try {
+      const sessionData = {
+        title: formData.title,
+        description: formData.description,
+        duration_minutes: parseInt(formData.duration) || null,
+        difficulty_level: formData.difficulty_level,
+        warmup_exercises: formData.warmup_exercises,
+        figures: formData.figures,
+        stretching_exercises: formData.stretching_exercises,
+        playlist: formData.playlist,
+        thumbnail_url: formData.thumbnail_url,
+        published: formData.published,
+        user_id: user.id
+      };
+
+      if (editingSession) {
+        const { error } = await supabase
+          .from('training_sessions')
+          .update(sessionData)
+          .eq('id', editingSession.id);
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Session Updated",
+          description: "Training session has been updated successfully.",
+        });
+      } else {
+        const { error } = await supabase
+          .from('training_sessions')
+          .insert(sessionData);
+        
+        if (error) throw error;
+        
+        toast({
+          title: "Session Created",
+          description: "Training session has been created successfully.",
+        });
+      }
+      
+      onSave();
+      onClose();
+    } catch (error) {
+      console.error('Error saving session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save session. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -121,6 +174,7 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="Enter session title"
                 className="bg-white/5 border-white/10 text-white"
+                required
               />
             </div>
             <div>
@@ -136,10 +190,23 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
             </div>
           </div>
 
+          {/* Description */}
+          <div>
+            <Label htmlFor="description" className="text-white">Description</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              placeholder="Describe your training session..."
+              className="bg-white/5 border-white/10 text-white"
+              rows={3}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="difficulty" className="text-white">Difficulty Level</Label>
-              <Select value={formData.difficulty} onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty: value }))}>
+              <Select value={formData.difficulty_level} onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}>
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>
@@ -162,6 +229,18 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
             </div>
           </div>
 
+          {/* Published Status */}
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="published"
+              checked={formData.published}
+              onCheckedChange={(checked) => setFormData(prev => ({ ...prev, published: checked }))}
+            />
+            <Label htmlFor="published" className="text-white">
+              Publish session (make it visible to users)
+            </Label>
+          </div>
+
           {/* Warm-up Section */}
           <div>
             <Label className="text-white mb-2 block">Warm-up Exercises</Label>
@@ -171,10 +250,10 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
                 onChange={(e) => setCurrentWarmup(e.target.value)}
                 placeholder="Add warm-up exercise"
                 className="bg-white/5 border-white/10 text-white flex-1"
-                onKeyPress={(e) => e.key === 'Enter' && addItem('warmup', currentWarmup)}
+                onKeyPress={(e) => e.key === 'Enter' && addItem('warmup_exercises', currentWarmup)}
               />
               <Button
-                onClick={() => addItem('warmup', currentWarmup)}
+                onClick={() => addItem('warmup_exercises', currentWarmup)}
                 variant="outline"
                 className="border-white/20 text-white hover:bg-white/10"
               >
@@ -182,11 +261,11 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.warmup.map((item, index) => (
+              {formData.warmup_exercises.map((item, index) => (
                 <Badge key={index} variant="secondary" className="bg-yellow-500/20 text-yellow-400">
                   {item}
                   <button
-                    onClick={() => removeItem('warmup', index)}
+                    onClick={() => removeItem('warmup_exercises', index)}
                     className="ml-2 hover:text-red-400"
                   >
                     <X className="w-3 h-3" />
@@ -239,10 +318,10 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
                 onChange={(e) => setCurrentStretch(e.target.value)}
                 placeholder="Add stretching exercise"
                 className="bg-white/5 border-white/10 text-white flex-1"
-                onKeyPress={(e) => e.key === 'Enter' && addItem('stretching', currentStretch)}
+                onKeyPress={(e) => e.key === 'Enter' && addItem('stretching_exercises', currentStretch)}
               />
               <Button
-                onClick={() => addItem('stretching', currentStretch)}
+                onClick={() => addItem('stretching_exercises', currentStretch)}
                 variant="outline"
                 className="border-white/20 text-white hover:bg-white/10"
               >
@@ -250,11 +329,11 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
               </Button>
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.stretching.map((item, index) => (
+              {formData.stretching_exercises.map((item, index) => (
                 <Badge key={index} variant="secondary" className="bg-pink-500/20 text-pink-400">
                   {item}
                   <button
-                    onClick={() => removeItem('stretching', index)}
+                    onClick={() => removeItem('stretching_exercises', index)}
                     className="ml-2 hover:text-red-400"
                   >
                     <X className="w-3 h-3" />
@@ -269,8 +348,8 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
             <Label htmlFor="thumbnail" className="text-white">Thumbnail URL (optional)</Label>
             <Input
               id="thumbnail"
-              value={formData.thumbnail}
-              onChange={(e) => setFormData(prev => ({ ...prev, thumbnail: e.target.value }))}
+              value={formData.thumbnail_url}
+              onChange={(e) => setFormData(prev => ({ ...prev, thumbnail_url: e.target.value }))}
               placeholder="https://example.com/image.jpg"
               className="bg-white/5 border-white/10 text-white"
             />
@@ -283,9 +362,17 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
             </Button>
             <Button
               onClick={handleSubmit}
+              disabled={loading || !formData.title}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
             >
-              {editingSession ? 'Update Session' : 'Create Session'}
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {editingSession ? 'Updating...' : 'Creating...'}
+                </>
+              ) : (
+                editingSession ? 'Update Session' : 'Create Session'
+              )}
             </Button>
           </div>
         </div>

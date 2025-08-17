@@ -8,7 +8,7 @@ interface TrainingDetailsModalProps {
   session: any;
   isOpen: boolean;
   onClose: () => void;
-  onStartTraining: (sessionId: number) => void;
+  onStartTraining: (sessionId: string) => void;
 }
 
 export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
