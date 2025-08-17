@@ -78,8 +78,8 @@ const Training = () => {
     }
   };
   const handleSessionClick = (session: any) => {
-    setSelectedSession(session);
-    setShowSessionDetails(true);
+    // Navigate to the training session detail page
+    navigate(`/training/${session.id}`);
   };
   const handleStartTraining = (sessionId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
