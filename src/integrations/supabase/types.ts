@@ -1270,6 +1270,7 @@ export type Database = {
           stretching_exercises: Json | null
           thumbnail_url: string | null
           title: string
+          type: string
           updated_at: string | null
           user_id: string
           warmup_exercises: Json | null
@@ -1288,6 +1289,7 @@ export type Database = {
           stretching_exercises?: Json | null
           thumbnail_url?: string | null
           title: string
+          type?: string
           updated_at?: string | null
           user_id: string
           warmup_exercises?: Json | null
@@ -1306,6 +1308,7 @@ export type Database = {
           stretching_exercises?: Json | null
           thumbnail_url?: string | null
           title?: string
+          type?: string
           updated_at?: string | null
           user_id?: string
           warmup_exercises?: Json | null
