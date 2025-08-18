@@ -131,7 +131,7 @@ export const useFeedPosts = () => {
       // Get likes and comments counts for each post
       if (postsData) {
         const postsWithCounts = await Promise.all(
-          postsData.map(async (post) => {
+          postsData.filter(post => post !== null).map(async (post) => {
             // Get likes count
             const { count: likesCount } = await supabase
               .from('post_likes')
