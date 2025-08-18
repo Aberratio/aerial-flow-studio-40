@@ -993,18 +993,18 @@ const ExerciseDetail = () => {
                         >
                           <div
                             className="flex items-center cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors"
-                            onClick={() =>
-                              navigate(`/profile/${expert.profiles.id}`)
-                            }
+                            onClick={() => {
+                              if (expert.profiles?.id) navigate(`/profile/${expert.profiles.id}`);
+                            }}
                           >
                             <Avatar className="w-8 h-8 mr-3">
-                              <AvatarImage src={expert.profiles.avatar_url} />
+                              <AvatarImage src={expert.profiles?.avatar_url || undefined} />
                               <AvatarFallback>
-                                {expert.profiles.username?.[0]?.toUpperCase()}
+                                {expert.profiles?.username?.[0]?.toUpperCase() || 'U'}
                               </AvatarFallback>
                             </Avatar>
                             <span className="text-white text-sm">
-                              {expert.profiles.username}
+                              {expert.profiles?.username || 'Unknown user'}
                             </span>
                           </div>
                           {canManageExperts() && (
