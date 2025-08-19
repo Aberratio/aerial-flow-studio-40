@@ -992,6 +992,30 @@ export type Database = {
         }
         Relationships: []
       }
+      similar_figures: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          figure_id: string
+          id: string
+          similar_figure_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          figure_id: string
+          id?: string
+          similar_figure_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          figure_id?: string
+          id?: string
+          similar_figure_id?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           created_at: string
