@@ -94,9 +94,15 @@ const EditExercise = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user || !formData.name.trim() || !exercise) return;
+    console.log("Form submitted with data:", formData);
+    
+    if (!user || !formData.name.trim() || !exercise) {
+      console.log("Validation failed:", { user: !!user, name: formData.name.trim(), exercise: !!exercise });
+      return;
+    }
 
     setIsLoading(true);
+    console.log("Starting exercise update process...");
 
     try {
       let imageUrl = formData.image_url;
@@ -138,23 +144,31 @@ const EditExercise = () => {
         videoUrl = videoData.publicUrl;
       }
 
-      const { error } = await supabase
+      const updateData = {
+        name: formData.name.trim(),
+        description: formData.description.trim() || null,
+        instructions: formData.instructions.trim() || null,
+        difficulty_level: formData.difficulty_level || null,
+        category: formData.category || null,
+        type: formData.type || null,
+        image_url: imageUrl || null,
+        video_url: videoUrl || null,
+        tags: formData.tags.length > 0 ? formData.tags : null,
+        synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
+        premium: formData.premium,
+        updated_at: new Date().toISOString(),
+      };
+      
+      console.log("Updating exercise with data:", updateData);
+      console.log("Exercise ID:", exercise.id);
+
+      const { error, data } = await supabase
         .from("figures")
-        .update({
-          name: formData.name.trim(),
-          description: formData.description.trim() || null,
-          instructions: formData.instructions.trim() || null,
-          difficulty_level: formData.difficulty_level || null,
-          category: formData.category || null,
-          type: formData.type || null,
-          image_url: imageUrl || null,
-          video_url: videoUrl || null,
-          tags: formData.tags.length > 0 ? formData.tags : null,
-          synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
-          premium: formData.premium,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", exercise.id);
+        .update(updateData)
+        .eq("id", exercise.id)
+        .select();
+
+      console.log("Update result:", { data, error });
 
       if (error) throw error;
 

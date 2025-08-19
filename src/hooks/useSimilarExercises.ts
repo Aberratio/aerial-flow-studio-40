@@ -27,10 +27,17 @@ export const useSimilarExercises = (exerciseId?: string) => {
 
       const { data, error } = await supabase
         .from('similar_figures')
-        .select(`
-          id,
-          similar_figure_id,
-          figures!similar_figures_similar_figure_id_fkey (
+        .select('id, similar_figure_id')
+        .eq('figure_id', exerciseId);
+
+      if (error) throw error;
+
+      // Get the full exercise data for each similar figure
+      if (data && data.length > 0) {
+        const figureIds = data.map(item => item.similar_figure_id);
+        const { data: figuresData, error: figuresError } = await supabase
+          .from('figures')
+          .select(`
             id,
             name,
             description,
@@ -39,24 +46,26 @@ export const useSimilarExercises = (exerciseId?: string) => {
             video_url,
             category,
             premium
-          )
-        `)
-        .eq('figure_id', exerciseId);
+          `)
+          .in('id', figureIds);
 
-      if (error) throw error;
+        if (figuresError) throw figuresError;
 
-      const formattedData = data?.map((item: any) => ({
-        id: item.figures?.id || '',
-        name: item.figures?.name || '',
-        description: item.figures?.description || null,
-        difficulty_level: item.figures?.difficulty_level || null,
-        image_url: item.figures?.image_url || null,
-        video_url: item.figures?.video_url || null,
-        category: item.figures?.category || null,
-        premium: item.figures?.premium || false,
-      })) || [];
+        const formattedData = figuresData?.map((figure: any) => ({
+          id: figure.id,
+          name: figure.name,
+          description: figure.description,
+          difficulty_level: figure.difficulty_level,
+          image_url: figure.image_url,
+          video_url: figure.video_url,
+          category: figure.category,
+          premium: figure.premium,
+        })) || [];
 
-      setSimilarExercises(formattedData);
+        setSimilarExercises(formattedData);
+      } else {
+        setSimilarExercises([]);
+      }
     } catch (error) {
       console.error('Error fetching similar exercises:', error);
     } finally {
