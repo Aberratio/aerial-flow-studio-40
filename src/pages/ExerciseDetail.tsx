@@ -33,7 +33,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSimilarExercises } from "@/hooks/useSimilarExercises";
 import { ShareExerciseModal } from "@/components/ShareExerciseModal";
-import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PricingModal } from "@/components/PricingModal";
 import IguanaLogo from "@/assets/iguana-logo.svg";
@@ -49,7 +48,6 @@ const ExerciseDetail = () => {
   const [progress, setProgress] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showShareModal, setShowShareModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [activeTab, setActiveTab] = useState("my-versions");
   const [myVersions, setMyVersions] = useState<any[]>([]);
@@ -770,7 +768,7 @@ const ExerciseDetail = () => {
             {canModifyExercise() && (
               <Button
                 variant="outline"
-                onClick={() => setShowEditModal(true)}
+                onClick={() => navigate(`/exercise/${exerciseId}/edit`)}
                 className="border-white/20 text-white hover:bg-white/10 text-sm"
                 size="sm"
               >
@@ -1385,16 +1383,6 @@ const ExerciseDetail = () => {
         onClose={() => setShowShareModal(false)}
         exerciseId={exercise.id}
         exerciseName={exercise.name}
-      />
-
-      <CreateExerciseModal
-        isOpen={showEditModal}
-        onClose={() => setShowEditModal(false)}
-        onExerciseCreated={() => {
-          setShowEditModal(false);
-          fetchExerciseDetails();
-        }}
-        editingFigure={exercise}
       />
 
       <ConfirmDeleteModal

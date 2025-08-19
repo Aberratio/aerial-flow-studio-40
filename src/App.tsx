@@ -33,6 +33,7 @@ import ChallengeDayTimer from "@/pages/ChallengeDayTimer";
 import ChallengePreview from "@/pages/ChallengePreview";
 import PostDetail from "@/pages/PostDetail";
 import ExerciseDetail from "@/pages/ExerciseDetail";
+import EditExercise from "@/pages/EditExercise";
 import AchievementManagement from "@/pages/AchievementManagement";
 import Index from "@/pages/Index";
 import AerialJourney from "@/pages/AerialJourney";
@@ -161,6 +162,14 @@ const AppRoutes = () => {
           <ConditionalLayout>
             <ExerciseDetail />
           </ConditionalLayout>
+        }
+      />
+      <Route
+        path="/exercise/:exerciseId/edit"
+        element={
+          <ProtectedRoute>
+            <EditExercise />
+          </ProtectedRoute>
         }
       />
       <Route
