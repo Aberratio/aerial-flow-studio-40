@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import {
   Zap,
   Users,
@@ -19,7 +19,11 @@ import {
 } from "@/components/ui/card";
 import AuthModal from "@/components/Auth/AuthModal";
 import CookiesBanner from "@/components/CookiesBanner";
-import { GallerySection } from "@/components/GallerySection";
+import { LazyImage } from "@/components/LazyImage";
+import { LazySection } from "@/components/LazySection";
+import { HeroSkeleton } from "@/components/skeletons/HeroSkeleton";
+import { FeaturesSkeleton } from "@/components/skeletons/FeaturesSkeleton";
+import { PricingSkeleton } from "@/components/skeletons/PricingSkeleton";
 import { supabase } from "@/integrations/supabase/client";
 import IguanaLogo from "@/assets/iguana-logo.svg";
 import {
@@ -30,6 +34,9 @@ import {
   SelectItem,
 } from "@radix-ui/react-select";
 import { Badge } from "@/components/ui/badge";
+
+// Lazy load heavy components
+const GallerySection = lazy(() => import("@/components/GallerySection").then(module => ({ default: module.GallerySection })));
 interface PricingPlan {
   id: string;
   plan_key: string;
@@ -48,30 +55,31 @@ const Landing = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isLoaded, setIsLoaded] = useState(false);
-  const [heroImage, setHeroImage] = useState<string | null>(null);
-  const [absChallengesImage, setAbsChallengesImage] = useState<string | null>(null);
+  const [heroImage, setHeroImage] = useState<string>("");
+  const [absChallengesImage, setAbsChallengesImage] = useState<string>("");
   const [showAbsChallenges, setShowAbsChallenges] = useState(false);
   const [pricingPlans, setPricingPlans] = useState<PricingPlan[]>([]);
-  const [allDataLoaded, setAllDataLoaded] = useState(false);
-  useEffect(() => {
-    loadHeroImage();
-    loadAbsChallengesImage();
-    loadPricingPlans();
-  }, []);
+  const [contentLoaded, setContentLoaded] = useState({
+    hero: false,
+    abs: false,
+    pricing: false
+  });
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-  // Check if all data is loaded
+  // Load content progressively
   useEffect(() => {
-    // Hero image can be null (fallback image will be used)
-    // Abs challenges can be null if section is disabled
-    // Only require pricing plans to be loaded
-    if (heroImage !== undefined && absChallengesImage !== undefined && pricingPlans.length > 0) {
-      setAllDataLoaded(true);
+    loadHeroImage();
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      loadAbsChallengesImage();
+      loadPricingPlans();
     }
-  }, [heroImage, absChallengesImage, pricingPlans]);
+  }, [isLoaded]);
   const loadHeroImage = async () => {
     try {
       const { data: heroSection } = await supabase
@@ -79,11 +87,13 @@ const Landing = () => {
         .select("image_url")
         .eq("section_key", "hero")
         .single();
-      if (heroSection?.image_url) {
-        setHeroImage(heroSection.image_url);
-      }
+      
+      setHeroImage(heroSection?.image_url || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop");
+      setContentLoaded(prev => ({ ...prev, hero: true }));
     } catch (error) {
       console.error("Error loading hero image:", error);
+      setHeroImage("https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop");
+      setContentLoaded(prev => ({ ...prev, hero: true }));
     }
   };
 
@@ -97,15 +107,17 @@ const Landing = () => {
       
       if (absChallengesSection?.is_active) {
         setShowAbsChallenges(true);
-        setAbsChallengesImage(absChallengesSection.image_url || null);
+        setAbsChallengesImage(absChallengesSection.image_url || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=800&fit=crop");
       } else {
         setShowAbsChallenges(false);
-        setAbsChallengesImage(null);
+        setAbsChallengesImage("");
       }
+      setContentLoaded(prev => ({ ...prev, abs: true }));
     } catch (error) {
       console.error("Error loading abs challenges image:", error);
       setShowAbsChallenges(false);
-      setAbsChallengesImage(null);
+      setAbsChallengesImage("");
+      setContentLoaded(prev => ({ ...prev, abs: true }));
     }
   };
   const loadPricingPlans = async () => {
@@ -135,8 +147,10 @@ const Landing = () => {
         }));
         setPricingPlans(plansWithFeatures);
       }
+      setContentLoaded(prev => ({ ...prev, pricing: true }));
     } catch (error) {
       console.error("Error loading pricing plans:", error);
+      setContentLoaded(prev => ({ ...prev, pricing: true }));
     }
   };
   const getFeatureText = (featureKey: string) => {
@@ -239,7 +253,7 @@ const Landing = () => {
     setAuthMode(mode);
     setAuthModalOpen(true);
   };
-  if (!allDataLoaded) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900/30 to-slate-900">
         <div className="text-center space-y-6">
@@ -401,13 +415,12 @@ const Landing = () => {
               }`}
             >
               <div className="relative z-10">
-                <img
-                  src={
-                    heroImage ||
-                    "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"
-                  }
+                <LazyImage
+                  src={heroImage}
                   alt="Aerial athlete performing on silks"
-                  className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense  "
+                  className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense"
+                  skeletonClassName="rounded-2xl mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px]"
+                  fallbackSrc="https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
@@ -527,13 +540,12 @@ const Landing = () => {
 
               <div className="relative order-first lg:order-last animate-scale-in animation-delay-800 floating">
                 <div className="relative z-10">
-                  <img
-                    src={
-                      absChallengesImage ||
-                      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=800&fit=crop"
-                    }
+                  <LazyImage
+                    src={absChallengesImage}
                     alt="Core strength training for aerial athletes"
                     className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[500px] sm:w-[450px] sm:h-[550px] lg:w-[500px] lg:h-[600px] object-cover glass-effect-intense"
+                    skeletonClassName="rounded-2xl mx-auto w-[400px] h-[500px] sm:w-[450px] sm:h-[550px] lg:w-[500px] lg:h-[600px]"
+                    fallbackSrc="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=800&fit=crop"
                   />
                 </div>
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
@@ -562,8 +574,25 @@ const Landing = () => {
               Discover how our platform helps aerial athletes achieve their goals through structured training and expert guidance.
             </p>
           </div>
-          
-          <GallerySection />
+          <LazySection 
+            fallback={
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="aspect-[4/5] bg-white/10 rounded-2xl animate-pulse"></div>
+                ))}
+              </div>
+            }
+          >
+            <Suspense fallback={
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="aspect-[4/5] bg-white/10 rounded-2xl animate-pulse"></div>
+                ))}
+              </div>
+            }>
+              <GallerySection />
+            </Suspense>
+          </LazySection>
         </div>
       </section>
 
