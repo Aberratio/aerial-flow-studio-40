@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { LazyImage } from '@/components/LazyImage';
+import { LazyVideoCard } from '@/components/LazyVideoCard';
 
 interface GalleryMedia {
   id: string;
@@ -69,33 +69,7 @@ export const GallerySection: React.FC = () => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
       {mediaItems.map((item, index) => (
-        <div key={item.id} className="group relative aspect-[4/6] overflow-hidden rounded-2xl">
-          {item.media_type === 'video' ? (
-            <LazyImage
-              src={item.thumbnail_url || item.media_url}
-              alt={item.title || 'Video thumbnail'}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              skeletonClassName="w-full h-full rounded-2xl"
-            />
-          ) : (
-            <LazyImage
-              src={item.thumbnail_url || item.media_url}
-              alt={item.title || 'Gallery image'}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-              skeletonClassName="w-full h-full rounded-2xl"
-              fallbackSrc="https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"
-            />
-          )}
-          
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-          
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 via-transparent to-teal-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-2xl" />
-          
-          {/* Hover zoom indicator */}
-          <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/20 transition-colors duration-300 rounded-2xl" />
-        </div>
+        <LazyVideoCard key={item.id} item={item} />
       ))}
     </div>
   );
