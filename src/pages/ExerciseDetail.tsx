@@ -31,6 +31,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSimilarExercises } from "@/hooks/useSimilarExercises";
 import { ShareExerciseModal } from "@/components/ShareExerciseModal";
 import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
@@ -62,6 +63,9 @@ const ExerciseDetail = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
+
+  // Similar exercises hook
+  const { similarExercises, loading: similarLoading } = useSimilarExercises(exerciseId);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -1130,6 +1134,56 @@ const ExerciseDetail = () => {
                       >
                         {tag}
                       </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Similar Exercises */}
+            {similarExercises.length > 0 && (
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <div className="flex items-center mb-3">
+                    <Target className="w-5 h-5 text-blue-400 mr-2" />
+                    <h3 className="text-white font-semibold">Similar Exercises</h3>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {similarExercises.map((similar) => (
+                      <div
+                        key={similar.id}
+                        className="cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => navigate(`/exercise/${similar.id}`)}
+                      >
+                        <div className="relative aspect-video rounded-lg overflow-hidden bg-muted mb-2">
+                          {similar.image_url ? (
+                            <img
+                              src={similar.image_url}
+                              alt={similar.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-purple-700/20 flex items-center justify-center">
+                              <Target className="w-8 h-8 text-purple-400" />
+                            </div>
+                          )}
+                          {similar.premium && (
+                            <div className="absolute top-2 right-2">
+                              <Crown className="w-4 h-4 text-yellow-400" />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white text-sm font-medium line-clamp-2 mb-1">
+                          {similar.name}
+                        </h4>
+                        {similar.difficulty_level && (
+                          <Badge 
+                            className={`text-xs ${getDifficultyColor(similar.difficulty_level)}`}
+                          >
+                            {similar.difficulty_level}
+                          </Badge>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </CardContent>

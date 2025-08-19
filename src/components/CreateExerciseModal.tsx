@@ -23,6 +23,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useSimilarExercises } from "@/hooks/useSimilarExercises";
+import { SimilarExercisesManager } from "@/components/SimilarExercisesManager";
 
 interface CreateExerciseModalProps {
   isOpen: boolean;
@@ -636,6 +638,11 @@ export const CreateExerciseModal = ({
                 </div>
               </div>
             </>
+          )}
+
+          {/* Similar Exercises Management - Only show when editing */}
+          {editingFigure && (
+            <SimilarExercisesManager figureId={editingFigure.id} />
           )}
 
           <div className="flex justify-end gap-2 pt-4">
