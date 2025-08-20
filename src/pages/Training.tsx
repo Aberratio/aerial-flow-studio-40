@@ -340,30 +340,36 @@ const Training = () => {
                   {session.warmup_exercises && session.warmup_exercises.length > 0 && (
                     <div>
                       <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                        Warm-up
+                        Warm-up ({session.warmup_exercises.length} exercises)
                       </h4>
                       <p className="text-xs text-muted-foreground line-clamp-2">
-                        {session.warmup_exercises.join(", ")}
+                        {session.warmup_exercises.map((item: any) => 
+                          typeof item === 'string' ? item : item.name || 'Exercise'
+                        ).join(", ")}
                       </p>
                     </div>
                   )}
                   {session.figures && session.figures.length > 0 && (
                     <div>
                       <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                        Figures
+                        Figures ({session.figures.length} exercises)
                       </h4>
                       <p className="text-xs text-muted-foreground line-clamp-2">
-                        {session.figures.join(", ")}
+                        {session.figures.map((item: any) => 
+                          typeof item === 'string' ? item : item.name || 'Exercise'
+                        ).join(", ")}
                       </p>
                     </div>
                   )}
                   {session.stretching_exercises && session.stretching_exercises.length > 0 && (
                     <div>
                       <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                        Stretching
+                        Stretching ({session.stretching_exercises.length} exercises)
                       </h4>
                       <p className="text-xs text-muted-foreground line-clamp-2">
-                        {session.stretching_exercises.join(", ")}
+                        {session.stretching_exercises.map((item: any) => 
+                          typeof item === 'string' ? item : item.name || 'Exercise'
+                        ).join(", ")}
                       </p>
                     </div>
                   )}

@@ -155,24 +155,37 @@ const TrainingSessionDetail = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {exerciseArray.map((exercise: any, index: number) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div className="flex items-center">
-                  <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-xs text-white mr-3">
+              <div key={index} className="flex items-center p-3 bg-white/5 rounded-lg">
+                <div className="flex items-center space-x-3 flex-1">
+                  <span className="w-6 h-6 bg-white/10 rounded-full flex items-center justify-center text-xs text-white shrink-0">
                     {index + 1}
                   </span>
-                  <span className="text-white font-medium">
-                    {typeof exercise === 'string' ? exercise : exercise.name}
-                  </span>
-                </div>
-                {typeof exercise === 'object' && (
-                  <div className="flex items-center space-x-4 text-xs text-white/60">
-                    <span>{exercise.sets} sets</span>
-                    <span>{exercise.reps} reps</span>
-                    <span>{exercise.hold_time_seconds}s hold</span>
+                  
+                  {/* Exercise Image */}
+                  {exercise.figure?.image_url && (
+                    <div className="w-10 h-10 rounded-md overflow-hidden shrink-0">
+                      <img
+                        src={exercise.figure.image_url}
+                        alt={exercise.figure.name || 'Exercise'}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="flex-1 min-w-0">
+                    <div className="text-white font-medium text-sm truncate">
+                      {typeof exercise === 'string' ? exercise : exercise.figure?.name || exercise.name || 'Exercise'}
+                    </div>
+                    {typeof exercise === 'object' && exercise.sets && (
+                      <div className="text-xs text-white/60 truncate">
+                        {exercise.sets} sets × {exercise.reps} reps
+                        {exercise.hold_time_seconds && ` (${exercise.hold_time_seconds}s hold)`}
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             ))}
           </div>

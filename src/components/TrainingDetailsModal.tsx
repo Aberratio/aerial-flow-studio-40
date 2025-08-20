@@ -77,21 +77,38 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
                   <Zap className="w-5 h-5 mr-2 text-yellow-500" />
                   <h3 className="font-semibold text-white">Warm-up</h3>
                 </div>
-                 <ul className="text-muted-foreground space-y-1">
+                 <div className="grid grid-cols-1 gap-2">
                    {session.warmup_exercises.map((item: any, index: number) => (
-                     <li key={index} className="flex items-center justify-between">
-                       <div className="flex items-center">
-                         <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
-                         <span>{typeof item === 'string' ? item : item.name}</span>
-                       </div>
-                       {typeof item === 'object' && (
-                         <div className="text-xs text-white/60">
-                           {item.sets} sets × {item.reps} reps ({item.hold_time_seconds}s hold)
+                     <div key={index} className="flex items-center space-x-3 p-2 bg-white/5 rounded-md">
+                       <span className="w-5 h-5 bg-yellow-500 rounded-full flex items-center justify-center text-xs text-white shrink-0">
+                         {index + 1}
+                       </span>
+                       
+                       {/* Exercise Image */}
+                       {item.figure?.image_url && (
+                         <div className="w-8 h-8 rounded-md overflow-hidden shrink-0">
+                           <img
+                             src={item.figure.image_url}
+                             alt={item.figure.name || 'Exercise'}
+                             className="w-full h-full object-cover"
+                           />
                          </div>
                        )}
-                     </li>
+                       
+                       <div className="flex-1 min-w-0">
+                         <div className="text-white text-sm font-medium truncate">
+                           {typeof item === 'string' ? item : item.figure?.name || item.name || 'Exercise'}
+                         </div>
+                         {typeof item === 'object' && item.sets && (
+                           <div className="text-xs text-white/60">
+                             {item.sets} sets × {item.reps} reps
+                             {item.hold_time_seconds && ` (${item.hold_time_seconds}s hold)`}
+                           </div>
+                         )}
+                       </div>
+                     </div>
                    ))}
-                 </ul>
+                 </div>
               </div>
             )}
 
@@ -101,21 +118,38 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
                   <Target className="w-5 h-5 mr-2 text-purple-500" />
                   <h3 className="font-semibold text-white">Figures & Combos</h3>
                 </div>
-                 <ul className="text-muted-foreground space-y-1">
+                 <div className="grid grid-cols-1 gap-2">
                    {session.figures.map((item: any, index: number) => (
-                     <li key={index} className="flex items-center justify-between">
-                       <div className="flex items-center">
-                         <span className="w-2 h-2 bg-purple-500 rounded-full mr-2"></span>
-                         <span>{typeof item === 'string' ? item : item.name}</span>
-                       </div>
-                       {typeof item === 'object' && (
-                         <div className="text-xs text-white/60">
-                           {item.sets} sets × {item.reps} reps ({item.hold_time_seconds}s hold)
+                     <div key={index} className="flex items-center space-x-3 p-2 bg-white/5 rounded-md">
+                       <span className="w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center text-xs text-white shrink-0">
+                         {index + 1}
+                       </span>
+                       
+                       {/* Exercise Image */}
+                       {item.figure?.image_url && (
+                         <div className="w-8 h-8 rounded-md overflow-hidden shrink-0">
+                           <img
+                             src={item.figure.image_url}
+                             alt={item.figure.name || 'Exercise'}
+                             className="w-full h-full object-cover"
+                           />
                          </div>
                        )}
-                     </li>
+                       
+                       <div className="flex-1 min-w-0">
+                         <div className="text-white text-sm font-medium truncate">
+                           {typeof item === 'string' ? item : item.figure?.name || item.name || 'Exercise'}
+                         </div>
+                         {typeof item === 'object' && item.sets && (
+                           <div className="text-xs text-white/60">
+                             {item.sets} sets × {item.reps} reps
+                             {item.hold_time_seconds && ` (${item.hold_time_seconds}s hold)`}
+                           </div>
+                         )}
+                       </div>
+                     </div>
                    ))}
-                 </ul>
+                 </div>
               </div>
             )}
 
@@ -125,21 +159,38 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
                   <Heart className="w-5 h-5 mr-2 text-pink-500" />
                   <h3 className="font-semibold text-white">Stretching</h3>
                 </div>
-                 <ul className="text-muted-foreground space-y-1">
+                 <div className="grid grid-cols-1 gap-2">
                    {session.stretching_exercises.map((item: any, index: number) => (
-                     <li key={index} className="flex items-center justify-between">
-                       <div className="flex items-center">
-                         <span className="w-2 h-2 bg-pink-500 rounded-full mr-2"></span>
-                         <span>{typeof item === 'string' ? item : item.name}</span>
-                       </div>
-                       {typeof item === 'object' && (
-                         <div className="text-xs text-white/60">
-                           {item.sets} sets × {item.reps} reps ({item.hold_time_seconds}s hold)
+                     <div key={index} className="flex items-center space-x-3 p-2 bg-white/5 rounded-md">
+                       <span className="w-5 h-5 bg-pink-500 rounded-full flex items-center justify-center text-xs text-white shrink-0">
+                         {index + 1}
+                       </span>
+                       
+                       {/* Exercise Image */}
+                       {item.figure?.image_url && (
+                         <div className="w-8 h-8 rounded-md overflow-hidden shrink-0">
+                           <img
+                             src={item.figure.image_url}
+                             alt={item.figure.name || 'Exercise'}
+                             className="w-full h-full object-cover"
+                           />
                          </div>
                        )}
-                     </li>
+                       
+                       <div className="flex-1 min-w-0">
+                         <div className="text-white text-sm font-medium truncate">
+                           {typeof item === 'string' ? item : item.figure?.name || item.name || 'Exercise'}
+                         </div>
+                         {typeof item === 'object' && item.sets && (
+                           <div className="text-xs text-white/60">
+                             {item.sets} sets × {item.reps} reps
+                             {item.hold_time_seconds && ` (${item.hold_time_seconds}s hold)`}
+                           </div>
+                         )}
+                       </div>
+                     </div>
                    ))}
-                 </ul>
+                 </div>
               </div>
             )}
           </div>
