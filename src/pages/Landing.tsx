@@ -88,11 +88,11 @@ const Landing = () => {
         .eq("section_key", "hero")
         .single();
       
-      setHeroImage(heroSection?.image_url || "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop");
+      setHeroImage(heroSection?.image_url || "");
       setContentLoaded(prev => ({ ...prev, hero: true }));
     } catch (error) {
       console.error("Error loading hero image:", error);
-      setHeroImage("https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop");
+      setHeroImage("");
       setContentLoaded(prev => ({ ...prev, hero: true }));
     }
   };
@@ -415,13 +415,16 @@ const Landing = () => {
               }`}
             >
               <div className="relative z-10">
-                <LazyImage
-                  src={heroImage}
-                  alt="Aerial athlete performing on silks"
-                  className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense"
-                  skeletonClassName="rounded-2xl mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px]"
-                  fallbackSrc="https://images.unsplash.com/photo-1518611012118-696072aa579a?w=600&h=800&fit=crop"
-                />
+                {!contentLoaded.hero || !heroImage ? (
+                  <HeroSkeleton />
+                ) : (
+                  <LazyImage
+                    src={heroImage}
+                    alt="Aerial athlete performing on silks"
+                    className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense"
+                    skeletonClassName="rounded-2xl mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px]"
+                  />
+                )}
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
 
