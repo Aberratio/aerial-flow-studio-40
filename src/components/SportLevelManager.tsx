@@ -789,12 +789,61 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
               </div>
             </div>
             
+            {/* Already Selected Figures Section */}
+            {selectedFigures.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white font-medium">Already Selected Figures</h3>
+                  <Badge variant="secondary" className="bg-green-500/20 text-green-300">
+                    {selectedFigures.length} selected
+                  </Badge>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-32 overflow-y-auto border border-green-400/20 rounded-lg p-3 bg-green-500/5">
+                  {selectedFigures.map((figureId) => {
+                    const figure = figures.find(f => f.id === figureId);
+                    if (!figure) return null;
+                    return (
+                      <div
+                        key={figure.id}
+                        className="flex items-center gap-2 p-2 rounded-lg bg-green-500/10 border border-green-400/20"
+                      >
+                        {figure.image_url && (
+                          <div className="w-8 h-8 rounded overflow-hidden bg-white/10 shrink-0">
+                            <img 
+                              src={figure.image_url} 
+                              alt={figure.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-green-300 truncate">{figure.name}</p>
+                          <p className="text-xs text-green-400/70">{figure.difficulty_level}</p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleFigureToggle(figure.id)}
+                          className="h-6 w-6 p-0 text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <p className="text-muted-foreground">
-                Select figures for <span className="text-white font-medium">{selectedLevel?.level_name}</span>
+                Select additional figures for <span className="text-white font-medium">{selectedLevel?.level_name}</span>
               </p>
               <Badge variant="secondary" className="bg-purple-500/20 text-purple-300">
-                {selectedFigures.length} selected of {getSportFigures().length} available
+                {getSportFigures().length} available
               </Badge>
             </div>
             
