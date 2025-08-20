@@ -62,18 +62,20 @@ const TrainingSessionDetail = () => {
 
       try {
         setLoading(true);
-        const { data, error } = await supabase
+        
+        // First fetch the basic session data
+        const { data: sessionData, error: sessionError } = await supabase
           .from('training_sessions')
           .select('*')
           .eq('id', sessionId)
           .single();
 
-        if (error) {
-          console.error('Error fetching session:', error);
-          throw error;
+        if (sessionError) {
+          console.error('Error fetching session:', sessionError);
+          throw sessionError;
         }
 
-        if (!data) {
+        if (!sessionData) {
           toast({
             title: "Session Not Found",
             description: "The training session you're looking for doesn't exist.",
@@ -84,7 +86,7 @@ const TrainingSessionDetail = () => {
         }
 
         // Check if user has access to this session
-        if (!data.published && data.user_id !== user?.id && !isAdmin) {
+        if (!sessionData.published && sessionData.user_id !== user?.id && !isAdmin) {
           toast({
             title: "Access Denied",
             description: "This training session is not published or you don't have access to it.",
@@ -94,11 +96,62 @@ const TrainingSessionDetail = () => {
           return;
         }
 
+        // Process exercises to include figure data with images
+        const processExercises = async (exercises: any) => {
+          if (!exercises) return [];
+          
+          // Handle different data types
+          let exerciseArray: any[] = [];
+          if (Array.isArray(exercises)) {
+            exerciseArray = exercises;
+          } else if (typeof exercises === 'string') {
+            try {
+              exerciseArray = JSON.parse(exercises);
+            } catch {
+              return [];
+            }
+          } else {
+            return [];
+          }
+          
+          const processedExercises = await Promise.all(
+            exerciseArray.map(async (exercise) => {
+              if (typeof exercise === 'string') {
+                return exercise;
+              }
+              
+              if (exercise.figure_id) {
+                const { data: figureData } = await supabase
+                  .from('figures')
+                  .select('id, name, image_url')
+                  .eq('id', exercise.figure_id)
+                  .single();
+                
+                return {
+                  ...exercise,
+                  figure: figureData
+                };
+              }
+              
+              return exercise;
+            })
+          );
+          
+          return processedExercises;
+        };
+
+        // Process all exercise arrays
+        const [warmupExercises, figureExercises, stretchingExercises] = await Promise.all([
+          processExercises(sessionData.warmup_exercises),
+          processExercises(sessionData.figures),
+          processExercises(sessionData.stretching_exercises)
+        ]);
+
         setSession({
-          ...data,
-          warmup_exercises: data.warmup_exercises || [],
-          figures: data.figures || [],
-          stretching_exercises: data.stretching_exercises || []
+          ...sessionData,
+          warmup_exercises: warmupExercises,
+          figures: figureExercises,
+          stretching_exercises: stretchingExercises
         });
       } catch (error) {
         console.error('Error fetching session:', error);
