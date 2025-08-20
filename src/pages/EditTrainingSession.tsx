@@ -11,7 +11,9 @@ import {
   Timer,
   Hand,
   Crown,
-  DollarSign
+  DollarSign,
+  Upload,
+  X
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -27,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { SessionExerciseManager } from '@/components/SessionExerciseManager';
 import TrainingRedemptionCodeManagement from '@/components/TrainingRedemptionCodeManagement';
+import { ImageCropModal } from '@/components/ImageCropModal';
 
 const EditTrainingSession = () => {
   const { sessionId } = useParams();
@@ -56,6 +59,11 @@ const EditTrainingSession = () => {
     training: [],
     stretching: []
   });
+
+  // Image upload states
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isCropModalOpen, setIsCropModalOpen] = useState(false);
 
   // Redirect if not admin
   useEffect(() => {
@@ -115,6 +123,67 @@ const EditTrainingSession = () => {
       fetchSession();
     }
   }, [sessionId, isAdmin, roleLoading, navigate, toast]);
+
+  const uploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${Math.random()}.${fileExt}`;
+      const filePath = `training-sessions/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("challenges")
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("challenges")
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      toast({
+        title: "Upload Error",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setSelectedImage(reader.result as string);
+        setIsCropModalOpen(true);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleCropComplete = async (croppedImageFile: File) => {
+    setImageFile(croppedImageFile);
+    setIsCropModalOpen(false);
+    setSelectedImage(null);
+    
+    // Upload the image immediately
+    const uploadedUrl = await uploadImage(croppedImageFile);
+    if (uploadedUrl) {
+      setFormData(prev => ({ ...prev, thumbnail_url: uploadedUrl }));
+      toast({
+        title: "Image Uploaded",
+        description: "Training session image uploaded successfully.",
+      });
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setFormData(prev => ({ ...prev, thumbnail_url: '' }));
+    setImageFile(null);
+  };
 
   const handleSave = async () => {
     if (!user || !sessionId) return;
@@ -343,14 +412,43 @@ const EditTrainingSession = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="thumbnail" className="text-white">Thumbnail URL</Label>
-                  <Input
-                    id="thumbnail"
-                    value={formData.thumbnail_url}
-                    onChange={(e) => setFormData(prev => ({ ...prev, thumbnail_url: e.target.value }))}
-                    placeholder="https://example.com/image.jpg"
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  />
+                  <Label className="text-white">Session Image</Label>
+                  <div className="space-y-4">
+                    {formData.thumbnail_url && (
+                      <div className="relative">
+                        <img
+                          src={formData.thumbnail_url}
+                          alt="Session thumbnail"
+                          className="w-full h-32 object-cover rounded-lg border border-white/10"
+                        />
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={handleRemoveImage}
+                          className="absolute top-2 right-2 border-white/20 bg-black/50 text-white hover:bg-red-500/20"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    )}
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => document.getElementById('image-upload')?.click()}
+                        className="border-white/20 text-white hover:bg-white/10"
+                      >
+                        <Upload className="w-4 h-4 mr-2" />
+                        {formData.thumbnail_url ? 'Change Image' : 'Upload Image'}
+                      </Button>
+                      <input
+                        id="image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -453,6 +551,19 @@ const EditTrainingSession = () => {
             </Card>
           </div>
         </div>
+
+        {/* Image Crop Modal */}
+        {selectedImage && (
+          <ImageCropModal
+            isOpen={isCropModalOpen}
+            onClose={() => {
+              setIsCropModalOpen(false);
+              setSelectedImage(null);
+            }}
+            imageSrc={selectedImage}
+            onCropComplete={handleCropComplete}
+          />
+        )}
       </div>
     </div>
   );
