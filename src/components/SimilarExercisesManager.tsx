@@ -101,9 +101,7 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
         query = query.or(`
           name.ilike.%${searchQuery}%,
           description.ilike.%${searchQuery}%,
-          instructions.ilike.%${searchQuery}%,
-          tags.cs.{${searchQuery}},
-          synonyms.cs.{${searchQuery}}
+          instructions.ilike.%${searchQuery}%
         `);
       }
 
