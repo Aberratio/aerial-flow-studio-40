@@ -235,16 +235,20 @@ const Landing = () => {
     },
   ];
   const freeFeatures = [
+    "Basic challenges",
+    "Basic figures and combos",
+    "Full profile customization",
+    "Aerial Journey",
+    "Share your progress",
     "Post updates to your feed",
     "Invite and follow friends",
     "View community posts",
-    "Basic profile customization",
   ];
   const premiumFeatures = [
     "All Free features",
-    "Access to figure library",
-    "Create training sessions",
-    "Join challenges",
+    "Access to full figure library",
+    "Access to all challenges",
+    "Join training sessions",
     "Track your progress",
     "Advanced analytics",
     "Priority support",
