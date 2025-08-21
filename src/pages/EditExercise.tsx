@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import { SimilarExercisesManager } from "@/components/SimilarExercisesManager";
+import { PrerequisiteExercisesManager } from "@/components/PrerequisiteExercisesManager";
 
 const EditExercise = () => {
   const { exerciseId } = useParams();
@@ -649,6 +650,16 @@ const EditExercise = () => {
               </CardContent>
             </Card>
           )}
+
+          {/* Foundational Exercises */}
+          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+            <CardHeader>
+              <CardTitle className="text-foreground">Foundational Skills</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PrerequisiteExercisesManager figureId={exercise.id} />
+            </CardContent>
+          </Card>
 
           {/* Similar Exercises */}
           <Card className="border-border/50 bg-card/50 backdrop-blur-sm">

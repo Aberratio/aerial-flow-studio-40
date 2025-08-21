@@ -816,6 +816,30 @@ export type Database = {
           },
         ]
       }
+      prerequisite_figures: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          figure_id: string
+          id: string
+          prerequisite_figure_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          figure_id: string
+          id?: string
+          prerequisite_figure_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          figure_id?: string
+          id?: string
+          prerequisite_figure_id?: string
+        }
+        Relationships: []
+      }
       pricing_plan_features: {
         Row: {
           created_at: string

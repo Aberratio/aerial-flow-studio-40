@@ -32,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSimilarExercises } from "@/hooks/useSimilarExercises";
+import { usePrerequisiteExercises } from "@/hooks/usePrerequisiteExercises";
 import { ShareExerciseModal } from "@/components/ShareExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PricingModal } from "@/components/PricingModal";
@@ -64,6 +65,9 @@ const ExerciseDetail = () => {
 
   // Similar exercises hook
   const { similarExercises, loading: similarLoading } = useSimilarExercises(exerciseId);
+  
+  // Prerequisite exercises hook
+  const { prerequisiteExercises, loading: prerequisiteLoading } = usePrerequisiteExercises(exerciseId);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -1132,6 +1136,59 @@ const ExerciseDetail = () => {
                       >
                         {tag}
                       </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Prerequisite Exercises */}
+            {prerequisiteExercises.length > 0 && (
+              <Card className="glass-effect border-white/10">
+                <CardContent className="p-4">
+                  <div className="flex items-center mb-3">
+                    <BookOpen className="w-5 h-5 text-orange-400 mr-2" />
+                    <h3 className="text-white font-semibold">Learn These First</h3>
+                  </div>
+                  <p className="text-muted-foreground text-sm mb-4">
+                    Master these foundational exercises before attempting this one
+                  </p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {prerequisiteExercises.map((prerequisite) => (
+                      <div
+                        key={prerequisite.id}
+                        className="cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => navigate(`/exercise/${prerequisite.id}`)}
+                      >
+                        <div className="relative aspect-video rounded-lg overflow-hidden bg-muted mb-2">
+                          {prerequisite.image_url ? (
+                            <img
+                              src={prerequisite.image_url}
+                              alt={prerequisite.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-orange-500/20 to-orange-700/20 flex items-center justify-center">
+                              <BookOpen className="w-8 h-8 text-orange-400" />
+                            </div>
+                          )}
+                          {prerequisite.premium && (
+                            <div className="absolute top-2 right-2">
+                              <Crown className="w-4 h-4 text-yellow-400" />
+                            </div>
+                          )}
+                        </div>
+                        <h4 className="text-white text-sm font-medium line-clamp-2 mb-1">
+                          {prerequisite.name}
+                        </h4>
+                        {prerequisite.difficulty_level && (
+                          <Badge 
+                            className={`text-xs ${getDifficultyColor(prerequisite.difficulty_level)}`}
+                          >
+                            {prerequisite.difficulty_level}
+                          </Badge>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </CardContent>
