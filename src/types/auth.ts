@@ -22,8 +22,6 @@ export interface AuthContextType {
   signUp: (email: string, password: string, username: string) => Promise<void>;
   signOut: () => Promise<void>;
   isLoading: boolean;
-  isFirstLogin: boolean;
-  setIsFirstLogin: (value: boolean) => void;
   refetchCounts: () => void;
   refreshUser: () => Promise<void>;
   // Backward compatibility

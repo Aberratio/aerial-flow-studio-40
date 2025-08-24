@@ -8,7 +8,7 @@ export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isFirstLogin, setIsFirstLogin] = useState(false);
+  
   
   // Get follow counts for the current user
   const { followersCount, followingCount, refetchCounts } = useFollowCounts(session?.user?.id || '');
@@ -45,14 +45,6 @@ export const useAuthState = () => {
               console.log('AuthContext: User set', userWithCompat);
 
 
-              // Check if user is new for pricing modal
-              const createdAt = new Date(profile.created_at);
-              const now = new Date();
-              const hoursDiff = (now.getTime() - createdAt.getTime()) / (1000 * 3600);
-              // Only show for truly new users who are free and haven't been shown before
-              if (hoursDiff < 1 && profile.role === 'free' && !localStorage.getItem(`pricing_shown_${profile.id}`)) {
-                setIsFirstLogin(true);
-              }
             } else {
               console.log('AuthContext: No profile found, creating default');
               const basicUser = {
@@ -179,8 +171,6 @@ export const useAuthState = () => {
     user,
     session,
     isLoading,
-    isFirstLogin,
-    setIsFirstLogin,
     clearAuth,
     refetchCounts,
     refreshUser,

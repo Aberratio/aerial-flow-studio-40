@@ -100,7 +100,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
       <DialogContent className="max-w-md bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle className="text-white text-center">
-            Welcome to IguanaFlow
+            {mode === "login" ? "Sign In" : "Create Account"}
           </DialogTitle>
         </DialogHeader>
 
