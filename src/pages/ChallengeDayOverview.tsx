@@ -268,8 +268,11 @@ const ChallengeDayOverview = () => {
   useEffect(() => {
     if (challengeId && dayId && user?.id) {
       fetchChallengeAndDay();
+    } else if (challengeId && dayId && user === null) {
+      // User is not authenticated, redirect to challenges page
+      navigate("/challenges");
     }
-  }, [challengeId, dayId]);
+  }, [challengeId, dayId, user?.id]);
 
   const getExerciseIcon = (category: string) => {
     switch (category?.toLowerCase()) {
