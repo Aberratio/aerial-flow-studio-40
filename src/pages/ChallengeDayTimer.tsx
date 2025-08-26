@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useSpeech } from "@/hooks/useSpeech";
+import { useWakeLock } from "@/hooks/useWakeLock";
 
 interface Exercise {
   id: string;
@@ -82,6 +83,7 @@ const ChallengeDayTimer = () => {
   const [actionType, setActionType] = useState<"failed" | "rest" | null>(null);
 
   const { speak } = useSpeech(audioMode === "sound");
+  const { isSupported: isWakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
 
   // Create optimistic beeping sound for minimal mode
   const playBeep = (type: "countdown" | "transition" | "ready" = "countdown") => {
@@ -349,6 +351,9 @@ const ChallengeDayTimer = () => {
     if (!user || !challengeId || !dayId) return;
 
     try {
+      // Release wake lock when workout is completed
+      releaseWakeLock();
+      
       const calendarDay = getCalendarDayByTrainingDay(dayId);
       if (calendarDay) {
         await changeDayStatus(calendarDay.calendar_date, "completed");
@@ -373,6 +378,9 @@ const ChallengeDayTimer = () => {
     if (!user || !challengeId || !dayId) return;
 
     try {
+      // Release wake lock when workout is failed
+      releaseWakeLock();
+      
       const calendarDay = getCalendarDayByTrainingDay(dayId);
       if (calendarDay) {
         await changeDayStatus(calendarDay.calendar_date, "failed");
@@ -434,11 +442,22 @@ const ChallengeDayTimer = () => {
       if (audioMode === "sound") {
         speak("Get ready!");
       }
+      // Request wake lock when starting the timer
+      requestWakeLock();
     } else if (isPreparingToStart) {
       setIsPreparingToStart(false);
       setPreparationTime(10);
+      // Release wake lock when canceling
+      releaseWakeLock();
     } else {
       setIsRunning(!isRunning);
+      if (!isRunning) {
+        // Request wake lock when resuming
+        requestWakeLock();
+      } else {
+        // Release wake lock when pausing
+        releaseWakeLock();
+      }
     }
   };
 
