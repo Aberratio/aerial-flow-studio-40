@@ -41,12 +41,6 @@ export const useFeedTabs = () => {
           figures (
             id,
             name
-          ),
-          profiles!posts_user_id_fkey (
-            id,
-            username,
-            avatar_url,
-            role
           )
         `)
         .order('created_at', { ascending: false })
@@ -150,6 +144,13 @@ export const useFeedTabs = () => {
       if (postsData) {
         const postsWithCounts = await Promise.all(
           postsData.filter(post => post !== null).map(async (post) => {
+            // Get user profile data
+            const { data: userProfile } = await supabase
+              .from('profiles')
+              .select('id, username, avatar_url, role')
+              .eq('id', post.user_id)
+              .maybeSingle();
+
             // Get likes count
             const { count: likesCount } = await supabase
               .from('post_likes')
@@ -191,10 +192,10 @@ export const useFeedTabs = () => {
                 name: post.figures.name
               } : null,
               user: {
-                id: post.profiles?.id || '',
-                username: post.profiles?.username || '',
-                avatar_url: post.profiles?.avatar_url || null,
-                role: post.profiles?.role || 'free',
+                id: userProfile?.id || post.user_id,
+                username: userProfile?.username || 'Unknown User',
+                avatar_url: userProfile?.avatar_url || null,
+                role: userProfile?.role || 'free',
               },
               likes_count: likesCount || 0,
               comments_count: commentsCount || 0,
