@@ -36,6 +36,7 @@ import { usePrerequisiteExercises } from "@/hooks/usePrerequisiteExercises";
 import { ShareExerciseModal } from "@/components/ShareExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PricingModal } from "@/components/PricingModal";
+import { CreatePostModal } from "@/components/CreatePostModal";
 import IguanaLogo from "@/assets/iguana-logo.svg";
 
 const ExerciseDetail = () => {
@@ -62,6 +63,7 @@ const ExerciseDetail = () => {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showCongrats, setShowCongrats] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
 
   // Similar exercises hook
   const { similarExercises, loading: similarLoading } = useSimilarExercises(exerciseId);
@@ -250,6 +252,14 @@ const ExerciseDetail = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handlePostCreated = (newPost: any) => {
+    // Add the new post to my versions
+    setMyVersions(prev => [newPost, ...prev]);
+    // Switch to my-versions tab to show the new post
+    setActiveTab("my-versions");
+    setShowCreatePost(false);
   };
 
   const deleteExercise = async () => {
@@ -926,6 +936,18 @@ const ExerciseDetail = () => {
                       Not Tried
                     </Button>
                   </div>
+                  
+                  {/* Share Your Version Button */}
+                  <div className="mt-4 pt-4 border-t border-white/10">
+                    <Button
+                      onClick={() => setShowCreatePost(true)}
+                      variant="outline"
+                      className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/50"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Share Your Version
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
@@ -1481,6 +1503,14 @@ const ExerciseDetail = () => {
         isOpen={showPricingModal}
         onClose={() => setShowPricingModal(false)}
         onUpgrade={() => setShowPricingModal(false)}
+      />
+
+      {/* Create Post Modal */}
+      <CreatePostModal
+        isOpen={showCreatePost}
+        onClose={() => setShowCreatePost(false)}
+        onPostCreated={handlePostCreated}
+        preselectedFigure={exercise}
       />
 
       {/* Congratulations Animation */}
