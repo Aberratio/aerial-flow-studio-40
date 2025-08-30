@@ -630,26 +630,29 @@ const Challenges = () => {
 
                       {/* Action Buttons */}
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 border-white/20 text-white hover:bg-white/10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            if (isPremiumLocked) {
-                              setChallengeToPurchase(challenge);
-                              setIsPurchaseModalOpen(true);
-                            } else {
-                              openChallengeModal(challenge);
-                            }
-                          }}
-                        >
-                          {isPremiumLocked ? "Unlock" : "Preview"}
-                        </Button>
+                        {/* Only show Preview button if user is NOT participating */}
+                        {!challenge.userParticipating && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 border-white/20 text-white hover:bg-white/10"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (isPremiumLocked) {
+                                setChallengeToPurchase(challenge);
+                                setIsPurchaseModalOpen(true);
+                              } else {
+                                openChallengeModal(challenge);
+                              }
+                            }}
+                          >
+                            {isPremiumLocked ? "Unlock" : "Preview"}
+                          </Button>
+                        )}
                         <Button
                           variant="primary"
                           size="sm"
-                          className="flex-1"
+                          className={challenge.userParticipating ? "w-full" : "flex-1"}
                           onClick={async (e) => {
                             e.stopPropagation();
                             if (challenge.premium) {

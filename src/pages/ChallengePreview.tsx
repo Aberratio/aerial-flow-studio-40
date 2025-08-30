@@ -8,6 +8,10 @@ import {
   Target,
   Lock,
   Bed,
+  Star,
+  Calendar,
+  Trophy,
+  Users,
 } from "lucide-react";
 import {
   Carousel,
@@ -323,13 +327,13 @@ const ChallengePreview = () => {
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case "beginner":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
+        return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
       case "intermediate":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+        return "bg-amber-500/20 text-amber-400 border-amber-500/30";
       case "advanced":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
+        return "bg-rose-500/20 text-rose-400 border-rose-500/30";
       default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
+        return "bg-slate-500/20 text-slate-400 border-slate-500/30";
     }
   };
 
@@ -343,35 +347,46 @@ const ChallengePreview = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white/80 font-medium">Loading challenge...</p>
+        </div>
       </div>
     );
   }
 
   if (!challenge) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex items-center justify-center">
-        <div className="text-white">Challenge not found</div>
+      <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <Trophy className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+          <h2 className="text-xl font-bold text-white mb-2">Challenge not found</h2>
+          <p className="text-slate-400 mb-6">The challenge you're looking for doesn't exist</p>
+          <Button onClick={() => navigate("/challenges")} variant="outline">
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Back to Challenges
+          </Button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col md:min-h-screen md:static">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/50 via-purple-800/30 to-blue-900/50"></div>
-        <div className="relative z-10 p-6">
-          {/* Back Button */}
+      <div className="relative flex-shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent backdrop-blur-xl"></div>
+        <div className="relative z-10 p-4 md:p-6">
+          {/* Navigation */}
           <div className="flex items-center justify-between mb-6">
             <Button
               variant="ghost"
               onClick={() => navigate("/challenges")}
-              className="text-white hover:bg-white/20"
+              className="text-white hover:bg-white/10 backdrop-blur-sm"
             >
               <ChevronLeft className="w-4 h-4 mr-2" />
-              Back to Challenges
+              Back
             </Button>
             
             {/* Edit button for admins/creators */}
@@ -379,7 +394,7 @@ const ChallengePreview = () => {
               <Button
                 variant="ghost"
                 onClick={() => navigate(`/challenges/${challengeId}/edit`)}
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/10 backdrop-blur-sm"
               >
                 <Edit className="w-4 h-4 mr-2" />
                 Edit
@@ -387,12 +402,12 @@ const ChallengePreview = () => {
             )}
           </div>
 
-          {/* Challenge Info */}
+          {/* Challenge Header */}
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center gap-4 mb-4">
+            <div className="flex items-center justify-center gap-3 mb-4">
               {challenge.premium && (
-                <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0">
-                  Premium
+                <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-amber-950 border-0 font-bold">
+                  ✨ Premium
                 </Badge>
               )}
               {challenge.difficulty_level && (
@@ -405,30 +420,62 @@ const ChallengePreview = () => {
               )}
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white text-center">
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
               {challenge.title}
             </h1>
+
+            {challenge.description && (
+              <p className="text-lg text-white/80 max-w-2xl mx-auto leading-relaxed">
+                {challenge.description}
+              </p>
+            )}
+
+            {/* Challenge Stats */}
+            <div className="flex items-center justify-center gap-6 mt-6 text-sm text-white/70">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                <span>{challenge.training_days?.length || 0} days</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span>Daily workouts</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                <span>Full program</span>
+              </div>
+            </div>
           </div>
 
-          {/* Join/Start Button */}
-          {!isParticipant ? (
+          {/* Join Button for non-participants */}
+          {!isParticipant && (
             <div className="text-center">
               <Button
                 onClick={joinChallenge}
                 disabled={isJoining}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-lg"
+                className="bg-gradient-to-r from-primary to-primary-foreground hover:shadow-lg hover:shadow-primary/25 text-white px-8 py-4 text-lg font-bold rounded-2xl shadow-xl transition-all duration-300 hover:scale-105"
               >
-                {isJoining ? "Joining..." : "Join Challenge"}
+                {isJoining ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Joining...
+                  </>
+                ) : (
+                  <>
+                    <Star className="w-5 h-5 mr-2" />
+                    Join Challenge
+                  </>
+                )}
               </Button>
             </div>
-          ) : null}
+          )}
         </div>
       </div>
 
       {/* Training Days Slider */}
       {isParticipant && (
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Your Training Schedule</h2>
+        <div className="flex-1 p-4 md:p-6 overflow-hidden">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
           
           {(() => {
             const allTrainingDays =
@@ -450,8 +497,8 @@ const ChallengePreview = () => {
             if (!allTrainingDays.length) return null;
 
             return (
-              <Carousel className="w-full" setApi={setCarouselApi}>
-                <CarouselContent className="-ml-2 md:-ml-4">
+              <Carousel className="w-full h-full" setApi={setCarouselApi}>
+                <CarouselContent className="-ml-2 md:-ml-4 h-full">
                   {allTrainingDays.map((dayData, index) => {
                     const { calendarDay, trainingDay } = dayData;
                     const exercises = trainingDay.training_day_exercises || [];
@@ -476,34 +523,36 @@ const ChallengePreview = () => {
                     return (
                       <CarouselItem
                         key={trainingDay.id}
-                        className="pl-2 md:pl-4 basis-full md:basis-1/2 lg:basis-1/3"
+                        className="pl-2 md:pl-4 basis-full h-full"
                       >
                         <Card
-                          className={`glass-effect overflow-hidden h-full transition-all duration-200 ${
+                          className={`glass-effect overflow-hidden h-full transition-all duration-300 backdrop-blur-md ${
                             isBlocked
-                              ? "border-muted/30 opacity-50"
+                              ? "border-slate-600/50 opacity-60"
                               : isCompleted
-                              ? "border-emerald-500/50"
+                              ? "border-emerald-500/60 bg-emerald-500/5"
                               : isCurrentDay
-                              ? "border-primary/60 ring-2 ring-primary/30 shadow-lg shadow-primary/20"
+                              ? "border-primary/80 ring-2 ring-primary/40 shadow-2xl shadow-primary/20 bg-primary/5"
                               : isPending && isAccessible
-                              ? "border-purple-500/50 ring-1 ring-purple-500/30"
-                              : "border-white/10"
+                              ? "border-purple-500/60 ring-1 ring-purple-500/30 bg-purple-500/5"
+                              : "border-white/20"
                           }`}
                         >
                           {/* Header */}
                           <div
-                            className={`relative h-20 flex items-center justify-between px-4 ${
+                            className={`relative h-24 flex items-center justify-between px-6 ${
                               isBlocked
-                                ? "bg-gradient-to-r from-muted/40 to-muted/20"
+                                ? "bg-gradient-to-r from-slate-600/40 to-slate-700/40"
                                 : isCurrentDay
-                                ? "bg-gradient-to-r from-primary/80 to-primary/60"
+                                ? "bg-gradient-to-r from-primary/90 to-primary/70"
+                                : isCompleted
+                                ? "bg-gradient-to-r from-emerald-600/80 to-emerald-700/70"
                                 : "bg-gradient-to-r from-purple-600/80 to-blue-600/80"
                             }`}
                           >
-                            <div className="absolute inset-0 bg-black/20"></div>
-                            <div className="relative z-10 flex items-center gap-2">
-                              <div className="text-xl">
+                            <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
+                            <div className="relative z-10 flex items-center gap-3">
+                              <div className="text-2xl">
                                 {isBlocked
                                   ? "🔒"
                                   : isCompleted
@@ -518,8 +567,8 @@ const ChallengePreview = () => {
                               </div>
                               <div>
                                 <h3
-                                  className={`text-lg font-bold ${
-                                    isBlocked ? "text-muted-foreground" : "text-white"
+                                  className={`text-xl font-bold ${
+                                    isBlocked ? "text-slate-300" : "text-white"
                                   }`}
                                 >
                                   DAY {trainingDay.day_number}
@@ -527,7 +576,7 @@ const ChallengePreview = () => {
                                 </h3>
                                 <div
                                   className={`text-sm ${
-                                    isBlocked ? "text-muted-foreground/70" : "text-white/90"
+                                    isBlocked ? "text-slate-400" : "text-white/90"
                                   }`}
                                 >
                                   {isBlocked
@@ -538,14 +587,14 @@ const ChallengePreview = () => {
                             </div>
                           </div>
 
-                          <CardContent className="p-4 flex-1">
+                          <CardContent className="p-6 flex-1 flex flex-col">
                             {/* Duration and Exercise Count */}
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <div className="flex items-center justify-between mb-6">
+                              <div className="flex items-center gap-2 text-sm text-white/70">
                                 <Clock className="w-4 h-4" />
                                 {isRestDay ? "Rest Day" : `${Math.ceil(totalDuration / 60)} mins`}
                               </div>
-                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2 text-sm text-white/70">
                                 <Target className="w-4 h-4" />
                                 {exercises.length} exercises
                               </div>
@@ -553,51 +602,51 @@ const ChallengePreview = () => {
 
                             {/* Day Notes */}
                             {(calendarDay?.notes || trainingDay.description) && (
-                              <div className="mb-4">
+                              <div className="mb-6">
                                 <p
                                   className={`text-sm ${
-                                    isBlocked ? "text-muted-foreground/70" : "text-muted-foreground"
-                                  }`}
+                                    isBlocked ? "text-slate-400" : "text-white/80"
+                                  } bg-white/5 p-3 rounded-xl border border-white/10`}
                                 >
                                   {calendarDay?.notes || trainingDay.description}
                                 </p>
                               </div>
                             )}
 
-                            {/* Exercise List - Show ALL exercises */}
+                            {/* Exercise List */}
                             {!isRestDay && exercises.length > 0 && (
-                              <div className="space-y-2 mt-4">
+                              <div className="space-y-3 flex-1 mb-6">
                                 {exercises.map((exercise, exerciseIndex) => (
                                   <div
                                     key={exercise.id}
-                                    className="flex items-start justify-between p-2 bg-white/5 rounded border border-white/10"
+                                    className="flex items-start justify-between p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm"
                                   >
-                                    <div className="flex-1 pt-2 pl-2">
+                                    <div className="flex-1 pr-4">
                                       <h4
-                                        className={`font-medium text-sm ${
-                                          isBlocked ? "text-muted-foreground" : "text-white"
+                                        className={`font-semibold text-base mb-2 ${
+                                          isBlocked ? "text-slate-300" : "text-white"
                                         }`}
                                       >
                                         {exercise.figure.name}
                                       </h4>
                                       {exercise.notes && (
-                                        <p className="text-muted-foreground text-sm mb-3">
+                                        <p className="text-white/70 text-sm mb-3">
                                           {exercise.notes}
                                         </p>
                                       )}
                                       <div
-                                        className={`text-xs ${
-                                          isBlocked ? "text-muted-foreground/70" : "text-purple-400"
+                                        className={`text-sm font-medium ${
+                                          isBlocked ? "text-slate-400" : "text-primary"
                                         }`}
                                       >
                                         {formatTime(exercise.hold_time_seconds || 30)}
-                                        {exercise.sets && exercise.sets > 1 && ` × ${exercise.sets}`}
+                                        {exercise.sets && exercise.sets > 1 && ` × ${exercise.sets} sets`}
                                       </div>
                                     </div>
 
-                                    {/* Exercise preview */}
+                                    {/* Exercise Image */}
                                     <div
-                                      className={`w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center ${
+                                      className={`w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ${
                                         isBlocked ? "opacity-50" : ""
                                       }`}
                                     >
@@ -608,9 +657,7 @@ const ChallengePreview = () => {
                                           className="w-full h-full object-cover"
                                         />
                                       ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-muted">
-                                          <Target className="w-4 h-4 text-muted-foreground" />
-                                        </div>
+                                        <Target className="w-6 h-6 text-white/40" />
                                       )}
                                     </div>
                                   </div>
@@ -620,32 +667,33 @@ const ChallengePreview = () => {
 
                             {/* Rest Day Content */}
                             {isRestDay && (
-                              <div className="text-center py-6">
-                                <div className="text-4xl mb-2">🌴</div>
-                                <p className="text-muted-foreground text-sm">
-                                  Take time to recover and prepare for tomorrow
+                              <div className="text-center py-12 flex-1">
+                                <div className="text-6xl mb-4">🌴</div>
+                                <h3 className="text-xl font-semibold text-white mb-2">Rest & Recovery</h3>
+                                <p className="text-white/70">
+                                  Take time to recover and prepare for tomorrow's training
                                 </p>
                               </div>
                             )}
 
-                            {/* Action Buttons - Only show on current day */}
-                            <div className="mt-4 pt-3 border-t border-white/10 space-y-3">
+                            {/* Action Buttons */}
+                            <div className="mt-auto pt-6 border-t border-white/10 space-y-3">
                               {isCurrentDay && !isRestDay && (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                   <Button
                                     onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay?.id}/timer`)}
-                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                                    className="w-full bg-gradient-to-r from-primary to-primary-foreground hover:shadow-lg hover:shadow-primary/25 text-white py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02]"
                                   >
-                                    <Play className="w-4 h-4 mr-2" />
+                                    <Play className="w-5 h-5 mr-2" />
                                     Train Now
                                   </Button>
                                   <Button
                                     onClick={() => handleRestDay(calendarDay)}
                                     variant="outline"
-                                    className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                                    className="w-full border-amber-500/40 text-amber-400 hover:bg-amber-500/10 py-3 rounded-xl"
                                   >
                                     <Bed className="w-4 h-4 mr-2" />
-                                    Rest
+                                    Rest Today
                                   </Button>
                                 </div>
                               )}
@@ -653,37 +701,38 @@ const ChallengePreview = () => {
                               {isCurrentDay && isRestDay && (
                                 <Button
                                   onClick={() => handleRestDay(calendarDay)}
-                                  className="w-full bg-orange-500 hover:bg-orange-500/90 text-white"
+                                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/25 text-white py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02]"
                                 >
                                   <Bed className="w-4 h-4 mr-2" />
-                                  Rest
+                                  Rest Day
                                 </Button>
                               )}
 
+                              {/* Status Indicator */}
                               <div className="text-center">
                                 {isCompleted ? (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                    Completed ✓
+                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                    ✓ Completed
                                   </span>
                                 ) : isUserRestDay ? (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-500/20 text-orange-400 border border-orange-500/30">
+                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
                                     🛌 Rest Day
                                   </span>
                                 ) : isFailedOrRestToday ? (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
                                     Try Tomorrow
                                   </span>
                                 ) : isBlocked ? (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-muted/20 text-muted-foreground border border-muted/30">
-                                    <Lock className="w-3 h-3 mr-1" />
+                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">
+                                    <Lock className="w-3 h-3 mr-2" />
                                     Locked
                                   </span>
                                 ) : isCurrentDay ? (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
+                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary/20 text-primary border border-primary/30">
                                     ⭐ Train Today
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
+                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">
                                     💪 Upcoming
                                   </span>
                                 )}
@@ -695,8 +744,8 @@ const ChallengePreview = () => {
                     );
                   })}
                 </CarouselContent>
-                <CarouselPrevious className="text-white border-white/20 hover:bg-white/10" />
-                <CarouselNext className="text-white border-white/20 hover:bg-white/10" />
+                <CarouselPrevious className="text-white border-white/20 hover:bg-white/10 backdrop-blur-sm" />
+                <CarouselNext className="text-white border-white/20 hover:bg-white/10 backdrop-blur-sm" />
               </Carousel>
             );
           })()}
