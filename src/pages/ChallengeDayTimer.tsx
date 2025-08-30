@@ -491,7 +491,7 @@ const ChallengeDayTimer = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center">
+      <div className="fixed inset-0 bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center md:min-h-screen md:static">
         <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
       </div>
     );
@@ -499,61 +499,224 @@ const ChallengeDayTimer = () => {
 
   if (exercises.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center">
+      <div className="fixed inset-0 bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center md:min-h-screen md:static">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-2">
             No exercises found
           </h2>
           <Button
-            onClick={() => navigate(`/challenge/${challengeId}/day/${dayId}`)}
+            onClick={() => navigate(`/challenges/${challengeId}`)}
             variant="outline"
           >
-            Back to Day Overview
+            Back to Challenge
           </Button>
         </div>
       </div>
     );
   }
 
-  const currentSegment = getCurrentSegment();
-  const nextSegment = getNextSegment();
+  return (
+    <div className="fixed inset-0 bg-gradient-to-tr from-black to-purple-950/10 text-white flex flex-col md:min-h-screen md:static">
+      <div className="flex-1 flex flex-col container mx-auto px-4 py-6 max-w-4xl md:py-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6 flex-shrink-0">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              releaseWakeLock();
+              navigate(`/challenges/${challengeId}`);
+            }}
+            className="text-white hover:bg-white/10"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
 
-  const ProgressBar = ({ className }: { className: string }) => {
-    return (
-      <div className={`my-2 ${className}`}>
-        <div className="flex justify-between items-center mb-3">
-          <h1 className="text-xl font-semibold text-white">Workout Session</h1>
-          <span className="text-sm text-white/60">
-            {Math.round(calculateProgress())}% Complete
-          </span>
-        </div>
-        <div className="relative">
-          <Progress value={calculateProgress()} className="h-3 bg-white/10" />
-          <div
-            className="absolute inset-0 bg-gradient-to-r from-primary/50 to-primary rounded-full opacity-30"
-            style={{ width: `${calculateProgress()}%` }}
-          />
-        </div>
-      </div>
-    );
-  };
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 text-sm text-white/70">
+              <span>
+                {currentSegmentIndex + 1} / {segments.length}
+              </span>
+            </div>
 
-  const NextUp = ({ className }: { className: string }) => {
-    return (
-      <div className={`${className}`}>
-        {nextSegment && (
-          <Card className="glass-effect border-white/10">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-white hover:bg-white/10"
+                >
+                  <MoreHorizontal className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent 
+                align="end" 
+                className="glass-effect border-white/10 bg-black/90"
+              >
+                <DropdownMenuItem 
+                  onClick={() => handleActionClick("failed")}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  Mark as Failed
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => handleActionClick("rest")}
+                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                >
+                  Mark as Rest Day
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+              variant="ghost"
+              onClick={() => {
+                const modes: Array<"sound" | "no_sound" | "minimal_sound"> = ["minimal_sound", "sound", "no_sound"];
+                const currentIndex = modes.indexOf(audioMode);
+                const nextMode = modes[(currentIndex + 1) % modes.length];
+                setAudioMode(nextMode);
+                localStorage.setItem("challengeTimerAudioMode", nextMode);
+              }}
+              className={`text-white hover:bg-white/10 transition-all ${
+                audioMode === "sound" ? "bg-primary/20 text-primary" : 
+                audioMode === "minimal_sound" ? "bg-yellow-500/20 text-yellow-400" : "bg-white/5"
+              }`}
+              title={
+                audioMode === "sound" ? "Full sound mode" :
+                audioMode === "minimal_sound" ? "Minimal sound mode (beeps only)" :
+                "No sound mode"
+              }
+            >
+              {audioMode === "sound" ? (
+                <Volume2 className="w-5 h-5" />
+              ) : audioMode === "minimal_sound" ? (
+                <div className="w-5 h-5 flex items-center justify-center">
+                  <div className="w-3 h-3 bg-current rounded-full animate-pulse"></div>
+                </div>
+              ) : (
+                <VolumeX className="w-5 h-5" />
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="mb-8 flex-shrink-0">
+          <div className="text-sm text-muted-foreground mb-2">
+            Segment {currentSegmentIndex + 1} of {segments.length}
+          </div>
+          <Progress value={calculateProgress()} className="w-full h-2" />
+        </div>
+
+        {/* Current Exercise/Rest Display */}
+        <Card className="glass-effect border-white/10 mb-8 flex-1 flex flex-col">
+          <CardContent className="p-4 md:p-8 text-center flex-1 flex flex-col justify-center">
+            {getCurrentSegment() && (
+              <>
+                {getCurrentSegment().type === "exercise" ? (
+                  <>
+                    <div className="mb-4 flex-shrink-0">
+                      {getCurrentSegment().exerciseImage && (
+                        <img
+                          src={getCurrentSegment().exerciseImage}
+                          alt={getCurrentSegment().exerciseName}
+                          className="w-32 h-32 md:w-48 md:h-48 object-cover rounded-lg mx-auto mb-4"
+                        />
+                      )}
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                      {getCurrentSegment().exerciseName}
+                    </h2>
+                    {getCurrentSegment().exerciseNotes && (
+                      <p className="text-muted-foreground mb-4 text-sm md:text-base">
+                        {getCurrentSegment().exerciseNotes}
+                      </p>
+                    )}
+                    <Badge variant="outline" className="mb-4">
+                      Set {getCurrentSegment().setIndex + 1}
+                    </Badge>
+                  </>
+                ) : (
+                  <>
+                    <div className="mb-4">
+                      <Hand className="w-16 h-16 md:w-24 md:h-24 mx-auto text-blue-400" />
+                    </div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-blue-400 mb-2">
+                      Rest Time
+                    </h2>
+                    <p className="text-muted-foreground">Take a short break</p>
+                  </>
+                )}
+
+                <div className="text-4xl md:text-6xl font-mono font-bold mt-6 mb-6">
+                  {isPreparingToStart
+                    ? formatTime(preparationTime)
+                    : formatTime(timeRemaining)}
+                </div>
+
+                {isPreparingToStart && (
+                  <div className="text-xl md:text-2xl font-semibold text-yellow-400 mb-4">
+                    Get Ready!
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Controls */}
+        <div className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-4 md:mb-8 flex-shrink-0">
+          <Button
+            onClick={handlePlayPause}
+            size="lg"
+            variant={
+              isRunning || isPreparingToStart ? "secondary" : "default"
+            }
+            className="w-full sm:w-auto"
+          >
+            {isPreparingToStart ? (
+              <>
+                <Pause className="w-5 h-5 mr-2" />
+                Cancel
+              </>
+            ) : isRunning ? (
+              <>
+                <Pause className="w-5 h-5 mr-2" />
+                Pause
+              </>
+            ) : (
+              <>
+                <Play className="w-5 h-5 mr-2" />
+                Start
+              </>
+            )}
+          </Button>
+
+          {(isRunning || isPreparingToStart) && (
+            <Button
+              onClick={handleSkip}
+              variant="outline"
+              size="lg"
+              className="w-full sm:w-auto"
+            >
+              Skip Segment
+            </Button>
+          )}
+        </div>
+
+        {/* Next Up Section */}
+        {getNextSegment() && (
+          <Card className="glass-effect border-white/10 flex-shrink-0">
             <CardContent className="p-4">
               <h3 className="text-lg font-semibold text-white mb-3">Up Next</h3>
               <div className="flex items-center space-x-3">
-                {nextSegment.type === "exercise" &&
-                nextSegment.exerciseImage ? (
+                {getNextSegment().type === "exercise" &&
+                getNextSegment().exerciseImage ? (
                   <img
-                    src={nextSegment.exerciseImage}
-                    alt={nextSegment.exerciseName}
+                    src={getNextSegment().exerciseImage}
+                    alt={getNextSegment().exerciseName}
                     className="w-12 h-12 object-cover rounded-lg"
                   />
-                ) : nextSegment.type === "rest" ? (
+                ) : getNextSegment().type === "rest" ? (
                   <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
                     <Hand className="w-6 h-6 text-green-400" />
                   </div>
@@ -564,15 +727,15 @@ const ChallengeDayTimer = () => {
                 )}
                 <div className="flex-1">
                   <div className="font-medium text-white">
-                    {nextSegment.exerciseName}
+                    {getNextSegment().exerciseName}
                   </div>
                   <div className="text-sm text-white/60">
-                    {formatTimeNatural(nextSegment.duration)}
+                    {formatTime(getNextSegment().duration)}
                   </div>
-                  {nextSegment.type === "exercise" &&
-                    nextSegment.exerciseNotes && (
+                  {getNextSegment().type === "exercise" &&
+                    getNextSegment().exerciseNotes && (
                       <div className="text-xs text-primary/80 mt-1 bg-primary/10 rounded px-2 py-1 border border-primary/20">
-                        {nextSegment.exerciseNotes}
+                        {getNextSegment().exerciseNotes}
                       </div>
                     )}
                 </div>
@@ -581,410 +744,73 @@ const ChallengeDayTimer = () => {
           </Card>
         )}
       </div>
-    );
-  };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
-      <div>
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+      {/* Completion Dialog */}
+      <Dialog open={isCompleted} onOpenChange={setIsCompleted}>
+        <DialogContent className="glass-effect border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-white">Workout Completed! 🎉</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Great job on completing today's workout! What would you like to do?
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
             <Button
-              variant="ghost"
-              onClick={() => navigate(`/challenge/${challengeId}/day/${dayId}`)}
-              className="text-white hover:bg-white/10 gap-2"
+              onClick={handleWorkoutComplete}
+              className="flex-1"
+              variant="default"
             >
-              <ChevronLeft className="w-5 h-5" />
-              <span className="hidden sm:inline">Back to Overview</span>
-              <span className="sm:hidden">Back</span>
+              Mark as Completed
             </Button>
-
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2 text-sm text-white/70">
-                <span>
-                  {currentSegmentIndex + 1} / {segments.length}
-                </span>
-              </div>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="text-white hover:bg-white/10"
-                  >
-                    <MoreHorizontal className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                  align="end" 
-                  className="glass-effect border-white/10 bg-black/90"
-                >
-                  <DropdownMenuItem 
-                    onClick={() => handleActionClick("failed")}
-                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                  >
-                    Mark as Failed
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => handleActionClick("rest")}
-                    className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                  >
-                    Mark as Rest Day
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  const modes: Array<"sound" | "no_sound" | "minimal_sound"> = ["minimal_sound", "sound", "no_sound"];
-                  const currentIndex = modes.indexOf(audioMode);
-                  const nextMode = modes[(currentIndex + 1) % modes.length];
-                  setAudioMode(nextMode);
-                  localStorage.setItem("challengeTimerAudioMode", nextMode);
-                }}
-                className={`text-white hover:bg-white/10 transition-all ${
-                  audioMode === "sound" ? "bg-primary/20 text-primary" : 
-                  audioMode === "minimal_sound" ? "bg-yellow-500/20 text-yellow-400" : "bg-white/5"
-                }`}
-                title={
-                  audioMode === "sound" ? "Full sound mode" :
-                  audioMode === "minimal_sound" ? "Minimal sound mode (beeps only)" :
-                  "No sound mode"
-                }
-              >
-                {audioMode === "sound" ? (
-                  <Volume2 className="w-5 h-5" />
-                ) : audioMode === "minimal_sound" ? (
-                  <div className="w-5 h-5 flex items-center justify-center">
-                    <div className="w-3 h-3 bg-current rounded-full animate-pulse"></div>
-                  </div>
-                ) : (
-                  <VolumeX className="w-5 h-5" />
-                )}
-              </Button>
-            </div>
+            <Button
+              onClick={() => {
+                setIsCompleted(false);
+                setCurrentSegmentIndex(0);
+                setTimeRemaining(segments[0]?.duration || 0);
+                setIsRunning(false);
+                setIsPreparingToStart(false);
+                setPreparationTime(10);
+              }}
+              variant="outline"
+              className="flex-1"
+            >
+              Restart Timer
+            </Button>
           </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
 
-      <div className="container mx-auto px-4 py-1 max-w-4xl">
-        <ProgressBar className="hidden sm:block mb-8" />
-        {currentSegment && (
-          <div className="grid lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <Card className="glass-effect border-white/10 overflow-hidden">
-                <CardContent className="p-0">
-                  <div className="relative">
-                    <div className="aspect-square max-w-2xl mx-auto bg-gray-900/50 rounded-lg overflow-hidden">
-                      {currentSegment.type === "exercise" &&
-                      currentSegment.exerciseImage ? (
-                        <img
-                          src={currentSegment.exerciseImage}
-                          alt={currentSegment.exerciseName}
-                          className="w-full h-full object-contain"
-                        />
-                      ) : currentSegment.type === "rest" ? (
-                        <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
-                          <Hand className="w-32 h-32 md:w-40 md:h-40 text-green-400" />
-                        </div>
-                      ) : (
-                        <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
-                          <span className="text-6xl md:text-8xl">🏃‍♂️</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="absolute top-4 left-4">
-                      <Badge
-                        className={`text-sm font-medium ${
-                          currentSegment.type === "exercise"
-                            ? "bg-blue-500/90 text-white border-0"
-                            : "bg-green-500/90 text-white border-0"
-                        }`}
-                      >
-                        {currentSegment.type === "exercise"
-                          ? "Exercise"
-                          : "Rest Period"}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  <div className="p-4 sm:p-6 text-center bg-gradient-to-t from-black/30 to-transparent">
-                    <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
-                      {currentSegment.exerciseName}
-                    </h2>
-
-                    {currentSegment.type === "exercise" &&
-                      currentSegment.exerciseNotes && (
-                        <div className="mb-3 sm:mb-4 px-2">
-                          <p className="text-sm sm:text-base text-primary/90 bg-primary/10 rounded-lg p-2 sm:p-3 border border-primary/20">
-                            {currentSegment.exerciseNotes}
-                          </p>
-                        </div>
-                      )}
-
-                    <div className="relative mb-4 sm:mb-6">
-                      {isPreparingToStart ? (
-                        <div className="flex flex-col items-center">
-                          <div className="text-lg sm:text-xl text-white/70 mb-2">
-                            Get Ready!
-                          </div>
-                          <div className="text-6xl sm:text-7xl md:text-9xl font-mono font-bold text-yellow-400 mb-2 animate-pulse">
-                            {preparationTime}
-                          </div>
-                          <div className="text-sm sm:text-base text-white/60">
-                            Workout starts in...
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
-                          {formatTime(timeRemaining)}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-row justify-center gap-4">
-                      <Button
-                        onClick={handlePlayPause}
-                        size="lg"
-                        variant="primary"
-                      >
-                        {isPreparingToStart ? (
-                          <>
-                            <Pause className="w-6 h-6 mr-3" />
-                            Cancel
-                          </>
-                        ) : isRunning ? (
-                          <>
-                            <Pause className="w-6 h-6 mr-3" />
-                            Pause
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-6 h-6 mr-3" />
-                            Start
-                          </>
-                        )}
-                      </Button>
-
-                      {!isCompleted && (
-                        <Button
-                          onClick={handleSkip}
-                          variant="outline"
-                          size="lg"
-                        >
-                          Skip
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <NextUp className="block sm:hidden" />
-            <ProgressBar className="block sm:hidden" />
-
-            <div className="space-y-4">
-              <Card className="glass-effect border-white/10">
-                <CardContent className="p-4">
-                  <h3 className="text-lg font-semibold text-white mb-3">
-                    Current
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-white/70">Type:</span>
-                      <span className="text-white">
-                        {currentSegment.type === "exercise"
-                          ? "Exercise"
-                          : "Rest"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70">Duration:</span>
-                      <span className="text-white">
-                        {formatTimeNatural(currentSegment.duration)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70">Exercise:</span>
-                      <span className="text-white font-medium">
-                        {currentSegment.exerciseIndex + 1} of {exercises.length}
-                      </span>
-                    </div>
-                    {currentSegment.type === "exercise" && (
-                      <div className="flex justify-between">
-                        <span className="text-white/70">Set:</span>
-                        <span className="text-white">
-                          {currentSegment.setIndex + 1} of{" "}
-                          {exercises[currentSegment.exerciseIndex]?.sets || 1}
-                        </span>
-                      </div>
-                    )}
-                    {currentSegment.type === "exercise" &&
-                      currentSegment.exerciseNotes && (
-                        <div className="pt-3 border-t border-white/10">
-                          <div className="text-white/70 text-xs mb-1">
-                            Notes:
-                          </div>
-                          <div className="text-white text-xs bg-primary/10 rounded p-2 border border-primary/20">
-                            {currentSegment.exerciseNotes}
-                          </div>
-                        </div>
-                      )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <NextUp className="hidden sm:block" />
-
-              <Card className="glass-effect border-white/10">
-                <CardContent className="p-4">
-                  <h3 className="text-lg font-semibold text-white mb-3">
-                    Stats
-                  </h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-white/70">Total Exercises:</span>
-                      <span className="text-white">{exercises.length}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70">Total Sets:</span>
-                      <span className="text-white">
-                        {segments.filter((s) => s.type === "exercise").length}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-white/70">Completed:</span>
-                      <span className="text-white">
-                        {currentSegmentIndex} / {segments.length}
-                      </span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+      {/* Action Confirmation Dialog */}
+      <Dialog open={showActionDialog} onOpenChange={setShowActionDialog}>
+        <DialogContent className="glass-effect border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-white">
+              {actionType === "failed" ? "Mark Day as Failed?" : "Mark Day as Rest?"}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {actionType === "failed"
+                ? "This will mark the current day as failed. You can retry it later."
+                : "This will mark the current day as a rest day."}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+            <Button
+              onClick={handleActionConfirm}
+              variant={actionType === "failed" ? "destructive" : "default"}
+              className="flex-1"
+            >
+              {actionType === "failed" ? "Mark as Failed" : "Mark as Rest"}
+            </Button>
+            <Button
+              onClick={() => setShowActionDialog(false)}
+              variant="outline"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
           </div>
-        )}
-
-        <Dialog open={showActionDialog} onOpenChange={setShowActionDialog}>
-          <DialogContent className="glass-effect border-white/10 max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-white flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-yellow-500" />
-                {actionType === "failed" ? "Mark Day as Failed" : "Mark Day as Rest"}
-              </DialogTitle>
-              <DialogDescription className="text-white/70">
-                {actionType === "failed" ? (
-                  <>
-                    Are you sure you want to mark this day as failed? This will:
-                    <ul className="list-disc list-inside mt-2 space-y-1">
-                      <li>Record this training day as incomplete</li>
-                      <li>Allow you to retry this day tomorrow</li>
-                      <li>Not affect your overall challenge progress negatively</li>
-                    </ul>
-                  </>
-                ) : (
-                  <>
-                    Are you sure you want to mark this day as a rest day? This will:
-                    <ul className="list-disc list-inside mt-2 space-y-1">
-                      <li>Convert this training day to a rest day</li>
-                      <li>Mark it as completed without exercises</li>
-                      <li>Allow you to continue to the next day</li>
-                    </ul>
-                  </>
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="flex gap-3 mt-6">
-              <Button
-                variant="outline"
-                onClick={() => setShowActionDialog(false)}
-                className="flex-1 border-white/20 text-white hover:bg-white/10"
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleActionConfirm}
-                className={`flex-1 ${
-                  actionType === "failed"
-                    ? "bg-red-600 hover:bg-red-700"
-                    : "bg-blue-600 hover:bg-blue-700"
-                } text-white`}
-              >
-                {actionType === "failed" ? "Mark as Failed" : "Mark as Rest"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {isCompleted && (
-          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <Card className="glass-effect border-white/10 max-w-md w-full">
-              <CardContent className="p-8 text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <span className="text-4xl">🎉</span>
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-3">
-                  Workout Complete!
-                </h2>
-                <p className="text-white/70 mb-6 text-lg">
-                  How did your workout go?
-                </p>
-                <div className="bg-white/10 rounded-lg p-4 mb-6">
-                  <div className="text-sm text-white/60 mb-1">
-                    Session Stats
-                  </div>
-                  <div className="text-white font-semibold">
-                    {exercises.length} exercises completed
-                  </div>
-                </div>
-
-                <div className="space-y-3 mb-6">
-                  <Button
-                    onClick={handleWorkoutComplete}
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold w-full py-3 text-lg"
-                  >
-                    ✅ Completed Successfully
-                  </Button>
-                  <Button
-                    onClick={handleWorkoutFailed}
-                    variant="outline"
-                    className="border-red-500/50 text-red-400 hover:bg-red-500/10 w-full py-3 text-lg"
-                  >
-                    ❌ Could Not Complete
-                  </Button>
-                </div>
-
-                <div className="space-y-2 pt-4 border-t border-white/10">
-                  <p className="text-sm text-white/60 mb-3">
-                    Or continue without marking status:
-                  </p>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() =>
-                        navigate(`/challenge/${challengeId}/day/${dayId}`)
-                      }
-                      variant="ghost"
-                      className="text-white/70 hover:text-white hover:bg-white/10 flex-1"
-                    >
-                      Back to Day
-                    </Button>
-                    <Button
-                      onClick={() => setIsCompleted(false)}
-                      variant="ghost"
-                      className="text-white/70 hover:text-white hover:bg-white/10 flex-1"
-                    >
-                      Retry Timer
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
