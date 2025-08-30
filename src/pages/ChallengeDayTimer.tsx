@@ -491,7 +491,7 @@ const ChallengeDayTimer = () => {
 
   if (isLoading) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center md:min-h-screen md:static">
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center overflow-y-auto md:fixed md:inset-0">
         <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"></div>
       </div>
     );
@@ -499,7 +499,7 @@ const ChallengeDayTimer = () => {
 
   if (exercises.length === 0) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center md:min-h-screen md:static">
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center overflow-y-auto md:fixed md:inset-0">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-2">
             No exercises found
@@ -516,7 +516,7 @@ const ChallengeDayTimer = () => {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-tr from-black to-purple-950/10 text-white flex flex-col md:min-h-screen md:static">
+    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 text-white flex flex-col overflow-y-auto md:fixed md:inset-0">
       <div className="flex-1 flex flex-col container mx-auto px-4 py-6 max-w-4xl md:py-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-shrink-0">
@@ -691,10 +691,8 @@ const ChallengeDayTimer = () => {
           <Button
             onClick={handlePlayPause}
             size="lg"
-            variant={
-              isRunning || isPreparingToStart ? "secondary" : "default"
-            }
-            className="w-full max-w-xs px-8 py-6 text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl bg-gradient-to-r from-primary to-primary-foreground border-0 hover:scale-105"
+            variant="primary"
+            className="w-full max-w-xs px-8 py-6 text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
           >
             {isPreparingToStart ? (
               <>
@@ -719,7 +717,7 @@ const ChallengeDayTimer = () => {
               onClick={handleSkip}
               variant="outline"
               size="lg"
-              className="w-full max-w-xs px-6 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl bg-white/10 border-white/20 text-white hover:bg-white/20"
+              className="w-full max-w-xs px-6 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
             >
               Skip Segment
             </Button>
