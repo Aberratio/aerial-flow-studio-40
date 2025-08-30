@@ -373,7 +373,7 @@ const ChallengePreview = () => {
   }
 
   return (
-    <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col md:min-h-screen md:static">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col overflow-y-auto md:fixed md:inset-0">
       {/* Header */}
       <div className="relative flex-shrink-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent backdrop-blur-xl"></div>
