@@ -688,38 +688,39 @@ const ChallengeDayTimer = () => {
 
         {/* Controls */}
         <div className="flex flex-col gap-3 items-center justify-center mb-4 flex-shrink-0">
-          <Button
-            onClick={handlePlayPause}
-            size="lg"
-            variant="primary"
-            className="w-full max-w-xs px-8 py-6 text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
-          >
-            {isPreparingToStart ? (
-              <>
+          {(isRunning || isPreparingToStart) ? (
+            <div className="flex flex-col md:flex-col gap-3 w-full items-center">
+              <Button
+                onClick={handlePlayPause}
+                size="lg"
+                variant="primary"
+                className="w-full max-w-xs px-8 py-6 text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
+              >
                 <Pause className="w-7 h-7 mr-3" />
-                Cancel
-              </>
-            ) : isRunning ? (
-              <>
-                <Pause className="w-7 h-7 mr-3" />
-                Pause
-              </>
-            ) : (
-              <>
-                <Play className="w-7 h-7 mr-3" />
-                Start
-              </>
-            )}
-          </Button>
-
-          {(isRunning || isPreparingToStart) && (
+                {isPreparingToStart ? "Cancel" : "Pause"}
+              </Button>
+              
+              <div className="flex flex-row md:flex-col gap-3 w-full max-w-xs">
+                <Button
+                  onClick={handleSkip}
+                  variant="outline"
+                  size="lg"
+                  className="flex-1 md:w-full px-6 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
+                >
+                  <span className="hidden md:inline">Skip Segment</span>
+                  <span className="md:hidden">Skip</span>
+                </Button>
+              </div>
+            </div>
+          ) : (
             <Button
-              onClick={handleSkip}
-              variant="outline"
+              onClick={handlePlayPause}
               size="lg"
-              className="w-full max-w-xs px-6 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
+              variant="primary"
+              className="w-full max-w-xs px-8 py-6 text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
             >
-              Skip Segment
+              <Play className="w-7 h-7 mr-3" />
+              Start
             </Button>
           )}
         </div>
