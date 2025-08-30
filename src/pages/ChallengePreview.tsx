@@ -474,7 +474,7 @@ const ChallengePreview = () => {
 
       {/* Training Days Slider */}
       {isParticipant && (
-        <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-hidden">
+        <div className="flex-1 p-4 md:pl-2 md:pr-6 lg:p-8 overflow-hidden">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
           
           {(() => {
