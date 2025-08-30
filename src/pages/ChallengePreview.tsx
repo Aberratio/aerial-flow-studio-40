@@ -7,6 +7,7 @@ import {
   Clock,
   Target,
   Lock,
+  Bed,
 } from "lucide-react";
 import {
   Carousel,
@@ -14,6 +15,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  CarouselApi,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -84,12 +86,14 @@ const ChallengePreview = () => {
   const [isParticipant, setIsParticipant] = useState(false);
   const [userParticipant, setUserParticipant] = useState<any>(null);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>();
 
   // Use the challenge calendar hook
   const {
     calendarDays,
     isLoading: calendarLoading,
     generateCalendar,
+    changeDayStatus,
   } = useChallengeCalendar(challengeId || "");
 
   useEffect(() => {
@@ -256,6 +260,66 @@ const ChallengePreview = () => {
     }
   };
 
+  const getCurrentTrainingDay = () => {
+    if (!calendarDays.length) return null;
+
+    const accessibleDays = calendarDays
+      .filter((day) => day.is_accessible)
+      .map((cd) => {
+        const td = challenge?.training_days?.find(
+          (t) => t.id === cd.training_day_id
+        );
+        return td ? { calendarDay: cd, trainingDay: td } : null;
+      })
+      .filter(Boolean)
+      .sort((a, b) => a!.trainingDay.day_number - b!.trainingDay.day_number);
+
+    if (!accessibleDays.length) return null;
+
+    // Find the first pending or failed day (next to train)
+    const nextTrainingDay = accessibleDays.find(
+      (d) => d!.calendarDay.status === "pending" || d!.calendarDay.status === "failed"
+    );
+
+    return nextTrainingDay || accessibleDays[accessibleDays.length - 1];
+  };
+
+  // Auto-scroll to current day
+  useEffect(() => {
+    if (!carouselApi || !challenge?.training_days || calendarLoading) return;
+
+    const currentDay = getCurrentTrainingDay();
+    if (!currentDay) return;
+
+    // Find the index of the current day
+    const currentDayIndex = challenge.training_days.findIndex(
+      (td) => td.id === currentDay.trainingDay.id
+    );
+
+    if (currentDayIndex >= 0) {
+      setTimeout(() => {
+        carouselApi.scrollTo(currentDayIndex);
+      }, 100);
+    }
+  }, [carouselApi, challenge?.training_days, calendarDays, calendarLoading]);
+
+  const handleRestDay = async (calendarDay: any) => {
+    try {
+      await changeDayStatus(calendarDay.calendar_date, "rest");
+      toast({
+        title: "Rest Day Set",
+        description: "You've marked today as a rest day. Train tomorrow!",
+      });
+    } catch (error) {
+      console.error("Error setting rest day:", error);
+      toast({
+        title: "Error",
+        description: "Failed to set rest day",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty?.toLowerCase()) {
       case "beginner":
@@ -341,13 +405,9 @@ const ChallengePreview = () => {
               )}
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white text-center mb-4">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white text-center">
               {challenge.title}
             </h1>
-
-            <p className="text-lg text-white/80 max-w-2xl mx-auto">
-              {challenge.description}
-            </p>
           </div>
 
           {/* Join/Start Button */}
@@ -390,7 +450,7 @@ const ChallengePreview = () => {
             if (!allTrainingDays.length) return null;
 
             return (
-              <Carousel className="w-full">
+              <Carousel className="w-full" setApi={setCarouselApi}>
                 <CarouselContent className="-ml-2 md:-ml-4">
                   {allTrainingDays.map((dayData, index) => {
                     const { calendarDay, trainingDay } = dayData;
@@ -407,7 +467,9 @@ const ChallengePreview = () => {
 
                     const isToday = calendarDay?.calendar_date === format(new Date(), "yyyy-MM-dd");
                     const isFailedOrRestToday = isToday && (calendarDay?.status === "failed" || calendarDay?.status === "rest");
-                    const isReadyToStart = !isBlocked && isPending && isAccessible && !isFailedOrRestToday;
+                    
+                    // Current day is the one that's accessible and pending/failed
+                    const isCurrentDay = !isBlocked && isPending && isAccessible && !isFailedOrRestToday;
 
                     const totalDuration = trainingDay.duration_seconds || 0;
 
@@ -419,35 +481,22 @@ const ChallengePreview = () => {
                         <Card
                           className={`glass-effect overflow-hidden h-full transition-all duration-200 ${
                             isBlocked
-                              ? "border-muted/30 opacity-50 cursor-not-allowed"
+                              ? "border-muted/30 opacity-50"
                               : isCompleted
                               ? "border-emerald-500/50"
-                              : isReadyToStart
+                              : isCurrentDay
                               ? "border-primary/60 ring-2 ring-primary/30 shadow-lg shadow-primary/20"
                               : isPending && isAccessible
                               ? "border-purple-500/50 ring-1 ring-purple-500/30"
                               : "border-white/10"
-                          } ${
-                            !isBlocked && isAccessible && calendarDay
-                              ? "cursor-pointer hover:bg-white/5"
-                              : ""
                           }`}
-                          onClick={() =>
-                            !isBlocked &&
-                            !isFailedOrRestToday &&
-                            calendarDay &&
-                            isAccessible &&
-                            (isPending
-                              ? navigate(`/challenge/${challengeId}/day/${calendarDay.id}/timer`)
-                              : navigate(`/challenge/${challengeId}/day/${calendarDay.id}`))
-                          }
                         >
                           {/* Header */}
                           <div
                             className={`relative h-20 flex items-center justify-between px-4 ${
                               isBlocked
                                 ? "bg-gradient-to-r from-muted/40 to-muted/20"
-                                : isReadyToStart
+                                : isCurrentDay
                                 ? "bg-gradient-to-r from-primary/80 to-primary/60"
                                 : "bg-gradient-to-r from-purple-600/80 to-blue-600/80"
                             }`}
@@ -463,7 +512,7 @@ const ChallengePreview = () => {
                                   ? "🛌"
                                   : isRestDay
                                   ? "🌴"
-                                  : isReadyToStart
+                                  : isCurrentDay
                                   ? "⭐"
                                   : "💪"}
                               </div>
@@ -579,18 +628,35 @@ const ChallengePreview = () => {
                               </div>
                             )}
 
-                            {/* Action Button */}
+                            {/* Action Buttons - Only show on current day */}
                             <div className="mt-4 pt-3 border-t border-white/10 space-y-3">
-                              {isReadyToStart && (
+                              {isCurrentDay && !isRestDay && (
+                                <div className="space-y-2">
+                                  <Button
+                                    onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay?.id}/timer`)}
+                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                                  >
+                                    <Play className="w-4 h-4 mr-2" />
+                                    Train Now
+                                  </Button>
+                                  <Button
+                                    onClick={() => handleRestDay(calendarDay)}
+                                    variant="outline"
+                                    className="w-full border-orange-500/30 text-orange-400 hover:bg-orange-500/10"
+                                  >
+                                    <Bed className="w-4 h-4 mr-2" />
+                                    Rest
+                                  </Button>
+                                </div>
+                              )}
+
+                              {isCurrentDay && isRestDay && (
                                 <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigate(`/challenge/${challengeId}/day/${calendarDay?.id}/timer`);
-                                  }}
-                                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                                  onClick={() => handleRestDay(calendarDay)}
+                                  className="w-full bg-orange-500 hover:bg-orange-500/90 text-white"
                                 >
-                                  <Play className="w-4 h-4 mr-2" />
-                                  Start Workout
+                                  <Bed className="w-4 h-4 mr-2" />
+                                  Rest
                                 </Button>
                               )}
 
@@ -612,13 +678,13 @@ const ChallengePreview = () => {
                                     <Lock className="w-3 h-3 mr-1" />
                                     Locked
                                   </span>
-                                ) : isReadyToStart ? (
+                                ) : isCurrentDay ? (
                                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary border border-primary/30">
                                     ⭐ Train Today
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30">
-                                    💪 Ready
+                                    💪 Upcoming
                                   </span>
                                 )}
                               </div>
