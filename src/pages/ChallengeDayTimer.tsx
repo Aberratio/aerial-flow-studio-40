@@ -609,53 +609,80 @@ const ChallengeDayTimer = () => {
 
         {/* Current Exercise/Rest Display */}
         <Card className="glass-effect border-white/10 mb-8 flex-1 flex flex-col">
-          <CardContent className="p-4 md:p-8 text-center flex-1 flex flex-col justify-center">
+          <CardContent className="p-4 md:p-8 text-center flex-1 flex flex-col justify-center relative overflow-hidden">
             {getCurrentSegment() && (
               <>
                 {getCurrentSegment().type === "exercise" ? (
                   <>
-                    <div className="mb-4 flex-shrink-0">
-                      {getCurrentSegment().exerciseImage && (
-                        <img
-                          src={getCurrentSegment().exerciseImage}
-                          alt={getCurrentSegment().exerciseName}
-                          className="w-32 h-32 md:w-48 md:h-48 object-cover rounded-lg mx-auto mb-4"
-                        />
+                    {/* Exercise Image - Much Larger */}
+                    <div className="mb-6 flex-shrink-0 relative">
+                      {getCurrentSegment().exerciseImage ? (
+                        <div className="relative">
+                          <img
+                            src={getCurrentSegment().exerciseImage}
+                            alt={getCurrentSegment().exerciseName}
+                            className="w-48 h-48 md:w-80 md:h-80 object-cover rounded-2xl mx-auto shadow-2xl ring-4 ring-primary/20"
+                          />
+                          {/* Stylish Set Badge */}
+                          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-primary to-primary-foreground px-4 py-2 rounded-full shadow-lg">
+                            <span className="text-sm font-bold text-white">
+                              SET {getCurrentSegment().setIndex + 1}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="w-48 h-48 md:w-80 md:h-80 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl mx-auto flex items-center justify-center shadow-2xl ring-4 ring-primary/20">
+                          <div className="text-6xl md:text-8xl">🏃‍♂️</div>
+                          {/* Stylish Set Badge for no image */}
+                          <div className="absolute -top-3 -right-3 bg-gradient-to-r from-primary to-primary-foreground px-4 py-2 rounded-full shadow-lg">
+                            <span className="text-sm font-bold text-white">
+                              SET {getCurrentSegment().setIndex + 1}
+                            </span>
+                          </div>
+                        </div>
                       )}
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+
+                    {/* Exercise Title */}
+                    <h2 className="text-2xl md:text-4xl font-bold text-white mb-3 leading-tight">
                       {getCurrentSegment().exerciseName}
                     </h2>
+
+                    {/* Exercise Notes */}
                     {getCurrentSegment().exerciseNotes && (
-                      <p className="text-muted-foreground mb-4 text-sm md:text-base">
-                        {getCurrentSegment().exerciseNotes}
-                      </p>
+                      <div className="mb-4 max-w-md mx-auto">
+                        <p className="text-muted-foreground text-sm md:text-base bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+                          {getCurrentSegment().exerciseNotes}
+                        </p>
+                      </div>
                     )}
-                    <Badge variant="outline" className="mb-4">
-                      Set {getCurrentSegment().setIndex + 1}
-                    </Badge>
                   </>
                 ) : (
                   <>
-                    <div className="mb-4">
-                      <Hand className="w-16 h-16 md:w-24 md:h-24 mx-auto text-blue-400" />
+                    {/* Rest Display */}
+                    <div className="mb-6 relative">
+                      <div className="w-48 h-48 md:w-80 md:h-80 bg-gradient-to-br from-blue-500/20 to-green-500/20 rounded-2xl mx-auto flex items-center justify-center shadow-2xl ring-4 ring-blue-400/20">
+                        <Hand className="w-24 h-24 md:w-32 md:h-32 text-blue-400" />
+                      </div>
                     </div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-blue-400 mb-2">
+                    <h2 className="text-2xl md:text-4xl font-bold text-blue-400 mb-3">
                       Rest Time
                     </h2>
-                    <p className="text-muted-foreground">Take a short break</p>
+                    <p className="text-muted-foreground text-lg">Take a short break and breathe</p>
                   </>
                 )}
 
-                <div className="text-4xl md:text-6xl font-mono font-bold mt-6 mb-6">
+                {/* Timer Display */}
+                <div className="text-5xl md:text-7xl font-mono font-bold mt-8 mb-6 bg-gradient-to-r from-primary to-primary-foreground bg-clip-text text-transparent">
                   {isPreparingToStart
                     ? formatTime(preparationTime)
                     : formatTime(timeRemaining)}
                 </div>
 
+                {/* Get Ready Message */}
                 {isPreparingToStart && (
-                  <div className="text-xl md:text-2xl font-semibold text-yellow-400 mb-4">
-                    Get Ready!
+                  <div className="text-xl md:text-3xl font-semibold text-yellow-400 mb-4 animate-pulse">
+                    🏃‍♂️ Get Ready!
                   </div>
                 )}
               </>
@@ -671,22 +698,22 @@ const ChallengeDayTimer = () => {
             variant={
               isRunning || isPreparingToStart ? "secondary" : "default"
             }
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
           >
             {isPreparingToStart ? (
               <>
-                <Pause className="w-5 h-5 mr-2" />
+                <Pause className="w-6 h-6 mr-3" />
                 Cancel
               </>
             ) : isRunning ? (
               <>
-                <Pause className="w-5 h-5 mr-2" />
+                <Pause className="w-6 h-6 mr-3" />
                 Pause
               </>
             ) : (
               <>
-                <Play className="w-5 h-5 mr-2" />
-                Start
+                <Play className="w-6 h-6 mr-3" />
+                Start Workout
               </>
             )}
           </Button>
@@ -696,7 +723,7 @@ const ChallengeDayTimer = () => {
               onClick={handleSkip}
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto px-6 py-4 text-base font-medium shadow-md hover:shadow-lg transition-all duration-200"
             >
               Skip Segment
             </Button>
@@ -705,36 +732,46 @@ const ChallengeDayTimer = () => {
 
         {/* Next Up Section */}
         {getNextSegment() && (
-          <Card className="glass-effect border-white/10 flex-shrink-0">
+          <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-r from-white/5 to-white/10">
             <CardContent className="p-4">
-              <h3 className="text-lg font-semibold text-white mb-3">Up Next</h3>
-              <div className="flex items-center space-x-3">
+              <h3 className="text-lg font-semibold text-white mb-3 flex items-center">
+                <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
+                Up Next
+              </h3>
+              <div className="flex items-center space-x-4">
                 {getNextSegment().type === "exercise" &&
                 getNextSegment().exerciseImage ? (
-                  <img
-                    src={getNextSegment().exerciseImage}
-                    alt={getNextSegment().exerciseName}
-                    className="w-12 h-12 object-cover rounded-lg"
-                  />
+                  <div className="relative">
+                    <img
+                      src={getNextSegment().exerciseImage}
+                      alt={getNextSegment().exerciseName}
+                      className="w-16 h-16 object-cover rounded-xl ring-2 ring-primary/30"
+                    />
+                    {getNextSegment().type === "exercise" && (
+                      <div className="absolute -top-1 -right-1 bg-primary px-1.5 py-0.5 rounded-full text-xs font-bold text-white">
+                        {getNextSegment().setIndex + 1}
+                      </div>
+                    )}
+                  </div>
                 ) : getNextSegment().type === "rest" ? (
-                  <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
-                    <Hand className="w-6 h-6 text-green-400" />
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-green-500/20 rounded-xl flex items-center justify-center ring-2 ring-blue-400/30">
+                    <Hand className="w-8 h-8 text-blue-400" />
                   </div>
                 ) : (
-                  <div className="w-12 h-12 bg-gray-500/20 rounded-lg flex items-center justify-center">
-                    <span className="text-xl">🏃‍♂️</span>
+                  <div className="w-16 h-16 bg-gradient-to-br from-gray-500/20 to-gray-600/20 rounded-xl flex items-center justify-center ring-2 ring-gray-500/30">
+                    <span className="text-2xl">🏃‍♂️</span>
                   </div>
                 )}
                 <div className="flex-1">
-                  <div className="font-medium text-white">
+                  <div className="font-semibold text-white text-lg">
                     {getNextSegment().exerciseName}
                   </div>
-                  <div className="text-sm text-white/60">
+                  <div className="text-sm text-white/70 font-medium">
                     {formatTime(getNextSegment().duration)}
                   </div>
                   {getNextSegment().type === "exercise" &&
                     getNextSegment().exerciseNotes && (
-                      <div className="text-xs text-primary/80 mt-1 bg-primary/10 rounded px-2 py-1 border border-primary/20">
+                      <div className="text-xs text-primary mt-2 bg-primary/10 rounded-lg px-3 py-1 border border-primary/20">
                         {getNextSegment().exerciseNotes}
                       </div>
                     )}
