@@ -544,10 +544,10 @@ const ChallengePreview = () => {
                               isBlocked
                                 ? "bg-gradient-to-r from-slate-700/50 to-slate-800/50"
                                 : isCurrentDay
-                                ? "bg-gradient-to-r from-amber-500/90 to-orange-600/90"
+                                ? "bg-gradient-to-r from-purple-600/90 to-indigo-700/90"
                                 : isCompleted
-                                ? "bg-gradient-to-r from-emerald-600/90 to-teal-700/90"
-                                : "bg-gradient-to-r from-indigo-600/90 to-purple-700/90"
+                                ? "bg-gradient-to-r from-slate-700/90 to-slate-900/90"
+                                : "bg-gradient-to-r from-indigo-700/90 to-slate-800/90"
                             }`}
                           >
                             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
@@ -602,14 +602,19 @@ const ChallengePreview = () => {
 
                             {/* Day Notes */}
                             {(calendarDay?.notes || trainingDay.description) && (
-                              <div className="mb-4 md:mb-6">
-                                <p
-                                  className={`text-sm ${
-                                    isBlocked ? "text-slate-400" : "text-white/80"
-                                  } bg-white/5 p-3 rounded-xl border border-white/10`}
-                                >
-                                  {calendarDay?.notes || trainingDay.description}
-                                </p>
+                               <div className="mb-4 md:mb-6">
+                                 <div
+                                   className={`text-sm ${
+                                     isBlocked ? "text-slate-400" : "text-white/90"
+                                   } bg-gradient-to-r from-slate-800/60 to-slate-900/60 p-4 rounded-2xl border border-slate-600/30 backdrop-blur-sm`}
+                                 >
+                                   <div className="flex items-start gap-3">
+                                     <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
+                                     <p className="flex-1 leading-relaxed">
+                                       {calendarDay?.notes || trainingDay.description}
+                                     </p>
+                                   </div>
+                                 </div>
                               </div>
                             )}
 
@@ -688,14 +693,14 @@ const ChallengePreview = () => {
                                     <Play className="w-5 h-5 mr-2" />
                                     Train Now
                                   </Button>
-                                  <Button
-                                    onClick={() => handleRestDay(calendarDay)}
-                                    variant="outline"
-                                    className="w-full border-amber-500/40 text-amber-400 hover:bg-amber-500/10 py-3 rounded-xl"
-                                  >
-                                    <Bed className="w-4 h-4 mr-2" />
-                                    Rest Today
-                                  </Button>
+                                   <Button
+                                     onClick={() => handleRestDay(calendarDay)}
+                                     variant="outline"
+                                     className="w-full border-blue-600/40 text-blue-300 hover:bg-blue-600/10 py-3 rounded-xl"
+                                   >
+                                     <Bed className="w-4 h-4 mr-2" />
+                                     Rest Today
+                                   </Button>
                                 </div>
                               )}
 
