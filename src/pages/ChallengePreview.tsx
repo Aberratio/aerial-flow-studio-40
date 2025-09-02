@@ -542,12 +542,12 @@ const ChallengePreview = () => {
                           <div
                             className={`relative h-24 flex items-center justify-between px-6 ${
                               isBlocked
-                                ? "bg-gradient-to-r from-slate-600/40 to-slate-700/40"
+                                ? "bg-gradient-to-r from-slate-700/50 to-slate-800/50"
                                 : isCurrentDay
-                                ? "bg-gradient-to-r from-primary/90 to-primary/70"
+                                ? "bg-gradient-to-r from-amber-500/90 to-orange-600/90"
                                 : isCompleted
-                                ? "bg-gradient-to-r from-emerald-600/80 to-emerald-700/70"
-                                : "bg-gradient-to-r from-purple-600/80 to-blue-600/80"
+                                ? "bg-gradient-to-r from-emerald-600/90 to-teal-700/90"
+                                : "bg-gradient-to-r from-indigo-600/90 to-purple-700/90"
                             }`}
                           >
                             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>

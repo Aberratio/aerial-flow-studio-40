@@ -599,8 +599,8 @@ const ChallengeDayTimer = () => {
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-4 flex-shrink-0">
+        {/* Progress Bar - Desktop */}
+        <div className="mb-4 flex-shrink-0 hidden md:block">
           <div className="text-sm text-white/70 mb-2 font-medium">
             {currentSegmentIndex + 1} of {segments.length}
           </div>
@@ -639,6 +639,17 @@ const ChallengeDayTimer = () => {
                       )}
                     </div>
 
+                    {/* Progress Bar - Mobile (after exercise image) */}
+                    <div className="mb-4 flex-shrink-0 block md:hidden">
+                      <div className="relative">
+                        <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
+                        <div 
+                          className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
+                          style={{ width: `${calculateProgress()}%` }}
+                        />
+                      </div>
+                    </div>
+
                     {/* Exercise Title */}
                     <h2 className="text-xl md:text-2xl font-bold text-white mb-2 leading-tight px-4">
                       {getCurrentSegment().exerciseName}
@@ -661,6 +672,18 @@ const ChallengeDayTimer = () => {
                         <Hand className="w-12 h-12 md:w-20 md:h-20 lg:w-24 lg:h-24 text-blue-300" />
                       </div>
                     </div>
+
+                    {/* Progress Bar - Mobile (after rest image) */}
+                    <div className="mb-4 flex-shrink-0 block md:hidden">
+                      <div className="relative">
+                        <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
+                        <div 
+                          className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
+                          style={{ width: `${calculateProgress()}%` }}
+                        />
+                      </div>
+                    </div>
+
                     <h2 className="text-xl md:text-2xl font-bold text-blue-300 mb-2">
                       Rest Time
                     </h2>
