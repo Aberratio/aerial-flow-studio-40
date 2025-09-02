@@ -657,8 +657,8 @@ const ChallengeDayTimer = () => {
                   <>
                     {/* Rest Display */}
                     <div className="mb-4 flex-1 flex items-center justify-center">
-                      <div className="w-full max-w-md mx-auto aspect-square bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-3xl flex items-center justify-center shadow-2xl ring-1 ring-blue-400/30 backdrop-blur-sm">
-                        <Hand className="w-20 h-20 md:w-24 md:h-24 text-blue-300" />
+                      <div className="w-32 h-32 md:w-full md:max-w-md md:mx-auto md:aspect-square bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-3xl flex items-center justify-center shadow-2xl ring-1 ring-blue-400/30 backdrop-blur-sm">
+                        <Hand className="w-12 h-12 md:w-20 md:h-20 lg:w-24 lg:h-24 text-blue-300" />
                       </div>
                     </div>
                     <h2 className="text-xl md:text-2xl font-bold text-blue-300 mb-2">

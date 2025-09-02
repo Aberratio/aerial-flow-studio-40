@@ -430,8 +430,8 @@ const ChallengePreview = () => {
               </p>
             )}
 
-            {/* Challenge Stats */}
-            <div className="flex items-center justify-center gap-6 mt-6 text-sm text-white/70">
+            {/* Challenge Stats - Hidden on mobile */}
+            <div className="hidden sm:flex items-center justify-center gap-6 mt-6 text-sm text-white/70">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 <span>{challenge.training_days?.length || 0} days</span>
