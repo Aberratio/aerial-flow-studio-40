@@ -474,7 +474,7 @@ const ChallengePreview = () => {
 
       {/* Training Days Slider */}
       {isParticipant && (
-        <div className="flex-1 p-4 md:pl-2 md:pr-6 lg:p-8 overflow-hidden">
+        <div className="flex-1 p-4 md:pl-2 md:pr-6 lg:p-8 overflow-hidden ml-0 md:ml-16 lg:ml-64">
           <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
           
           {(() => {
@@ -587,9 +587,9 @@ const ChallengePreview = () => {
                             </div>
                           </div>
 
-                          <CardContent className="p-6 flex-1 flex flex-col">
+                          <CardContent className="p-4 md:p-6 flex-1 flex flex-col">
                             {/* Duration and Exercise Count */}
-                            <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center justify-between mb-4 md:mb-6">
                               <div className="flex items-center gap-2 text-sm text-white/70">
                                 <Clock className="w-4 h-4" />
                                 {isRestDay ? "Rest Day" : `${Math.ceil(totalDuration / 60)} mins`}
@@ -602,7 +602,7 @@ const ChallengePreview = () => {
 
                             {/* Day Notes */}
                             {(calendarDay?.notes || trainingDay.description) && (
-                              <div className="mb-6">
+                              <div className="mb-4 md:mb-6">
                                 <p
                                   className={`text-sm ${
                                     isBlocked ? "text-slate-400" : "text-white/80"
@@ -615,12 +615,12 @@ const ChallengePreview = () => {
 
                             {/* Exercise List */}
                             {!isRestDay && exercises.length > 0 && (
-                              <div className="space-y-3 flex-1 mb-6">
+                              <div className="space-y-2 md:space-y-3 flex-1 mb-4 md:mb-6">
                                 {exercises.map((exercise, exerciseIndex) => (
-                                  <div
-                                    key={exercise.id}
-                                    className="flex items-start justify-between p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm"
-                                  >
+                                    <div
+                                      key={exercise.id}
+                                      className="flex items-start justify-between p-3 md:p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm"
+                                    >
                                     <div className="flex-1 pr-4">
                                       <h4
                                         className={`font-semibold text-base mb-2 ${
@@ -646,7 +646,7 @@ const ChallengePreview = () => {
 
                                     {/* Exercise Image */}
                                     <div
-                                      className={`w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ${
+                                      className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ${
                                         isBlocked ? "opacity-50" : ""
                                       }`}
                                     >
@@ -677,7 +677,7 @@ const ChallengePreview = () => {
                             )}
 
                             {/* Action Buttons */}
-                            <div className="mt-auto pt-6 border-t border-white/10 space-y-3">
+                            <div className="mt-auto pt-4 md:pt-6 border-t border-white/10 space-y-3">
                               {isCurrentDay && !isRestDay && (
                                 <div className="space-y-3">
                                   <Button
