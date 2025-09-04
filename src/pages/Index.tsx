@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Trophy, BookOpen, Dumbbell, Users, Home, CheckCircle, ArrowRight, Target, Play, Library, Lock } from "lucide-react";
+import { Trophy, BookOpen, Dumbbell, Users, Home, CheckCircle, ArrowRight, Target, Play, Library, Lock, Crown, Star, Calendar, Flame } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -10,55 +10,21 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-const ACTIVITY_OPTIONS = [{
-  id: 'challenge',
-  title: 'Challenge',
-  description: 'Join a structured challenge',
-  icon: Trophy,
-  color: 'text-yellow-400',
-  bgColor: 'bg-yellow-500/20',
-  link: '/challenges'
-}, {
-  id: 'figure-of-day',
-  title: 'Figure of the Day',
-  description: 'Practice today\'s featured figure',
-  icon: Target,
-  color: 'text-purple-400',
-  bgColor: 'bg-purple-500/20',
-  link: '/figure-of-the-day'
-}, {
-  id: 'training',
-  title: 'Training Session',
-  description: 'Create your own workout',
-  icon: Dumbbell,
-  color: 'text-green-400',
-  bgColor: 'bg-green-500/20',
-  link: '/training'
-}, {
-  id: 'aerial-journey',
-  title: 'Aerial Journey',
-  description: 'Follow your skill progression',
-  icon: Play,
-  color: 'text-blue-400',
-  bgColor: 'bg-blue-500/20',
-  link: '/aerial-journey'
-}, {
-  id: 'library',
-  title: 'Explore Library',
-  description: 'Browse all exercises',
-  icon: Library,
-  color: 'text-teal-400',
-  bgColor: 'bg-teal-500/20',
-  link: '/library'
-}, {
-  id: 'feed',
-  title: 'Social Feed',
-  description: 'See what others are doing',
-  icon: Home,
-  color: 'text-pink-400',
-  bgColor: 'bg-pink-500/20',
-  link: '/feed'
-}];
+interface DashboardStats {
+  totalPoints: number;
+  currentLevel: number;
+  completedFigures: number;
+  activeStreak: number;
+  challengesCompleted: number;
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earned_at?: string;
+}
 
 interface SportCategory {
   id: string;
@@ -67,6 +33,45 @@ interface SportCategory {
   description?: string;
   icon?: string;
 }
+
+const QUICK_ACTIONS = [
+  {
+    id: 'aerial-journey',
+    title: 'Skill Journey',
+    description: 'Continue your progression',
+    icon: Play,
+    color: 'text-purple-400',
+    bgColor: 'bg-purple-500/20',
+    link: '/aerial-journey'
+  },
+  {
+    id: 'challenges',
+    title: 'Challenges',
+    description: 'Join daily challenges',
+    icon: Trophy,
+    color: 'text-yellow-400',
+    bgColor: 'bg-yellow-500/20',
+    link: '/challenges'
+  },
+  {
+    id: 'figure-of-day',
+    title: 'Daily Figure',
+    description: 'Today\'s featured move',
+    icon: Target,
+    color: 'text-blue-400',
+    bgColor: 'bg-blue-500/20',
+    link: '/figure-of-the-day'
+  },
+  {
+    id: 'library',
+    title: 'Library',
+    description: 'Browse all exercises',
+    icon: Library,
+    color: 'text-green-400',
+    bgColor: 'bg-green-500/20',
+    link: '/library'
+  }
+];
 
 const Index = () => {
   const { user } = useAuth();
@@ -77,6 +82,14 @@ const Index = () => {
   const [userSports, setUserSports] = useState<string[]>([]);
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
   const [availableSports, setAvailableSports] = useState<SportCategory[]>([]);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats>({
+    totalPoints: 0,
+    currentLevel: 1,
+    completedFigures: 0,
+    activeStreak: 0,
+    challengesCompleted: 0
+  });
+  const [recentAchievements, setRecentAchievements] = useState<Achievement[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -84,8 +97,77 @@ const Index = () => {
     if (user) {
       fetchUserProfile();
       fetchAvailableSports();
+      fetchDashboardStats();
+      fetchRecentAchievements();
     }
   }, [user]);
+
+  const fetchDashboardStats = async () => {
+    if (!user) return;
+    
+    try {
+      // Fetch user progress stats
+      const { data: progressData } = await supabase
+        .from('figure_progress')
+        .select('status')
+        .eq('user_id', user.id)
+        .eq('status', 'completed');
+
+      const { data: challengeData } = await supabase
+        .from('challenge_participants')
+        .select('completed')
+        .eq('user_id', user.id)
+        .eq('completed', true);
+
+      const completedFigures = progressData?.length || 0;
+      const challengesCompleted = challengeData?.length || 0;
+      const totalPoints = completedFigures * 10 + challengesCompleted * 50; // Simple point calculation
+      const currentLevel = Math.floor(totalPoints / 100) + 1;
+
+      setDashboardStats({
+        totalPoints,
+        currentLevel,
+        completedFigures,
+        activeStreak: 3, // Mock data - could be calculated from activity
+        challengesCompleted
+      });
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+    }
+  };
+
+  const fetchRecentAchievements = async () => {
+    if (!user) return;
+    
+    try {
+      const { data } = await supabase
+        .from('user_achievements')
+        .select(`
+          earned_at,
+          achievements (
+            id,
+            name,
+            description,
+            icon
+          )
+        `)
+        .eq('user_id', user.id)
+        .order('earned_at', { ascending: false })
+        .limit(3);
+
+      const achievements = data?.map(item => ({
+        id: item.achievements?.id || '',
+        name: item.achievements?.name || '',
+        description: item.achievements?.description || '',
+        icon: item.achievements?.icon || '🏆',
+        earned_at: item.earned_at
+      })) || [];
+
+      setRecentAchievements(achievements);
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+    }
+  };
 
   const fetchAvailableSports = async () => {
     try {
@@ -103,25 +185,14 @@ const Index = () => {
   };
 
   const getSportIcon = (sport: SportCategory) => {
-    // Use icon from database if available, otherwise fallback to default icons
-    if (sport.icon) {
-      return sport.icon;
-    }
+    if (sport.icon) return sport.icon;
     
-    // Fallback icons based on key_name or name
     const iconMap: Record<string, string> = {
       'hoop': '🪩',
-      'aerial_hoop': '🪩',
       'pole': '💃',
-      'pole_dancing': '💃', 
-      'silks': '🎪',
-      'aerial_silks': '🎪',
-      'hammock': '🏺',
-      'aerial_hammock': '🏺',
-      'core': '💪',
-      'core_training': '💪'
+      'core': '💪'
     };
-    return iconMap[sport.key_name] || iconMap[sport.name.toLowerCase().replace(/\s+/g, '_')] || '🏃';
+    return iconMap[sport.key_name] || '🏃';
   };
 
   const fetchUserProfile = async () => {
@@ -194,13 +265,13 @@ const Index = () => {
       <div className="min-h-screen p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-4">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent mb-4">
               Welcome to IguanaFlow! 🎭
             </h1>
             <p className="text-xl text-muted-foreground mb-2">
-              Let's get started by choosing the sports you want to train
+              Let's start your aerial journey
             </p>
-            <p className="text-muted-foreground">Choose the sports you want to train in from our available categories:</p>
+            <p className="text-muted-foreground">Choose the sports you want to master:</p>
           </div>
 
           <Card className="glass-effect border-white/10 mb-8">
@@ -216,8 +287,8 @@ const Index = () => {
                     key={sport.id} 
                     className={`cursor-pointer transition-all duration-300 hover:scale-105 ${
                       selectedSports.includes(sport.id) 
-                        ? 'ring-2 ring-primary bg-primary/10' 
-                        : 'bg-background/50 hover:bg-background/70'
+                        ? 'ring-2 ring-purple-400 bg-purple-500/10' 
+                        : 'bg-white/5 hover:bg-white/10'
                     }`}
                     onClick={() => handleSportToggle(sport.id)}
                   >
@@ -229,7 +300,7 @@ const Index = () => {
                           className="pointer-events-none" 
                         />
                       </div>
-                      <h3 className="font-semibold text-lg">{sport.name}</h3>
+                      <h3 className="font-semibold text-lg text-white">{sport.name}</h3>
                       {sport.description && (
                         <p className="text-sm text-muted-foreground mt-1">{sport.description}</p>
                       )}
@@ -238,20 +309,14 @@ const Index = () => {
                 ))}
               </div>
               
-              {availableSports.length === 0 && (
-                <div className="text-center text-muted-foreground py-8">
-                  <p>No sports are currently available. Please check back later!</p>
-                </div>
-              )}
-              
               {availableSports.length > 0 && (
                 <div className="flex justify-center">
                   <Button 
                     onClick={saveSports} 
                     disabled={saving || selectedSports.length === 0} 
-                    className="px-8"
+                    className="px-8 bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
                   >
-                    {saving ? 'Saving...' : 'Save Sports Preferences'}
+                    {saving ? 'Saving...' : 'Start My Journey'}
                   </Button>
                 </div>
               )}
@@ -262,106 +327,151 @@ const Index = () => {
     );
   }
 
-  // Show message if no sports are available
-  if (userSports.length === 0 && availableSports.length === 0) {
-    return (
-      <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-4">
-            Welcome to IguanaFlow! 🎭
+  // Main dashboard
+  return (
+    <div className="min-h-screen p-4 md:p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Welcome Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+            Welcome back! 👋
           </h1>
           <p className="text-muted-foreground">
-            No sports are currently available. Please check back later!
+            Ready to continue your aerial journey?
           </p>
         </div>
-      </div>
-    );
-  }
 
-  // Show activity options if user has sports selected
-  return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            What would you like to do today? 🌟
-          </h1>
-          <p className="text-muted-foreground">
-            Choose your next step in your aerial journey
-          </p>
-          
-          <div className="flex flex-wrap gap-2 mt-4">
-            <span className="text-sm text-muted-foreground">Your sports:</span>
-            {userSports.map(sportId => {
-              const sport = availableSports.find(s => s.id === sportId);
-              return (
-                <Badge key={sportId} variant="secondary" className="bg-primary/20 text-primary flex items-center gap-1">
-                  {sport?.icon && <span>{sport.icon}</span>}
-                  {sport?.name || sportId}
-                </Badge>
-              );
-            })}
+        {/* Stats Overview */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Card className="glass-effect border-white/10">
+            <CardContent className="p-4 text-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center mx-auto mb-2 text-black font-bold">
+                {dashboardStats.currentLevel}
+              </div>
+              <p className="text-sm text-muted-foreground">Level</p>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect border-white/10">
+            <CardContent className="p-4 text-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center mx-auto mb-2">
+                <Star className="w-6 h-6 text-white" />
+              </div>
+              <p className="text-lg font-bold text-white">{dashboardStats.totalPoints}</p>
+              <p className="text-sm text-muted-foreground">Points</p>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect border-white/10">
+            <CardContent className="p-4 text-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center mx-auto mb-2">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <p className="text-lg font-bold text-white">{dashboardStats.completedFigures}</p>
+              <p className="text-sm text-muted-foreground">Figures</p>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-effect border-white/10">
+            <CardContent className="p-4 text-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-red-400 to-pink-400 flex items-center justify-center mx-auto mb-2">
+                <Flame className="w-6 h-6 text-white" />
+              </div>
+              <p className="text-lg font-bold text-white">{dashboardStats.activeStreak}</p>
+              <p className="text-sm text-muted-foreground">Day Streak</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <Card className="glass-effect border-white/10 mb-8">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <ArrowRight className="w-5 h-5" />
+              Quick Actions
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {QUICK_ACTIONS.map(action => {
+                const Icon = action.icon;
+                return (
+                  <Link key={action.id} to={action.link}>
+                    <Card className="glass-effect border-white/10 hover:scale-105 transition-all duration-200 cursor-pointer group">
+                      <CardContent className="p-4 text-center">
+                        <div className={`w-12 h-12 rounded-full ${action.bgColor} flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform`}>
+                          <Icon className={`w-6 h-6 ${action.color}`} />
+                        </div>
+                        <h3 className="font-semibold text-white text-sm mb-1">
+                          {action.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          {action.description}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Achievements */}
+        {recentAchievements.length > 0 && (
+          <Card className="glass-effect border-white/10 mb-8">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-yellow-400" />
+                Recent Achievements
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {recentAchievements.map(achievement => (
+                  <div key={achievement.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
+                    <div className="text-2xl">{achievement.icon}</div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-white">{achievement.name}</h4>
+                      <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                    </div>
+                    <Badge className="bg-yellow-500/20 text-yellow-400">
+                      New!
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Selected Sports */}
+        <Card className="glass-effect border-white/10">
+          <CardHeader>
+            <CardTitle className="text-white">Your Sports</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3 mb-4">
+              {userSports.map(sportId => {
+                const sport = availableSports.find(s => s.id === sportId);
+                return (
+                  <Badge key={sportId} variant="secondary" className="bg-purple-500/20 text-purple-400 flex items-center gap-2 px-3 py-2">
+                    {sport?.icon && <span className="text-lg">{sport.icon}</span>}
+                    {sport?.name || sportId}
+                  </Badge>
+                );
+              })}
+            </div>
             <Button 
-              variant="ghost" 
+              variant="outline" 
               size="sm" 
               onClick={() => setUserSports([])} 
-              className="text-muted-foreground hover:text-white"
+              className="border-white/20 text-white hover:bg-white/10"
             >
-              Change sports
+              Change Sports
             </Button>
-          </div>
-        </div>
-
-        <div className={`grid gap-6 ${isMobile ? 'grid-cols-2' : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'}`}>
-          {ACTIVITY_OPTIONS.map(activity => {
-            const Icon = activity.icon;
-            const isTraining = activity.id === 'training';
-            const isLocked = isTraining; // Training is locked (in development)
-            
-            if (isLocked) {
-              return (
-                <Card key={activity.id} className="glass-effect border-white/10 cursor-not-allowed h-full opacity-60 relative">
-                  <CardContent className={`text-center h-full flex flex-col ${isMobile ? 'p-3' : 'p-6'}`}>
-                    <div className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} rounded-full ${activity.bgColor} flex items-center justify-center mx-auto mb-4 relative`}>
-                      <Icon className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${activity.color}`} />
-                      <div className="absolute -top-1 -right-1 bg-muted rounded-full p-1">
-                        <Lock className="w-3 h-3 text-muted-foreground" />
-                      </div>
-                    </div>
-                    
-                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-sm' : 'text-lg'}`}>
-                      {activity.title}
-                    </h3>
-                    
-                    <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} mb-4 flex-grow`}>
-                      Coming Soon
-                    </p>
-                  </CardContent>
-                </Card>
-              );
-            }
-
-            return (
-              <Link key={activity.id} to={activity.link}>
-                <Card className="glass-effect border-white/10 hover-lift group cursor-pointer h-full">
-                  <CardContent className={`text-center h-full flex flex-col ${isMobile ? 'p-3' : 'p-6'}`}>
-                    <div className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} rounded-full ${activity.bgColor} flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform`}>
-                      <Icon className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} ${activity.color}`} />
-                    </div>
-                    
-                    <h3 className={`font-semibold text-white mb-2 ${isMobile ? 'text-sm' : 'text-lg'}`}>
-                      {activity.title}
-                    </h3>
-                    
-                    <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-sm'} mb-4 flex-grow`}>
-                      {activity.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
