@@ -358,16 +358,20 @@ const AerialJourney = () => {
                     : 0;
 
                   return (
-                    <Card
-                      key={sport.id}
-                      className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
-                        sport.is_published
-                          ? "bg-white/5 border-white/10 hover:border-purple-400/50"
-                          : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
-                      }`}
-                      onClick={() =>
-                        handleSkillTreeView(sport.key_name, displayName)
-                      }
+                     <Card
+                       key={sport.id}
+                       className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
+                         (sport.unlockedLevels || 0) > 0 || isAdmin
+                           ? sport.is_published
+                             ? "bg-white/5 border-white/10 hover:border-purple-400/50"
+                             : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
+                           : "bg-gray-900/50 border-gray-600/20 opacity-60 cursor-not-allowed"
+                       }`}
+                       onClick={() => {
+                         if ((sport.unlockedLevels || 0) > 0 || isAdmin) {
+                           handleSkillTreeView(sport.key_name, displayName);
+                         }
+                       }}
                     >
                       <CardContent className="p-6">
                         {/* Admin Controls */}
@@ -421,73 +425,52 @@ const AerialJourney = () => {
                           )}
                         </div>
 
-                        <div className="space-y-3">
-                          {/* Points Display */}
-                          {user && (
-                            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-lg p-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm text-yellow-400 font-medium">
-                                  Your Points
-                                </span>
-                                <Badge className="bg-yellow-500/20 text-yellow-400">
-                                  💰 {sport.userPoints || 0}
-                                </Badge>
-                              </div>
-                            </div>
-                          )}
+                         <div className="space-y-2">
+                           {/* Badge/Achievement System */}
+                           {user && (
+                             <div className="flex items-center justify-center mb-3">
+                               {(sport.unlockedLevels || 0) > 0 ? (
+                                 <div className="flex items-center gap-2">
+                                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-black font-bold text-sm">
+                                     {sport.unlockedLevels}
+                                   </div>
+                                   <span className="text-yellow-400 font-semibold text-sm">Level {sport.unlockedLevels}</span>
+                                 </div>
+                               ) : (
+                                 <div className="flex items-center gap-2 opacity-50">
+                                   <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-gray-400 font-bold text-sm">
+                                     ?
+                                   </div>
+                                   <span className="text-gray-400 text-sm">Locked</span>
+                                 </div>
+                               )}
+                             </div>
+                           )}
 
-                          {/* Level Progress */}
-                          {hasLevels && user && (
-                            <div className="bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-lg p-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <span className="text-sm text-purple-400 font-medium">
-                                  Level Progress
-                                </span>
-                                <span className="text-xs text-purple-300">
-                                  {sport.unlockedLevels}/{sport.totalLevels}{" "}
-                                  unlocked
-                                </span>
-                              </div>
-                              <Progress
-                                value={progressPercentage}
-                                className="h-2"
-                              />
-                            </div>
-                          )}
-
-                          <div className="flex items-center justify-between">
-                            <span className="text-sm text-muted-foreground">
-                              Available Figures
-                            </span>
-                            <Badge variant="secondary">
-                              {sport.count || 0}
-                            </Badge>
-                          </div>
-
-                          {hasLevels && (
-                            <div className="flex items-center justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Skill Levels
-                              </span>
-                              <Badge variant="outline">
-                                {sport.totalLevels}
-                              </Badge>
-                            </div>
-                          )}
-
-                          <Button
-                            variant="primary"
-                            className="w-full"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleSkillTreeView(sport.key_name, displayName);
-                            }}
-                            disabled={!sport.is_published && !isAdmin}
-                          >
-                            {sport.is_published || isAdmin
-                              ? "View Skill Journey"
-                              : "Coming Soon"}
-                          </Button>
+                           {/* Simple progress bar - only show if user has progress */}
+                           {hasLevels && user && (sport.unlockedLevels || 0) > 0 && (
+                             <div className="w-full bg-gray-700 rounded-full h-2">
+                               <div 
+                                 className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300" 
+                                 style={{ width: `${progressPercentage}%` }}
+                               />
+                             </div>
+                            )}
+                           
+                           {/* Only show figure count if not locked */}
+                           {(sport.unlockedLevels || 0) > 0 ? (
+                             <div className="text-center">
+                               <span className="text-xs text-muted-foreground">
+                                 {sport.count} figures available
+                               </span>
+                             </div>
+                           ) : (
+                             <div className="text-center">
+                               <span className="text-xs text-gray-500">
+                                 Complete other sports to unlock
+                               </span>
+                             </div>
+                           )}
                         </div>
                       </CardContent>
                     </Card>
