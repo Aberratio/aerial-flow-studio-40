@@ -309,10 +309,20 @@ const ChallengePreview = () => {
 
   const handleRestDay = async (calendarDay: any) => {
     try {
-      await changeDayStatus(calendarDay.calendar_date, "rest");
+      // If it's a planned rest day, mark as completed
+      // If it's a training day that user wants to rest, mark as rest (will create retry)
+      const trainingDay = challenge?.training_days?.find(
+        (td) => td.id === calendarDay.training_day_id
+      );
+      
+      const status = trainingDay?.is_rest_day ? "completed" : "rest";
+      
+      await changeDayStatus(calendarDay.calendar_date, status);
       toast({
-        title: "Rest Day Set",
-        description: "You've marked today as a rest day. Train tomorrow!",
+        title: trainingDay?.is_rest_day ? "Rest Day Completed" : "Rest Day Set",
+        description: trainingDay?.is_rest_day 
+          ? "You've completed your rest day!" 
+          : "You've marked today as a rest day. Train tomorrow!",
       });
     } catch (error) {
       console.error("Error setting rest day:", error);
@@ -696,7 +706,7 @@ const ChallengePreview = () => {
                                    <Button
                                      onClick={() => handleRestDay(calendarDay)}
                                      variant="outline"
-                                     className="w-full border-blue-600/40 text-blue-300 hover:bg-blue-600/10 py-3 rounded-xl"
+                                     className="w-full border-amber-500/40 text-amber-300 hover:bg-amber-500/10 py-3 rounded-xl"
                                    >
                                      <Bed className="w-4 h-4 mr-2" />
                                      Rest Today
@@ -733,11 +743,11 @@ const ChallengePreview = () => {
                                     <Lock className="w-3 h-3 mr-2" />
                                     Locked
                                   </span>
-                                ) : isCurrentDay ? (
-                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary/20 text-primary border border-primary/30">
-                                    ⭐ Train Today
-                                  </span>
-                                ) : (
+                                 ) : isCurrentDay ? (
+                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary/20 text-primary border border-primary/30">
+                                     ⭐ Ready
+                                   </span>
+                                 ) : (
                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">
                                     💪 Upcoming
                                   </span>
