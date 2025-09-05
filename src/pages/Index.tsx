@@ -119,16 +119,68 @@ const Index = () => {
         .eq('user_id', user.id)
         .eq('completed', true);
 
+      // Calculate streak based on challenge calendar days
+      const { data: calendarData } = await supabase
+        .from('user_challenge_calendar_days')
+        .select('calendar_date, status')
+        .eq('user_id', user.id)
+        .in('status', ['completed', 'rest'])
+        .order('calendar_date', { ascending: false });
+
+      let activeStreak = 0;
+      if (calendarData && calendarData.length > 0) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Group by date and check if user had any progress that day
+        const progressByDate = new Map();
+        calendarData.forEach(item => {
+          const date = item.calendar_date;
+          if (!progressByDate.has(date)) {
+            progressByDate.set(date, true);
+          }
+        });
+
+        // Sort dates and calculate consecutive streak from today backwards
+        const sortedDates = Array.from(progressByDate.keys()).sort().reverse();
+        
+        // Check if user has progress today or yesterday (to account for timezone)
+        const todayStr = today.toISOString().split('T')[0];
+        const yesterdayStr = new Date(today.getTime() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        
+        let startIndex = -1;
+        if (sortedDates.includes(todayStr)) {
+          startIndex = sortedDates.indexOf(todayStr);
+        } else if (sortedDates.includes(yesterdayStr)) {
+          startIndex = sortedDates.indexOf(yesterdayStr);
+        }
+
+        if (startIndex >= 0) {
+          // Count consecutive days backwards from the start date
+          for (let i = startIndex; i < sortedDates.length; i++) {
+            const currentDate = new Date(sortedDates[i]);
+            const expectedDate = new Date(today.getTime() - (i - startIndex) * 24 * 60 * 60 * 1000);
+            expectedDate.setHours(0, 0, 0, 0);
+            
+            if (currentDate.getTime() === expectedDate.getTime()) {
+              activeStreak++;
+            } else {
+              break;
+            }
+          }
+        }
+      }
+
       const completedFigures = progressData?.length || 0;
       const challengesCompleted = challengeData?.length || 0;
-      const totalPoints = completedFigures * 10 + challengesCompleted * 50; // Simple point calculation
+      const totalPoints = completedFigures * 10 + challengesCompleted * 50;
       const currentLevel = Math.floor(totalPoints / 100) + 1;
 
       setDashboardStats({
         totalPoints,
         currentLevel,
         completedFigures,
-        activeStreak: 3, // Mock data - could be calculated from activity
+        activeStreak,
         challengesCompleted
       });
     } catch (error) {
