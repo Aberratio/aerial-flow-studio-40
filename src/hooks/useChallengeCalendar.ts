@@ -114,6 +114,7 @@ export const useChallengeCalendar = (challengeId: string) => {
             p_user_id: user.id,
             p_challenge_id: challengeId,
             p_start_date: startDate.toISOString().split("T")[0],
+            p_force: false, // Use the new idempotent behavior
           }
         );
 

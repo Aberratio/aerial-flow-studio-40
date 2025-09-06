@@ -1828,11 +1828,14 @@ export type Database = {
         Returns: string[]
       }
       generate_user_challenge_calendar: {
-        Args: {
-          p_challenge_id: string
-          p_start_date: string
-          p_user_id: string
-        }
+        Args:
+          | {
+              p_challenge_id: string
+              p_force?: boolean
+              p_start_date: string
+              p_user_id: string
+            }
+          | { p_challenge_id: string; p_start_date: string; p_user_id: string }
         Returns: undefined
       }
       get_current_user_role: {

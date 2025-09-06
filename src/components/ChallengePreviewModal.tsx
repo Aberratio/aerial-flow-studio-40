@@ -684,21 +684,34 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
                           console.log("User joined challenge from modal, now generating calendar...");
                           
-                          // Generate calendar after successful join
-                          try {
-                            const { error: calendarError } = await supabase.rpc("generate_user_challenge_calendar", {
-                              p_user_id: user.id,
-                              p_challenge_id: challenge.id,
-                              p_start_date: today.toISOString().split("T")[0],
-                            });
+                          // Check if calendar already exists before generating
+                          const { data: existingCalendar } = await supabase
+                            .from('user_challenge_calendar_days')
+                            .select('id')
+                            .eq('user_id', user.id)
+                            .eq('challenge_id', challenge.id)
+                            .limit(1);
 
-                            if (calendarError) {
-                              console.error("Error generating calendar:", calendarError);
-                            } else {
-                              console.log("Calendar generated successfully");
+                          // Only generate calendar if it doesn't exist (idempotent behavior)
+                          if (!existingCalendar || existingCalendar.length === 0) {
+                            try {
+                              const { error: calendarError } = await supabase.rpc("generate_user_challenge_calendar", {
+                                p_user_id: user.id,
+                                p_challenge_id: challenge.id,
+                                p_start_date: today.toISOString().split("T")[0],
+                                p_force: false // Use the new idempotent behavior
+                              });
+
+                              if (calendarError) {
+                                console.error("Error generating calendar:", calendarError);
+                              } else {
+                                console.log("Calendar generated successfully");
+                              }
+                            } catch (calendarGenError) {
+                              console.error("Error generating calendar:", calendarGenError);
                             }
-                          } catch (calendarGenError) {
-                            console.error("Error in calendar generation:", calendarGenError);
+                          } else {
+                            console.log("Calendar already exists, skipping generation");
                           }
 
                           // Small delay to ensure calendar generation completes
