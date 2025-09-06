@@ -785,9 +785,15 @@ const ChallengePreview = () => {
                                     ✓ Completed
                                   </span>
                                  ) : isRestToday ? (
-                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                                     🛌 Rest Day - Train Tomorrow
-                                   </span>
+                                   <div className="text-center py-4">
+                                     <div className="text-3xl mb-2">🌙</div>
+                                     <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30 mb-2">
+                                       💤 Rest Day Active
+                                     </span>
+                                     <p className="text-white/60 text-sm max-w-xs mx-auto">
+                                       Recovery is just as important as training. Tomorrow brings new opportunities!
+                                     </p>
+                                   </div>
                                  ) : isFailedToday ? (
                                    <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
                                      Try Tomorrow
