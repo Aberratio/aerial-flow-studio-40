@@ -12,6 +12,8 @@ import {
   Calendar,
   Trophy,
   Users,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import {
   Carousel,
@@ -91,6 +93,7 @@ const ChallengePreview = () => {
   const [userParticipant, setUserParticipant] = useState<any>(null);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
+  const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
 
   // Use the challenge calendar hook
   const {
@@ -336,6 +339,18 @@ const ChallengePreview = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const toggleDayExpansion = (dayNumber: number) => {
+    setExpandedDays(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(dayNumber)) {
+        newSet.delete(dayNumber);
+      } else {
+        newSet.add(dayNumber);
+      }
+      return newSet;
+    });
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -648,7 +663,9 @@ const ChallengePreview = () => {
                             {/* Exercise List */}
                             {!isRestDay && exercises.length > 0 && (
                               <div className="space-y-2 md:space-y-3 flex-1 mb-4 md:mb-6">
-                                {exercises.map((exercise, exerciseIndex) => (
+                                {exercises
+                                  .slice(0, expandedDays.has(trainingDay.day_number) ? exercises.length : 4)
+                                  .map((exercise, exerciseIndex) => (
                                     <div
                                       key={exercise.id}
                                       className="flex items-start justify-between p-3 md:p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm"
@@ -694,6 +711,26 @@ const ChallengePreview = () => {
                                     </div>
                                   </div>
                                 ))}
+                                
+                                {/* Show More/Less Button */}
+                                {exercises.length > 4 && (
+                                  <button
+                                    onClick={() => toggleDayExpansion(trainingDay.day_number)}
+                                    className="w-full p-3 text-center text-white/70 hover:text-white hover:bg-white/5 rounded-xl border border-white/10 transition-all duration-200 flex items-center justify-center gap-2"
+                                  >
+                                    {expandedDays.has(trainingDay.day_number) ? (
+                                      <>
+                                        <ChevronUp className="w-4 h-4" />
+                                        Show Less
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ChevronDown className="w-4 h-4" />
+                                        Show More ({exercises.length - 4} more exercises)
+                                      </>
+                                    )}
+                                  </button>
+                                )}
                               </div>
                             )}
 
