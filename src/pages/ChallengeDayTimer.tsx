@@ -744,28 +744,25 @@ const ChallengeDayTimer = () => {
         {/* Controls */}
         <div className="flex flex-col gap-3 items-center justify-center mb-4 flex-shrink-0">
           {(isRunning || isPreparingToStart) ? (
-            <div className="flex flex-col md:flex-col gap-3 w-full items-center">
+            <div className="flex flex-row md:flex-col gap-3 w-full items-center">
               <Button
                 onClick={handlePlayPause}
                 size="lg"
                 variant="primary"
-                className="w-full max-w-xs px-8 py-6 text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
+                className="flex-1 md:w-full md:max-w-xs px-4 md:px-8 py-4 md:py-6 text-lg md:text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
               >
-                <Pause className="w-7 h-7 mr-3" />
+                <Pause className="w-5 h-5 md:w-7 md:h-7 mr-2 md:mr-3" />
                 {isPreparingToStart ? "Cancel" : "Pause"}
               </Button>
               
-              <div className="flex flex-row md:flex-col gap-3 w-full max-w-xs">
-                <Button
-                  onClick={handleSkip}
-                  variant="outline"
-                  size="lg"
-                  className="flex-1 md:w-full px-6 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
-                >
-                  <span className="hidden md:inline">Skip Segment</span>
-                  <span className="md:hidden">Skip</span>
-                </Button>
-              </div>
+              <Button
+                onClick={handleSkip}
+                variant="outline"
+                size="lg"
+                className="flex-1 md:w-full md:max-w-xs px-4 md:px-6 py-4 text-lg md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
+              >
+                Skip
+              </Button>
             </div>
           ) : (
             <Button
