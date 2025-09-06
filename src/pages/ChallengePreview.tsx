@@ -484,31 +484,32 @@ const ChallengePreview = () => {
 
       {/* Training Days Slider */}
       {isParticipant && (
-        <div className="flex-1 p-4 md:pl-2 md:pr-6 lg:p-8 overflow-hidden ml-0 md:ml-16 lg:ml-64">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
-          
-          {(() => {
-            const allTrainingDays =
-              challenge?.training_days
-                ?.map((trainingDay) => {
-                  const latestCalendarDay = calendarDays
-                    .filter((cd) => cd.training_day_id === trainingDay.id)
-                    .sort((a, b) => b.attempt_number - a.attempt_number)[0];
+        <div className="flex-1 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 overflow-hidden">
+          <div className="max-w-7xl mx-auto">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
+            
+            {(() => {
+              const allTrainingDays =
+                challenge?.training_days
+                  ?.map((trainingDay) => {
+                    const latestCalendarDay = calendarDays
+                      .filter((cd) => cd.training_day_id === trainingDay.id)
+                      .sort((a, b) => b.attempt_number - a.attempt_number)[0];
 
-                  return {
-                    calendarDay: latestCalendarDay || null,
-                    trainingDay,
-                  };
-                })
-                .sort(
-                  (a, b) => a.trainingDay.day_number - b.trainingDay.day_number
-                ) || [];
+                    return {
+                      calendarDay: latestCalendarDay || null,
+                      trainingDay,
+                    };
+                  })
+                  .sort(
+                    (a, b) => a.trainingDay.day_number - b.trainingDay.day_number
+                  ) || [];
 
-            if (!allTrainingDays.length) return null;
+              if (!allTrainingDays.length) return null;
 
-            return (
-              <Carousel className="w-full h-full" setApi={setCarouselApi}>
-                <CarouselContent className="-ml-2 md:-ml-4 lg:-ml-6 h-full">
+              return (
+                <Carousel className="w-full h-full" setApi={setCarouselApi}>
+                  <CarouselContent className="-ml-3 md:-ml-4 lg:-ml-6 h-full">
                   {allTrainingDays.map((dayData, index) => {
                     const { calendarDay, trainingDay } = dayData;
                     const exercises = trainingDay.training_day_exercises || [];
@@ -533,7 +534,7 @@ const ChallengePreview = () => {
                     return (
                       <CarouselItem
                         key={trainingDay.id}
-                        className="pl-2 md:pl-4 lg:pl-6 basis-full md:basis-1/2 lg:basis-1/3 xl:basis-1/4 2xl:basis-1/5 h-full"
+                        className="pl-3 md:pl-4 lg:pl-6 basis-full sm:basis-3/4 md:basis-2/3 lg:basis-1/2 xl:basis-2/5 2xl:basis-1/3 h-full"
                       >
                         <Card
                           className={`glass-effect overflow-hidden h-full transition-all duration-300 backdrop-blur-md ${
@@ -754,11 +755,12 @@ const ChallengePreview = () => {
                     );
                   })}
                 </CarouselContent>
-                <CarouselPrevious className="text-white border-white/20 hover:bg-white/10 backdrop-blur-sm -left-4 md:-left-6 lg:-left-8" />
-                <CarouselNext className="text-white border-white/20 hover:bg-white/10 backdrop-blur-sm -right-4 md:-right-6 lg:-right-8" />
+                <CarouselPrevious className="text-white border-white/20 hover:bg-white/10 backdrop-blur-sm -left-6 md:-left-8 lg:-left-10" />
+                <CarouselNext className="text-white border-white/20 hover:bg-white/10 backdrop-blur-sm -right-6 md:-right-8 lg:-right-10" />
               </Carousel>
             );
           })()}
+          </div>
         </div>
       )}
 
