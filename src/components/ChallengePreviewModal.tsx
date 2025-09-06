@@ -362,7 +362,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   if (isLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl glass-effect border-white/10 text-white">
+        <DialogContent className="max-w-xl glass-effect border-white/10 text-white">
           <div className="flex items-center justify-center py-12">
             <div className="text-muted-foreground">
               Loading challenge details...
@@ -375,10 +375,10 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white">
+      <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-2xl text-white">
+            <DialogTitle className="text-xl font-bold text-white pr-2">
               {challenge.title}
             </DialogTitle>
             {canEditChallenge() && (
@@ -389,18 +389,17 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   onClose();
                   navigate(`/challenges/${challenge.id}/edit`);
                 }}
-                className="border-white/20 text-white hover:bg-white/10 ml-4 mt-3"
+                className="border-white/20 text-white hover:bg-white/10 flex-shrink-0"
               >
-                <Edit2 className="w-4 h-4 mr-2" />
-                Edit
+                <Edit2 className="w-4 h-4" />
               </Button>
             )}
           </div>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Challenge Image */}
-          <div className="relative h-64 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20">
+          <div className="relative h-48 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20">
             {challenge.image_url ? (
               <img
                 src={challenge.image_url}
@@ -409,32 +408,32 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               />
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Trophy className="w-16 h-16 text-white/20" />
+                <Trophy className="w-12 h-12 text-white/20" />
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            <div className="absolute top-4 right-4">
+            <div className="absolute top-3 right-3">
               <Badge
                 className={`${getStatusColor(
                   challenge.status
-                )} bg-black/80 backdrop-blur-sm`}
+                )} bg-black/80 backdrop-blur-sm text-xs`}
               >
                 {challenge.status === "published"
                   ? "Available"
                   : challenge.status}
               </Badge>
             </div>
-            <div className="absolute bottom-4 left-4 flex gap-2">
+            <div className="absolute bottom-3 left-3 flex gap-2">
               <Badge
                 variant="outline"
-                className="border-white/30 text-white/90"
+                className="border-white/30 text-white/90 text-xs"
               >
-                {challenge.training_days?.length || 0} Training Days
+                {challenge.training_days?.length || 0} Days
               </Badge>
               {challenge.level && (
                 <Badge
                   variant="outline"
-                  className="border-purple-400/50 text-purple-300 bg-purple-500/20"
+                  className="border-purple-400/50 text-purple-300 bg-purple-500/20 text-xs"
                 >
                   Level {challenge.level}
                 </Badge>
@@ -442,71 +441,51 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             </div>
           </div>
 
-          {/* Challenge Details */}
-          <div className="space-y-4">
-            <p className="text-muted-foreground leading-relaxed">
-              {challenge.description}
-            </p>
+          {/* Compact Stats */}
+          <div className="grid grid-cols-3 gap-3">
+            <Card className="glass-effect border-white/10 p-3 text-center">
+              <Clock className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+              <div className="text-xs text-muted-foreground">Duration</div>
+              <div className="text-sm text-white font-semibold">
+                {challenge.training_days?.length || 0} days
+              </div>
+            </Card>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card className="glass-effect border-white/10 p-4 text-center">
-                <Clock className="w-5 h-5 text-purple-400 mx-auto mb-2" />
-                <div className="text-sm text-muted-foreground">Duration</div>
-                <div className="text-white font-semibold">
-                  {challenge.training_days?.length || 0} days
-                </div>
-              </Card>
+            <Card className="glass-effect border-white/10 p-3 text-center">
+              <Users className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+              <div className="text-xs text-muted-foreground">Participants</div>
+              <div className="text-sm text-white font-semibold">
+                {challenge.participants_count?.toLocaleString() || "0"}
+              </div>
+            </Card>
 
-              <Card className="glass-effect border-white/10 p-4 text-center">
-                <Users className="w-5 h-5 text-purple-400 mx-auto mb-2" />
-                <div className="text-sm text-muted-foreground">
-                  Participants
-                </div>
-                <div className="text-white font-semibold">
-                  {challenge.participants_count?.toLocaleString() || "0"}
-                </div>
-              </Card>
-
-              <Card className="glass-effect border-white/10 p-4 text-center">
-                <Trophy className="w-5 h-5 text-purple-400 mx-auto mb-2" />
-                <div className="text-sm text-muted-foreground">Difficulty</div>
-                <Badge
-                  className={getDifficultyColor(getDifficultyFromChallenge())}
-                >
-                  {getDifficultyFromChallenge()}
-                </Badge>
-              </Card>
-
-              <Card className="glass-effect border-white/10 p-4 text-center">
-                <Calendar className="w-5 h-5 text-purple-400 mx-auto mb-2" />
-                <div className="text-sm text-muted-foreground">
-                  Training Days
-                </div>
-                <div className="text-white font-semibold">
-                  {challenge.training_days?.filter((day) => !day.is_rest_day)
-                    .length || 0}{" "}
-                  days
-                </div>
-              </Card>
-            </div>
+            <Card className="glass-effect border-white/10 p-3 text-center">
+              <Trophy className="w-4 h-4 text-purple-400 mx-auto mb-1" />
+              <div className="text-xs text-muted-foreground">Difficulty</div>
+              <Badge
+                className={`${getDifficultyColor(getDifficultyFromChallenge())} text-xs mt-1`}
+              >
+                {getDifficultyFromChallenge()}
+              </Badge>
+            </Card>
+          </div>
 
             {/* Achievements */}
             {challenge.achievements && challenge.achievements.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold text-white">
-                  Challenge Achievements
+              <div className="space-y-2">
+                <h3 className="text-sm font-semibold text-white">
+                  Achievements
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 gap-2">
                   {challenge.achievements.map((achievement) => (
                     <Card
                       key={achievement.id}
-                      className="glass-effect border-white/10 p-3"
+                      className="glass-effect border-white/10 p-2"
                     >
-                      <div className="flex items-center gap-3">
-                        <span className="text-lg">{achievement.icon}</span>
-                        <div>
-                          <div className="font-medium text-white">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm">{achievement.icon}</span>
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-white">
                             {achievement.name}
                           </div>
                           <div className="text-xs text-purple-400">
@@ -522,56 +501,51 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
             {/* Training Overview */}
             {challenge.training_days && challenge.training_days.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-white">
-                  Training Overview
+              <div className="space-y-3">
+                <h3 className="text-sm font-semibold text-white">
+                  Training
                 </h3>
 
-                {/* Daily Time Commitment */}
-                <div className="space-y-3">
-                  <h4 className="text-md font-medium text-white">
-                    Daily Time Commitment
-                  </h4>
-                  <Card className="glass-effect border-white/10 p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4 text-purple-400" />
-                        <span className="text-sm text-muted-foreground">
-                          Training Time
-                        </span>
-                      </div>
-                      <div className="text-white font-semibold">
-                        {(() => {
-                          const { min, max } = calculateDailyDuration();
-                          if (min === max) {
-                            return `${min} min`;
-                          }
-                          return `${min}-${max} min`;
-                        })()}
-                      </div>
+                {/* Compact Daily Time */}
+                <Card className="glass-effect border-white/10 p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-purple-400" />
+                      <span className="text-sm text-muted-foreground">
+                        Daily Time
+                      </span>
                     </div>
-                  </Card>
-                </div>
+                    <div className="text-sm text-white font-semibold">
+                      {(() => {
+                        const { min, max } = calculateDailyDuration();
+                        if (min === max) {
+                          return `${min} min`;
+                        }
+                        return `${min}-${max} min`;
+                      })()}
+                    </div>
+                  </div>
+                </Card>
 
-                {/* Exercises Included */}
-                <div className="space-y-3">
-                  <h4 className="text-md font-medium text-white">
-                    Exercises Included
+                {/* Exercises Grid */}
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-white">
+                    Exercises ({getUniqueExercisesWithImages().length})
                   </h4>
                   <div className="text-muted-foreground">
                     {(() => {
                       const exercises = getUniqueExercisesWithImages();
                       if (exercises.length === 0) {
                         return (
-                          <p>No exercises configured for this challenge</p>
+                          <p className="text-xs">No exercises configured</p>
                         );
                       }
                       return (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {exercises.map((exercise, index) => (
+                        <div className="grid grid-cols-2 gap-2">
+                          {exercises.slice(0, 6).map((exercise, index) => (
                             <div
                               key={index}
-                              className="relative group cursor-pointer"
+                              className="group cursor-pointer"
                               onClick={() => handleExerciseClick(exercise)}
                             >
                               <div className="flex items-center gap-2 p-2 rounded-lg glass-effect border-white/10 hover:border-white/20 transition-all">
@@ -581,57 +555,50 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                                       <img
                                         src={exercise.image_url}
                                         alt={exercise.name}
-                                        className="w-10 h-10 rounded-md object-cover"
+                                        className="w-8 h-8 rounded object-cover"
                                       />
-                                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center">
-                                        <ZoomIn className="w-4 h-4 text-white" />
+                                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                                        <ZoomIn className="w-3 h-3 text-white" />
                                       </div>
                                     </>
                                   ) : (
-                                    <div className="w-10 h-10 rounded-md bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
-                                      <Trophy className="w-5 h-5 text-purple-400" />
+                                    <div className="w-8 h-8 rounded bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                                      <Trophy className="w-4 h-4 text-purple-400" />
                                     </div>
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <div className="text-sm font-medium text-white truncate group-hover:text-purple-300 transition-colors">
+                                  <div className="text-xs font-medium text-white truncate group-hover:text-purple-300 transition-colors">
                                     {exercise.name}
                                   </div>
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-xs bg-white/10 text-white/70"
-                                  >
-                                    {exercise.difficulty_level}
-                                  </Badge>
                                 </div>
                               </div>
                             </div>
                           ))}
+                          {exercises.length > 6 && (
+                            <div className="text-xs text-muted-foreground col-span-2 text-center py-1">
+                              +{exercises.length - 6} more exercises
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
                   </div>
                 </div>
 
-                {/* Challenge Stats */}
-                <div className="text-muted-foreground">
+                {/* Compact Challenge Stats */}
+                <div className="text-xs text-muted-foreground bg-white/5 rounded-lg p-3">
                   <p>
-                    This {challenge.training_days?.length || 0} day challenge
-                    includes{" "}
-                    {challenge.training_days?.filter((day) => !day.is_rest_day)
-                      .length || 0}{" "}
-                    training days and{" "}
-                    {challenge.training_days?.filter((day) => day.is_rest_day)
-                      .length || 0}{" "}
-                    rest days.
+                    <span className="font-medium">{challenge.training_days?.length || 0} days</span> total
+                    • <span className="font-medium">{challenge.training_days?.filter((day) => !day.is_rest_day).length || 0}</span> training
+                    • <span className="font-medium">{challenge.training_days?.filter((day) => day.is_rest_day).length || 0}</span> rest
                   </p>
                 </div>
               </div>
             )}
-          </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex gap-3 pt-2">
             <Button
               variant="outline"
               onClick={onClose}
