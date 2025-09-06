@@ -118,13 +118,13 @@ const Challenges = () => {
 
           const challengeCompletedDays =
             progressData?.reduce((acc, progress) => {
-              if (progress.status === 'completed' || progress.status === 'rest') {
+              // Count ONLY completed training days (do not include rest)
+              if (progress.status === 'completed') {
                 acc[progress.challenge_id] =
                   (acc[progress.challenge_id] || 0) + 1;
               }
               return acc;
             }, {}) || {};
-
           participatingChallengeIds.forEach((challengeId) => {
             const completedDays = challengeCompletedDays[challengeId] || 0;
             const totalDays = challengeTotalDays[challengeId] || 1;
