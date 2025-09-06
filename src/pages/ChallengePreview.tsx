@@ -493,15 +493,22 @@ const ChallengePreview = () => {
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
             
             {(() => {
+              const todayStr = format(new Date(), "yyyy-MM-dd");
               const allTrainingDays =
                 challenge?.training_days
                   ?.map((trainingDay) => {
-                    const latestCalendarDay = calendarDays
+                    const relatedDays = calendarDays
                       .filter((cd) => cd.training_day_id === trainingDay.id)
-                      .sort((a, b) => b.attempt_number - a.attempt_number)[0];
+                      .sort((a, b) => b.attempt_number - a.attempt_number);
+
+                    const todayCalendarDay = relatedDays.find(
+                      (cd) => cd.calendar_date === todayStr
+                    );
+
+                    const latestCalendarDay = relatedDays[0];
 
                     return {
-                      calendarDay: latestCalendarDay || null,
+                      calendarDay: todayCalendarDay || latestCalendarDay || null,
                       trainingDay,
                     };
                   })

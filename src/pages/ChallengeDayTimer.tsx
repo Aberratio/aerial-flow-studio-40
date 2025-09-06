@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useSpeech } from "@/hooks/useSpeech";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { format } from "date-fns";
 
 interface Exercise {
   id: string;
@@ -124,13 +125,44 @@ const ChallengeDayTimer = () => {
 
         const { data: calendarDay, error: calendarError } = await supabase
           .from("user_challenge_calendar_days")
-          .select("training_day_id")
+          .select("training_day_id, calendar_date, status, challenge_id")
           .eq("id", dayId)
           .eq("user_id", user.id)
           .single();
 
         if (calendarError) throw calendarError;
         setTrainingDayId(calendarDay.training_day_id);
+
+        // Access checks: block training on rest days today and on non-accessible days
+        const todayStr = format(new Date(), "yyyy-MM-dd");
+        if (calendarDay.status === "rest" && calendarDay.calendar_date === todayStr) {
+          toast({
+            title: "Rest Day",
+            description: "It's a rest day. Train tomorrow!",
+          });
+          navigate(`/challenges/${challengeId}`);
+          return;
+        }
+
+        const { data: canAccess, error: accessError } = await supabase.rpc(
+          "can_access_challenge_day",
+          {
+            p_user_id: user.id,
+            p_challenge_id: challengeId,
+            p_calendar_date: calendarDay.calendar_date,
+          }
+        );
+
+        if (accessError) throw accessError;
+        if (!canAccess) {
+          toast({
+            title: "Not Available",
+            description: "This day is not available yet. Try tomorrow.",
+          });
+          navigate(`/challenges/${challengeId}`);
+          return;
+        }
+
 
         const { data: trainingDayData, error: trainingDayError } =
           await supabase
