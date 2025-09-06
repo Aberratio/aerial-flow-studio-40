@@ -665,6 +665,9 @@ const Challenges = () => {
                             }
                             if (challenge.status === "active") {
                               navigate(`/challenges/${challenge.id}`);
+                            } else if (challenge.status === "completed" || challenge.status === "failed" || challenge.status === "done") {
+                              // For completed challenges, show the preview modal with results
+                              openChallengeModal(challenge);
                             } else {
                               handleJoinChallenge(challenge.id);
                             }
