@@ -548,7 +548,7 @@ const ChallengeDayTimer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 text-white flex flex-col overflow-y-auto md:fixed md:inset-0">
+    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 text-white flex flex-col overflow-y-auto">
       <div className="flex-1 flex flex-col container mx-auto px-4 py-6 max-w-4xl lg:max-w-6xl md:py-6 md:max-w-3xl xl:max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-shrink-0">
