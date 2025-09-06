@@ -560,6 +560,8 @@ const ChallengePreview = () => {
                             className={`relative h-24 flex items-center justify-between px-6 ${
                               isBlocked
                                 ? "bg-gradient-to-r from-slate-700/50 to-slate-800/50"
+                                : isUserRestDay || isRestToday
+                                ? "bg-gradient-to-r from-blue-600/90 to-blue-800/90"
                                 : isCurrentDay
                                 ? "bg-gradient-to-r from-purple-600/90 to-indigo-700/90"
                                 : isCompleted
@@ -700,7 +702,7 @@ const ChallengePreview = () => {
 
                             {/* Action Buttons */}
                             <div className="mt-auto pt-4 md:pt-6 border-t border-white/10 space-y-3">
-                              {isCurrentDay && !isRestDay && (
+                              {isCurrentDay && !isRestDay && !isRestToday && !isUserRestDay && (
                                 <div className="space-y-3">
                                   <Button
                                     onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay?.id}/timer`)}
@@ -721,7 +723,7 @@ const ChallengePreview = () => {
                                 </div>
                               )}
 
-                              {isCurrentDay && isRestDay && (
+                              {isCurrentDay && isRestDay && !isRestToday && (
                                 <Button
                                   onClick={() => handleRestDay(calendarDay)}
                                   className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/25 text-white py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02]"
