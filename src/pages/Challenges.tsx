@@ -668,7 +668,7 @@ const Challenges = () => {
                             } else if (challenge.status === "completed" || challenge.status === "failed" || challenge.status === "done") {
                               // For completed challenges, show the preview modal with results
                               openChallengeModal(challenge);
-                            } else {
+                            } else if (challenge.status === "not-started" || challenge.status === "available") {
                               handleJoinChallenge(challenge.id);
                             }
                           }}
