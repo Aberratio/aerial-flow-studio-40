@@ -318,6 +318,10 @@ const ChallengePreview = () => {
       const status = trainingDay?.is_rest_day ? "completed" : "rest";
       
       await changeDayStatus(calendarDay.calendar_date, status);
+      
+      // Force immediate UI update by checking participation again
+      await checkParticipation();
+      
       toast({
         title: trainingDay?.is_rest_day ? "Rest Day Completed" : "Rest Day Set",
         description: trainingDay?.is_rest_day 
@@ -524,9 +528,11 @@ const ChallengePreview = () => {
                     const isBlocked = !isPreviousDayCompleted && !isCompleted;
 
                     const isToday = calendarDay?.calendar_date === format(new Date(), "yyyy-MM-dd");
-                    const isFailedOrRestToday = isToday && (calendarDay?.status === "failed" || calendarDay?.status === "rest");
+                    const isRestToday = isToday && calendarDay?.status === "rest";
+                    const isFailedToday = isToday && calendarDay?.status === "failed";
+                    const isFailedOrRestToday = isRestToday || isFailedToday;
                     
-                    // Current day is the one that's accessible and pending/failed
+                    // Current day is the one that's accessible and pending/failed but not marked as rest today
                     const isCurrentDay = !isBlocked && isPending && isAccessible && !isFailedOrRestToday;
 
                     const totalDuration = trainingDay.duration_seconds || 0;
@@ -731,14 +737,14 @@ const ChallengePreview = () => {
                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                                     ✓ Completed
                                   </span>
-                                ) : isUserRestDay ? (
-                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                                    🛌 Rest Day
-                                  </span>
-                                ) : isFailedOrRestToday ? (
-                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                                    Try Tomorrow
-                                  </span>
+                                 ) : isRestToday ? (
+                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                                     🛌 Rest Day - Train Tomorrow
+                                   </span>
+                                 ) : isFailedToday ? (
+                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                                     Try Tomorrow
+                                   </span>
                                 ) : isBlocked ? (
                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">
                                     <Lock className="w-3 h-3 mr-2" />
