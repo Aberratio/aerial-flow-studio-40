@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
+import { useUserRole } from '@/hooks/useUserRole';
 
 interface RetakeChallengeModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ const RetakeChallengeModal: React.FC<RetakeChallengeModalProps> = ({
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const { isAdmin } = useUserRole();
 
   const handleConfirm = () => {
     onConfirm(selectedDate);
@@ -47,42 +49,44 @@ const RetakeChallengeModal: React.FC<RetakeChallengeModalProps> = ({
             <ul className="space-y-1 text-sm text-muted-foreground">
               <li>• All your current progress in "{challengeTitle}" will be permanently deleted</li>
               <li>• You will start from Day 1 again</li>
-              <li>• Previous achievements and points from this challenge will be reset</li>
+              <li>• Earned badges and points will not be reset, but you won't receive additional rewards for completing the challenge again</li>
               <li>• This action cannot be undone</li>
             </ul>
           </div>
 
-          <div className="space-y-3">
-            <Label htmlFor="start-date" className="text-white">
-              Choose your new start date:
-            </Label>
-            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal border-white/20 text-white hover:bg-white/10"
-                  disabled={isLoading}
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  {format(selectedDate, "PPP")}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 glass-effect border-white/10" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={(date) => {
-                    if (date) {
-                      setSelectedDate(date);
-                      setIsCalendarOpen(false);
-                    }
-                  }}
-                  disabled={(date) => date < new Date()}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
+          {isAdmin && (
+            <div className="space-y-3">
+              <Label htmlFor="start-date" className="text-white">
+                Choose your new start date:
+              </Label>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal border-white/20 text-white hover:bg-white/10"
+                    disabled={isLoading}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {format(selectedDate, "PPP")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 glass-effect border-white/10" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      if (date) {
+                        setSelectedDate(date);
+                        setIsCalendarOpen(false);
+                      }
+                    }}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
           
           <div className="flex gap-3 pt-2">
             <Button

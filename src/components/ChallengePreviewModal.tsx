@@ -470,34 +470,53 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             </Card>
           </div>
 
+          {/* Achievements and Duration in one row */}
+          <div className="grid grid-cols-2 gap-4">
             {/* Achievements */}
             {challenge.achievements && challenge.achievements.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-white">
                   Achievements
                 </h3>
-                <div className="grid grid-cols-1 gap-2">
-                  {challenge.achievements.map((achievement) => (
-                    <Card
+                <div className="space-y-1">
+                  {challenge.achievements.slice(0, 2).map((achievement) => (
+                    <div
                       key={achievement.id}
-                      className="glass-effect border-white/10 p-2"
+                      className="bg-background/20 rounded-lg p-2 flex items-center gap-2"
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm">{achievement.icon}</span>
-                        <div className="flex-1">
-                          <div className="text-sm font-medium text-white">
-                            {achievement.name}
-                          </div>
-                          <div className="text-xs text-purple-400">
-                            {achievement.points} points
-                          </div>
+                      <span className="text-xs">{achievement.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium text-white truncate">
+                          {achievement.name}
+                        </div>
+                        <div className="text-xs text-purple-400">
+                          {achievement.points}pts
                         </div>
                       </div>
-                    </Card>
+                    </div>
                   ))}
+                  {challenge.achievements.length > 2 && (
+                    <div className="text-xs text-muted-foreground text-center">
+                      +{challenge.achievements.length - 2} more
+                    </div>
+                  )}
                 </div>
               </div>
             )}
+
+            {/* Duration */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-white">Duration</h3>
+              <div className="bg-background/20 rounded-lg p-2">
+                <div className="text-xs text-white font-medium">
+                  {challenge.training_days?.length || 0} days
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {challenge.training_days?.filter(day => !day.is_rest_day).length || 0} training days
+                </div>
+              </div>
+            </div>
+          </div>
 
             {/* Training Overview */}
             {challenge.training_days && challenge.training_days.length > 0 && (
