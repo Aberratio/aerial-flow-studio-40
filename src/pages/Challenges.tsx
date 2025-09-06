@@ -616,14 +616,22 @@ const Challenges = () => {
                         <div className="flex justify-between text-sm mb-2">
                           <span className="text-white">Progress</span>
                           <span className="text-muted-foreground">
-                            {challenge.status === "active" && challenge.userProgress !== undefined 
-                              ? `${challenge.userProgress}% complete`
-                              : "0% complete"
+                            {challenge.status === "completed" || challenge.status === "done" 
+                              ? "100% complete"
+                              : challenge.status === "active" && challenge.userProgress !== undefined 
+                                ? `${challenge.userProgress}% complete`
+                                : "0% complete"
                             }
                           </span>
                         </div>
                         <Progress 
-                          value={challenge.status === "active" && challenge.userProgress !== undefined ? challenge.userProgress : 0} 
+                          value={
+                            challenge.status === "completed" || challenge.status === "done" 
+                              ? 100
+                              : challenge.status === "active" && challenge.userProgress !== undefined 
+                                ? challenge.userProgress 
+                                : 0
+                          } 
                           className="h-2" 
                         />
                       </div>
