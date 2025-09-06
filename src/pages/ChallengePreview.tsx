@@ -488,7 +488,7 @@ const ChallengePreview = () => {
 
       {/* Training Days Slider */}
       {isParticipant && (
-        <div className="flex-1 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 overflow-hidden pt-8">
+        <div className="flex-1 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 overflow-hidden pt-6">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
             
@@ -538,9 +538,10 @@ const ChallengePreview = () => {
                     const isRestToday = isToday && calendarDay?.status === "rest";
                     const isFailedToday = isToday && calendarDay?.status === "failed";
                     const isFailedOrRestToday = isRestToday || isFailedToday;
+                    const isRetryToday = isToday && ((calendarDay?.attempt_number ?? 1) > 1);
                     
-                    // Current day is the one that's accessible and pending/failed but not marked as rest today or user rest day
-                    const isCurrentDay = !isBlocked && isPending && isAccessible && !isFailedOrRestToday && !isUserRestDay;
+                    // Current day is the one that's accessible and pending/failed but not marked as rest today, user rest day, or retry created today
+                    const isCurrentDay = !isBlocked && isPending && isAccessible && !isFailedOrRestToday && !isUserRestDay && !isRetryToday;
 
                     const totalDuration = trainingDay.duration_seconds || 0;
 
@@ -709,7 +710,7 @@ const ChallengePreview = () => {
 
                             {/* Action Buttons */}
                             <div className="mt-auto pt-4 md:pt-6 border-t border-white/10 space-y-3">
-                              {isCurrentDay && !isRestDay && !isRestToday && !isUserRestDay && (
+                              {isCurrentDay && !isRestDay && !isRestToday && !isUserRestDay && !isRetryToday && (
                                 <div className="space-y-3">
                                   <Button
                                     onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay?.id}/timer`)}
@@ -730,7 +731,7 @@ const ChallengePreview = () => {
                                 </div>
                               )}
 
-                              {isCurrentDay && isRestDay && !isRestToday && !isUserRestDay && (
+                              {isCurrentDay && isRestDay && !isRestToday && !isUserRestDay && !isRetryToday && (
                                 <Button
                                   onClick={() => handleRestDay(calendarDay)}
                                   className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/25 text-white py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02]"
@@ -779,7 +780,7 @@ const ChallengePreview = () => {
         </div>
       )}
 
-      <div className="pb-8"></div>
+      <div className="pb-4"></div>
 
       {/* Purchase Modal */}
       <ChallengePurchaseModal
