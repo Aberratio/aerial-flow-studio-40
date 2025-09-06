@@ -488,7 +488,7 @@ const ChallengePreview = () => {
 
       {/* Training Days Slider */}
       {isParticipant && (
-        <div className="flex-1 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 overflow-hidden">
+        <div className="flex-1 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 overflow-hidden pt-8">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
             
@@ -539,8 +539,8 @@ const ChallengePreview = () => {
                     const isFailedToday = isToday && calendarDay?.status === "failed";
                     const isFailedOrRestToday = isRestToday || isFailedToday;
                     
-                    // Current day is the one that's accessible and pending/failed but not marked as rest today
-                    const isCurrentDay = !isBlocked && isPending && isAccessible && !isFailedOrRestToday;
+                    // Current day is the one that's accessible and pending/failed but not marked as rest today or user rest day
+                    const isCurrentDay = !isBlocked && isPending && isAccessible && !isFailedOrRestToday && !isUserRestDay;
 
                     const totalDuration = trainingDay.duration_seconds || 0;
 
@@ -730,7 +730,7 @@ const ChallengePreview = () => {
                                 </div>
                               )}
 
-                              {isCurrentDay && isRestDay && !isRestToday && (
+                              {isCurrentDay && isRestDay && !isRestToday && !isUserRestDay && (
                                 <Button
                                   onClick={() => handleRestDay(calendarDay)}
                                   className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/25 text-white py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02]"
@@ -774,10 +774,12 @@ const ChallengePreview = () => {
                 <CarouselNext className="text-white border-white/20 hover:bg-white/10 backdrop-blur-sm -right-6 md:-right-8 lg:-right-10" />
               </Carousel>
             );
-          })()}
+            })()}
           </div>
         </div>
       )}
+
+      <div className="pb-8"></div>
 
       {/* Purchase Modal */}
       <ChallengePurchaseModal
