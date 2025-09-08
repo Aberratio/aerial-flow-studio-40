@@ -80,8 +80,6 @@ const ChallengeDayTimer = () => {
   const [trainingDayId, setTrainingDayId] = useState<string>("");
   const [isPreparingToStart, setIsPreparingToStart] = useState(false);
   const [preparationTime, setPreparationTime] = useState(10);
-  const [showActionDialog, setShowActionDialog] = useState(false);
-  const [actionType, setActionType] = useState<"failed" | "rest" | null>(null);
 
   const { speak } = useSpeech(audioMode === "sound");
   const { isSupported: isWakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
@@ -423,57 +421,6 @@ const ChallengeDayTimer = () => {
     }
   };
 
-  const handleWorkoutFailed = async () => {
-    if (!user || !challengeId || !dayId) return;
-
-    try {
-      // Release wake lock when workout is failed
-      releaseWakeLock();
-      
-      // For now, just navigate back since we simplified the system
-      toast({
-        title: "Workout Skipped",
-        description: "You can try this training day again later.",
-      });
-      navigate(`/challenges/${challengeId}`);
-    } catch (error) {
-      console.error("Error failing workout:", error);
-      toast({
-        title: "Error",
-        description: "Failed to mark workout as failed",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleActionClick = (action: "failed" | "rest") => {
-    setActionType(action);
-    setShowActionDialog(true);
-  };
-
-  const handleActionConfirm = async () => {
-    console.log("handleActionConfirm called with actionType:", actionType);
-    if (!actionType || !user || !challengeId || !dayId) return;
-
-    try {
-      // Simplified - just navigate back for now
-      toast({
-        title: "Training Ended",
-        description: "You can continue this training day later.",
-      });
-      navigate(`/challenges/${challengeId}`);
-    } catch (error) {
-      console.error(`Error marking day as ${actionType}:`, error);
-      toast({
-        title: "Error",
-        description: `Failed to mark day as ${actionType}`,
-        variant: "destructive",
-      });
-    } finally {
-      setShowActionDialog(false);
-      setActionType(null);
-    }
-  };
 
   const handlePlayPause = () => {
     if (!isRunning && !isPreparingToStart) {
@@ -579,33 +526,6 @@ const ChallengeDayTimer = () => {
               </span>
             </div>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="text-white hover:bg-white/10"
-                >
-                  <MoreHorizontal className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="end" 
-                className="glass-effect border-white/10 bg-black/90"
-              >
-                <DropdownMenuItem 
-                  onClick={() => handleActionClick("failed")}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                >
-                  Mark as Failed
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleActionClick("rest")}
-                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
-                >
-                  Mark as Rest Day
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
 
             <Button
               variant="ghost"
@@ -867,37 +787,6 @@ const ChallengeDayTimer = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Action Confirmation Dialog */}
-      <Dialog open={showActionDialog} onOpenChange={setShowActionDialog}>
-        <DialogContent className="glass-effect border-white/10">
-          <DialogHeader>
-            <DialogTitle className="text-white">
-              {actionType === "failed" ? "Mark Day as Failed?" : "Mark Day as Rest?"}
-            </DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              {actionType === "failed"
-                ? "This will mark the current day as failed. You can retry it later."
-                : "This will mark the current day as a rest day."}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col sm:flex-row gap-3 mt-6">
-            <Button
-              onClick={handleActionConfirm}
-              variant={actionType === "failed" ? "destructive" : "default"}
-              className="flex-1"
-            >
-              {actionType === "failed" ? "Mark as Failed" : "Mark as Rest"}
-            </Button>
-            <Button
-              onClick={() => setShowActionDialog(false)}
-              variant="outline"
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
