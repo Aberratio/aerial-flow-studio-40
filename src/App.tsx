@@ -350,12 +350,12 @@ const AppRoutes = () => {
         />
         <Route
           path="/admin/achievements"
-        element={
-          <ProtectedRoute>
-            <AchievementManagement />
-          </ProtectedRoute>
-        }
-      />
+          element={
+            <ProtectedRoute>
+              <AchievementManagement />
+            </ProtectedRoute>
+          }
+        />
       <Route
         path="/admin/landing-page"
         element={
