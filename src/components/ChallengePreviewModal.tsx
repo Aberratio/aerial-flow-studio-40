@@ -315,17 +315,28 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
     setIsRetaking(true);
     try {
-      // Use the new reset function to properly reset all challenge data
-      const { error: resetError } = await supabase.rpc(
-        "reset_user_challenge_progress",
-        {
-          p_user_id: user.id,
-          p_challenge_id: challenge.id,
-          p_new_start_date: startDate.toISOString().split("T")[0],
-        }
-      );
+      // Reset the user's challenge progress to start over
+      const { error: deleteProgressError } = await supabase
+        .from('challenge_day_progress')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('challenge_id', challenge.id);
 
-      if (resetError) throw resetError;
+      if (deleteProgressError) throw deleteProgressError;
+
+      // Reset participant status
+      const { error: updateParticipantError } = await supabase
+        .from('challenge_participants')
+        .update({
+          current_day_number: 1,
+          last_completed_day: 0,
+          status: 'active',
+          completed: false
+        })
+        .eq('user_id', user.id)
+        .eq('challenge_id', challenge.id);
+
+      if (updateParticipantError) throw updateParticipantError;
 
       toast({
         title: "Challenge Reset!",
