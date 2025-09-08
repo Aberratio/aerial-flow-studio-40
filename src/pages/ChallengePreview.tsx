@@ -372,7 +372,7 @@ const ChallengePreview = () => {
       if (!user?.id || !challengeId || !isImpersonating || !originalAdminUser) return;
 
       // Complete day via secure RPC to bypass RLS and handle progression
-      const { error: rpcError } = await (supabase as any).rpc('complete_challenge_day', {
+      const { error: rpcError } = await supabase.rpc('admin_complete_challenge_day', {
         p_user_id: user.id,
         p_challenge_id: challengeId,
         p_day_number: trainingDay.day_number,

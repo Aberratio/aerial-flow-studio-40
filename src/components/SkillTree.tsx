@@ -430,23 +430,8 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
       if (error) throw error;
 
-      // Check if calendar already exists before generating
-      const { data: existingCalendar } = await supabase
-        .from('user_challenge_calendar_days')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('challenge_id', challengeId)
-        .limit(1);
+      // Skipping legacy calendar generation (handled client-side)
 
-      // Only generate calendar if it doesn't exist (idempotent behavior)
-      if (!existingCalendar || existingCalendar.length === 0) {
-        await supabase.rpc("generate_user_challenge_calendar", {
-          p_user_id: user.id,
-          p_challenge_id: challengeId,
-          p_start_date: new Date().toISOString().split("T")[0],
-          p_force: false // Use the new idempotent behavior
-        });
-      }
 
       toast({
         title: "Challenge joined!",

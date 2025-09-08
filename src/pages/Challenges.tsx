@@ -95,18 +95,17 @@ const Challenges = () => {
           participationData?.map((p) => p.challenge_id) || [];
         if (participatingChallengeIds.length > 0) {
           const { data: progressData } = await supabase
-            .from("user_challenge_calendar_days")
+            .from("challenge_day_progress")
             .select(
-              "challenge_id, status, day_number"
+              "challenge_id, status, training_day_id"
             )
             .eq("user_id", user.id)
             .in("challenge_id", participatingChallengeIds);
 
           // Get total calendar days for each challenge
           const { data: calendarDaysData } = await supabase
-            .from("user_challenge_calendar_days")
-            .select("challenge_id, day_number")
-            .eq("user_id", user.id)
+            .from("challenge_training_days")
+            .select("challenge_id, id")
             .in("challenge_id", participatingChallengeIds);
 
           // Calculate progress percentage for each challenge based on completed calendar days
@@ -351,35 +350,8 @@ const Challenges = () => {
 
       console.log("User joined challenge, now generating calendar...");
       
-      // Check if calendar already exists before generating
-      const { data: existingCalendar } = await supabase
-        .from('user_challenge_calendar_days')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('challenge_id', challengeId)
-        .limit(1);
+      // Skipping legacy calendar generation (handled client-side)
 
-      // Only generate calendar if it doesn't exist (idempotent behavior)
-      if (!existingCalendar || existingCalendar.length === 0) {
-        try {
-          const { error: calendarError } = await supabase.rpc("generate_user_challenge_calendar", {
-            p_user_id: user.id,
-            p_challenge_id: challengeId,
-            p_start_date: today.toISOString().split("T")[0],
-            p_force: false // Use the new idempotent behavior
-          });
-
-          if (calendarError) {
-            console.error("Error generating calendar:", calendarError);
-          } else {
-            console.log("Calendar generated successfully");
-          }
-        } catch (calendarGenError) {
-          console.error("Error in calendar generation:", calendarGenError);
-        }
-      } else {
-        console.log("Calendar already exists, skipping generation");
-      }
 
       // Small delay to ensure calendar generation completes
       await new Promise(resolve => setTimeout(resolve, 500));

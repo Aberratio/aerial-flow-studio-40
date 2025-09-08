@@ -189,7 +189,7 @@ const EditChallenge = () => {
             achievement_id
           ),
           challenge_training_days (
-            id, day_number, title, description, is_rest_day,
+            id, day_number, title, description,
             training_day_exercises (
               *,
               figure:figures (
