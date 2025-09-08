@@ -118,6 +118,10 @@ const Navigation: React.FC<NavigationProps> = ({
     icon: Settings,
     label: 'Achievements'
   }, {
+    path: '/admin/training',
+    icon: BookOpen,
+    label: 'Training'
+  }, {
     path: '/admin/landing-page',
     icon: Globe,
     label: 'Landing Page'

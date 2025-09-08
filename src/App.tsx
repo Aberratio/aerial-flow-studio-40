@@ -42,6 +42,8 @@ import FigureOfTheDay from "@/pages/FigureOfTheDay";
 import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
 import RedemptionCodeManager from "@/pages/RedemptionCodeManager";
+import TrainingManagement from "@/pages/TrainingManagement";
+import CreateTrainingCourse from "@/pages/CreateTrainingCourse";
 import PremiumRoute from "@/components/PremiumRoute";
 
 
@@ -330,8 +332,24 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/admin/achievements"
+        <Route
+          path="/admin/training"
+          element={
+            <PremiumRoute>
+              <TrainingManagement />
+            </PremiumRoute>
+          }
+        />
+        <Route
+          path="/admin/training/courses/new"
+          element={
+            <PremiumRoute>
+              <CreateTrainingCourse />
+            </PremiumRoute>
+          }
+        />
+        <Route
+          path="/admin/achievements"
         element={
           <ProtectedRoute>
             <AchievementManagement />
