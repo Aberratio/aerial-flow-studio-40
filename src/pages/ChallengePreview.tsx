@@ -735,7 +735,7 @@ const ChallengePreview = () => {
                               {actualIsCurrentDay && (
                                 <Button
                                   onClick={() => {
-                                    navigate(`/challenges/${challengeId}/day/${trainingDay.id}/timer`);
+                                    navigate(`/challenge/${challengeId}/day/${trainingDay.id}/timer`);
                                   }}
                                   variant="default"
                                   className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
