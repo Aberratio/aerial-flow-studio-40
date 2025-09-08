@@ -14,6 +14,7 @@ import {
   Users,
   ChevronDown,
   ChevronUp,
+  CheckCircle,
 } from "lucide-react";
 import {
   Carousel,
@@ -80,7 +81,7 @@ interface Challenge {
 const ChallengePreview = () => {
   const { challengeId } = useParams<{ challengeId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isImpersonating, originalAdminUser } = useAuth();
   const { toast } = useToast();
   const { canCreateChallenges, isAdmin } = useUserRole();
   const { hasPremiumAccess } = useSubscriptionStatus();
@@ -359,6 +360,54 @@ const ChallengePreview = () => {
       toast({
         title: "Error",
         description: "Failed to complete rest day",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAdminCompleteDay = async (calendarDay: any, trainingDay: any) => {
+    try {
+      if (!user?.id || !challengeId || !isImpersonating || !originalAdminUser) return;
+
+      // Insert or update progress record for the impersonated user
+      await supabase
+        .from("challenge_day_progress")
+        .upsert({
+          user_id: user.id,
+          challenge_id: challengeId,
+          training_day_id: trainingDay.id,
+          status: "completed",
+          exercises_completed: trainingDay?.training_day_exercises?.length || 0,
+          total_exercises: trainingDay?.training_day_exercises?.length || 0,
+          notes: `Completed by admin (${originalAdminUser.username}) for user (${user.username})`
+        });
+
+      // Force immediate UI update by checking participation again
+      await checkParticipation();
+      
+      toast({
+        title: "Day Completed (Admin Action)",
+        description: `Day ${trainingDay.day_number} marked as completed for ${user.username}`,
+      });
+
+      // Navigate to the next day
+      setTimeout(() => {
+        const nextDay = challenge?.training_days?.find(
+          td => td.day_number === trainingDay.day_number + 1
+        );
+        
+        if (nextDay) {
+          const nextDayIndex = challenge.training_days.findIndex(td => td.id === nextDay.id);
+          if (carouselApi && nextDayIndex >= 0) {
+            carouselApi.scrollTo(nextDayIndex);
+          }
+        }
+      }, 1000);
+    } catch (error) {
+      console.error("Error completing day as admin:", error);
+      toast({
+        title: "Error",
+        description: "Failed to complete day",
         variant: "destructive",
       });
     }
@@ -787,22 +836,34 @@ const ChallengePreview = () => {
                                     </Button>
                                   )}
                                 </>
+                               )}
+
+                              {/* Admin Complete Button - Only visible in impersonation mode */}
+                              {isImpersonating && originalAdminUser && !isCompleted && (
+                                <Button
+                                  onClick={() => handleAdminCompleteDay(calendarDay, trainingDay)}
+                                  variant="outline"
+                                  className="w-full py-3 text-sm font-semibold rounded-xl border-orange-500/50 text-orange-400 hover:bg-orange-500/20 hover:border-orange-500 transition-all duration-300"
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-2" />
+                                  Complete (Admin)
+                                </Button>
                               )}
 
-                              {/* Status Indicator */}
-                              <div className="text-center">
-                                {isCompleted ? (
-                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                    ✓ Completed
-                                  </span>
-                                ) : actualIsLocked ? (
-                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">
-                                    <Lock className="w-3 h-3 mr-2" />
-                                    Locked
-                                  </span>
-                                ) : null}
-                              </div>
-                            </div>
+                               {/* Status Indicator */}
+                               <div className="text-center">
+                                 {isCompleted ? (
+                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                                     ✓ Completed
+                                   </span>
+                                 ) : actualIsLocked ? (
+                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">
+                                     <Lock className="w-3 h-3 mr-2" />
+                                     Locked
+                                   </span>
+                                 ) : null}
+                               </div>
+                             </div>
                           </CardContent>
                         </Card>
                       </CarouselItem>
