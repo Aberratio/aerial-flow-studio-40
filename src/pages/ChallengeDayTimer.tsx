@@ -123,67 +123,54 @@ const ChallengeDayTimer = () => {
       try {
         setIsLoading(true);
 
-        const { data: calendarDay, error: calendarError } = await supabase
-          .from("user_challenge_calendar_days")
-          .select("training_day_id, calendar_date, status, challenge_id")
+        // Get training day directly since dayId is the training day ID
+        const { data: trainingDayData, error: trainingDayError } = await supabase
+          .from("challenge_training_days")
+          .select("*")
           .eq("id", dayId)
-          .eq("user_id", user.id)
           .single();
 
-        if (calendarError) throw calendarError;
-        setTrainingDayId(calendarDay.training_day_id);
+        if (trainingDayError) throw trainingDayError;
+        setTrainingDayId(dayId);
 
-        // Access checks: block training on rest days today and on non-accessible days
-        const todayStr = format(new Date(), "yyyy-MM-dd");
-        if (calendarDay.status === "rest" && calendarDay.calendar_date === todayStr) {
-          toast({
-            title: "Rest Day",
-            description: "It's a rest day. Train tomorrow!",
-          });
-          navigate(`/challenges/${challengeId}`);
-          return;
-        }
+        // Check if user is participant of this challenge
+        const { data: participant, error: participantError } = await supabase
+          .from('challenge_participants')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('challenge_id', challengeId)
+          .single();
 
-        const { data: canAccess, error: accessError } = await supabase.rpc(
-          "can_access_challenge_day",
-          {
-            p_user_id: user.id,
-            p_challenge_id: challengeId,
-            p_calendar_date: calendarDay.calendar_date,
-          }
-        );
-
-        if (accessError) throw accessError;
-        if (!canAccess) {
+        if (participantError) throw participantError;
+        
+        if (!participant) {
           toast({
             title: "Not Available",
-            description: "This day is not available yet. Try tomorrow.",
+            description: "You need to join this challenge first.",
           });
           navigate(`/challenges/${challengeId}`);
           return;
         }
 
 
-        const { data: trainingDayData, error: trainingDayError } =
+        const { data: exercisesData, error: exercisesError } =
           await supabase
-            .from("challenge_training_days")
+            .from("training_day_exercises")
             .select(
               `
-            training_day_exercises (
               *,
               figure:figures (
                 id, name, image_url
               )
+            `
             )
-          `
-            )
-            .eq("id", calendarDay.training_day_id)
-            .single();
+            .eq("training_day_id", dayId)
+            .order('order_index');
 
-        if (trainingDayError) throw trainingDayError;
+        if (exercisesError) throw exercisesError;
 
-        const exercisesData =
-          trainingDayData.training_day_exercises?.map((exercise: any) => ({
+        const formattedExercises =
+          exercisesData?.map((exercise: any) => ({
             id: exercise.id,
             sets: exercise.sets || 1,
             reps: exercise.reps,
@@ -193,7 +180,7 @@ const ChallengeDayTimer = () => {
             figure: exercise.figure,
           })) || [];
 
-        setExercises(exercisesData);
+        setExercises(formattedExercises);
       } catch (error) {
         console.error("Error fetching exercises:", error);
         toast({
@@ -386,16 +373,46 @@ const ChallengeDayTimer = () => {
       // Release wake lock when workout is completed
       releaseWakeLock();
       
-      const calendarDay = getCalendarDayByTrainingDay(dayId);
-      if (calendarDay) {
-        await changeDayStatus(calendarDay.calendar_date, "completed");
-        toast({
-          title: "Workout Completed!",
-          description:
-            "Great job! This training day has been marked as completed.",
+      // Complete the challenge day using new progress system
+      const { data: trainingDay, error: trainingDayError } = await supabase
+        .from('challenge_training_days')
+        .select('day_number')
+        .eq('id', dayId)
+        .single();
+      
+      if (trainingDayError) throw trainingDayError;
+      
+      // Insert progress record
+      const { error: progressError } = await supabase
+        .from('challenge_day_progress')
+        .upsert({
+          user_id: user.id,
+          challenge_id: challengeId,
+          training_day_id: dayId,
+          status: 'completed',
+          changed_status_at: new Date().toISOString(),
+          exercises_completed: exercises.length,
+          total_exercises: exercises.length
         });
-        navigate(`/challenges/${challengeId}`);
-      }
+      
+      if (progressError) throw progressError;
+      
+      // Update participant status to completed if needed
+      const { error: participantError } = await supabase
+        .from('challenge_participants')
+        .update({
+          status: 'active'
+        })
+        .eq('user_id', user.id)
+        .eq('challenge_id', challengeId);
+      
+      if (participantError) console.error('Error updating participant:', participantError);
+      toast({
+        title: "Workout Completed!",
+        description:
+          "Great job! This training day has been marked as completed.",
+      });
+      navigate(`/challenges/${challengeId}`);
     } catch (error) {
       console.error("Error completing workout:", error);
       toast({
@@ -413,16 +430,12 @@ const ChallengeDayTimer = () => {
       // Release wake lock when workout is failed
       releaseWakeLock();
       
-      const calendarDay = getCalendarDayByTrainingDay(dayId);
-      if (calendarDay) {
-        await changeDayStatus(calendarDay.calendar_date, "failed");
-        toast({
-          title: "Workout Failed!",
-          description:
-            "This training day has been marked as failed. Don't worry, you can try again next day!",
-        });
-        navigate(`/challenges/${challengeId}`);
-      }
+      // For now, just navigate back since we simplified the system
+      toast({
+        title: "Workout Skipped",
+        description: "You can try this training day again later.",
+      });
+      navigate(`/challenges/${challengeId}`);
     } catch (error) {
       console.error("Error failing workout:", error);
       toast({
@@ -443,17 +456,12 @@ const ChallengeDayTimer = () => {
     if (!actionType || !user || !challengeId || !dayId) return;
 
     try {
-      const calendarDay = getCalendarDayByTrainingDay(dayId);
-      if (calendarDay) {
-        await changeDayStatus(calendarDay.calendar_date, actionType);
-        toast({
-          title: actionType === "failed" ? "Day Marked as Failed" : "Day Marked as Rest",
-          description: actionType === "failed" 
-            ? "This training day has been marked as failed. You can retry tomorrow!"
-            : "This training day has been marked as a rest day.",
-        });
-        navigate(`/challenges/${challengeId}`);
-      }
+      // Simplified - just navigate back for now
+      toast({
+        title: "Training Ended",
+        description: "You can continue this training day later.",
+      });
+      navigate(`/challenges/${challengeId}`);
     } catch (error) {
       console.error(`Error marking day as ${actionType}:`, error);
       toast({
