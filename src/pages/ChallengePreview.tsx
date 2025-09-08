@@ -102,6 +102,8 @@ const ChallengePreview = () => {
     isLoading: calendarLoading,
     generateCalendar,
     changeDayStatus,
+    loadCalendar,
+    loadNextAvailableDay,
   } = useChallengeCalendar(challengeId || "");
 
   useEffect(() => {
@@ -369,35 +371,19 @@ const ChallengePreview = () => {
     try {
       if (!user?.id || !challengeId || !isImpersonating || !originalAdminUser) return;
 
-      // Insert or update progress record for the impersonated user
-      await supabase
-        .from("challenge_day_progress")
-        .upsert({
-          user_id: user.id,
-          challenge_id: challengeId,
-          training_day_id: trainingDay.id,
-          status: "completed",
-          exercises_completed: trainingDay?.training_day_exercises?.length || 0,
-          total_exercises: trainingDay?.training_day_exercises?.length || 0,
-          notes: `Completed by admin (${originalAdminUser.username}) for user (${user.username})`,
-          changed_status_at: new Date().toISOString()
-        });
+      // Complete day via secure RPC to bypass RLS and handle progression
+      const { error: rpcError } = await (supabase as any).rpc('complete_challenge_day', {
+        p_user_id: user.id,
+        p_challenge_id: challengeId,
+        p_day_number: trainingDay.day_number,
+        p_notes: `Completed by admin (${originalAdminUser.username}) for user (${user.username})`
+      });
 
-      // Update participant to track progression (set current day to the next day)
-      const { error: participantError } = await supabase
-        .from('challenge_participants')
-        .update({
-          last_completed_day: trainingDay.day_number,
-          current_day_number: trainingDay.day_number + 1,
-          status: 'active'
-        })
-        .eq('user_id', user.id)
-        .eq('challenge_id', challengeId);
+      if (rpcError) throw rpcError;
 
-      if (participantError) console.error('Error updating participant progression:', participantError);
-
-      // Force immediate UI update by reloading calendar and checking participation
-      await changeDayStatus(new Date().toISOString().split('T')[0], "completed", `Completed by admin (${originalAdminUser.username})`);
+      // Refresh calendar state
+      await loadCalendar();
+      await loadNextAvailableDay();
       await checkParticipation();
       
       toast({

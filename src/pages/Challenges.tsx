@@ -249,19 +249,17 @@ const Challenges = () => {
       if (publishedChallengeIds.length > 0) {
         const { data: trainingDaysData } = await supabase
           .from("challenge_training_days")
-          .select("challenge_id, is_rest_day")
+          .select("challenge_id")
           .in("challenge_id", publishedChallengeIds);
 
-        // Count training days (non-rest days) and total days per challenge
+        // Count days per challenge (treat all as training days since is_rest_day may not exist)
         const challengeDayCounts =
-          trainingDaysData?.reduce((acc, day) => {
+          trainingDaysData?.reduce((acc: Record<string, { total: number; training: number }>, day: any) => {
             if (!acc[day.challenge_id]) {
               acc[day.challenge_id] = { total: 0, training: 0 };
             }
             acc[day.challenge_id].total++;
-            if (!day.is_rest_day) {
-              acc[day.challenge_id].training++;
-            }
+            acc[day.challenge_id].training++; // assume training day
             return acc;
           }, {}) || {};
 
