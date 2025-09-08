@@ -539,24 +539,30 @@ const ChallengePreview = () => {
                   {allTrainingDays.map((dayData, index) => {
                     const { calendarDay, trainingDay } = dayData;
                     const exercises = trainingDay.training_day_exercises || [];
-                    const isCompleted = calendarDay?.status === "completed";
-                    const isRestDay = trainingDay.is_rest_day;
-                    const isUserRestDay = calendarDay?.status === "rest" && !trainingDay.is_rest_day;
-                    const isAccessible = calendarDay?.is_accessible || false;
-                    const isPending = calendarDay?.status === "pending" || calendarDay?.status === "failed";
-
-                    const previousDayData = allTrainingDays[index - 1];
-                    const isPreviousDayCompleted = index === 0 || previousDayData?.calendarDay?.status === "completed";
-                    const isBlocked = !isPreviousDayCompleted && !isCompleted;
-
-                    const isToday = calendarDay?.calendar_date === format(new Date(), "yyyy-MM-dd");
-                    const isRestToday = isToday && calendarDay?.status === "rest";
-                    const isFailedToday = isToday && calendarDay?.status === "failed";
-                    const isFailedOrRestToday = isRestToday || isFailedToday;
-                    const isRetryToday = isToday && ((calendarDay?.attempt_number ?? 1) > 1);
                     
-                    // Current day is the one that's accessible and pending/failed but not marked as rest today, user rest day, or retry created today
-                    const isCurrentDay = !isBlocked && isPending && isAccessible && !isFailedOrRestToday && !isUserRestDay && !isRetryToday;
+                    // Get user's progress from database
+                    const isCompleted = calendarDay?.status === "completed";
+                    
+                    // Simplified logic for three states:
+                    // 1. Current unlocked day (can train)
+                    // 2. Completed day (show completed status)
+                    // 3. Locked day (not accessible yet)
+                    
+                    const isCurrentDay = !isCompleted && index === 0; // First non-completed day
+                    const isLocked = !isCompleted && index > 0; // Future days are locked
+                    
+                    // Find the first completed day to determine the current accessible day
+                    const lastCompletedIndex = allTrainingDays.findIndex((d, i) => 
+                      i < index && d.calendarDay?.status === "completed"
+                    );
+                    
+                    const isNextUnlocked = !isCompleted && (
+                      index === 0 || // First day is always unlocked
+                      (index > 0 && allTrainingDays[index - 1]?.calendarDay?.status === "completed") // Previous day completed
+                    );
+                    
+                    const actualIsCurrentDay = isNextUnlocked && !isCompleted;
+                    const actualIsLocked = !isCompleted && !isNextUnlocked;
 
                     const totalDuration = trainingDay.duration_seconds || 0;
 
@@ -567,63 +573,53 @@ const ChallengePreview = () => {
                       >
                         <Card
                           className={`glass-effect overflow-hidden h-full transition-all duration-300 backdrop-blur-md ${
-                            isBlocked
+                            actualIsLocked
                               ? "border-slate-600/50 opacity-60"
                               : isCompleted
                               ? "border-emerald-500/60 bg-emerald-500/5"
-                              : isCurrentDay
+                              : actualIsCurrentDay
                               ? "border-primary/80 ring-2 ring-primary/40 shadow-2xl shadow-primary/20 bg-primary/5"
-                              : isPending && isAccessible
-                              ? "border-purple-500/60 ring-1 ring-purple-500/30 bg-purple-500/5"
                               : "border-white/20"
                           }`}
                         >
-                          {/* Header */}
                           <div
                             className={`relative h-24 flex items-center justify-between px-6 ${
-                              isBlocked
+                              actualIsLocked
                                 ? "bg-gradient-to-r from-slate-700/50 to-slate-800/50"
-                                : isUserRestDay || isRestToday
-                                ? "bg-gradient-to-r from-blue-600/90 to-blue-800/90"
-                                : isCurrentDay
+                                : actualIsCurrentDay
                                 ? "bg-gradient-to-r from-purple-600/90 to-indigo-700/90"
                                 : isCompleted
-                                ? "bg-gradient-to-r from-slate-700/90 to-slate-900/90"
+                                ? "bg-gradient-to-r from-emerald-600/90 to-emerald-800/90"
                                 : "bg-gradient-to-r from-indigo-700/90 to-slate-800/90"
                             }`}
                           >
                             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
                             <div className="relative z-10 flex items-center gap-3">
                               <div className="text-2xl">
-                                {isBlocked
+                                {actualIsLocked
                                   ? "🔒"
                                   : isCompleted
                                   ? "✅"
-                                  : isUserRestDay
-                                  ? "🛌"
-                                  : isRestDay
-                                  ? "🌴"
-                                  : isCurrentDay
+                                  : actualIsCurrentDay
                                   ? "⭐"
                                   : "💪"}
                               </div>
                               <div>
                                 <h3
                                   className={`text-xl font-bold ${
-                                    isBlocked ? "text-slate-300" : "text-white"
+                                    actualIsLocked ? "text-slate-300" : "text-white"
                                   }`}
                                 >
                                   DAY {trainingDay.day_number}
-                                  {calendarDay?.is_retry && " (RETRY)"}
                                 </h3>
                                 <div
                                   className={`text-sm ${
-                                    isBlocked ? "text-slate-400" : "text-white/90"
+                                    actualIsLocked ? "text-slate-400" : "text-white/90"
                                   }`}
                                 >
-                                  {isBlocked
+                                  {actualIsLocked
                                     ? "Complete previous day first"
-                                    : trainingDay.title || (isRestDay ? "Rest Day" : "Training Day")}
+                                    : trainingDay.title || "Training Day"}
                                 </div>
                               </div>
                             </div>
@@ -634,7 +630,7 @@ const ChallengePreview = () => {
                             <div className="flex items-center justify-between mb-4 md:mb-6">
                               <div className="flex items-center gap-2 text-sm text-white/70">
                                 <Clock className="w-4 h-4" />
-                                {isRestDay ? "Rest Day" : `${Math.ceil(totalDuration / 60)} mins`}
+                                {Math.ceil(totalDuration / 60)} mins
                               </div>
                               <div className="flex items-center gap-2 text-sm text-white/70">
                                 <Target className="w-4 h-4" />
@@ -645,11 +641,11 @@ const ChallengePreview = () => {
                             {/* Day Notes */}
                             {(calendarDay?.notes || trainingDay.description) && (
                                <div className="mb-4 md:mb-6">
-                                 <div
-                                   className={`text-sm ${
-                                     isBlocked ? "text-slate-400" : "text-white/90"
-                                   } bg-gradient-to-r from-slate-800/60 to-slate-900/60 p-4 rounded-2xl border border-slate-600/30 backdrop-blur-sm`}
-                                 >
+                                  <div
+                                    className={`text-sm ${
+                                      actualIsLocked ? "text-slate-400" : "text-white/90"
+                                    } bg-gradient-to-r from-slate-800/60 to-slate-900/60 p-4 rounded-2xl border border-slate-600/30 backdrop-blur-sm`}
+                                  >
                                    <div className="flex items-start gap-3">
                                      <div className="w-2 h-2 bg-purple-400 rounded-full mt-2 flex-shrink-0"></div>
                                      <p className="flex-1 leading-relaxed">
@@ -661,7 +657,7 @@ const ChallengePreview = () => {
                             )}
 
                             {/* Exercise List */}
-                            {!isRestDay && exercises.length > 0 && (
+                            {exercises.length > 0 && (
                               <div className="space-y-2 md:space-y-3 flex-1 mb-4 md:mb-6">
                                 {exercises
                                   .slice(0, expandedDays.has(trainingDay.day_number) ? exercises.length : 4)
@@ -670,12 +666,12 @@ const ChallengePreview = () => {
                                       key={exercise.id}
                                       className="flex items-start justify-between p-3 md:p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm"
                                     >
-                                    <div className="flex-1 pr-4">
-                                      <h4
-                                        className={`font-semibold text-base mb-2 ${
-                                          isBlocked ? "text-slate-300" : "text-white"
-                                        }`}
-                                      >
+                                     <div className="flex-1 pr-4">
+                                       <h4
+                                         className={`font-semibold text-base mb-2 ${
+                                           actualIsLocked ? "text-slate-300" : "text-white"
+                                         }`}
+                                       >
                                         {exercise.figure.name}
                                       </h4>
                                       {exercise.notes && (
@@ -683,22 +679,22 @@ const ChallengePreview = () => {
                                           {exercise.notes}
                                         </p>
                                       )}
-                                      <div
-                                        className={`text-sm font-medium ${
-                                          isBlocked ? "text-slate-400" : "text-primary"
-                                        }`}
-                                      >
+                                       <div
+                                         className={`text-sm font-medium ${
+                                           actualIsLocked ? "text-slate-400" : "text-primary"
+                                         }`}
+                                       >
                                         {formatTime(exercise.hold_time_seconds || 30)}
                                         {exercise.sets && exercise.sets > 1 && ` × ${exercise.sets} sets`}
                                       </div>
                                     </div>
 
                                     {/* Exercise Image */}
-                                    <div
-                                      className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ${
-                                        isBlocked ? "opacity-50" : ""
-                                      }`}
-                                    >
+                                     <div
+                                       className={`w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center ${
+                                         actualIsLocked ? "opacity-50" : ""
+                                       }`}
+                                     >
                                       {exercise.figure?.image_url ? (
                                         <img
                                           src={exercise.figure.image_url}
@@ -734,47 +730,26 @@ const ChallengePreview = () => {
                               </div>
                             )}
 
-                            {/* Rest Day Content */}
-                            {isRestDay && (
-                              <div className="text-center py-12 flex-1">
-                                <div className="text-6xl mb-4">🌴</div>
-                                <h3 className="text-xl font-semibold text-white mb-2">Rest & Recovery</h3>
-                                <p className="text-white/70">
-                                  Take time to recover and prepare for tomorrow's training
-                                </p>
-                              </div>
-                            )}
-
                             {/* Action Buttons */}
                             <div className="mt-auto pt-4 md:pt-6 border-t border-white/10 space-y-3">
-                              {isCurrentDay && !isRestDay && !isRestToday && !isUserRestDay && !isRetryToday && (
-                                <div className="space-y-3">
-                                  <Button
-                                    onClick={() => navigate(`/challenge/${challengeId}/day/${calendarDay?.id}/timer`)}
-                                    variant="primary"
-                                    className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02]"
-                                  >
-                                    <Play className="w-5 h-5 mr-2" />
-                                    Train Now
-                                  </Button>
-                                   <Button
-                                     onClick={() => handleRestDay(calendarDay)}
-                                     variant="outline"
-                                     className="w-full border-amber-500/40 text-amber-300 hover:bg-amber-500/10 py-3 rounded-xl"
-                                   >
-                                     <Bed className="w-4 h-4 mr-2" />
-                                     Rest Today
-                                   </Button>
-                                </div>
-                              )}
-
-                              {isCurrentDay && isRestDay && !isRestToday && !isUserRestDay && !isRetryToday && (
+                              {actualIsCurrentDay && (
                                 <Button
-                                  onClick={() => handleRestDay(calendarDay)}
-                                  className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/25 text-white py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02]"
+                                  onClick={() => {
+                                    navigate('/training-session', {
+                                      state: {
+                                        type: 'challenge-day',
+                                        challengeId: challengeId,
+                                        dayId: trainingDay.id,
+                                        exercises: exercises,
+                                        title: `Day ${trainingDay.day_number}: ${trainingDay.title || 'Training'}`
+                                      }
+                                    });
+                                  }}
+                                  variant="default"
+                                  className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                                 >
-                                  <Bed className="w-4 h-4 mr-2" />
-                                  Rest Day
+                                  <Play className="w-5 h-5 mr-2" />
+                                  Trenuj
                                 </Button>
                               )}
 
@@ -782,30 +757,19 @@ const ChallengePreview = () => {
                               <div className="text-center">
                                 {isCompleted ? (
                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                    ✓ Completed
+                                    ✓ Ukończone
                                   </span>
-                                 ) : isRestToday ? (
-                                   <div className="text-center py-4">
-                                     <div className="text-3xl mb-2">🌙</div>
-                                     <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-purple-300 border border-purple-500/30 mb-2">
-                                       💤 Rest Day Active
-                                     </span>
-                                     <p className="text-white/60 text-sm max-w-xs mx-auto">
-                                       Recovery is just as important as training. Tomorrow brings new opportunities!
-                                     </p>
-                                   </div>
-                                 ) : isFailedToday ? (
-                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-                                     Try Tomorrow
-                                   </span>
-                                ) : isBlocked ? (
+                                ) : actualIsLocked ? (
                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">
                                     <Lock className="w-3 h-3 mr-2" />
-                                    Locked
+                                    Zablokowane
                                   </span>
-                                 ) : (
-                                   <div></div>
-                                 )}
+                                ) : actualIsCurrentDay ? (
+                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary/20 text-primary border border-primary/30">
+                                    <Star className="w-3 h-3 mr-2" />
+                                    Gotowe do treningu
+                                  </span>
+                                ) : null}
                               </div>
                             </div>
                           </CardContent>
