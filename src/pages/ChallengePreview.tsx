@@ -735,15 +735,7 @@ const ChallengePreview = () => {
                               {actualIsCurrentDay && (
                                 <Button
                                   onClick={() => {
-                                    navigate('/training-session', {
-                                      state: {
-                                        type: 'challenge-day',
-                                        challengeId: challengeId,
-                                        dayId: trainingDay.id,
-                                        exercises: exercises,
-                                        title: `Day ${trainingDay.day_number}: ${trainingDay.title || 'Training'}`
-                                      }
-                                    });
+                                    navigate(`/challenges/${challengeId}/day/${trainingDay.id}/timer`);
                                   }}
                                   variant="default"
                                   className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
@@ -763,11 +755,6 @@ const ChallengePreview = () => {
                                   <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">
                                     <Lock className="w-3 h-3 mr-2" />
                                     Zablokowane
-                                  </span>
-                                ) : actualIsCurrentDay ? (
-                                  <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-primary/20 text-primary border border-primary/30">
-                                    <Star className="w-3 h-3 mr-2" />
-                                    Gotowe do treningu
                                   </span>
                                 ) : null}
                               </div>
