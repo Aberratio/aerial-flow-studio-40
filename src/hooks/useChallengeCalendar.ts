@@ -54,15 +54,6 @@ export const useChallengeCalendar = (challengeId: string) => {
     setError(null);
 
     try {
-      // Get ALL training days for this challenge first
-      const { data: trainingDays, error: trainingDaysError } = await supabase
-        .from('challenge_training_days')
-        .select('*')
-        .eq('challenge_id', challengeId)
-        .order('day_number');
-
-      if (trainingDaysError) throw trainingDaysError;
-
       // Get user progress for this challenge
       const { data: progressData, error: progressError } = await supabase
         .from('challenge_day_progress')
@@ -72,27 +63,33 @@ export const useChallengeCalendar = (challengeId: string) => {
 
       if (progressError) throw progressError;
 
-      // Create a map of progress by training_day_id for easy lookup
-      const progressMap = new Map(progressData?.map(p => [p.training_day_id, p]) || []);
+      // Get training days for this challenge to combine with progress
+      const { data: trainingDays, error: trainingDaysError } = await supabase
+        .from('challenge_training_days')
+        .select('*')
+        .eq('challenge_id', challengeId)
+        .order('day_number');
 
-      // Transform ALL training days to calendar days, combining with user progress
-      const calendarDays: CalendarDay[] = trainingDays?.map(trainingDay => {
-        const userProgress = progressMap.get(trainingDay.id);
+      if (trainingDaysError) throw trainingDaysError;
+
+      // Transform the data to match CalendarDay interface
+      const calendarDays: CalendarDay[] = progressData?.map(day => {
+        const trainingDay = trainingDays?.find(td => td.id === day.training_day_id);
         return {
-          id: userProgress?.id || `temp-${trainingDay.id}`,
+          id: day.id,
           calendar_date: new Date().toISOString().split('T')[0], // Simplified for now
-          training_day_id: trainingDay.id,
-          day_number: trainingDay.day_number,
-          title: trainingDay.title || null,
-          description: trainingDay.description || null,
+          training_day_id: day.training_day_id,
+          day_number: trainingDay?.day_number || 0,
+          title: trainingDay?.title || null,
+          description: trainingDay?.description || null,
           is_rest_day: false, // Removed from new structure
-          status: userProgress?.status || 'pending',
+          status: day.status,
           is_retry: false, // Removed from new structure
-          attempt_number: userProgress?.attempt_number || 1,
-          exercises_completed: userProgress?.exercises_completed || 0,
-          total_exercises: userProgress?.total_exercises || 0,
-          notes: userProgress?.notes || null,
-          completed_at: userProgress?.changed_status_at || null,
+          attempt_number: day.attempt_number,
+          exercises_completed: day.exercises_completed || 0,
+          total_exercises: day.total_exercises || 0,
+          notes: day.notes,
+          completed_at: day.changed_status_at,
           is_today: false, // Will be calculated if needed
           is_past: false, // Will be calculated if needed
           is_accessible: true // Will be calculated if needed
