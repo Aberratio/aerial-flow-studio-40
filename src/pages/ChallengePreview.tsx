@@ -379,10 +379,25 @@ const ChallengePreview = () => {
           status: "completed",
           exercises_completed: trainingDay?.training_day_exercises?.length || 0,
           total_exercises: trainingDay?.training_day_exercises?.length || 0,
-          notes: `Completed by admin (${originalAdminUser.username}) for user (${user.username})`
+          notes: `Completed by admin (${originalAdminUser.username}) for user (${user.username})`,
+          changed_status_at: new Date().toISOString()
         });
 
-      // Force immediate UI update by checking participation again
+      // Update participant to track progression (set current day to the next day)
+      const { error: participantError } = await supabase
+        .from('challenge_participants')
+        .update({
+          last_completed_day: trainingDay.day_number,
+          current_day_number: trainingDay.day_number + 1,
+          status: 'active'
+        })
+        .eq('user_id', user.id)
+        .eq('challenge_id', challengeId);
+
+      if (participantError) console.error('Error updating participant progression:', participantError);
+
+      // Force immediate UI update by reloading calendar and checking participation
+      await changeDayStatus(new Date().toISOString().split('T')[0], "completed", `Completed by admin (${originalAdminUser.username})`);
       await checkParticipation();
       
       toast({
