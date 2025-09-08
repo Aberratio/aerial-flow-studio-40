@@ -338,6 +338,21 @@ const ChallengePreview = () => {
           title: "Rest Day Completed",
           description: "Great job taking care of your recovery!",
         });
+
+        // Navigate to the next day or back to challenge overview
+        setTimeout(() => {
+          const nextDay = challenge?.training_days?.find(
+            td => td.day_number === trainingDay.day_number + 1
+          );
+          
+          if (nextDay) {
+            // Scroll to next day in the carousel if it exists
+            const nextDayIndex = challenge.training_days.findIndex(td => td.id === nextDay.id);
+            if (carouselApi && nextDayIndex >= 0) {
+              carouselApi.scrollTo(nextDayIndex);
+            }
+          }
+        }, 1000);
       }
     } catch (error) {
       console.error("Error completing rest day:", error);
