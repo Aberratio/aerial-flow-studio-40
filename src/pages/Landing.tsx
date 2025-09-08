@@ -379,7 +379,7 @@ const Landing = () => {
                   comprehensive pose library.
                 </p>
                 
-                {/* Quick value proposition while image loads */}
+                {/* Value proposition badges */}
                 <div
                   className={`flex flex-wrap justify-center lg:justify-start gap-4 transition-all duration-1000 animation-delay-200 ${
                     isLoaded ? "animate-fade-in-up" : "opacity-0 translate-y-10"
@@ -387,15 +387,15 @@ const Landing = () => {
                 >
                   <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                     <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm text-white">50+ Challenges</span>
+                    <span className="text-sm text-white">Structured Training</span>
                   </div>
                   <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                     <BookOpen className="w-4 h-4 text-purple-400" />
-                    <span className="text-sm text-white">500+ Exercises</span>
+                    <span className="text-sm text-white">Exercise Library</span>
                   </div>
                   <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
                     <Users className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm text-white">Global Community</span>
+                    <span className="text-sm text-white">Community Support</span>
                   </div>
                 </div>
               </div>
@@ -440,35 +440,18 @@ const Landing = () => {
               }`}
             >
               <div className="relative z-10">
-                {!contentLoaded.hero || !heroImage ? (
-                  <div className="relative">
-                    <HeroSkeleton />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-center space-y-4 p-6">
-                        <div className="w-12 h-12 border-3 border-purple-400/30 border-t-purple-400 rounded-full animate-spin mx-auto"></div>
-                        <div className="space-y-2">
-                          <p className="text-white/80 text-lg font-medium">Almost there...</p>
-                          <p className="text-white/60 text-sm">Loading your aerial inspiration</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <LazyImage
-                    src={heroImage}
-                    alt="Aerial athlete performing on silks"
-                    className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense"
-                    skeletonClassName="rounded-2xl mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px]"
-                    fallbackSrc="https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=800&fit=crop"
-                    optimizationOptions={{
-                      width: 500,
-                      height: 700,
-                      format: 'webp',
-                      quality: 85
-                    }}
-                    responsive={true}
-                  />
-                )}
+                <LazyImage
+                  src={heroImage || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=800&fit=crop"}
+                  alt="Aerial athlete performing stunning moves"
+                  className="w-full max-w-md mx-auto rounded-3xl shadow-2xl floating"
+                  optimizationOptions={{
+                    width: 600,
+                    height: 800,
+                    format: 'webp',
+                    quality: 85
+                  }}
+                  responsive={true}
+                />
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
 

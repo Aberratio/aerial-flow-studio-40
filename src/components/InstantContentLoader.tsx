@@ -50,12 +50,12 @@ export const InstantContentLoader: React.FC<InstantContentLoaderProps> = ({
 
           <div className="grid grid-cols-2 gap-3 mt-6">
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 animate-fade-in-up animation-delay-400">
-              <div className="text-lg font-bold text-white">500+</div>
-              <div className="text-xs text-white/70">Exercises</div>
+              <div className="text-lg font-bold text-white">∞</div>
+              <div className="text-xs text-white/70">Possibilities</div>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 animate-fade-in-up animation-delay-600">
-              <div className="text-lg font-bold text-white">50+</div>
-              <div className="text-xs text-white/70">Challenges</div>
+              <div className="text-lg font-bold text-white">100%</div>
+              <div className="text-xs text-white/70">Motivation</div>
             </div>
           </div>
         </div>
