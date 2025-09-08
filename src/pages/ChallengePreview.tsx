@@ -310,32 +310,40 @@ const ChallengePreview = () => {
     }
   }, [carouselApi, challenge?.training_days, calendarDays, calendarLoading]);
 
-  const handleRestDay = async (calendarDay: any) => {
+  const handleRestDay = async (calendarDay: any, trainingDay: any) => {
     try {
-      // If it's a planned rest day, mark as completed
-      // If it's a training day that user wants to rest, mark as rest (will create retry)
-      const trainingDay = challenge?.training_days?.find(
-        (td) => td.id === calendarDay.training_day_id
-      );
+      if (!user?.id || !challengeId) return;
+
+      // For rest days (0 exercises), mark as completed
+      const isRestDay = trainingDay?.training_day_exercises?.length === 0;
       
-      const status = trainingDay?.is_rest_day ? "completed" : "rest";
-      
-      await changeDayStatus(calendarDay.calendar_date, status);
-      
-      // Force immediate UI update by checking participation again
-      await checkParticipation();
-      
-      toast({
-        title: trainingDay?.is_rest_day ? "Rest Day Completed" : "Rest Day Set",
-        description: trainingDay?.is_rest_day 
-          ? "You've completed your rest day!" 
-          : "You've marked today as a rest day. Train tomorrow!",
-      });
+      if (isRestDay) {
+        // Insert directly into challenge_day_progress for rest days
+        await supabase
+          .from("challenge_day_progress")
+          .insert({
+            user_id: user.id,
+            challenge_id: challengeId,
+            training_day_id: trainingDay.id,
+            status: "completed",
+            exercises_completed: 0,
+            total_exercises: 0,
+            notes: "Rest day completed"
+          });
+
+        // Force immediate UI update by checking participation again
+        await checkParticipation();
+        
+        toast({
+          title: "Rest Day Completed",
+          description: "Great job taking care of your recovery!",
+        });
+      }
     } catch (error) {
-      console.error("Error setting rest day:", error);
+      console.error("Error completing rest day:", error);
       toast({
         title: "Error",
-        description: "Failed to set rest day",
+        description: "Failed to complete rest day",
         variant: "destructive",
       });
     }
@@ -744,7 +752,7 @@ const ChallengePreview = () => {
                                 <>
                                   {exercises.length === 0 ? (
                                     <Button
-                                      onClick={() => handleRestDay(calendarDay)}
+                                      onClick={() => handleRestDay(calendarDay, trainingDay)}
                                       variant="default"
                                       className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
                                     >
