@@ -379,7 +379,10 @@ const ChallengePreview = () => {
         p_notes: `Completed by admin (${originalAdminUser.username}) for user (${user.username})`
       });
 
-      if (rpcError) throw rpcError;
+      if (rpcError) {
+        console.error("RPC error details:", rpcError);
+        throw new Error(`Admin complete failed: ${rpcError.message || rpcError.details || rpcError}`);
+      }
 
       // Refresh calendar state
       await loadCalendar();

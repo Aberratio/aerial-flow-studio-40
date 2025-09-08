@@ -48,54 +48,71 @@ export const useChallengeCalendar = (challengeId: string) => {
 
   // Load calendar days for the user's challenge
   const loadCalendar = useCallback(async () => {
-    if (!user?.id || !challengeId) return;
+    if (!user?.id || !challengeId) {
+      console.log("loadCalendar: Missing user or challengeId", { userId: user?.id, challengeId });
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
 
     try {
-      // Get user progress for this challenge
+      console.log("loadCalendar: Starting calendar load for", { userId: user.id, challengeId });
+      
+      // Use the existing SQL function to get available challenge days
+      const { data: availableDays, error: availableError } = await supabase
+        .rpc('get_user_available_challenge_days', {
+          p_user_id: user.id,
+          p_challenge_id: challengeId
+        });
+
+      if (availableError) {
+        console.error("Error getting available days:", availableError);
+        throw availableError;
+      }
+
+      console.log("loadCalendar: Available days from RPC:", availableDays);
+
+      // Get progress data to merge with available days
       const { data: progressData, error: progressError } = await supabase
-        .from('challenge_day_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('challenge_id', challengeId);
+        .from("challenge_day_progress")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId);
 
-      if (progressError) throw progressError;
+      if (progressError) {
+        console.error("Error getting progress:", progressError);
+        throw progressError;
+      }
 
-      // Get training days for this challenge to combine with progress
-      const { data: trainingDays, error: trainingDaysError } = await supabase
-        .from('challenge_training_days')
-        .select('*')
-        .eq('challenge_id', challengeId)
-        .order('day_number');
+      console.log("loadCalendar: Progress data:", progressData);
 
-      if (trainingDaysError) throw trainingDaysError;
-
-      // Transform the data to match CalendarDay interface
-      const calendarDays: CalendarDay[] = progressData?.map(day => {
-        const trainingDay = trainingDays?.find(td => td.id === day.training_day_id);
+      // Create calendar days by merging available days with progress
+      const calendarDays: CalendarDay[] = (availableDays || []).map((day: any) => {
+        const progress = progressData?.find(p => p.training_day_id === day.training_day_id);
+        
         return {
-          id: day.id,
-          calendar_date: new Date().toISOString().split('T')[0], // Simplified for now
+          id: progress?.id || `${day.training_day_id}_placeholder`,
+          calendar_date: new Date().toISOString().split('T')[0], // Placeholder
           training_day_id: day.training_day_id,
-          day_number: trainingDay?.day_number || 0,
-          title: trainingDay?.title || null,
-          description: trainingDay?.description || null,
-          is_rest_day: false, // Removed from new structure
-          status: day.status,
-          is_retry: false, // Removed from new structure
-          attempt_number: day.attempt_number,
-          exercises_completed: day.exercises_completed || 0,
+          day_number: day.day_number,
+          title: day.title,
+          description: day.description,
+          is_rest_day: day.total_exercises === 0, // Rest day if no exercises
+          status: progress?.status || day.status || "pending",
+          is_retry: false,
+          attempt_number: progress?.attempt_number || 1,
+          exercises_completed: progress?.exercises_completed || 0,
           total_exercises: day.total_exercises || 0,
-          notes: day.notes,
-          completed_at: day.changed_status_at,
-          is_today: false, // Will be calculated if needed
-          is_past: false, // Will be calculated if needed
-          is_accessible: true // Will be calculated if needed
+          notes: progress?.notes || null,
+          completed_at: progress?.changed_status_at || day.completed_at,
+          is_today: false,
+          is_past: false,
+          is_accessible: day.is_accessible
         };
-      }) || [];
+      });
 
+      console.log("loadCalendar: Final calendar days:", calendarDays);
       setCalendarDays(calendarDays);
     } catch (err) {
       console.error("Error loading challenge calendar:", err);
@@ -112,43 +129,41 @@ export const useChallengeCalendar = (challengeId: string) => {
 
   // Load next available day
   const loadNextAvailableDay = useCallback(async () => {
-    if (!user?.id || !challengeId) return;
+    if (!user?.id || !challengeId) {
+      console.log("loadNextAvailableDay: Missing user or challengeId", { userId: user?.id, challengeId });
+      return;
+    }
 
     try {
-      // Get participant data to find next available day
-      const { data: participant, error: participantError } = await supabase
-        .from('challenge_participants')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('challenge_id', challengeId)
-        .single();
-
-      if (participantError) throw participantError;
-
-      if (participant) {
-        // Get the next training day (use day 1 for now as a fallback)
-        const { data: nextDay, error: nextDayError } = await supabase
-          .from('challenge_training_days')
-          .select('*')
-          .eq('challenge_id', challengeId)
-          .eq('day_number', 1)
-          .single();
-
-        if (nextDayError || !nextDay) {
-          setNextAvailableDay(null);
-          return;
-        }
-
-        setNextAvailableDay({
-          calendar_date: new Date().toISOString().split('T')[0],
-          training_day_id: nextDay.id,
-          day_number: nextDay.day_number,
-          is_rest_day: false,
-          is_retry: false,
-          attempt_number: 1,
-          total_exercises: 0
+      console.log("loadNextAvailableDay: Using RPC to get next day");
+      
+      // Use the existing SQL function to get the next available day
+      const { data: nextDayData, error: nextDayError } = await supabase
+        .rpc('get_next_available_challenge_day', {
+          p_user_id: user.id,
+          p_challenge_id: challengeId
         });
+
+      if (nextDayError) {
+        console.error("Error getting next available day:", nextDayError);
+        throw nextDayError;
       }
+
+      console.log("loadNextAvailableDay: Next day data from RPC:", nextDayData);
+      
+      // Convert to expected format
+      const nextDay = nextDayData && nextDayData.length > 0 ? {
+        calendar_date: new Date().toISOString().split('T')[0],
+        training_day_id: nextDayData[0].training_day_id,
+        day_number: nextDayData[0].day_number,
+        is_rest_day: nextDayData[0].total_exercises === 0,
+        is_retry: false,
+        attempt_number: 1,
+        total_exercises: nextDayData[0].total_exercises
+      } : null;
+
+      console.log("loadNextAvailableDay: Setting next available day:", nextDay);
+      setNextAvailableDay(nextDay);
     } catch (err) {
       console.error("Error loading next available day:", err);
     }

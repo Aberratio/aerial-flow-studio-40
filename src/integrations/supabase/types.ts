@@ -151,6 +151,7 @@ export type Database = {
           joined_at: string | null
           last_completed_day: number | null
           status: string | null
+          updated_at: string
           user_id: string
           user_started_at: string | null
         }
@@ -162,6 +163,7 @@ export type Database = {
           joined_at?: string | null
           last_completed_day?: number | null
           status?: string | null
+          updated_at?: string
           user_id: string
           user_started_at?: string | null
         }
@@ -173,6 +175,7 @@ export type Database = {
           joined_at?: string | null
           last_completed_day?: number | null
           status?: string | null
+          updated_at?: string
           user_id?: string
           user_started_at?: string | null
         }
