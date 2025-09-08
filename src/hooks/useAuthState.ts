@@ -8,10 +8,58 @@ export const useAuthState = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+  const [isImpersonating, setIsImpersonating] = useState(false);
+  const [originalAdminUser, setOriginalAdminUser] = useState<User | null>(null);
   
   // Get follow counts for the current user
   const { followersCount, followingCount, refetchCounts } = useFollowCounts(session?.user?.id || '');
+
+  const fetchUserProfile = async (userId: string) => {
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (profile) {
+      return {
+        ...profile,
+        avatar: profile.avatar_url,
+        followersCount,
+        followingCount,
+      };
+    }
+
+    return null;
+  };
+
+  const impersonateUser = async (userId: string) => {
+    if (!user || user.role !== 'admin') {
+      throw new Error('Only admins can impersonate users');
+    }
+
+    // Store original admin user
+    setOriginalAdminUser(user);
+    setIsImpersonating(true);
+
+    // Fetch the target user's profile
+    const targetProfile = await fetchUserProfile(userId);
+    if (targetProfile) {
+      setUser(targetProfile);
+    }
+  };
+
+  const exitImpersonation = async () => {
+    if (!isImpersonating || !originalAdminUser) {
+      return;
+    }
+
+    setUser(originalAdminUser);
+    setIsImpersonating(false);
+    setOriginalAdminUser(null);
+  };
 
   useEffect(() => {
     console.log('AuthContext: Setting up auth state listener');
@@ -24,27 +72,11 @@ export const useAuthState = () => {
 
           if (session?.user) {
             // Don't track login here - it's handled in signIn function
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .maybeSingle();
-
-            console.log('AuthContext: Profile fetch result', { profile, error });
-
-            if (error) throw error;
+            const profile = await fetchUserProfile(session.user.id);
 
             if (profile) {
-              const userWithCompat = {
-                ...profile,
-                avatar: profile.avatar_url,
-                followersCount,
-                followingCount,
-              };
-              setUser(userWithCompat);
-              console.log('AuthContext: User set', userWithCompat);
-
-
+              setUser(profile);
+              console.log('AuthContext: User set', profile);
             } else {
               console.log('AuthContext: No profile found, creating default');
               const basicUser = {
@@ -65,6 +97,9 @@ export const useAuthState = () => {
           } else {
             console.log('AuthContext: No session, clearing user');
             setUser(null);
+            // Reset impersonation state when logged out
+            setIsImpersonating(false);
+            setOriginalAdminUser(null);
           }
         } catch (err) {
           console.error('AuthContext: onAuthStateChange error:', err);
@@ -82,24 +117,10 @@ export const useAuthState = () => {
         setSession(session);
 
         if (session?.user) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          console.log('AuthContext: Initial profile fetch result', { profile, error });
-
-          if (error) throw error;
+          const profile = await fetchUserProfile(session.user.id);
 
           if (profile) {
-            const userWithCompat = {
-              ...profile,
-              avatar: profile.avatar_url,
-              followersCount,
-              followingCount,
-            };
-            setUser(userWithCompat);
+            setUser(profile);
           } else {
             const basicUser = {
               id: session.user.id,
@@ -132,6 +153,8 @@ export const useAuthState = () => {
   const clearAuth = () => {
     setUser(null);
     setSession(null);
+    setIsImpersonating(false);
+    setOriginalAdminUser(null);
   };
 
   // Update user counts when follow counts change
@@ -147,25 +170,14 @@ export const useAuthState = () => {
 
   const refreshUser = async () => {
     if (session?.user) {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .maybeSingle();
+      const profile = await fetchUserProfile(session.user.id);
 
-      if (!error && profile) {
-        const userWithCompat = {
-          ...profile,
-          avatar: profile.avatar_url,
-          followersCount,
-          followingCount,
-        };
-        setUser(userWithCompat);
-        console.log('AuthContext: User refreshed', userWithCompat);
+      if (profile) {
+        setUser(profile);
+        console.log('AuthContext: User refreshed', profile);
       }
     }
   };
-
 
   return {
     user,
@@ -174,5 +186,9 @@ export const useAuthState = () => {
     clearAuth,
     refetchCounts,
     refreshUser,
+    impersonateUser,
+    exitImpersonation,
+    isImpersonating,
+    originalAdminUser,
   };
 };

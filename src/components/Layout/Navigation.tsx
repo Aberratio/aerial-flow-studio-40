@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Globe, LayoutDashboard, Plane } from 'lucide-react';
+import { Home, BookOpen, Trophy, User, LogOut, Bell, Users, Dumbbell, Settings, Crown, Lock, Globe, LayoutDashboard, Plane, UserCheck } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import IguanaLogo from '@/assets/iguana-logo.svg';
+import { AdminUserImpersonationModal } from '@/components/AdminUserImpersonationModal';
 interface NavigationProps {
   isOpen?: boolean;
   onClose?: () => void;
@@ -22,6 +23,7 @@ const Navigation: React.FC<NavigationProps> = ({
     logout
   } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showImpersonationModal, setShowImpersonationModal] = useState(false);
   const isMobile = useIsMobile();
 
   // Fetch unread notifications count
@@ -120,6 +122,12 @@ const Navigation: React.FC<NavigationProps> = ({
     icon: Globe,
     label: 'Landing Page'
   }] : [];
+
+  const adminActions = user?.role === 'admin' ? [{
+    icon: UserCheck,
+    label: 'Impersonate User',
+    onClick: () => setShowImpersonationModal(true)
+  }] : [];
   const isActive = (path: string) => location.pathname === path;
   return <nav className={`fixed left-0 top-0 h-full transition-all duration-300 glass-effect border-r border-white/10 z-50 ${isMobile ? `w-64 transform ${isOpen ? 'translate-x-0' : '-translate-x-full'}` : 'w-20 lg:w-64'}`}>
       <div className="flex flex-col h-full p-4 overflow-y-auto">
@@ -192,6 +200,17 @@ const Navigation: React.FC<NavigationProps> = ({
                     <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
                   </Link>;
           })}
+              
+              {adminActions.map((action, index) => {
+            const Icon = action.icon;
+            return <button key={index} onClick={() => {
+                    action.onClick();
+                    if (isMobile && onClose) onClose();
+                  }} className="w-full flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group text-muted-foreground hover:text-white hover:bg-white/5">
+                    <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                    <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{action.label}</span>
+                  </button>;
+          })}
             </>}
         </div>
 
@@ -233,6 +252,11 @@ const Navigation: React.FC<NavigationProps> = ({
           </div>
         </div>
       </div>
+
+      <AdminUserImpersonationModal
+        isOpen={showImpersonationModal}
+        onClose={() => setShowImpersonationModal(false)}
+      />
     </nav>;
 };
 export default Navigation;

@@ -16,7 +16,18 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navigate = useNavigate();
-  const { user, session, isLoading, clearAuth, refetchCounts, refreshUser } = useAuthState();
+  const { 
+    user, 
+    session, 
+    isLoading, 
+    clearAuth, 
+    refetchCounts, 
+    refreshUser, 
+    impersonateUser, 
+    exitImpersonation, 
+    isImpersonating, 
+    originalAdminUser 
+  } = useAuthState();
   const { signIn, signUp, signOut, login, register, logout } = useAuthOperations();
 
   const handleSignOut = async () => {
@@ -38,7 +49,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Backward compatibility
       login,
       register,
-      logout: handleSignOut
+      logout: handleSignOut,
+      // Admin impersonation
+      impersonateUser,
+      exitImpersonation,
+      isImpersonating,
+      originalAdminUser
     }}>
       {children}
     </AuthContext.Provider>

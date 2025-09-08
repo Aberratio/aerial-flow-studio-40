@@ -28,4 +28,9 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, username: string) => Promise<void>;
   logout: () => Promise<void>;
+  // Admin impersonation
+  impersonateUser: (userId: string) => Promise<void>;
+  exitImpersonation: () => Promise<void>;
+  isImpersonating: boolean;
+  originalAdminUser: User | null;
 }

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Navigation from "./Navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { ImpersonationBanner } from "@/components/ImpersonationBanner";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -12,7 +13,7 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
-  const { user } = useAuth();
+  const { user, isImpersonating } = useAuth();
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -30,11 +31,14 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
+      {/* Impersonation banner */}
+      <ImpersonationBanner />
+      
       {/* Mobile Menu Button */}
       {isMobile && (
         <Button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="fixed top-4 left-4 z-[70]"
+          className={`fixed ${isImpersonating ? 'top-16' : 'top-4'} left-4 z-[70]`}
           variant="primary"
           size="sm"
         >
@@ -57,7 +61,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       <Navigation isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <main
         className={`${
-          isMobile ? "ml-0 pt-14" : "ml-20 lg:ml-64"
+          isMobile 
+            ? `ml-0 ${isImpersonating ? 'pt-26' : 'pt-14'}` 
+            : `ml-20 lg:ml-64 ${isImpersonating ? 'pt-12' : ''}`
         } min-h-screen transition-all duration-300`}
       >
         {children}
