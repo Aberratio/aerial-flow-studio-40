@@ -158,7 +158,7 @@ const ChallengePreview = () => {
           `
           *,
           challenge_training_days (
-            id, day_number, title, description, is_rest_day, 
+            id, day_number, title, description, 
             duration_seconds,
             training_day_exercises (
               id, sets, reps, hold_time_seconds, rest_time_seconds, notes,
