@@ -656,8 +656,8 @@ const ChallengePreview = () => {
                               </div>
                             )}
 
-                            {/* Exercise List */}
-                            {exercises.length > 0 && (
+                            {/* Exercise List or Rest Day Content */}
+                            {exercises.length > 0 ? (
                               <div className="space-y-2 md:space-y-3 flex-1 mb-4 md:mb-6">
                                 {exercises
                                   .slice(0, expandedDays.has(trainingDay.day_number) ? exercises.length : 4)
@@ -726,23 +726,44 @@ const ChallengePreview = () => {
                                       </>
                                     )}
                                   </button>
-                                )}
-                              </div>
-                            )}
+                                 )}
+                               </div>
+                             ) : (
+                               <div className="flex-1 mb-4 md:mb-6 flex flex-col items-center justify-center text-center p-6 md:p-8 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-2xl border border-emerald-500/20">
+                                 <Bed className="w-12 h-12 text-emerald-400 mb-4" />
+                                 <h4 className="text-lg font-semibold text-white mb-2">Rest Day</h4>
+                                 <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+                                   Today is designed for recovery. Take this time to rest, stretch, or do light movement that feels good.
+                                 </p>
+                               </div>
+                             )}
 
                             {/* Action Buttons */}
                             <div className="mt-auto pt-4 md:pt-6 border-t border-white/10 space-y-3">
                               {actualIsCurrentDay && (
-                                <Button
-                                  onClick={() => {
-                                    navigate(`/challenge/${challengeId}/day/${trainingDay.id}/timer`);
-                                  }}
-                                  variant="default"
-                                  className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-                                >
-                                  <Play className="w-5 h-5 mr-2" />
-                                  Train
-                                </Button>
+                                <>
+                                  {exercises.length === 0 ? (
+                                    <Button
+                                      onClick={() => handleRestDay(calendarDay)}
+                                      variant="default"
+                                      className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+                                    >
+                                      <Bed className="w-5 h-5 mr-2" />
+                                      Rest
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      onClick={() => {
+                                        navigate(`/challenge/${challengeId}/day/${trainingDay.id}/timer`);
+                                      }}
+                                      variant="default"
+                                      className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                                    >
+                                      <Play className="w-5 h-5 mr-2" />
+                                      Train
+                                    </Button>
+                                  )}
+                                </>
                               )}
 
                               {/* Status Indicator */}

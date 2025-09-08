@@ -80,6 +80,8 @@ const ChallengeDayTimer = () => {
   const [trainingDayId, setTrainingDayId] = useState<string>("");
   const [isPreparingToStart, setIsPreparingToStart] = useState(false);
   const [preparationTime, setPreparationTime] = useState(10);
+  const [isRestDay, setIsRestDay] = useState(false);
+  const [trainingDayData, setTrainingDayData] = useState<any>(null);
 
   const { speak } = useSpeech(audioMode === "sound");
   const { isSupported: isWakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
@@ -130,6 +132,7 @@ const ChallengeDayTimer = () => {
 
         if (trainingDayError) throw trainingDayError;
         setTrainingDayId(dayId);
+        setTrainingDayData(trainingDayData);
 
         // Check if user is participant of this challenge
         const { data: participant, error: participantError } = await supabase
@@ -149,7 +152,6 @@ const ChallengeDayTimer = () => {
           navigate(`/challenges/${challengeId}`);
           return;
         }
-
 
         const { data: exercisesData, error: exercisesError } =
           await supabase
@@ -179,6 +181,7 @@ const ChallengeDayTimer = () => {
           })) || [];
 
         setExercises(formattedExercises);
+        setIsRestDay(formattedExercises.length === 0);
       } catch (error) {
         console.error("Error fetching exercises:", error);
         toast({
