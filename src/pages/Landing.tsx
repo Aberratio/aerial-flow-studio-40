@@ -65,22 +65,21 @@ const Landing = () => {
     pricing: false
   });
   useEffect(() => {
-    // Immediate load for better perceived performance
-    setIsLoaded(true);
-  }, []);
-
-  // Load content progressively with immediate hero loading
-  useEffect(() => {
-    // Load hero image immediately for better perceived performance
-    loadHeroImage();
-    // Start loading other content with small delay
-    const timer = setTimeout(() => {
-      loadAbsChallengesImage();
-      loadPricingPlans();
-    }, 100);
-    
+    const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
   }, []);
+
+  // Load content progressively
+  useEffect(() => {
+    loadHeroImage();
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      loadAbsChallengesImage();
+      loadPricingPlans();
+    }
+  }, [isLoaded]);
   const loadHeroImage = async () => {
     try {
       const { data: heroSection } = await supabase
@@ -378,26 +377,6 @@ const Landing = () => {
                   and push your limits with structured challenges and a
                   comprehensive pose library.
                 </p>
-                
-                {/* Value proposition badges */}
-                <div
-                  className={`flex flex-wrap justify-center lg:justify-start gap-4 transition-all duration-1000 animation-delay-200 ${
-                    isLoaded ? "animate-fade-in-up" : "opacity-0 translate-y-10"
-                  }`}
-                >
-                  <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                    <Trophy className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm text-white">Structured Training</span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                    <BookOpen className="w-4 h-4 text-purple-400" />
-                    <span className="text-sm text-white">Exercise Library</span>
-                  </div>
-                  <div className="flex items-center space-x-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
-                    <Users className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm text-white">Community Support</span>
-                  </div>
-                </div>
               </div>
 
               <div
@@ -435,23 +414,21 @@ const Landing = () => {
             </div>
 
             <div
-              className={`relative order-first lg:order-last transition-all duration-1000 animation-delay-300 ${
+              className={`relative order-first lg:order-last transition-all duration-1000 animation-delay-1000 ${
                 isLoaded ? "animate-scale-in floating" : "opacity-0 scale-75"
               }`}
             >
               <div className="relative z-10">
-                <LazyImage
-                  src={heroImage || "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=600&h=800&fit=crop"}
-                  alt="Aerial athlete performing stunning moves"
-                  className="w-full max-w-md mx-auto rounded-3xl shadow-2xl floating"
-                  optimizationOptions={{
-                    width: 600,
-                    height: 800,
-                    format: 'webp',
-                    quality: 85
-                  }}
-                  responsive={true}
-                />
+                {!contentLoaded.hero || !heroImage ? (
+                  <HeroSkeleton />
+                ) : (
+                  <LazyImage
+                    src={heroImage}
+                    alt="Aerial athlete performing on silks"
+                    className="rounded-2xl shadow-2xl hover-lift mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover glass-effect-intense"
+                    skeletonClassName="rounded-2xl mx-auto w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px]"
+                  />
+                )}
               </div>
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/25 via-violet-500/20 to-indigo-500/25 rounded-2xl blur-3xl floating-delayed"></div>
 
