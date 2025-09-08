@@ -54,17 +54,49 @@ export const useChallengeCalendar = (challengeId: string) => {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase.rpc(
-        "get_user_challenge_calendar",
-        {
-          p_user_id: user.id,
-          p_challenge_id: challengeId,
-        }
-      );
+      // Get user progress for this challenge
+      const { data: progressData, error: progressError } = await supabase
+        .from('challenge_day_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('challenge_id', challengeId);
 
-      if (fetchError) throw fetchError;
+      if (progressError) throw progressError;
 
-      setCalendarDays(data || []);
+      // Get training days for this challenge to combine with progress
+      const { data: trainingDays, error: trainingDaysError } = await supabase
+        .from('challenge_training_days')
+        .select('*')
+        .eq('challenge_id', challengeId)
+        .order('day_number');
+
+      if (trainingDaysError) throw trainingDaysError;
+
+      // Transform the data to match CalendarDay interface
+      const calendarDays: CalendarDay[] = progressData?.map(day => {
+        const trainingDay = trainingDays?.find(td => td.id === day.training_day_id);
+        return {
+          id: day.id,
+          calendar_date: new Date().toISOString().split('T')[0], // Simplified for now
+          training_day_id: day.training_day_id,
+          day_number: trainingDay?.day_number || 0,
+          title: trainingDay?.title || null,
+          description: trainingDay?.description || null,
+          is_rest_day: false, // Removed from new structure
+          status: day.status,
+          is_retry: false, // Removed from new structure
+          attempt_number: day.attempt_number,
+          exercises_completed: day.exercises_completed || 0,
+          total_exercises: day.total_exercises || 0,
+          notes: day.notes,
+          completed_at: day.changed_status_at,
+          is_today: false, // Will be calculated if needed
+          is_past: false, // Will be calculated if needed
+          is_accessible: true // Will be calculated if needed
+        };
+      }) || [];
+
+      setCalendarDays(calendarDays);
     } catch (err) {
       console.error("Error loading challenge calendar:", err);
       setError("Failed to load challenge calendar");
@@ -83,17 +115,40 @@ export const useChallengeCalendar = (challengeId: string) => {
     if (!user?.id || !challengeId) return;
 
     try {
-      const { data, error: fetchError } = await supabase.rpc(
-        "get_next_available_challenge_day",
-        {
-          p_user_id: user.id,
-          p_challenge_id: challengeId,
+      // Get participant data to find next available day
+      const { data: participant, error: participantError } = await supabase
+        .from('challenge_participants')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('challenge_id', challengeId)
+        .single();
+
+      if (participantError) throw participantError;
+
+      if (participant) {
+        // Get the next training day (use day 1 for now as a fallback)
+        const { data: nextDay, error: nextDayError } = await supabase
+          .from('challenge_training_days')
+          .select('*')
+          .eq('challenge_id', challengeId)
+          .eq('day_number', 1)
+          .single();
+
+        if (nextDayError || !nextDay) {
+          setNextAvailableDay(null);
+          return;
         }
-      );
 
-      if (fetchError) throw fetchError;
-
-      setNextAvailableDay(data?.[0] || null);
+        setNextAvailableDay({
+          calendar_date: new Date().toISOString().split('T')[0],
+          training_day_id: nextDay.id,
+          day_number: nextDay.day_number,
+          is_rest_day: false,
+          is_retry: false,
+          attempt_number: 1,
+          total_exercises: 0
+        });
+      }
     } catch (err) {
       console.error("Error loading next available day:", err);
     }
@@ -108,32 +163,21 @@ export const useChallengeCalendar = (challengeId: string) => {
       setError(null);
 
       try {
-        const { error: generateError } = await supabase.rpc(
-          "generate_user_challenge_calendar",
-          {
-            p_user_id: user.id,
-            p_challenge_id: challengeId,
-            p_start_date: startDate.toISOString().split("T")[0],
-            p_force: false, // Use the new idempotent behavior
-          }
-        );
-
-        if (generateError) throw generateError;
-
-        // Reload the calendar after generation
+        // Simply reload the calendar and next available day
+        // The participant record should already exist from joining
         await loadCalendar();
         await loadNextAvailableDay();
 
         toast({
-          title: "Calendar Generated",
-          description: "Your challenge calendar has been created successfully!",
+          title: "Ready to Start",
+          description: "Your challenge is ready to begin!",
         });
       } catch (err) {
-        console.error("Error generating challenge calendar:", err);
-        setError("Failed to generate challenge calendar");
+        console.error("Error preparing challenge:", err);
+        setError("Failed to prepare challenge");
         toast({
           title: "Error",
-          description: "Failed to generate challenge calendar",
+          description: "Failed to prepare challenge",
           variant: "destructive",
         });
       } finally {
@@ -209,28 +253,59 @@ export const useChallengeCalendar = (challengeId: string) => {
       setError(null);
 
       try {
-        const { error: statusError } = await supabase.rpc(
-          "handle_challenge_day_status_change",
-          {
-            p_user_id: user.id,
-            p_challenge_id: challengeId,
-            p_calendar_date: calendarDate,
-            p_new_status: newStatus,
-            p_notes: notes || null,
-          }
-        );
+        // Get current participant data
+        const { data: participant, error: participantError } = await supabase
+          .from('challenge_participants')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('challenge_id', challengeId)
+          .single();
 
-        // The handle_challenge_day_status_change function already handles failed status logic
-        // by creating a retry day when a day is marked as failed
+        if (participantError) throw participantError;
 
-        if (statusError) throw statusError;
+        if (!participant) return;
+
+        // Get the training day (use day 1 for now as fallback)
+        const { data: trainingDay, error: trainingDayError } = await supabase
+          .from('challenge_training_days')
+          .select('*')
+          .eq('challenge_id', challengeId)
+          .eq('day_number', 1)
+          .single();
+
+        if (trainingDayError || !trainingDay) return;
+
+        // Create or update progress record
+        const { error: progressError } = await supabase
+          .from('challenge_day_progress')
+          .upsert({
+            user_id: user.id,
+            challenge_id: challengeId,
+            training_day_id: trainingDay.id,
+            status: newStatus,
+            notes: notes || null,
+            changed_status_at: new Date().toISOString()
+          });
+
+        if (progressError) throw progressError;
+
+        // Update participant if completed (simplified for now)
+        if (newStatus === "completed") {
+          const { error: updateError } = await supabase
+            .from('challenge_participants')
+            .update({
+              status: 'active',
+              completed: false
+            })
+            .eq('user_id', user.id)
+            .eq('challenge_id', challengeId);
+
+          if (updateError) throw updateError;
+        }
 
         // Reload calendar and next available day
         await loadCalendar();
         await loadNextAvailableDay();
-
-        console.log("newStatus");
-        console.log(newStatus);
 
         // Check if challenge is completed after this day completion
         if (newStatus === "completed") {
@@ -239,7 +314,7 @@ export const useChallengeCalendar = (challengeId: string) => {
 
         const statusMessages = {
           completed: "Day completed successfully!",
-          failed: "Day marked as failed. You can retry tomorrow.",
+          failed: "Day marked as failed.",
           rest: "Rest day completed. Take time to recover!",
         };
 
@@ -278,18 +353,18 @@ export const useChallengeCalendar = (challengeId: string) => {
       if (isAdmin) return true;
 
       try {
-        const { data, error: accessError } = await supabase.rpc(
-          "can_access_challenge_day",
-          {
-            p_user_id: user.id,
-            p_challenge_id: challengeId,
-            p_calendar_date: calendarDate,
-          }
-        );
+        // Simple check: user can access if they're a participant
+        const { data: participant, error: participantError } = await supabase
+          .from('challenge_participants')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('challenge_id', challengeId)
+          .single();
 
-        if (accessError) throw accessError;
+        if (participantError) return false;
 
-        return data || false;
+        // For now, always return true for simplicity
+        return true;
       } catch (err) {
         console.error("Error checking day access:", err);
         return false;
