@@ -39,7 +39,6 @@ interface TrainingCourse {
   is_published: boolean;
   created_at: string;
   lessons_count?: number;
-  videos_count?: number;
 }
 
 const TrainingManagement = () => {
@@ -68,13 +67,12 @@ const TrainingManagement = () => {
     try {
       setIsLoading(true);
       
-      // Get courses with lesson and video counts
+      // Get courses with lesson counts
       const { data: coursesData, error: coursesError } = await supabase
         .from("training_courses")
         .select(`
           *,
-          training_lessons(count),
-          training_videos(count)
+          training_lessons(count)
         `)
         .order("created_at", { ascending: false });
 
@@ -84,7 +82,6 @@ const TrainingManagement = () => {
       const processedCourses = coursesData?.map(course => ({
         ...course,
         lessons_count: course.training_lessons?.[0]?.count || 0,
-        videos_count: course.training_videos?.[0]?.count || 0,
       })) || [];
 
       setCourses(processedCourses);
@@ -92,7 +89,7 @@ const TrainingManagement = () => {
       console.error("Error fetching courses:", error);
       toast({
         title: "Error",
-        description: "Failed to load training courses",
+        description: "Failed to load courses",
         variant: "destructive",
       });
     } finally {
@@ -119,7 +116,7 @@ const TrainingManagement = () => {
 
       toast({
         title: "Success",
-        description: "Training course deleted successfully",
+        description: "Course deleted successfully",
       });
 
       fetchCourses();
@@ -127,7 +124,7 @@ const TrainingManagement = () => {
       console.error("Error deleting course:", error);
       toast({
         title: "Error", 
-        description: "Failed to delete training course",
+        description: "Failed to delete course",
         variant: "destructive",
       });
     } finally {
@@ -193,8 +190,8 @@ const TrainingManagement = () => {
               Back to Dashboard
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Training Management</h1>
-              <p className="text-slate-400">Manage training courses, lessons, and videos</p>
+              <h1 className="text-3xl font-bold text-white mb-2">Course Management</h1>
+              <p className="text-slate-400">Manage courses and lessons</p>
             </div>
           </div>
           
@@ -234,8 +231,8 @@ const TrainingManagement = () => {
           <Card className="bg-slate-800/50 border-slate-700 text-center py-12">
             <CardContent>
               <BookOpen className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">No Training Courses</h3>
-              <p className="text-slate-400 mb-6">Get started by creating your first training course</p>
+              <h3 className="text-xl font-semibold text-white mb-2">No Courses</h3>
+              <p className="text-slate-400 mb-6">Get started by creating your first course</p>
               <Button
                 onClick={() => navigate("/admin/training/courses/new")}
                 className="bg-primary hover:bg-primary/90"
@@ -270,10 +267,6 @@ const TrainingManagement = () => {
                     <div className="flex items-center gap-1">
                       <BookOpen className="w-4 h-4" />
                       <span>{course.lessons_count || 0} lessons</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Play className="w-4 h-4" />
-                      <span>{course.videos_count || 0} videos</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
@@ -331,9 +324,9 @@ const TrainingManagement = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent className="bg-slate-800 border-slate-700">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete Training Course</AlertDialogTitle>
+            <AlertDialogTitle className="text-white">Delete Course</AlertDialogTitle>
             <AlertDialogDescription className="text-slate-400">
-              This action cannot be undone. This will permanently delete the course and all its lessons and videos.
+              This action cannot be undone. This will permanently delete the course and all its lessons.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
