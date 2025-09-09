@@ -42,8 +42,6 @@ const Profile = () => {
         {/* Pending Friend Requests */}
         <NewPendingRequestsSection onFriendsUpdated={handleFriendsUpdated} />
 
-        {/* Friends Overview */}
-        <FriendsSection refreshTrigger={friendsRefreshTrigger} />
 
         {/* Content Tabs */}
         <ContentTabs isOwnProfile={true} />

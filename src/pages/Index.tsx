@@ -348,11 +348,11 @@ const Index = () => {
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-xl p-4">
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center mb-3 text-black font-bold">
-                {dashboardStats.currentLevel}
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center mb-3">
+                <Trophy className="w-6 h-6 text-black" />
               </div>
               <p className="text-lg font-bold text-white mb-1">{dashboardStats.currentLevel}</p>
-              <p className="text-sm text-yellow-400 font-medium">Current Level</p>
+              <p className="text-sm text-yellow-400 font-medium">Level</p>
             </div>
           </div>
 
