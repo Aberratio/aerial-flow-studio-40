@@ -347,7 +347,7 @@ const Index = () => {
         {/* Stats Overview */}
         <div className="grid grid-cols-3 gap-4 mb-8">
           <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-xl p-4">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center mb-3">
                 <Trophy className="w-6 h-6 text-black" />
               </div>
@@ -357,7 +357,7 @@ const Index = () => {
           </div>
 
           <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-xl p-4">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center mb-3">
                 <Star className="w-6 h-6 text-white" />
               </div>
@@ -367,7 +367,7 @@ const Index = () => {
           </div>
 
           <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-400/20 rounded-xl p-4">
-            <div className="flex flex-col items-center">
+            <div className="flex flex-col items-center text-center">
               <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center mb-3">
                 <CheckCircle className="w-6 h-6 text-white" />
               </div>

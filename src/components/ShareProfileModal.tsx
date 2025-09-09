@@ -51,42 +51,43 @@ export const ShareProfileModal: React.FC<ShareProfileModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white mx-4">
-        <DialogHeader>
-          <DialogTitle className="text-xl font-semibold">
+      <DialogContent className="w-[96vw] max-w-md max-h-[80vh] overflow-y-auto glass-effect border-white/10 text-white p-4 sm:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg sm:text-xl font-semibold text-center sm:text-left">
             Share {profileName}'s Profile
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Profile URL Input */}
           <div className="space-y-2">
-            <Label className="text-white/80">Profile Link</Label>
-            <div className="flex space-x-2">
+            <Label className="text-white/80 text-sm">Profile Link</Label>
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
               <Input
                 value={profileUrl}
                 readOnly
-                className="bg-white/5 border-white/20 text-white flex-1"
+                className="bg-white/5 border-white/20 text-white text-sm flex-1 h-10"
               />
               <Button
                 onClick={copyToClipboard}
                 variant="outline"
                 size="sm"
-                className="border-white/20 text-white hover:bg-white/10"
+                className="border-white/20 text-white hover:bg-white/10 h-10 px-4"
               >
-                <Copy className="w-4 h-4" />
+                <Copy className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Copy</span>
               </Button>
             </div>
           </div>
 
           {/* Social Share Buttons */}
           <div className="space-y-3">
-            <Label className="text-white/80">Share via</Label>
-            <div className="grid grid-cols-2 gap-3">
+            <Label className="text-white/80 text-sm">Share via</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               <Button
                 onClick={shareToTwitter}
                 variant="outline"
-                className="border-white/20 text-white hover:bg-blue-500/20 hover:border-blue-400"
+                className="border-white/20 text-white hover:bg-blue-500/20 hover:border-blue-400 h-10 text-sm"
               >
                 <Twitter className="w-4 h-4 mr-2" />
                 Twitter
@@ -94,7 +95,7 @@ export const ShareProfileModal: React.FC<ShareProfileModalProps> = ({
               <Button
                 onClick={shareToFacebook}
                 variant="outline"
-                className="border-white/20 text-white hover:bg-blue-600/20 hover:border-blue-500"
+                className="border-white/20 text-white hover:bg-blue-600/20 hover:border-blue-500 h-10 text-sm"
               >
                 <Facebook className="w-4 h-4 mr-2" />
                 Facebook
@@ -106,7 +107,7 @@ export const ShareProfileModal: React.FC<ShareProfileModalProps> = ({
           <Button
             onClick={copyToClipboard}
             variant="primary"
-            className="w-full"
+            className="w-full h-10 text-sm"
           >
             <Link className="w-4 h-4 mr-2" />
             Copy Profile Link
