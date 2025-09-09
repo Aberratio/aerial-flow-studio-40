@@ -347,19 +347,17 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                           <Target className="w-3 h-3" />
                           <span>{exercise.reps} reps</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                          {(exercise.completion_mode || 'time') === 'completion' ? (
-                            <>
-                              <CheckCircle className="w-3 h-3 text-green-400" />
-                              <span className="text-green-400">Completion mode</span>
-                            </>
-                          ) : (
-                            <>
-                              <Clock className="w-3 h-3" />
-                              <span>{exercise.hold_time_seconds}s hold</span>
-                            </>
-                          )}
-                        </div>
+                        {(exercise.completion_mode || 'time') === 'completion' ? (
+                          <div className="flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3 text-green-400" />
+                            <span className="text-green-400">Completion mode</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{exercise.hold_time_seconds}s hold</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

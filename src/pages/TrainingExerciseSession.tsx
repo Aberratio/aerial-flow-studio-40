@@ -51,6 +51,7 @@ interface Exercise {
   hold_time_seconds?: number;
   notes?: string;
   order_index?: number;
+  completion_mode?: 'time' | 'completion';
 }
 
 interface TimerSegment {
@@ -251,6 +252,12 @@ const TrainingExerciseSession = () => {
           const sets = exercise.sets || 1;
           const holdTime = exercise.hold_time_seconds || 30;
           const restTime = exercise.rest_time_seconds || 15;
+          const isCompletionMode = exercise.completion_mode === 'completion' || exercise.hold_time_seconds === 0;
+
+          // Skip timer segments for completion mode exercises
+          if (isCompletionMode) {
+            return;
+          }
 
           for (let setIndex = 0; setIndex < sets; setIndex++) {
             // Exercise segment
@@ -977,7 +984,15 @@ const TrainingExerciseSession = () => {
                         <div className="text-sm">Reps</div>
                       </div>
                     )}
-                    {currentExercise.hold_time_seconds && (
+                    {currentExercise.completion_mode === 'completion' || currentExercise.hold_time_seconds === 0 ? (
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-green-400 flex items-center justify-center">
+                          <CheckCircle className="w-6 h-6 mr-1" />
+                          Completion
+                        </div>
+                        <div className="text-sm">Mode</div>
+                      </div>
+                    ) : currentExercise.hold_time_seconds && (
                       <div className="text-center">
                         <div className="text-2xl font-bold">{currentExercise.hold_time_seconds}s</div>
                         <div className="text-sm">Hold</div>
@@ -1042,7 +1057,14 @@ const TrainingExerciseSession = () => {
                       <div className="flex items-center space-x-4 text-xs text-white/60">
                         {exercise.sets && <span>{exercise.sets} sets</span>}
                         {exercise.reps && <span>{exercise.reps} reps</span>}
-                        {exercise.hold_time_seconds && <span>{exercise.hold_time_seconds}s</span>}
+                        {exercise.completion_mode === 'completion' || exercise.hold_time_seconds === 0 ? (
+                          <span className="text-green-400 flex items-center">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            Completion
+                          </span>
+                        ) : exercise.hold_time_seconds && (
+                          <span>{exercise.hold_time_seconds}s hold</span>
+                        )}
                       </div>
                     )}
                   </div>
