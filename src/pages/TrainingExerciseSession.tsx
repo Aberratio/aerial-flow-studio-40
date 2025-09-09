@@ -254,8 +254,19 @@ const TrainingExerciseSession = () => {
           const restTime = exercise.rest_time_seconds || 15;
           const isCompletionMode = exercise.completion_mode === 'completion' || exercise.hold_time_seconds === 0;
 
-          // Skip timer segments for completion mode exercises
+          // For completion mode exercises, still add to timer but with 0 duration (will be handled manually)
           if (isCompletionMode) {
+            for (let setIndex = 0; setIndex < sets; setIndex++) {
+              timerSegments.push({
+                type: "exercise",
+                exerciseIndex,
+                setIndex,
+                duration: 0, // 0 duration for completion mode
+                exerciseName: sets > 1 ? `${exerciseName} (Set ${setIndex + 1}/${sets})` : exerciseName,
+                exerciseNotes: exercise.notes
+              });
+            }
+            exerciseIndex++;
             return;
           }
 
@@ -435,6 +446,29 @@ const TrainingExerciseSession = () => {
   const handleSkip = () => {
     if (currentSegmentIndex < segments.length - 1) {
       handleSegmentComplete();
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentSegmentIndex > 0) {
+      const prevIndex = currentSegmentIndex - 1;
+      const prevSegment = segments[prevIndex];
+      setCurrentSegmentIndex(prevIndex);
+      setTimeRemaining(prevSegment.duration);
+      setIsRunning(false);
+      setHasAnnouncedSegment(false);
+    }
+  };
+
+  const handleCompletionModeNext = () => {
+    if (currentSegmentIndex < segments.length - 1) {
+      handleSegmentComplete();
+    } else {
+      setIsCompleted(true);
+      setIsRunning(false);
+      if (audioMode === "sound") {
+        speak("Training completed! Great job!");
+      }
     }
   };
 
@@ -754,6 +788,14 @@ const TrainingExerciseSession = () => {
                             </div>
                             <div className="text-sm sm:text-base text-white/60">Training starts in...</div>
                           </div>
+                        ) : currentSegment.duration === 0 ? (
+                          <div className="flex flex-col items-center">
+                            <div className="text-6xl sm:text-7xl md:text-9xl mb-4">
+                              <CheckCircle className="w-24 h-24 md:w-32 md:h-32 text-green-400 mx-auto" />
+                            </div>
+                            <div className="text-lg sm:text-xl text-green-400 font-semibold">Completion Mode</div>
+                            <div className="text-sm sm:text-base text-white/60">Mark as done when finished</div>
+                          </div>
                         ) : (
                           <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
                             {formatTime(timeRemaining)}
@@ -762,26 +804,40 @@ const TrainingExerciseSession = () => {
                       </div>
 
                       <div className="flex flex-row justify-center gap-4">
-                        <Button onClick={handlePlayPause} size="lg" className="bg-primary hover:bg-primary/80">
-                          {isPreparingToStart ? (
-                            <>
-                              <Pause className="w-6 h-6 mr-3" />
-                              Cancel
-                            </>
-                          ) : isRunning ? (
-                            <>
-                              <Pause className="w-6 h-6 mr-3" />
-                              Pause
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-6 h-6 mr-3" />
-                              Start
-                            </>
-                          )}
-                        </Button>
+                        {currentSegmentIndex > 0 && (
+                          <Button onClick={handlePrevious} variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Previous
+                          </Button>
+                        )}
 
-                        {!isCompleted && (
+                        {currentSegment.duration === 0 ? (
+                          <Button onClick={handleCompletionModeNext} size="lg" className="bg-green-500 hover:bg-green-600">
+                            <CheckCircle className="w-6 h-6 mr-3" />
+                            Done
+                          </Button>
+                        ) : (
+                          <Button onClick={handlePlayPause} size="lg" className="bg-primary hover:bg-primary/80">
+                            {isPreparingToStart ? (
+                              <>
+                                <Pause className="w-6 h-6 mr-3" />
+                                Cancel
+                              </>
+                            ) : isRunning ? (
+                              <>
+                                <Pause className="w-6 h-6 mr-3" />
+                                Pause
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-6 h-6 mr-3" />
+                                Start
+                              </>
+                            )}
+                          </Button>
+                        )}
+
+                        {!isCompleted && currentSegment.duration > 0 && (
                           <Button onClick={handleSkip} variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
                             Skip
                           </Button>
@@ -808,7 +864,9 @@ const TrainingExerciseSession = () => {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/70">Duration:</span>
-                        <span className="text-white">{formatTimeNatural(currentSegment.duration)}</span>
+                        <span className="text-white">
+                          {currentSegment.duration === 0 ? "Completion Mode" : formatTimeNatural(currentSegment.duration)}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-white/70">Segment:</span>
