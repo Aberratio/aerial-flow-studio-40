@@ -222,15 +222,17 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   </>
                 )}
               </div>
-              
-              <Button
-                variant="outline"
-                className="w-full justify-start border-white/20 text-white hover:bg-white/10"
-                onClick={() => setIsPricingModalOpen(true)}
-              >
-                <CreditCard className="w-4 h-4 mr-2" />
-                View Pricing Plans
-              </Button>
+              {/* Only show View Pricing Plans for free users and users with Stripe subscriptions */}
+              {(!hasPremiumAccess || subscribed) && (
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-white/20 text-white hover:bg-white/10"
+                  onClick={() => setIsPricingModalOpen(true)}
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  View Pricing Plans
+                </Button>
+              )}
             </div>
           </div>
 

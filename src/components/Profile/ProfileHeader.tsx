@@ -40,8 +40,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [stats, setStats] = useState({
     posts: 0,
-    followers: 0,
-    following: 0,
   });
 
   const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,22 +124,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           .select("*", { count: "exact", head: true })
           .eq("user_id", user.id);
 
-        // Fetch followers count (people following this user)
-        const { count: followersCount } = await supabase
-          .from("user_follows")
-          .select("*", { count: "exact", head: true })
-          .eq("following_id", user.id);
-
-        // Fetch following count (people this user follows)
-        const { count: followingCount } = await supabase
-          .from("user_follows")
-          .select("*", { count: "exact", head: true })
-          .eq("follower_id", user.id);
-
         setStats({
           posts: postsCount || 0,
-          followers: followersCount || 0,
-          following: followingCount || 0,
         });
       } catch (error) {
         console.error("Error fetching stats:", error);
@@ -153,8 +137,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
   const displayStats = [
     { label: "Posts", value: stats.posts.toLocaleString() },
-    { label: "Followers", value: stats.followers.toLocaleString() },
-    { label: "Following", value: stats.following.toLocaleString() },
   ];
 
   return (
@@ -227,17 +209,15 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             <p className="text-muted-foreground mb-6">{user?.bio}</p>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {displayStats.map((stat, index) => (
-                <div key={index} className="text-center">
-                  <div className="gradient-text text-2xl font-bold">
-                    {stat.value}
-                  </div>
-                  <div className="text-muted-foreground text-sm">
-                    {stat.label}
-                  </div>
+            <div className="flex justify-center md:justify-start mb-6">
+              <div className="text-center">
+                <div className="gradient-text text-2xl font-bold">
+                  {stats.posts}
                 </div>
-              ))}
+                <div className="text-muted-foreground text-sm">
+                  Posts
+                </div>
+              </div>
             </div>
 
             {/* Privacy Selector for Own Profile */}

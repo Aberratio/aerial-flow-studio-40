@@ -28,9 +28,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ShareProfileModal } from "@/components/ShareProfileModal";
 import { useProfilePreviewData } from "@/hooks/useProfilePreviewData";
-import { useFollowCounts } from "@/hooks/useFollowCounts";
 import { useFriendshipStatus } from "@/hooks/useFriendshipStatus";
-import { useMutualFriends } from "@/hooks/useMutualFriends";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfilePreviewModal } from "@/components/ProfilePreviewModal";
 import { FriendInviteModal } from "@/components/FriendInviteModal";
@@ -51,8 +49,6 @@ const FriendProfile = () => {
   const [allPosts, setAllPosts] = useState<any[]>([]);
   const [privacyFilter, setPrivacyFilter] = useState("all");
 
-  const { followersCount, followingCount } = useFollowCounts(id || "");
-  const { mutualCount } = useMutualFriends(user?.id || "", id || "");
   const {
     isFollowing,
     sendFriendRequest,
@@ -281,28 +277,12 @@ const FriendProfile = () => {
                   </p>
 
                   {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="flex justify-center mb-6">
                     <div className="text-center">
                       <div className="gradient-text text-2xl font-bold">
                         {allPosts.length}
                       </div>
                       <div className="text-muted-foreground text-sm">Posts</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="gradient-text text-2xl font-bold">
-                        {followersCount}
-                      </div>
-                      <div className="text-muted-foreground text-sm">
-                        Followers
-                      </div>
-                    </div>
-                    <div className="text-center">
-                      <div className="gradient-text text-2xl font-bold">
-                        {followingCount}
-                      </div>
-                      <div className="text-muted-foreground text-sm">
-                        Following
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -450,28 +430,12 @@ const FriendProfile = () => {
                 <p className="text-muted-foreground mb-6">{profileData?.bio}</p>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="flex justify-center mb-6">
                   <div className="text-center">
                     <div className="gradient-text text-2xl font-bold">
                       {allPosts.length}
                     </div>
                     <div className="text-muted-foreground text-sm">Posts</div>
-                  </div>
-                  <div className="text-center">
-                    <div className="gradient-text text-2xl font-bold">
-                      {followersCount}
-                    </div>
-                    <div className="text-muted-foreground text-sm">
-                      Followers
-                    </div>
-                  </div>
-                  <div className="text-center">
-                    <div className="gradient-text text-2xl font-bold">
-                      {followingCount}
-                    </div>
-                    <div className="text-muted-foreground text-sm">
-                      Following
-                    </div>
                   </div>
                 </div>
 
