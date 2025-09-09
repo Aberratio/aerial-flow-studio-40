@@ -30,7 +30,7 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-effect border-white/10 max-w-2xl">
+      <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10 mx-4">
         <DialogHeader>
           <DialogTitle className="text-white text-2xl">{session.title}</DialogTitle>
         </DialogHeader>

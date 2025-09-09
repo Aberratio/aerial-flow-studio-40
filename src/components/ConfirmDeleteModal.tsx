@@ -22,7 +22,7 @@ export const ConfirmDeleteModal = ({
 }: ConfirmDeleteModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md glass-effect border-white/10">
+      <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto glass-effect border-white/10 mx-4">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center space-x-2">
             <AlertTriangle className="w-5 h-5 text-red-400" />

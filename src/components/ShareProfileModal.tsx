@@ -51,7 +51,7 @@ export const ShareProfileModal: React.FC<ShareProfileModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-effect border-white/10 text-white max-w-md">
+      <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto glass-effect border-white/10 text-white mx-4">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             Share {profileName}'s Profile

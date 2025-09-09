@@ -170,7 +170,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm">
+      <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm mx-4">
         <DialogHeader>
           <DialogTitle className="text-white">Edit Profile</DialogTitle>
         </DialogHeader>

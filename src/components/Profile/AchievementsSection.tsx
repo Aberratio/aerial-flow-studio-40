@@ -24,13 +24,15 @@ export const AchievementsSection: React.FC = () => {
               <div 
                 key={index} 
                 className="text-center p-4 rounded-lg bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group relative"
-                title={achievement.description}
               >
                 <div className="text-3xl mb-2">{achievement.icon}</div>
                 <div className="text-white font-semibold text-sm">{achievement.name}</div>
                 <div className="text-purple-400 text-xs font-semibold mt-1">+{achievement.points} pts</div>
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-slate-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
+                
+                {/* Mobile-friendly tooltip */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-normal max-w-[200px] text-center pointer-events-none z-50 border border-white/20">
                   {achievement.description}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-800/95"></div>
                 </div>
               </div>
             ))}

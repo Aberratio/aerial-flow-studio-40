@@ -63,35 +63,48 @@ const MyJourney = () => {
         </div>
 
         {/* Status Filter */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Button 
-            variant="ghost" 
-            onClick={() => setActiveStatus('all')} 
-            className={`transition-all ${
-              activeStatus === 'all' 
-                ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
-                : 'text-muted-foreground hover:text-white hover:bg-white/5'
-            } ${activeStatus === 'all' ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''} border-white/20`}
-          >
-            All ({figureProgress.length})
-          </Button>
-          {Object.entries(statusConfig).map(([status, config]) => {
-          const Icon = config.icon;
-          const count = getFiguresByStatus(status).length;
-          return <Button 
-            key={status} 
-            variant="ghost" 
-            onClick={() => setActiveStatus(status)} 
-            className={`transition-all ${
-              activeStatus === status 
-                ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
-                : 'text-muted-foreground hover:text-white hover:bg-white/5'
-            } ${activeStatus === status ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''} border-white/20`}
-          >
-                <Icon className={`w-4 h-4 mr-2 ${config.color}`} />
-                {config.label} ({count})
-              </Button>;
-        })}
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-white mb-3">Filter by Status</h2>
+          <div className="flex flex-wrap gap-3">
+            <Button 
+              variant={activeStatus === 'all' ? 'default' : 'outline'}
+              onClick={() => setActiveStatus('all')} 
+              className={`transition-all border-white/20 ${
+                activeStatus === 'all' 
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600' 
+                  : 'text-white hover:text-white hover:bg-white/10 hover:border-white/30'
+              }`}
+            >
+              All
+              <Badge variant="secondary" className="ml-2 bg-white/20 text-white text-xs">
+                {figureProgress.length}
+              </Badge>
+            </Button>
+            
+            {Object.entries(statusConfig).map(([status, config]) => {
+              const Icon = config.icon;
+              const count = getFiguresByStatus(status).length;
+              return (
+                <Button 
+                  key={status} 
+                  variant={activeStatus === status ? 'default' : 'outline'}
+                  onClick={() => setActiveStatus(status)} 
+                  className={`transition-all border-white/20 ${
+                    activeStatus === status 
+                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 hover:from-purple-600 hover:to-pink-600' 
+                      : 'text-white hover:text-white hover:bg-white/10 hover:border-white/30'
+                  }`}
+                >
+                  <Icon className={`w-4 h-4 mr-2 ${activeStatus === status ? 'text-white' : config.color}`} />
+                  <span className="hidden sm:inline">{config.label}</span>
+                  <span className="sm:hidden">{config.label.split(' ')[0]}</span>
+                  <Badge variant="secondary" className="ml-2 bg-white/20 text-white text-xs">
+                    {count}
+                  </Badge>
+                </Button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Figures Grid */}
