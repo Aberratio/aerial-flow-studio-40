@@ -709,7 +709,7 @@ const TrainingExerciseSession = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 py-1 max-w-4xl">
+        <div className="container mx-auto px-2 sm:px-4 py-1 max-w-4xl">
           <ProgressBar className="hidden sm:block mb-8" />
           {isCompleted ? (
             /* Completion Screen */
@@ -726,7 +726,7 @@ const TrainingExerciseSession = () => {
                       onClick={handleFinishSession}
                       className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
                     >
-                      <CheckCircle className="w-4 h-4 mr-2" />
+              <CheckCircle className="w-4 h-4 mr-2" />
                       Finish Session
                     </Button>
                   </div>
@@ -734,15 +734,15 @@ const TrainingExerciseSession = () => {
               </Card>
             </div>
           ) : currentSegment ? (
-            <div className="grid lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 sm:gap-4">
+              <div className="lg:col-span-2 order-2 lg:order-1">
                 <Card className="glass-effect border-white/10 overflow-hidden">
                   <CardContent className="p-0">
                     <div className="relative">
-                      <div className="aspect-square max-w-2xl mx-auto bg-gray-900/50 rounded-lg overflow-hidden">
+                      <div className="aspect-square sm:aspect-video lg:aspect-square max-w-2xl mx-auto bg-gray-900/50 rounded-lg overflow-hidden">
                         {currentSegment.type === "rest" ? (
                           <div className="w-full h-full bg-gradient-to-br from-green-500/20 to-green-600/20 flex items-center justify-center">
-                            <Hand className="w-32 h-32 md:w-40 md:h-40 text-green-400" />
+                            <Hand className="w-20 h-20 sm:w-32 sm:h-32 md:w-40 md:h-40 text-green-400" />
                           </div>
                          ) : (
                            <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
@@ -785,7 +785,7 @@ const TrainingExerciseSession = () => {
                           )}
                       </div>
 
-                      <div className="absolute top-4 left-4">
+                      <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
                         <Badge
                           className={`text-sm font-medium ${
                             currentSegment.type === "exercise"
@@ -798,8 +798,8 @@ const TrainingExerciseSession = () => {
                       </div>
                     </div>
 
-                    <div className="p-4 sm:p-6 text-center bg-gradient-to-t from-black/30 to-transparent">
-                      <h2 className="text-xl sm:text-2xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
+                    <div className="p-2 sm:p-4 lg:p-6 text-center bg-gradient-to-t from-black/30 to-transparent">
+                      <h2 className="text-lg sm:text-xl md:text-2xl lg:text-4xl font-bold text-white mb-2 sm:mb-4">
                         {currentSegment.exerciseName}
                       </h2>
 
@@ -811,22 +811,22 @@ const TrainingExerciseSession = () => {
                         </div>
                       )}
 
-                      <div className="relative mb-4 sm:mb-6">
+                      <div className="relative mb-2 sm:mb-4 lg:mb-6">
                         {isPreparingToStart ? (
                           <div className="flex flex-col items-center">
-                            <div className="text-lg sm:text-xl text-white/70 mb-2">Get Ready!</div>
-                            <div className="text-6xl sm:text-7xl md:text-9xl font-mono font-bold text-yellow-400 mb-2 animate-pulse">
+                            <div className="text-base sm:text-lg lg:text-xl text-white/70 mb-2">Get Ready!</div>
+                            <div className="text-4xl sm:text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-yellow-400 mb-2 animate-pulse">
                               {preparationTime}
                             </div>
-                            <div className="text-sm sm:text-base text-white/60">Training starts in...</div>
+                            <div className="text-xs sm:text-sm lg:text-base text-white/60">Training starts in...</div>
                           </div>
                         ) : currentSegment.duration === 0 ? (
                           <div className="flex flex-col items-center">
-                            <div className="text-6xl sm:text-7xl md:text-9xl mb-4">
-                              <CheckCircle className="w-24 h-24 md:w-32 md:h-32 text-green-400 mx-auto" />
+                            <div className="text-3xl sm:text-6xl md:text-7xl lg:text-9xl mb-2 sm:mb-4">
+                              <CheckCircle className="w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 text-green-400 mx-auto" />
                             </div>
-                            <div className="text-lg sm:text-xl text-green-400 font-semibold mb-2">Completion Mode</div>
-                            <div className="text-sm sm:text-base text-white/60 mb-2">Mark as done when finished</div>
+                            <div className="text-base sm:text-lg lg:text-xl text-green-400 font-semibold mb-2">Completion Mode</div>
+                            <div className="text-xs sm:text-sm lg:text-base text-white/60 mb-2">Mark as done when finished</div>
                             <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-center">
                               <div className="text-white font-semibold">
                                 {(() => {
@@ -846,27 +846,27 @@ const TrainingExerciseSession = () => {
                             </div>
                           </div>
                         ) : (
-                          <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
+                          <div className="text-2xl sm:text-4xl md:text-5xl lg:text-8xl font-mono font-bold text-primary mb-2">
                             {formatTime(timeRemaining)}
                           </div>
                         )}
                       </div>
 
-                      <div className="flex flex-row justify-center gap-4">
+                      <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
                         {currentSegmentIndex > 0 && (
-                          <Button onClick={handlePrevious} variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+                          <Button onClick={handlePrevious} variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10 min-w-[120px]">
                             <ArrowLeft className="w-4 h-4 mr-2" />
                             Previous
                           </Button>
                         )}
 
                         {currentSegment.duration === 0 ? (
-                          <Button onClick={handleCompletionModeNext} size="lg" className="bg-green-500 hover:bg-green-600">
+                          <Button onClick={handleCompletionModeNext} size="lg" className="bg-green-500 hover:bg-green-600 min-w-[120px]">
                             <CheckCircle className="w-6 h-6 mr-3" />
                             Done
                           </Button>
                         ) : (
-                          <Button onClick={handlePlayPause} size="lg" className="bg-primary hover:bg-primary/80">
+                          <Button onClick={handlePlayPause} size="lg" className="bg-primary hover:bg-primary/80 min-w-[120px]">
                             {isPreparingToStart ? (
                               <>
                                 <Pause className="w-6 h-6 mr-3" />
@@ -887,7 +887,7 @@ const TrainingExerciseSession = () => {
                         )}
 
                         {!isCompleted && currentSegment.duration > 0 && (
-                          <Button onClick={handleSkip} variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10">
+                          <Button onClick={handleSkip} variant="outline" size="lg" className="border-white/20 text-white hover:bg-white/10 min-w-[120px]">
                             Skip
                           </Button>
                         )}
@@ -897,12 +897,12 @@ const TrainingExerciseSession = () => {
                 </Card>
               </div>
 
-              <NextUp className="block sm:hidden" />
-              <ProgressBar className="block sm:hidden" />
+              <NextUp className="block sm:hidden order-1" />
+              <ProgressBar className="block sm:hidden order-1" />
 
-              <div className="space-y-4">
+              <div className="space-y-2 sm:space-y-4 order-3 lg:order-2">
                 <Card className="glass-effect border-white/10">
-                  <CardContent className="p-4">
+                  <CardContent className="p-3 sm:p-4">
                     <h3 className="text-lg font-semibold text-white mb-3">Current</h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
@@ -977,7 +977,7 @@ const TrainingExerciseSession = () => {
                       setIsPreparingToStart(true);
                       setPreparationTime(10);
                     }}
-                    size="lg"
+            size="lg"
                     className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
                   >
                     <Play className="w-5 h-5 mr-2" />
@@ -1002,10 +1002,10 @@ const TrainingExerciseSession = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
+        <div className="flex items-center justify-between mb-4 sm:mb-8">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             <Button
               variant="outline"
               size="icon"
@@ -1015,12 +1015,12 @@ const TrainingExerciseSession = () => {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <div className="flex items-center space-x-3 mb-2">
-                <h1 className="text-2xl font-bold text-white">{session.title}</h1>
-                <Badge className={`${getDifficultyColor(session.difficulty_level)} text-white`}>
+              <div className="flex items-center space-x-2 sm:space-x-3 mb-1 sm:mb-2">
+                <h1 className="text-lg sm:text-2xl font-bold text-white">{session.title}</h1>
+                <Badge className={`${getDifficultyColor(session.difficulty_level)} text-white text-xs sm:text-sm`}>
                   {session.difficulty_level}
                 </Badge>
-                <Badge variant="outline" className="border-white/20 text-white/70">
+                <Badge variant="outline" className="border-white/20 text-white/70 text-xs sm:text-sm">
                   <Hand className="w-3 h-3 mr-1" />
                   Manual Mode
                 </Badge>
@@ -1030,22 +1030,22 @@ const TrainingExerciseSession = () => {
         </div>
 
         {/* Section Progress */}
-        <div className="mb-8">
-          <div className="flex items-center justify-center space-x-8">
+        <div className="mb-4 sm:mb-8">
+          <div className="flex items-center justify-center space-x-4 sm:space-x-8">
             {(['warmup', 'figures', 'stretching'] as const).map((section) => (
-              <div key={section} className="flex items-center space-x-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              <div key={section} className="flex items-center space-x-1 sm:space-x-2">
+                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center ${
                   currentSection === section 
                     ? getSectionColor() 
                     : completedExercises.size > 0 && section === 'warmup' 
                       ? 'bg-green-500' 
                       : 'bg-white/10'
                 }`}>
-                  {section === 'warmup' && <Zap className="w-4 h-4" />}
-                  {section === 'figures' && <Target className="w-4 h-4" />}
-                  {section === 'stretching' && <Heart className="w-4 h-4" />}
+                  {section === 'warmup' && <Zap className="w-3 h-3 sm:w-4 sm:h-4" />}
+                  {section === 'figures' && <Target className="w-3 h-3 sm:w-4 sm:h-4" />}
+                  {section === 'stretching' && <Heart className="w-3 h-3 sm:w-4 sm:h-4" />}
                 </div>
-                <span className={`font-medium capitalize ${
+                <span className={`font-medium capitalize text-sm sm:text-base ${
                   currentSection === section ? 'text-white' : 'text-white/60'
                 }`}>
                   {section === 'warmup' ? 'Warm-up' : section === 'figures' ? 'Training' : 'Stretching'}
@@ -1057,7 +1057,7 @@ const TrainingExerciseSession = () => {
 
         {/* Current Exercise */}
         {currentExercise && (
-          <Card className="glass-effect border-white/10 mb-8">
+          <Card className="glass-effect border-white/10 mb-4 sm:mb-8">
             <CardHeader>
               <CardTitle className="text-white flex items-center justify-between">
                 <div className="flex items-center">
@@ -1081,28 +1081,28 @@ const TrainingExerciseSession = () => {
                   <div className="flex justify-center space-x-8 text-white/80">
                     {currentExercise.sets && (
                       <div className="text-center">
-                        <div className="text-2xl font-bold">{currentExercise.sets}</div>
-                        <div className="text-sm">Sets</div>
+                        <div className="text-lg sm:text-2xl font-bold">{currentExercise.sets}</div>
+                        <div className="text-xs sm:text-sm">Sets</div>
                       </div>
                     )}
                     {currentExercise.reps && (
                       <div className="text-center">
-                        <div className="text-2xl font-bold">{currentExercise.reps}</div>
-                        <div className="text-sm">Reps</div>
+                        <div className="text-lg sm:text-2xl font-bold">{currentExercise.reps}</div>
+                        <div className="text-xs sm:text-sm">Reps</div>
                       </div>
                     )}
                     {currentExercise.completion_mode === 'completion' || currentExercise.hold_time_seconds === 0 ? (
                       <div className="text-center">
-                        <div className="text-lg font-bold text-green-400 flex items-center justify-center">
-                          <CheckCircle className="w-6 h-6 mr-1" />
+                        <div className="text-base sm:text-lg font-bold text-green-400 flex items-center justify-center">
+                          <CheckCircle className="w-4 h-4 sm:w-6 sm:h-6 mr-1" />
                           Completion
                         </div>
-                        <div className="text-sm">Mode</div>
+                        <div className="text-xs sm:text-sm">Mode</div>
                       </div>
                     ) : currentExercise.hold_time_seconds && (
                       <div className="text-center">
-                        <div className="text-2xl font-bold">{currentExercise.hold_time_seconds}s</div>
-                        <div className="text-sm">Hold</div>
+                        <div className="text-lg sm:text-2xl font-bold">{currentExercise.hold_time_seconds}s</div>
+                        <div className="text-xs sm:text-sm">Hold</div>
                       </div>
                     )}
                   </div>
@@ -1197,13 +1197,13 @@ const TrainingExerciseSession = () => {
             disabled={!canMovePrevious}
             className="border-white/20 text-white hover:bg-white/10"
           >
-            <ArrowLeft className="w-4 h-4 mr-2" />
+                <ArrowLeft className="w-4 h-4 mr-2" />
             Previous
           </Button>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 order-2">
             {currentExercises.length > 0 && (
-              <span className="text-white/60 text-sm">
+              <span className="text-white/60 text-xs sm:text-sm">
                 Exercise {currentExerciseIndex + 1} of {currentExercises.length}
               </span>
             )}
@@ -1212,7 +1212,8 @@ const TrainingExerciseSession = () => {
           {isLastSection && isLastExercise ? (
             <Button
               onClick={handleFinishSession}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600"
+              className="bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 w-full sm:w-auto order-3"
+              size="lg"
             >
               Finish Session
               <CheckCircle className="w-4 h-4 ml-2" />
@@ -1226,7 +1227,8 @@ const TrainingExerciseSession = () => {
                   moveToNextSection();
                 }
               }}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 w-full sm:w-auto order-3"
+              size="lg"
             >
               Next
               <ArrowLeft className="w-4 h-4 ml-2 rotate-180" />
