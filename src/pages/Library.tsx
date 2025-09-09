@@ -1750,6 +1750,28 @@ const Library = () => {
                     </span>
                   </div>
 
+                  {/* Type and Video Tags */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {/* Type Tag */}
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-blue-500/20 border-blue-400/30 text-blue-300"
+                    >
+                      {figure.type === 'single_figure' ? 'Figure' : 'Combo'}
+                    </Badge>
+                    
+                    {/* Video Tag */}
+                    {figure.video_url && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs bg-green-500/20 border-green-400/30 text-green-300 flex items-center gap-1"
+                      >
+                        <Play className="w-3 h-3" />
+                        Video
+                      </Badge>
+                    )}
+                  </div>
+
                   {figure.tags && figure.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-3">
                       {figure.tags.slice(0, 2).map((tag) => (
@@ -1771,31 +1793,6 @@ const Library = () => {
                       )}
                     </div>
                   )}
-
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      {figure.video_url && (
-                        <Play className="w-4 h-4 text-blue-400" />
-                      )}
-                      {figure.figure_experts &&
-                        figure.figure_experts.length > 0 && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs bg-white/5 border-white/20 text-white/70"
-                          >
-                            Expert
-                          </Badge>
-                        )}
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-white/70 hover:text-white hover:bg-white/10 h-8 px-3 text-xs"
-                      onClick={(e) => handleViewDetails(e, figure)}
-                    >
-                      View Details
-                    </Button>
-                  </div>
                 </div>
               </CardContent>
             </Card>
