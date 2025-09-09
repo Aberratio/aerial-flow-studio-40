@@ -14,6 +14,7 @@ import {
   Crown,
   ChevronDown,
   ChevronUp,
+  Video,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -1665,64 +1666,104 @@ const Library = () => {
           {paginatedFigures.map((figure) => (
             <Card
               key={figure.id}
-              className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer group"
+              className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300 cursor-pointer group overflow-hidden"
               onClick={() => handleFigureClick(figure)}
             >
               <CardContent className="p-0">
-                <div className="relative aspect-square overflow-hidden rounded-t-lg">
+                <div className="relative aspect-square overflow-hidden">
                   {figure.image_url ? (
                     <img
                       src={figure.image_url}
                       alt={figure.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                     />
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                      <span className="text-white/60">No Image</span>
+                      <span className="text-6xl">🤸</span>
                     </div>
                   )}
                   
                   {/* Premium badge */}
                   {figure.premium && (
-                    <div className="absolute top-2 right-2">
-                      <Badge className="bg-yellow-500/90 text-black hover:bg-yellow-400">
-                        <Crown className="w-3 h-3 mr-1" />
-                        Premium
-                      </Badge>
+                    <div className="absolute top-3 right-3 z-10">
+                      <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
+                        <Crown className="w-3 h-3" />
+                        PRO
+                      </div>
                     </div>
                   )}
 
                   {/* Status icon */}
                   {getStatusIcon(figure.progress_status) && (
-                    <div className="absolute top-2 left-2">
+                    <div className="absolute top-3 left-3 z-10 bg-black/50 backdrop-blur-sm rounded-full p-1.5">
                       {getStatusIcon(figure.progress_status)}
                     </div>
                   )}
+
+                  {/* Video indicator */}
+                  {figure.video_url && (
+                    <div className="absolute bottom-3 right-3 z-10">
+                      <div className="bg-black/70 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                        <Video className="w-3 h-3" />
+                        Video
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Gradient overlay for better text readability */}
+                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
+                  
+                  {/* Exercise type badge */}
+                  <div className="absolute bottom-3 left-3 z-10">
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      figure.type === 'single_figure' 
+                        ? 'bg-blue-500/90 text-white' 
+                        : 'bg-purple-500/90 text-white'
+                    }`}>
+                      {figure.type === 'single_figure' ? 'Figure' : 'Combo'}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-white font-semibold text-sm truncate">
-                      {figure.name}
-                    </h3>
+                  {/* Header with title and edit buttons */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-white font-semibold text-base leading-tight mb-1 line-clamp-2">
+                        {figure.name}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          className={`${getDifficultyColor(
+                            figure.difficulty_level
+                          )} text-xs border font-medium`}
+                        >
+                          {figure.difficulty_level}
+                        </Badge>
+                        <span className="text-white/60 text-xs capitalize">
+                          {figure.category}
+                        </span>
+                      </div>
+                    </div>
+                    
                     {canModifyFigure(figure) && (
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 w-6 p-0 hover:bg-white/20"
+                          className="h-8 w-8 p-0 hover:bg-white/20 rounded-full"
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditingFigure(figure);
                             setShowCreateExercise(true);
                           }}
                         >
-                          <Edit className="w-3 h-3 text-blue-400" />
+                          <Edit className="w-4 h-4 text-blue-400" />
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-6 w-6 p-0 hover:bg-white/20"
+                          className="h-8 w-8 p-0 hover:bg-white/20 rounded-full"
                           onClick={(e) => {
                             e.stopPropagation();
                             setDeleteModal({
@@ -1731,65 +1772,27 @@ const Library = () => {
                             });
                           }}
                         >
-                          <Trash2 className="w-3 h-3 text-red-400" />
+                          <Trash2 className="w-4 h-4 text-red-400" />
                         </Button>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between mb-3">
-                    <Badge
-                      className={`${getDifficultyColor(
-                        figure.difficulty_level
-                      )} text-xs border`}
-                    >
-                      {figure.difficulty_level}
-                    </Badge>
-                    <span className="text-white/60 text-xs capitalize">
-                      {figure.category}
-                    </span>
-                  </div>
-
-                  {/* Type and Video Tags */}
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {/* Type Tag */}
-                    <Badge
-                      variant="outline"
-                      className="text-xs bg-blue-500/20 border-blue-400/30 text-blue-300"
-                    >
-                      {figure.type === 'single_figure' ? 'Figure' : 'Combo'}
-                    </Badge>
-                    
-                    {/* Video Tag */}
-                    {figure.video_url && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs bg-green-500/20 border-green-400/30 text-green-300 flex items-center gap-1"
-                      >
-                        <Play className="w-3 h-3" />
-                        Video
-                      </Badge>
-                    )}
-                  </div>
-
+                  {/* Tags section */}
                   {figure.tags && figure.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mb-3">
-                      {figure.tags.slice(0, 2).map((tag) => (
-                        <Badge
+                    <div className="flex flex-wrap gap-1.5">
+                      {figure.tags.slice(0, 3).map((tag) => (
+                        <span
                           key={tag}
-                          variant="outline"
-                          className="text-xs bg-white/5 border-white/20 text-white/70"
+                          className="text-xs px-2 py-1 bg-white/10 text-white/80 rounded-md hover:bg-white/20 transition-colors"
                         >
                           {tag}
-                        </Badge>
+                        </span>
                       ))}
-                      {figure.tags.length > 2 && (
-                        <Badge
-                          variant="outline"
-                          className="text-xs bg-white/5 border-white/20 text-white/70"
-                        >
-                          +{figure.tags.length - 2}
-                        </Badge>
+                      {figure.tags.length > 3 && (
+                        <span className="text-xs px-2 py-1 bg-white/10 text-white/60 rounded-md">
+                          +{figure.tags.length - 3}
+                        </span>
                       )}
                     </div>
                   )}
