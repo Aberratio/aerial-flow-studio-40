@@ -345,35 +345,36 @@ const Index = () => {
         </div>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <Card className="glass-effect border-white/10">
-            <CardContent className="p-3 text-center">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center mx-auto mb-1 text-black font-bold text-sm">
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          <div className="bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-xl p-4">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center mb-3 text-black font-bold">
                 {dashboardStats.currentLevel}
               </div>
-              <p className="text-xs text-muted-foreground">Level</p>
-            </CardContent>
-          </Card>
+              <p className="text-lg font-bold text-white mb-1">{dashboardStats.currentLevel}</p>
+              <p className="text-sm text-yellow-400 font-medium">Current Level</p>
+            </div>
+          </div>
 
-          <Card className="glass-effect border-white/10">
-            <CardContent className="p-3 text-center">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center mx-auto mb-1">
-                <Star className="w-4 h-4 text-white" />
+          <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-400/20 rounded-xl p-4">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-blue-400 flex items-center justify-center mb-3">
+                <Star className="w-6 h-6 text-white" />
               </div>
-              <p className="text-sm font-bold text-white">{dashboardStats.totalPoints}</p>
-              <p className="text-xs text-muted-foreground">Points</p>
-            </CardContent>
-          </Card>
+              <p className="text-lg font-bold text-white mb-1">{dashboardStats.totalPoints}</p>
+              <p className="text-sm text-purple-400 font-medium">Total Points</p>
+            </div>
+          </div>
 
-          <Card className="glass-effect border-white/10">
-            <CardContent className="p-3 text-center">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center mx-auto mb-1">
-                <CheckCircle className="w-4 h-4 text-white" />
+          <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-400/20 rounded-xl p-4">
+            <div className="flex flex-col items-center">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-400 to-emerald-400 flex items-center justify-center mb-3">
+                <CheckCircle className="w-6 h-6 text-white" />
               </div>
-              <p className="text-sm font-bold text-white">{dashboardStats.completedFigures}</p>
-              <p className="text-xs text-muted-foreground">Figures</p>
-            </CardContent>
-          </Card>
+              <p className="text-lg font-bold text-white mb-1">{dashboardStats.completedFigures}</p>
+              <p className="text-sm text-green-400 font-medium">Completed Figures</p>
+            </div>
+          </div>
         </div>
 
         {/* Quick Actions */}
