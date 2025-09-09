@@ -1729,7 +1729,7 @@ const Library = () => {
                   {/* Header with title and edit buttons */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-semibold text-base leading-tight mb-1 line-clamp-2">
+                      <h3 className="text-white font-semibold text-base leading-tight mb-2 line-clamp-2">
                         {figure.name}
                       </h3>
                       <div className="flex items-center gap-2">

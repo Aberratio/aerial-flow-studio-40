@@ -58,7 +58,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto glass-effect border-white/10 mx-4">
+      <DialogContent className="w-[96vw] max-w-[500px] max-h-[85vh] overflow-y-auto glass-effect border-white/10 p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-white">Settings</DialogTitle>
         </DialogHeader>

@@ -170,12 +170,12 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm mx-4">
+      <DialogContent className="w-[96vw] max-w-md max-h-[85vh] overflow-y-auto bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-white">Edit Profile</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Avatar Section */}
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
