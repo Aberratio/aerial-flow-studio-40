@@ -335,17 +335,25 @@ const AppRoutes = () => {
         <Route
           path="/admin/training"
           element={
-            <PremiumRoute>
+            <ProtectedRoute>
               <TrainingManagement />
-            </PremiumRoute>
+            </ProtectedRoute>
           }
         />
         <Route
           path="/admin/training/courses/new"
           element={
-            <PremiumRoute>
+            <ProtectedRoute>
               <CreateTrainingCourse />
-            </PremiumRoute>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/training/courses/:id"
+          element={
+            <ProtectedRoute>
+              <EditTrainingSession />
+            </ProtectedRoute>
           }
         />
         <Route
