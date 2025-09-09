@@ -61,6 +61,8 @@ interface TimerSegment {
   duration: number;
   exerciseName: string;
   exerciseNotes?: string;
+  reps?: number;
+  sets?: number;
 }
 
 const TrainingExerciseSession = () => {
@@ -257,14 +259,16 @@ const TrainingExerciseSession = () => {
           // For completion mode exercises, still add to timer but with 0 duration (will be handled manually)
           if (isCompletionMode) {
             for (let setIndex = 0; setIndex < sets; setIndex++) {
-              timerSegments.push({
-                type: "exercise",
-                exerciseIndex,
-                setIndex,
-                duration: 0, // 0 duration for completion mode
-                exerciseName: sets > 1 ? `${exerciseName} (Set ${setIndex + 1}/${sets})` : exerciseName,
-                exerciseNotes: exercise.notes
-              });
+            timerSegments.push({
+              type: "exercise",
+              exerciseIndex,
+              setIndex,
+              duration: 0, // 0 duration for completion mode
+              exerciseName: sets > 1 ? `${exerciseName} (Set ${setIndex + 1}/${sets})` : exerciseName,
+              exerciseNotes: exercise.notes,
+              reps: exercise.reps,
+              sets: exercise.sets
+            });
             }
             exerciseIndex++;
             return;
@@ -278,7 +282,9 @@ const TrainingExerciseSession = () => {
               setIndex,
               duration: holdTime,
               exerciseName: sets > 1 ? `${exerciseName} (Set ${setIndex + 1}/${sets})` : exerciseName,
-              exerciseNotes: exercise.notes
+              exerciseNotes: exercise.notes,
+              reps: exercise.reps,
+              sets: exercise.sets
             });
 
             // Rest segment (except for last set of last exercise)
@@ -740,17 +746,43 @@ const TrainingExerciseSession = () => {
                           </div>
                          ) : (
                            <div className="w-full h-full bg-gradient-to-br from-gray-500/20 to-gray-600/20 flex items-center justify-center">
-                             {exerciseImages[currentSegment.exerciseName] ? (
-                               <img 
-                                 src={exerciseImages[currentSegment.exerciseName]} 
-                                 alt={currentSegment.exerciseName}
-                                 className="w-full h-full object-cover"
-                               />
+                             {exerciseImages[currentSegment.exerciseName.split(' (Set')[0]] ? (
+                               <div className="w-full h-full relative">
+                                 <img 
+                                   src={exerciseImages[currentSegment.exerciseName.split(' (Set')[0]]} 
+                                   alt={currentSegment.exerciseName}
+                                   className="w-full h-full object-cover"
+                                 />
+                                 {/* Check if there's a video URL for this exercise */}
+                                 {(() => {
+                                   const exerciseName = currentSegment.exerciseName.split(' (Set')[0];
+                                   const allExercises = [
+                                     ...(Array.isArray(session?.warmup_exercises) ? session.warmup_exercises : []),
+                                     ...(Array.isArray(session?.figures) ? session.figures : []),
+                                     ...(Array.isArray(session?.stretching_exercises) ? session.stretching_exercises : [])
+                                   ];
+                                   const exercise = allExercises.find((ex: any) => ex.name === exerciseName);
+                                   
+                                   if (exercise?.video_url) {
+                                     return (
+                                       <video
+                                         src={exercise.video_url}
+                                         className="absolute inset-0 w-full h-full object-cover"
+                                         autoPlay
+                                         loop
+                                         muted
+                                         playsInline
+                                       />
+                                     );
+                                   }
+                                   return null;
+                                 })()}
+                               </div>
                              ) : (
                                <span className="text-6xl md:text-8xl">🏃‍♂️</span>
                              )}
                            </div>
-                         )}
+                          )}
                       </div>
 
                       <div className="absolute top-4 left-4">
@@ -793,8 +825,25 @@ const TrainingExerciseSession = () => {
                             <div className="text-6xl sm:text-7xl md:text-9xl mb-4">
                               <CheckCircle className="w-24 h-24 md:w-32 md:h-32 text-green-400 mx-auto" />
                             </div>
-                            <div className="text-lg sm:text-xl text-green-400 font-semibold">Completion Mode</div>
-                            <div className="text-sm sm:text-base text-white/60">Mark as done when finished</div>
+                            <div className="text-lg sm:text-xl text-green-400 font-semibold mb-2">Completion Mode</div>
+                            <div className="text-sm sm:text-base text-white/60 mb-2">Mark as done when finished</div>
+                            <div className="bg-green-500/20 border border-green-500/30 rounded-lg p-3 text-center">
+                              <div className="text-white font-semibold">
+                                {(() => {
+                                  const sets = currentSegment.sets || 1;
+                                  const reps = currentSegment.reps;
+                                  const setNumber = currentSegment.setIndex + 1;
+                                  
+                                  if (sets > 1) {
+                                    return `Set ${setNumber} of ${sets}${reps ? ` - ${reps} repetitions` : ''}`;
+                                  } else if (reps) {
+                                    return `${reps} repetitions`;
+                                  } else {
+                                    return "Complete the exercise";
+                                  }
+                                })()}
+                              </div>
+                            </div>
                           </div>
                         ) : (
                           <div className="text-4xl sm:text-5xl md:text-8xl font-mono font-bold text-primary mb-2">
