@@ -1243,6 +1243,7 @@ export type Database = {
       training_day_exercises: {
         Row: {
           audio_url: string | null
+          completion_mode: string | null
           created_at: string
           figure_id: string
           hold_time_seconds: number | null
@@ -1257,6 +1258,7 @@ export type Database = {
         }
         Insert: {
           audio_url?: string | null
+          completion_mode?: string | null
           created_at?: string
           figure_id: string
           hold_time_seconds?: number | null
@@ -1271,6 +1273,7 @@ export type Database = {
         }
         Update: {
           audio_url?: string | null
+          completion_mode?: string | null
           created_at?: string
           figure_id?: string
           hold_time_seconds?: number | null

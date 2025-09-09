@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
@@ -17,7 +18,9 @@ import {
   RotateCcw,
   Flame,
   Dumbbell,
-  Feather
+  Feather,
+  CheckCircle,
+  Timer
 } from 'lucide-react';
 import { ExerciseSearchModal } from './ExerciseSearchModal';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,6 +43,7 @@ interface SessionExercise {
   hold_time_seconds: number;
   notes: string;
   order_index: number;
+  completion_mode?: 'time' | 'completion';
 }
 
 interface ExerciseCategories {
@@ -120,7 +124,8 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
       reps,
       hold_time_seconds: holdTime,
       notes: '',
-      order_index: maxOrder + 1
+      order_index: maxOrder + 1,
+      completion_mode: holdTime === 0 ? 'completion' : 'time'
     };
 
     const updatedExercises = {
@@ -239,62 +244,97 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                     </div>
 
                     {editingIndex?.category === category && editingIndex?.index === index ? (
-                      <div className="grid grid-cols-4 gap-2 mt-3">
-                        <div>
-                          <Label className="text-white/70 text-xs">Sets</Label>
-                          <Input
-                            type="number"
-                            value={exercise.sets}
-                            onChange={(e) => {
+                      <div className="space-y-3 mt-3">
+                        <div className="grid grid-cols-4 gap-2">
+                          <div>
+                            <Label className="text-white/70 text-xs">Sets</Label>
+                            <Input
+                              type="number"
+                              value={exercise.sets}
+                              onChange={(e) => {
+                                const updatedExercises = { ...exercises };
+                                updatedExercises[category][index].sets = parseInt(e.target.value) || 1;
+                                setExercises(updatedExercises);
+                              }}
+                              className="h-8 bg-white/5 border-white/10 text-white text-xs"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-white/70 text-xs">Reps</Label>
+                            <Input
+                              type="number"
+                              value={exercise.reps}
+                              onChange={(e) => {
+                                const updatedExercises = { ...exercises };
+                                updatedExercises[category][index].reps = parseInt(e.target.value) || 1;
+                                setExercises(updatedExercises);
+                              }}
+                              className="h-8 bg-white/5 border-white/10 text-white text-xs"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-white/70 text-xs">Hold (s)</Label>
+                            <Input
+                              type="number"
+                              value={exercise.hold_time_seconds}
+                              onChange={(e) => {
+                                const updatedExercises = { ...exercises };
+                                const holdTime = parseInt(e.target.value) || 0;
+                                updatedExercises[category][index].hold_time_seconds = holdTime;
+                                // Auto-set completion mode based on hold time
+                                updatedExercises[category][index].completion_mode = holdTime === 0 ? 'completion' : 'time';
+                                setExercises(updatedExercises);
+                              }}
+                              className="h-8 bg-white/5 border-white/10 text-white text-xs"
+                            />
+                          </div>
+                          <div className="flex gap-1 items-end">
+                            <Button
+                              size="sm"
+                              onClick={() => handleUpdateExercise(category, index, exercises[category][index])}
+                              className="h-8 w-8 p-0 bg-green-500/20 text-green-400 hover:bg-green-500/30"
+                            >
+                              <Save className="w-3 h-3" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingIndex(null)}
+                              className="h-8 w-8 p-0 border-white/20 text-white/70 hover:bg-white/10"
+                            >
+                              <X className="w-3 h-3" />
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Completion Mode Toggle */}
+                        <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
+                          <div className="flex items-center gap-2">
+                            {(exercise.completion_mode || 'time') === 'time' ? 
+                              <Timer className="w-4 h-4 text-blue-400" /> : 
+                              <CheckCircle className="w-4 h-4 text-green-400" />
+                            }
+                            <Label className="text-white/70 text-sm">
+                              {(exercise.completion_mode || 'time') === 'time' ? 'Time-based' : 'Completion-based'}
+                            </Label>
+                          </div>
+                          <Switch
+                            checked={(exercise.completion_mode || 'time') === 'completion'}
+                            onCheckedChange={(checked) => {
                               const updatedExercises = { ...exercises };
-                              updatedExercises[category][index].sets = parseInt(e.target.value) || 1;
+                              updatedExercises[category][index].completion_mode = checked ? 'completion' : 'time';
+                              if (checked) {
+                                updatedExercises[category][index].hold_time_seconds = 0;
+                              }
                               setExercises(updatedExercises);
                             }}
-                            className="h-8 bg-white/5 border-white/10 text-white text-xs"
                           />
-                        </div>
-                        <div>
-                          <Label className="text-white/70 text-xs">Reps</Label>
-                          <Input
-                            type="number"
-                            value={exercise.reps}
-                            onChange={(e) => {
-                              const updatedExercises = { ...exercises };
-                              updatedExercises[category][index].reps = parseInt(e.target.value) || 1;
-                              setExercises(updatedExercises);
-                            }}
-                            className="h-8 bg-white/5 border-white/10 text-white text-xs"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-white/70 text-xs">Hold (s)</Label>
-                          <Input
-                            type="number"
-                            value={exercise.hold_time_seconds}
-                            onChange={(e) => {
-                              const updatedExercises = { ...exercises };
-                              updatedExercises[category][index].hold_time_seconds = parseInt(e.target.value) || 30;
-                              setExercises(updatedExercises);
-                            }}
-                            className="h-8 bg-white/5 border-white/10 text-white text-xs"
-                          />
-                        </div>
-                        <div className="flex gap-1 items-end">
-                          <Button
-                            size="sm"
-                            onClick={() => handleUpdateExercise(category, index, exercises[category][index])}
-                            className="h-8 w-8 p-0 bg-green-500/20 text-green-400 hover:bg-green-500/30"
-                          >
-                            <Save className="w-3 h-3" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setEditingIndex(null)}
-                            className="h-8 w-8 p-0 border-white/20 text-white/70 hover:bg-white/10"
-                          >
-                            <X className="w-3 h-3" />
-                          </Button>
+                          <span className="text-xs text-white/50">
+                            {(exercise.completion_mode || 'time') === 'completion' 
+                              ? 'Click "Done" to complete' 
+                              : 'Timer-based completion'
+                            }
+                          </span>
                         </div>
                       </div>
                     ) : (
@@ -308,8 +348,17 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                           <span>{exercise.reps} reps</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Clock className="w-3 h-3" />
-                          <span>{exercise.hold_time_seconds}s hold</span>
+                          {(exercise.completion_mode || 'time') === 'completion' ? (
+                            <>
+                              <CheckCircle className="w-3 h-3 text-green-400" />
+                              <span className="text-green-400">Completion mode</span>
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-3 h-3" />
+                              <span>{exercise.hold_time_seconds}s hold</span>
+                            </>
+                          )}
                         </div>
                       </div>
                     )}
