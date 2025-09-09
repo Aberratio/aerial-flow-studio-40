@@ -37,6 +37,14 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { CreateExerciseModal } from "@/components/CreateExerciseModal";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PricingModal } from "@/components/PricingModal";
@@ -87,6 +95,9 @@ const Library = () => {
   const [showFigureSearch, setShowFigureSearch] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const EXERCISES_PER_PAGE = 40;
 
   const categories = ["all", "silks", "hoop", "pole", "hammock"];
   const levels = ["all", "beginner", "intermediate", "advanced", "expert"];
@@ -372,6 +383,17 @@ const Library = () => {
       );
     })
     .sort((a, b) => a.name.localeCompare(b.name));
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredFigures.length / EXERCISES_PER_PAGE);
+  const startIndex = (currentPage - 1) * EXERCISES_PER_PAGE;
+  const endIndex = startIndex + EXERCISES_PER_PAGE;
+  const paginatedFigures = filteredFigures.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategories, selectedLevels, selectedTypes, selectedTags, selectedStatuses, selectedExperts, selectedContentTypes, selectedVideoTypes]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -1631,9 +1653,16 @@ const Library = () => {
           )}
         </div>
 
+        {/* Results summary */}
+        {filteredFigures.length > 0 && (
+          <div className="mb-4 text-white/60 text-sm">
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredFigures.length)} of {filteredFigures.length} exercises
+          </div>
+        )}
+
         {/* Exercise Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredFigures.map((figure) => (
+          {paginatedFigures.map((figure) => (
             <Card
               key={figure.id}
               className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-200 cursor-pointer group"
@@ -1772,6 +1801,79 @@ const Library = () => {
             </Card>
           ))}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-8 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) {
+                        setCurrentPage(currentPage - 1);
+                      }
+                    }}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+                
+                {[...Array(totalPages)].map((_, index) => {
+                  const pageNumber = index + 1;
+                  const isCurrentPage = pageNumber === currentPage;
+                  
+                  // Show first page, last page, current page, and pages around current page
+                  const showPage = 
+                    pageNumber === 1 || 
+                    pageNumber === totalPages || 
+                    (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1);
+                  
+                  if (!showPage) {
+                    // Show ellipsis for gaps
+                    if (pageNumber === currentPage - 2 || pageNumber === currentPage + 2) {
+                      return (
+                        <PaginationItem key={pageNumber}>
+                          <span className="px-3 py-2 text-white/60">...</span>
+                        </PaginationItem>
+                      );
+                    }
+                    return null;
+                  }
+                  
+                  return (
+                    <PaginationItem key={pageNumber}>
+                      <PaginationLink
+                        href="#"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCurrentPage(pageNumber);
+                        }}
+                        isActive={isCurrentPage}
+                      >
+                        {pageNumber}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+                
+                <PaginationItem>
+                  <PaginationNext 
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) {
+                        setCurrentPage(currentPage + 1);
+                      }
+                    }}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
 
         {filteredFigures.length === 0 && (
           <div className="text-center py-12">
