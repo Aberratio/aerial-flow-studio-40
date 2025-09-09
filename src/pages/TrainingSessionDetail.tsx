@@ -234,7 +234,8 @@ const TrainingSessionDetail = () => {
                     {typeof exercise === 'object' && exercise.sets && (
                       <div className="text-xs text-white/60 truncate">
                         {exercise.sets} sets × {exercise.reps} reps
-                        {exercise.hold_time_seconds && ` (${exercise.hold_time_seconds}s)`}
+                        {exercise.hold_time_seconds && exercise.hold_time_seconds > 0 && ` (${exercise.hold_time_seconds}s)`}
+                        {(exercise.completion_mode === 'completion' || exercise.hold_time_seconds === 0) && ' (Completion)'}
                       </div>
                     )}
                   </div>
