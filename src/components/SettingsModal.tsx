@@ -79,33 +79,113 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   </div>
                 ) : hasPremiumAccess ? (
                   <>
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-3">
                       <span className="text-white font-medium">Current Plan</span>
                       <span className="text-green-400 text-sm font-medium">
                         {subscription_tier || user?.role || 'Premium'}
                       </span>
                     </div>
-                    {subscription_end && (
-                      <p className="text-muted-foreground text-sm mb-3">
-                        Subscription active until {new Date(subscription_end).toLocaleDateString()}
-                      </p>
+
+                    {/* Check if user has Stripe subscription or manual premium */}
+                    {subscribed && subscription_end ? (
+                      <>
+                        {/* Stripe subscription details */}
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Subscription active until:</span>
+                            <span className="text-white">
+                              {new Date(subscription_end).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Next billing date:</span>
+                            <span className="text-white">
+                              {new Date(subscription_end).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Plan type:</span>
+                            <span className="text-white">Monthly subscription</span>
+                          </div>
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={async () => {
+                              try {
+                                const { data, error } = await supabase.functions.invoke('customer-portal');
+                                if (error) throw error;
+                                if (data.url) window.open(data.url, '_blank');
+                              } catch (error) {
+                                console.error('Portal error:', error);
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to open subscription management portal",
+                                  variant: "destructive"
+                                });
+                              }
+                            }}
+                            className="flex-1 border-white/20 text-white hover:bg-white/10"
+                          >
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Manage Subscription
+                          </Button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {/* Manual premium (no Stripe subscription) */}
+                        <div className="space-y-2 mb-4">
+                          <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Crown className="w-4 h-4 text-blue-400" />
+                              <span className="text-blue-400 font-medium text-sm">Manual Premium Access</span>
+                            </div>
+                            <p className="text-blue-300 text-xs">
+                              Your premium access was granted manually by an administrator. 
+                              This is not a recurring subscription and won't auto-renew.
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <p className="text-muted-foreground text-sm">
+                          To upgrade to a recurring subscription plan, click the button below.
+                        </p>
+                        
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              const { data, error } = await supabase.functions.invoke('create-checkout', {
+                                body: { paymentType: 'subscription' }
+                              });
+                              if (error) throw error;
+                              if (data.url) window.open(data.url, '_blank');
+                            } catch (error) {
+                              console.error('Checkout error:', error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to start checkout process",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
+                          className="w-full border-white/20 text-white hover:bg-white/10"
+                        >
+                          <Crown className="w-4 h-4 mr-2" />
+                          Subscribe to Premium Plan
+                        </Button>
+                      </>
                     )}
-                    <Button
-                      variant="outline"
-                      onClick={async () => {
-                        try {
-                          const { data, error } = await supabase.functions.invoke('customer-portal');
-                          if (error) throw error;
-                          if (data.url) window.open(data.url, '_blank');
-                        } catch (error) {
-                          console.error('Portal error:', error);
-                        }
-                      }}
-                      className="w-full border-white/20 text-white hover:bg-white/10"
-                    >
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Manage Subscription
-                    </Button>
                   </>
                 ) : (
                   <>
@@ -127,6 +207,11 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                           if (data.url) window.open(data.url, '_blank');
                         } catch (error) {
                           console.error('Checkout error:', error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to start checkout process",
+                            variant: "destructive"
+                          });
                         }
                       }}
                       className="w-full"
