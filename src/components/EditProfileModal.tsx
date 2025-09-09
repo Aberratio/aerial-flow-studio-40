@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Camera, Save, X, Loader2, Plus, Trash2 } from 'lucide-react';
+import { Camera, Save, X, Loader2, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,20 +24,30 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
   const [bio, setBio] = useState(user?.bio || '');
   const [email, setEmail] = useState(user?.email || '');
   const [sports, setSports] = useState<string[]>([]);
-  const [newSport, setNewSport] = useState('');
+  const [availableSports, setAvailableSports] = useState<any[]>([]);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isCropModalOpen, setIsCropModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  const popularSports = [
-    'silks', 'hoop', 'pole', 'straps', 'hammock', 'acrobatics', 
-    'gymnastics', 'dance', 'yoga', 'contortion', 'circus arts'
-  ];
-
   useEffect(() => {
     if (user && isOpen) {
+      // Fetch available sports from database
+      const fetchAvailableSports = async () => {
+        const { data, error } = await supabase
+          .from('sport_categories')
+          .select('id, key_name, name, description, icon')
+          .eq('is_published', true)
+          .order('name');
+        
+        if (error) {
+          console.error('Error fetching sports:', error);
+        } else {
+          setAvailableSports(data || []);
+        }
+      };
+
       // Fetch user's sports from profile
       const fetchUserSports = async () => {
         const { data, error } = await supabase
@@ -51,25 +61,19 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
         }
       };
       
+      fetchAvailableSports();
       fetchUserSports();
     }
   }, [user, isOpen]);
 
-  const addSport = (sport: string) => {
-    if (!sports.includes(sport)) {
-      setSports([...sports, sport]);
+  const addSport = (sportId: string) => {
+    if (!sports.includes(sportId)) {
+      setSports([...sports, sportId]);
     }
   };
 
-  const removeSport = (sport: string) => {
-    setSports(sports.filter(s => s !== sport));
-  };
-
-  const addCustomSport = () => {
-    if (newSport.trim() && !sports.includes(newSport.trim())) {
-      setSports([...sports, newSport.trim()]);
-      setNewSport('');
-    }
+  const removeSport = (sportId: string) => {
+    setSports(sports.filter(s => s !== sportId));
   };
 
   const handleAvatarSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -250,20 +254,21 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
             <div>
               <Label className="text-white">Sports & Activities</Label>
               <div className="space-y-3">
-                {/* Popular Sports */}
+                {/* Available Sports from Database */}
                 <div className="flex flex-wrap gap-2">
-                  {popularSports.map((sport) => (
+                  {availableSports.map((sport) => (
                     <Button
-                      key={sport}
-                      variant={sports.includes(sport) ? "primary" : "outline"}
+                      key={sport.id}
+                      variant={sports.includes(sport.id) ? "primary" : "outline"}
                       size="sm"
-                      onClick={() => sports.includes(sport) ? removeSport(sport) : addSport(sport)}
-                      className={sports.includes(sport) 
+                      onClick={() => sports.includes(sport.id) ? removeSport(sport.id) : addSport(sport.id)}
+                      className={sports.includes(sport.id) 
                         ? "bg-purple-500/80 text-white" 
                         : "border-white/20 text-white hover:bg-white/10"
                       }
                     >
-                      {sport.charAt(0).toUpperCase() + sport.slice(1)}
+                      {sport.icon && <span className="mr-1">{sport.icon}</span>}
+                      {sport.name}
                     </Button>
                   ))}
                 </div>
@@ -273,44 +278,30 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
                   <div className="border border-white/10 rounded-lg p-3 bg-white/5">
                     <Label className="text-white text-sm mb-2 block">Your Sports:</Label>
                     <div className="flex flex-wrap gap-2">
-                      {sports.map((sport) => (
-                        <Badge 
-                          key={sport} 
-                          className="bg-purple-500/20 text-purple-300 border-purple-400/30 flex items-center gap-1"
-                        >
-                          {sport}
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeSport(sport)}
-                            className="h-4 w-4 p-0 hover:bg-red-500/20"
+                      {sports.map((sportId) => {
+                        const sport = availableSports.find(s => s.id === sportId);
+                        const sportName = sport?.name || sportId;
+                        return (
+                          <Badge 
+                            key={sportId} 
+                            className="bg-purple-500/20 text-purple-300 border-purple-400/30 flex items-center gap-1"
                           >
-                            <Trash2 className="w-3 h-3" />
-                          </Button>
-                        </Badge>
-                      ))}
+                            {sport?.icon && <span>{sport.icon}</span>}
+                            {sportName}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => removeSport(sportId)}
+                              className="h-4 w-4 p-0 hover:bg-red-500/20"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </Button>
+                          </Badge>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
-
-                {/* Add Custom Sport */}
-                <div className="flex gap-2">
-                  <Input
-                    value={newSport}
-                    onChange={(e) => setNewSport(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white placeholder:text-white/60 flex-1"
-                    placeholder="Add a custom sport..."
-                    onKeyPress={(e) => e.key === 'Enter' && addCustomSport()}
-                  />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={addCustomSport}
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
               </div>
             </div>
           </div>
