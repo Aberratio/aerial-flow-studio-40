@@ -410,33 +410,6 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Recent Achievements */}
-        {recentAchievements.length > 0 && (
-          <Card className="glass-effect border-white/10 mb-8">
-            <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-yellow-400" />
-                Recent Achievements
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {recentAchievements.map(achievement => (
-                  <div key={achievement.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg">
-                    <div className="text-2xl">{achievement.icon}</div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white">{achievement.name}</h4>
-                      <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                    </div>
-                    <Badge className="bg-yellow-500/20 text-yellow-400">
-                      New!
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Selected Sports */}
         <Card className="glass-effect border-white/10">

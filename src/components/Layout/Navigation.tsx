@@ -230,7 +230,6 @@ const Navigation: React.FC<NavigationProps> = ({
               </Avatar>
               <div className={`flex-1 ${isMobile ? 'block' : 'hidden lg:block'}`}>
                 <p className="text-white font-medium text-sm">{user?.username}</p>
-                <p className="text-muted-foreground text-xs">{user?.email}</p>
               </div>
             </Link>
           </div>
