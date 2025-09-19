@@ -577,7 +577,7 @@ const ChallengeDayTimer = () => {
         </div>
 
         {/* Current Exercise/Rest Display */}
-        <Card className="glass-effect border-white/10 mb-6 flex-1 flex flex-col bg-gradient-to-b from-white/5 to-transparent">
+        <Card className="glass-effect border-white/10 mb-6 flex-1 flex flex-col bg-gradient-to-b from-white/5 to-transparent max-h-[50vh] md:max-h-none">
           <CardContent className="p-3 md:p-6 text-center flex-1 flex flex-col justify-center relative overflow-hidden">
             {getCurrentSegment() && (
               <>
@@ -630,7 +630,7 @@ const ChallengeDayTimer = () => {
                 ) : (
                   <>
                     {/* Rest Display - Ultra compact version */}
-                    <div className="mb-1 flex items-center justify-center">
+                    <div className="mb-1 flex items-center justify-center px-4">
                       <div className="w-24 h-24 md:w-28 md:h-28 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-xl flex items-center justify-center shadow-lg ring-1 ring-blue-400/30 backdrop-blur-sm">
                         <Hand className="w-12 h-12 md:w-14 md:h-14 text-blue-300" />
                       </div>
