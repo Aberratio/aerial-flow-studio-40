@@ -629,10 +629,10 @@ const ChallengeDayTimer = () => {
                   </>
                 ) : (
                   <>
-                    {/* Rest Display */}
-                    <div className="mb-4 flex-1 flex items-center justify-center">
-                      <div className="w-32 h-32 md:w-full md:max-w-md md:mx-auto md:aspect-square bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-3xl flex items-center justify-center shadow-2xl ring-1 ring-blue-400/30 backdrop-blur-sm">
-                        <Hand className="w-12 h-12 md:w-20 md:h-20 lg:w-24 lg:h-24 text-blue-300" />
+                    {/* Rest Display - Smaller height */}
+                    <div className="mb-4 flex items-center justify-center">
+                      <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-3xl flex items-center justify-center shadow-2xl ring-1 ring-blue-400/30 backdrop-blur-sm">
+                        <Hand className="w-8 h-8 md:w-12 md:h-12 text-blue-300" />
                       </div>
                     </div>
 
@@ -650,7 +650,6 @@ const ChallengeDayTimer = () => {
                     <h2 className="text-xl md:text-2xl font-bold text-blue-300 mb-2">
                       Rest Time
                     </h2>
-                    <p className="text-white/70 text-base">Take a deep breath</p>
                   </>
                 )}
 
