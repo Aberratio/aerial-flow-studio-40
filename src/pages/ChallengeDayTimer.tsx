@@ -584,7 +584,7 @@ const ChallengeDayTimer = () => {
                 {getCurrentSegment().type === "exercise" ? (
                   <>
                     {/* Exercise Image - Maximum Size */}
-                    <div className="mb-4 flex-1 flex items-center justify-center">
+                    <div className="mb-2 md:mb-4 flex-1 flex items-center justify-center max-h-[40vh] md:max-h-none">
                       {getCurrentSegment().exerciseImage ? (
                         <div className="relative w-full max-w-md mx-auto">
                           <img
