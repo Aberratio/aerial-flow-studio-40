@@ -629,15 +629,15 @@ const ChallengeDayTimer = () => {
                   </>
                 ) : (
                   <>
-                    {/* Rest Display - Compact version */}
-                    <div className="mb-3 flex items-center justify-center">
-                      <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-2xl flex items-center justify-center shadow-lg ring-1 ring-blue-400/30 backdrop-blur-sm">
-                        <Hand className="w-6 h-6 md:w-8 md:h-8 text-blue-300" />
+                    {/* Rest Display - Ultra compact version */}
+                    <div className="mb-1 flex items-center justify-center">
+                      <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-xl flex items-center justify-center shadow-lg ring-1 ring-blue-400/30 backdrop-blur-sm">
+                        <Hand className="w-5 h-5 md:w-6 md:h-6 text-blue-300" />
                       </div>
                     </div>
 
                     {/* Progress Bar - Mobile (after rest image) */}
-                    <div className="mb-3 flex-shrink-0 block md:hidden">
+                    <div className="mb-1 flex-shrink-0 block md:hidden">
                       <div className="relative">
                         <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
                         <div 
@@ -647,14 +647,14 @@ const ChallengeDayTimer = () => {
                       </div>
                     </div>
 
-                    <h2 className="text-lg md:text-xl font-bold text-blue-300 mb-1">
+                    <h2 className="text-base md:text-lg font-bold text-blue-300 mb-0">
                       Rest Time
                     </h2>
                   </>
                 )}
 
                 {/* Timer Display */}
-                <div className="text-4xl md:text-5xl font-mono font-bold mt-4 mb-4 bg-gradient-to-r from-white via-primary-foreground to-white bg-clip-text text-transparent drop-shadow-lg">
+                <div className="text-3xl md:text-4xl font-mono font-bold mt-2 mb-2 bg-gradient-to-r from-white via-primary-foreground to-white bg-clip-text text-transparent drop-shadow-lg">
                   {isPreparingToStart
                     ? formatTime(preparationTime)
                     : formatTime(timeRemaining)}
@@ -662,7 +662,7 @@ const ChallengeDayTimer = () => {
 
                 {/* Get Ready Message */}
                 {isPreparingToStart && (
-                  <div className="text-lg md:text-xl font-semibold text-yellow-300 mb-2 animate-pulse">
+                  <div className="text-base md:text-lg font-semibold text-yellow-300 mb-1 animate-pulse">
                     🚀 Get Ready!
                   </div>
                 )}
