@@ -629,15 +629,15 @@ const ChallengeDayTimer = () => {
                   </>
                 ) : (
                   <>
-                    {/* Rest Display - Smaller height */}
-                    <div className="mb-4 flex items-center justify-center">
-                      <div className="w-24 h-24 md:w-32 md:h-32 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-3xl flex items-center justify-center shadow-2xl ring-1 ring-blue-400/30 backdrop-blur-sm">
-                        <Hand className="w-8 h-8 md:w-12 md:h-12 text-blue-300" />
+                    {/* Rest Display - Compact version */}
+                    <div className="mb-3 flex items-center justify-center">
+                      <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-2xl flex items-center justify-center shadow-lg ring-1 ring-blue-400/30 backdrop-blur-sm">
+                        <Hand className="w-6 h-6 md:w-8 md:h-8 text-blue-300" />
                       </div>
                     </div>
 
                     {/* Progress Bar - Mobile (after rest image) */}
-                    <div className="mb-4 flex-shrink-0 block md:hidden">
+                    <div className="mb-3 flex-shrink-0 block md:hidden">
                       <div className="relative">
                         <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
                         <div 
@@ -647,7 +647,7 @@ const ChallengeDayTimer = () => {
                       </div>
                     </div>
 
-                    <h2 className="text-xl md:text-2xl font-bold text-blue-300 mb-2">
+                    <h2 className="text-lg md:text-xl font-bold text-blue-300 mb-1">
                       Rest Time
                     </h2>
                   </>
