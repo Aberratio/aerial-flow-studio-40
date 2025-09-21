@@ -577,8 +577,8 @@ const ChallengeDayTimer = () => {
         </div>
 
         {/* Current Exercise/Rest Display */}
-        <Card className="glass-effect border-white/10 mb-6 flex-1 flex flex-col bg-gradient-to-b from-white/5 to-transparent max-h-[50vh] md:max-h-none">
-          <CardContent className="p-3 md:p-6 text-center flex-1 flex flex-col justify-center relative overflow-hidden">
+        <Card className="glass-effect border-white/10 mb-6 flex-1 flex flex-col bg-gradient-to-b from-white/5 to-transparent max-h-[60vh] md:max-h-none overflow-visible">
+          <CardContent className="p-3 md:p-6 text-center flex-1 flex flex-col justify-center relative overflow-visible">
             {getCurrentSegment() && (
               <>
                 {getCurrentSegment().type === "exercise" ? (
@@ -603,7 +603,7 @@ const ChallengeDayTimer = () => {
                     </div>
 
                     {/* Progress Bar - Mobile (after exercise image) */}
-                    <div className="mb-4 flex-shrink-0 block md:hidden">
+                    <div className="mt-1 mb-4 flex-shrink-0 block md:hidden">
                       <div className="relative">
                         <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
                         <div 
