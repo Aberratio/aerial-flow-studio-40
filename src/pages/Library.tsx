@@ -396,6 +396,19 @@ const Library = () => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategories, selectedLevels, selectedTypes, selectedTags, selectedStatuses, selectedExperts, selectedContentTypes, selectedVideoTypes]);
 
+  // Auto-scroll to results on mobile when filters are applied
+  useEffect(() => {
+    if (isMobile && (searchTerm || selectedCategories.length > 0 || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedTags.length > 0 || selectedStatuses.length > 0 || selectedExperts.length > 0 || selectedContentTypes.length > 0 || selectedVideoTypes.length > 0)) {
+      const timer = setTimeout(() => {
+        const resultsSection = document.querySelector('[data-results-section]');
+        if (resultsSection) {
+          resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, searchTerm, selectedCategories, selectedLevels, selectedTypes, selectedTags, selectedStatuses, selectedExperts, selectedContentTypes, selectedVideoTypes]);
+
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "Beginner":
@@ -514,7 +527,12 @@ const Library = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <Filter className="w-5 h-5 text-white" />
-                        <span className="text-white font-medium">Filters</span>
+                        <div className="flex flex-col">
+                          <span className="text-white font-medium">Filters</span>
+                          <span className="text-white/60 text-sm">
+                            {filteredFigures.length} exercises found
+                          </span>
+                        </div>
                       </div>
                       {filtersCollapsed ? <ChevronDown className="w-5 h-5 text-white" /> : <ChevronUp className="w-5 h-5 text-white" />}
                     </div>
@@ -1654,6 +1672,18 @@ const Library = () => {
           )}
         </div>
 
+        {/* Mobile results indicator when filters are collapsed */}
+        {isMobile && filtersCollapsed && filteredFigures.length > 0 && (
+          <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg">
+            <div className="text-white font-medium text-sm mb-1">
+              {filteredFigures.length} exercises found
+            </div>
+            <div className="text-white/60 text-xs">
+              Tap to scroll down and see results below ↓
+            </div>
+          </div>
+        )}
+
         {/* Results summary */}
         {filteredFigures.length > 0 && (
           <div className="mb-4 text-white/60 text-sm">
@@ -1662,7 +1692,7 @@ const Library = () => {
         )}
 
         {/* Exercise Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" data-results-section>
           {paginatedFigures.map((figure) => (
             <Card
               key={figure.id}
