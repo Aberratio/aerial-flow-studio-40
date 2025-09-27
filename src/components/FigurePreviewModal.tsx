@@ -109,14 +109,6 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl w-full p-0 bg-black/95 border-white/10">
         <div className="relative">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="absolute top-4 right-4 z-10 text-white hover:bg-white/10"
-          >
-            <X className="w-5 h-5" />
-          </Button>
           
           {/* Image */}
           <div className="w-full aspect-video bg-black/50 flex items-center justify-center">
@@ -156,7 +148,7 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
               <div className="mb-6">
                 <Button
                   variant={figureProgress === 'completed' ? 'default' : 'outline'}
-                  onClick={() => updateFigureStatus('completed')}
+                  onClick={() => updateFigureStatus(figureProgress === 'completed' ? 'not_tried' : 'completed')}
                   disabled={loading}
                   className={cn(
                     "w-full flex items-center justify-center gap-2",
