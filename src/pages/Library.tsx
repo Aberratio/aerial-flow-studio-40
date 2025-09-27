@@ -38,6 +38,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import {
   Pagination,
   PaginationContent,
@@ -97,6 +98,7 @@ const Library = () => {
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [userProfile, setUserProfile] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const EXERCISES_PER_PAGE = 40;
 
@@ -519,28 +521,8 @@ const Library = () => {
           </div>
 
           {/* Filters Section */}
-          <Collapsible open={isMobile ? !filtersCollapsed : true} onOpenChange={isMobile ? (open) => setFiltersCollapsed(!open) : undefined}>
-            {isMobile && (
-              <div className="border border-white/10 rounded-lg bg-white/5 mb-3">
-                <CollapsibleTrigger asChild>
-                  <div className="w-full p-4 cursor-pointer hover:bg-white/10 transition-colors">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Filter className="w-5 h-5 text-white" />
-                        <div className="flex flex-col">
-                          <span className="text-white font-medium">Filters</span>
-                          <span className="text-white/60 text-sm">
-                            {filteredFigures.length} exercises found
-                          </span>
-                        </div>
-                      </div>
-                      {filtersCollapsed ? <ChevronDown className="w-5 h-5 text-white" /> : <ChevronUp className="w-5 h-5 text-white" />}
-                    </div>
-                  </div>
-                </CollapsibleTrigger>
-              </div>
-            )}
-            <CollapsibleContent>
+          {!isMobile ? (
+            <div>
               <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'}`}>
                 {/* Category Filter */}
                 <Popover>
@@ -1503,9 +1485,9 @@ const Library = () => {
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+               )}
+            </div>
+          ) : null}
 
           {/* Active Filters Summary */}
           {(selectedCategories.length > 0 ||
@@ -1672,17 +1654,6 @@ const Library = () => {
           )}
         </div>
 
-        {/* Mobile results indicator when filters are collapsed */}
-        {isMobile && filtersCollapsed && filteredFigures.length > 0 && (
-          <div className="mb-4 p-3 bg-white/5 border border-white/10 rounded-lg">
-            <div className="text-white font-medium text-sm mb-1">
-              {filteredFigures.length} exercises found
-            </div>
-            <div className="text-white/60 text-xs">
-              Tap to scroll down and see results below ↓
-            </div>
-          </div>
-        )}
 
         {/* Results summary */}
         {filteredFigures.length > 0 && (
@@ -1928,6 +1899,226 @@ const Library = () => {
               Clear All Filters
             </Button>
           </div>
+        )}
+
+        {/* Floating Filter Button for Mobile */}
+        {isMobile && (
+          <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
+            <SheetTrigger asChild>
+              <Button 
+                className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg z-50"
+                size="icon"
+              >
+                <Filter className="w-6 h-6" />
+                {(selectedCategories.length > 0 ||
+                  selectedLevels.length > 0 ||
+                  selectedTypes.length > 0 ||
+                  selectedStatuses.length > 0 ||
+                  selectedExperts.length > 0 ||
+                  selectedContentTypes.length > 0 ||
+                  selectedVideoTypes.length > 0) && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
+                    {(selectedCategories.filter(c => c !== "all").length +
+                      selectedLevels.filter(l => l !== "all").length +
+                      selectedTypes.filter(t => t !== "all").length +
+                      selectedStatuses.filter(s => s !== "all").length +
+                      selectedExperts.filter(e => e !== "all").length +
+                      selectedContentTypes.filter(c => c !== "all").length +
+                      selectedVideoTypes.filter(v => v !== "all").length +
+                      selectedTags.length)}
+                  </span>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[80vh] bg-slate-900/95 border-white/20">
+              <SheetHeader>
+                <SheetTitle className="text-white">Filter Exercises</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 space-y-6 overflow-y-auto max-h-[calc(80vh-8rem)]">
+                <div className="grid gap-4">
+                  {/* Category Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-white">Categories</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedCategories.includes("all")}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedCategories(["all"]);
+                            } else {
+                              setSelectedCategories([]);
+                            }
+                          }}
+                        />
+                        <span className="text-white text-sm">All</span>
+                      </label>
+                      {categories.slice(1).map((category) => (
+                        <label key={category} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedCategories.includes(category)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedCategories((prev) => [
+                                  ...prev.filter((c) => c !== "all"),
+                                  category,
+                                ]);
+                              } else {
+                                setSelectedCategories((prev) =>
+                                  prev.filter((c) => c !== category)
+                                );
+                              }
+                            }}
+                          />
+                          <span className="text-white text-sm capitalize">{category}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Difficulty Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-white">Difficulty</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <label className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedLevels.includes("all")}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedLevels(["all"]);
+                            } else {
+                              setSelectedLevels([]);
+                            }
+                          }}
+                        />
+                        <span className="text-white text-sm">All</span>
+                      </label>
+                      {levels.slice(1).map((level) => (
+                        <label key={level} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedLevels.includes(level)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedLevels((prev) => [
+                                  ...prev.filter((l) => l !== "all"),
+                                  level,
+                                ]);
+                              } else {
+                                setSelectedLevels((prev) =>
+                                  prev.filter((l) => l !== level)
+                                );
+                              }
+                            }}
+                          />
+                          <span className="text-white text-sm capitalize">{level}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Type Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-white">Types</label>
+                    <div className="grid grid-cols-1 gap-3">
+                      <label className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedTypes.includes("all")}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedTypes(["all"]);
+                            } else {
+                              setSelectedTypes([]);
+                            }
+                          }}
+                        />
+                        <span className="text-white text-sm">All Types</span>
+                      </label>
+                      {types.slice(1).map((type) => (
+                        <label key={type} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedTypes.includes(type)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedTypes((prev) => [
+                                  ...prev.filter((t) => t !== "all"),
+                                  type,
+                                ]);
+                              } else {
+                                setSelectedTypes((prev) =>
+                                  prev.filter((t) => t !== type)
+                                );
+                              }
+                            }}
+                          />
+                          <span className="text-white text-sm capitalize">{type.replace("_", " ")}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium text-white">Progress Status</label>
+                    <div className="grid grid-cols-1 gap-3">
+                      <label className="flex items-center space-x-2">
+                        <Checkbox
+                          checked={selectedStatuses.includes("all")}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedStatuses(["all"]);
+                            } else {
+                              setSelectedStatuses([]);
+                            }
+                          }}
+                        />
+                        <span className="text-white text-sm">All Statuses</span>
+                      </label>
+                      {statuses.slice(1).map((status) => (
+                        <label key={status} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectedStatuses.includes(status)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedStatuses((prev) => [
+                                  ...prev.filter((s) => s !== "all"),
+                                  status,
+                                ]);
+                              } else {
+                                setSelectedStatuses((prev) =>
+                                  prev.filter((s) => s !== status)
+                                );
+                              }
+                            }}
+                          />
+                          <span className="text-white text-sm capitalize">{status.replace("_", " ")}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Clear all filters button */}
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedCategories([]);
+                      setSelectedLevels([]);
+                      setSelectedTypes([]);
+                      setSelectedTags([]);
+                      setSelectedStatuses([]);
+                      setSelectedExperts([]);
+                      setSelectedContentTypes([]);
+                      setSelectedVideoTypes([]);
+                      setSearchTerm("");
+                      setMobileFiltersOpen(false);
+                    }}
+                    className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10"
+                  >
+                    Clear All Filters
+                  </Button>
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         )}
       </div>
 
