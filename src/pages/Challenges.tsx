@@ -66,9 +66,15 @@ const Challenges = () => {
         .select("*")
         .order("created_at", { ascending: false });
 
-      // If not admin, only show published challenges
+      // If not admin, show published challenges + own drafts for trainers
       if (!isAdmin) {
-        challengeQuery = challengeQuery.eq("status", "published");
+        if (canCreateChallenges && user) {
+          // Trainers can see published challenges OR their own drafts
+          challengeQuery = challengeQuery.or(`status.eq.published,and(status.eq.draft,created_by.eq.${user.id})`);
+        } else {
+          // Regular users only see published challenges
+          challengeQuery = challengeQuery.eq("status", "published");
+        }
       }
 
       const { data: allChallenges, error } = await challengeQuery;
