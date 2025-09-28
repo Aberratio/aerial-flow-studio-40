@@ -517,8 +517,17 @@ const EditChallenge = () => {
   };
 
   const addTrainingDay = () => {
+    // Calculate next date based on last training day or start date
+    let nextDate = new Date();
+    if (trainingDays.length > 0) {
+      const lastDate = trainingDays[trainingDays.length - 1].date;
+      nextDate = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000); // Add 1 day
+    } else if (startDate) {
+      nextDate = new Date(startDate);
+    }
+
     const newDay = {
-      date: null,
+      date: nextDate,
       title: `Day ${trainingDays.length + 1}`,
       description: "",
       exercises: [],
@@ -1063,44 +1072,12 @@ const EditChallenge = () => {
                                 <Label className="text-sm font-semibold text-foreground">
                                   Date
                                 </Label>
-                                <Popover>
-                                  <PopoverTrigger asChild>
-                                    <Button
-                                      variant="outline"
-                                      className={cn(
-                                        "w-full justify-start text-left font-normal h-11 bg-background/50 border-border/50",
-                                        !day.date && "text-muted-foreground"
-                                      )}
-                                    >
-                                      <Calendar className="mr-3 h-5 w-5" />
-                                      {day.date ? (
-                                        format(day.date, "MMM dd, yyyy")
-                                      ) : (
-                                        <span>Select date</span>
-                                      )}
-                                    </Button>
-                                  </PopoverTrigger>
-                                  <PopoverContent
-                                    className="w-auto p-0"
-                                    align="start"
-                                  >
-                                    <CalendarComponent
-                                      mode="single"
-                                      selected={day.date}
-                                      onSelect={(date) =>
-                                        date &&
-                                        updateTrainingDay(index, "date", date)
-                                      }
-                                      disabled={(date) =>
-                                        startDate
-                                          ? date < startDate
-                                          : date < new Date()
-                                      }
-                                      initialFocus
-                                      className="p-3 pointer-events-auto"
-                                    />
-                                  </PopoverContent>
-                                </Popover>
+                                <div className="px-3 py-2 border rounded-md bg-muted h-11 flex items-center">
+                                  <Calendar className="mr-3 h-5 w-5" />
+                                  <span className="text-sm">
+                                    {day.date ? format(day.date, "MMM dd, yyyy") : "Date will be set automatically"}
+                                  </span>
+                                </div>
                               </div>
                             </div>
 

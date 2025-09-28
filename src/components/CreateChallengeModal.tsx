@@ -340,10 +340,19 @@ const CreateChallengeModal = ({
   };
 
   const addTrainingDay = () => {
+    // Calculate next date based on last training day or start date
+    let nextDate = new Date();
+    if (trainingDays.length > 0) {
+      const lastDate = trainingDays[trainingDays.length - 1].date;
+      nextDate = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000); // Add 1 day
+    } else if (startDate) {
+      nextDate = new Date(startDate);
+    }
+
     setTrainingDays([
       ...trainingDays,
       {
-        date: new Date(),
+        date: nextDate,
         title: "",
         description: "",
         isRestDay: false,
@@ -666,42 +675,12 @@ const CreateChallengeModal = ({
                     </Button>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3">
                     <div className="space-y-2">
                       <Label className="text-xs">Date</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className={cn(
-                              "w-full justify-start text-left font-normal",
-                              !day.date && "text-muted-foreground"
-                            )}
-                            size="sm"
-                          >
-                            <Calendar className="mr-2 h-4 w-4" />
-                            {day.date ? (
-                              format(day.date, "PP")
-                            ) : (
-                              <span>Pick date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <CalendarComponent
-                            mode="single"
-                            selected={day.date}
-                            onSelect={(date) =>
-                              date && updateTrainingDay(index, "date", date)
-                            }
-                            disabled={(date) =>
-                              startDate ? date < startDate : date < new Date()
-                            }
-                            initialFocus
-                            className="p-3 pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <div className="px-3 py-2 border rounded-md bg-muted text-sm">
+                        {day.date ? format(day.date, "PPP") : "Date will be set automatically"}
+                      </div>
                     </div>
 
                     <div className="space-y-2">
