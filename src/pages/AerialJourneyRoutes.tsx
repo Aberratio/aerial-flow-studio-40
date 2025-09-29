@@ -4,8 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import AerialJourney from "./AerialJourney";
 import SkillTree from "@/components/SkillTree";
-import SportLevelManager from "@/components/SportLevelManager";
-import SportCategoryManager from "@/components/SportCategoryManager";
+import SportAdminPanel from "@/components/SportAdminPanel";
 import { supabase } from "@/integrations/supabase/client";
 
 const AerialJourneyRoutes = () => {
@@ -33,13 +32,11 @@ const AerialJourneyRoutes = () => {
     }
   };
 
-  // Admin routes
-  if (mode === "admin" && isAdmin) {
-    if (category === "levels") {
-      return <SportLevelManager onClose={() => navigate("/aerial-journey")} />;
-    }
-    if (category === "sports") {
-      return <SportCategoryManager onClose={() => navigate("/aerial-journey")} />;
+  // Admin routes - per sport management
+  if (mode === "admin" && category && isAdmin) {
+    const sportData = sportCategories.find(s => s.key_name === category);
+    if (sportData) {
+      return <SportAdminPanel sportKey={category} />;
     }
   }
 

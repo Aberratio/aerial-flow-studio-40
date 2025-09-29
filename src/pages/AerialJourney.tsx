@@ -195,7 +195,11 @@ const AerialJourney = () => {
   };
 
   const handleSkillTreeView = (category: string, name: string) => {
-    navigate(`/aerial-journey/sport/${category}`);
+    if (isAdmin) {
+      navigate(`/aerial-journey/admin/${category}`);
+    } else {
+      navigate(`/aerial-journey/sport/${category}`);
+    }
   };
 
   // Filter sports based on user role and selected sports
@@ -220,29 +224,31 @@ const AerialJourney = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 p-4 md:p-6">
-      <div className="max-w-6xl mx-auto">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/home")}
-          className="mb-6 text-white hover:bg-white/10"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
-        </Button>
+    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className="flex items-center justify-between mb-6">
+          <Button
+            variant="ghost"
+            onClick={() => navigate("/home")}
+            className="text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Home
+          </Button>
+        </div>
 
         <div className="text-center mb-8">
-          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
             Aerial Journey
           </h1>
-          <p className="text-xl text-muted-foreground mb-8">
+          <p className="text-lg md:text-xl text-muted-foreground">
             Master aerial skills through gamified progression
           </p>
         </div>
 
         {/* Available Sports */}
-        <Card className="glass-effect border-white/10 mb-8">
-          <CardHeader>
+        <Card className="glass-effect border-white/10">
+          <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-white flex items-center mb-2">
@@ -260,23 +266,8 @@ const AerialJourney = () => {
                 </p>
               </div>
               {isAdmin && (
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate('/aerial-journey/admin/sports')}
-                    className="border-green-400/30 text-green-400 hover:bg-green-400/10"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Manage Sports
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate('/aerial-journey/admin/levels')}
-                    className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Manage Levels
-                  </Button>
+                <div className="text-sm text-muted-foreground">
+                  Admin mode: Click any sport to manage it
                 </div>
               )}
             </div>
@@ -305,7 +296,7 @@ const AerialJourney = () => {
                 )}
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {filteredSports.map((sport) => {
                   const displayName = sport.name;
                   const icon = sport.icon;
@@ -328,13 +319,13 @@ const AerialJourney = () => {
                              : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
                            : "bg-gray-900/50 border-gray-600/20 opacity-60 cursor-not-allowed"
                        }`}
-                       onClick={() => {
-                         if ((sport.unlockedLevels || 0) > 0 || isAdmin) {
-                           handleSkillTreeView(sport.key_name, displayName);
-                         }
-                       }}
+                        onClick={() => {
+                          if ((sport.unlockedLevels || 0) > 0 || isAdmin) {
+                            handleSkillTreeView(sport.key_name!, displayName);
+                          }
+                        }}
                     >
-                      <CardContent className="p-6">
+                      <CardContent className="p-4 md:p-6">
                         {/* Admin Controls */}
                         {isAdmin && (
                           <div className="absolute top-3 right-3 flex items-center space-x-2">
