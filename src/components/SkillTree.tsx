@@ -87,9 +87,17 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
   useEffect(() => {
     fetchSportLevelsAndProgress();
-    fetchUserPoints();
-    fetchUserChallengeParticipations();
+    fetchUserChallengeParticipations().then(() => {
+      fetchUserPoints();
+    });
   }, [sportCategory, user]);
+
+  // Refresh points when challenge participations change
+  useEffect(() => {
+    if (Object.keys(userChallengeParticipations).length > 0) {
+      fetchUserPoints();
+    }
+  }, [userChallengeParticipations]);
 
   const fetchSportLevelsAndProgress = async () => {
     if (!user) return;
@@ -264,8 +272,10 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
       });
 
       setUserChallengeParticipations(participations);
+      return participations;
     } catch (error) {
       console.error("Error fetching challenge participations:", error);
+      return {};
     }
   };
 
@@ -364,7 +374,8 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
         }
       });
 
-      // Refresh user points
+      // Refresh user points after participation changes
+      await fetchUserChallengeParticipations();
       await fetchUserPoints();
 
       toast({
@@ -445,6 +456,9 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
         ...prev,
         [challengeId]: { participating: true, completed: false },
       }));
+
+      // Refresh points after joining challenge
+      await fetchUserPoints();
 
       // Navigate to challenge page
       navigate(`/challenges/${challengeId}`);
