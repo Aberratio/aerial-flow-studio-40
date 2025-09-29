@@ -36,7 +36,7 @@ import ExerciseDetail from "@/pages/ExerciseDetail";
 import EditExercise from "@/pages/EditExercise";
 import AchievementManagement from "@/pages/AchievementManagement";
 import Index from "@/pages/Index";
-import AerialJourney from "@/pages/AerialJourney";
+import AerialJourneyRoutes from "@/pages/AerialJourneyRoutes";
 import FigureOfTheDay from "@/pages/FigureOfTheDay";
 
 import LandingPageManagement from "@/pages/LandingPageManagement";
@@ -320,7 +320,15 @@ const AppRoutes = () => {
         path="/aerial-journey"
         element={
           <ProtectedRoute>
-            <AerialJourney />
+            <AerialJourneyRoutes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/aerial-journey/:mode/:category"
+        element={
+          <ProtectedRoute>
+            <AerialJourneyRoutes />
           </ProtectedRoute>
         }
       />

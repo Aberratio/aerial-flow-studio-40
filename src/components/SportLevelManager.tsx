@@ -40,6 +40,7 @@ interface Figure {
   difficulty_level: string;
   category: string;
   image_url: string;
+  hold_time_seconds?: number;
 }
 
 interface LevelFigure {
@@ -88,6 +89,11 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [editPointLimit, setEditPointLimit] = useState<number>(0);
   const [editSelectedChallenge, setEditSelectedChallenge] = useState<string>('none');
   const [editSelectedStatus, setEditSelectedStatus] = useState<'draft' | 'published'>('draft');
+  
+  // Hold time edit states
+  const [isEditHoldTimeOpen, setIsEditHoldTimeOpen] = useState(false);
+  const [editingFigure, setEditingFigure] = useState<Figure | null>(null);
+  const [editHoldTime, setEditHoldTime] = useState<number>(0);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -127,7 +133,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     try {
       const { data, error } = await supabase
         .from('figures')
-        .select('id, name, description, difficulty_level, category, image_url')
+        .select('id, name, description, difficulty_level, category, image_url, hold_time_seconds')
         .order('name');
 
       if (error) throw error;
@@ -241,7 +247,8 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
             description,
             difficulty_level,
             category,
-            image_url
+            image_url,
+            hold_time_seconds
           )
         `)
         .eq('level_id', levelId)
@@ -389,6 +396,44 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     } catch (error) {
       console.error('Error saving level figures:', error);
       toast.error('Failed to save level figures');
+    }
+  };
+
+  const openEditHoldTime = (figure: Figure) => {
+    setEditingFigure(figure);
+    setEditHoldTime(figure.hold_time_seconds || 0);
+    setIsEditHoldTimeOpen(true);
+  };
+
+  const saveHoldTime = async () => {
+    if (!editingFigure || !user) return;
+
+    try {
+      const { error } = await supabase
+        .from('figures')
+        .update({
+          hold_time_seconds: editHoldTime > 0 ? editHoldTime : null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', editingFigure.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setFigures(prevFigures => 
+        prevFigures.map(fig => 
+          fig.id === editingFigure.id 
+            ? { ...fig, hold_time_seconds: editHoldTime > 0 ? editHoldTime : undefined }
+            : fig
+        )
+      );
+
+      toast.success('Hold time updated successfully');
+      setIsEditHoldTimeOpen(false);
+      setEditingFigure(null);
+    } catch (error) {
+      console.error('Error updating hold time:', error);
+      toast.error('Failed to update hold time');
     }
   };
 
@@ -821,7 +866,12 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-green-300 truncate">{figure.name}</p>
-                          <p className="text-xs text-green-400/70">{figure.difficulty_level}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs text-green-400/70">{figure.difficulty_level}</p>
+                            {figure.category === "core" && figure.hold_time_seconds && figure.hold_time_seconds > 0 && (
+                              <span className="text-xs text-blue-300">• {figure.hold_time_seconds}s</span>
+                            )}
+                          </div>
                         </div>
                         <Button
                           size="sm"
@@ -886,9 +936,25 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                           <h4 className="font-semibold text-white text-sm leading-tight group-hover:text-purple-300 transition-colors">
                             {figure.name}
                           </h4>
-                          {selectedFigures.includes(figure.id) && (
-                            <div className="w-2 h-2 rounded-full bg-purple-400 shrink-0 mt-1" />
-                          )}
+                          <div className="flex items-center gap-1">
+                            {figure.category === "core" && (
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditHoldTime(figure);
+                                }}
+                                className="h-6 w-6 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
+                                title="Edit hold time"
+                              >
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                            )}
+                            {selectedFigures.includes(figure.id) && (
+                              <div className="w-2 h-2 rounded-full bg-purple-400 shrink-0 mt-1" />
+                            )}
+                          </div>
                         </div>
                         
                         {figure.description && (
@@ -897,7 +963,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                           </p>
                         )}
                         
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge 
                             variant="outline" 
                             className={`text-xs px-2 py-1 ${
@@ -908,6 +974,12 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                           >
                             {figure.difficulty_level}
                           </Badge>
+                          
+                          {figure.category === "core" && figure.hold_time_seconds && figure.hold_time_seconds > 0 && (
+                            <Badge variant="outline" className="text-xs px-2 py-1 border-blue-400/50 text-blue-300">
+                              {figure.hold_time_seconds}s hold
+                            </Badge>
+                          )}
                           
                           {figure.category !== selectedSport && (
                             <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-300 border-blue-400/30">
@@ -945,6 +1017,51 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                 className="border-white/10"
               >
                 Cancel
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Hold Time Modal */}
+      <Dialog open={isEditHoldTimeOpen} onOpenChange={setIsEditHoldTimeOpen}>
+        <DialogContent className="max-w-md glass-effect border-white/10">
+          <DialogHeader>
+            <DialogTitle className="text-white">
+              Edit Hold Time for {editingFigure?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="hold_time" className="text-white">
+                Hold Time (seconds)
+              </Label>
+              <Input
+                id="hold_time"
+                type="number"
+                min="0"
+                value={editHoldTime}
+                onChange={(e) => setEditHoldTime(parseInt(e.target.value) || 0)}
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                placeholder="Enter hold time in seconds (0 = completion mode)"
+              />
+              <p className="text-sm text-white/60 mt-1">
+                Set to 0 for completion-based exercises (like "do 10 reps")
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsEditHoldTimeOpen(false)}
+                className="border-white/10 text-white hover:bg-white/10"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={saveHoldTime}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                Save Hold Time
               </Button>
             </div>
           </div>
