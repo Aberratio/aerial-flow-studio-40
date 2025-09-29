@@ -45,6 +45,12 @@ export const useChallengeCalendar = (challengeId: string) => {
     useState<NextAvailableDay | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [challengeCompletionData, setChallengeCompletionData] = useState<{
+    title: string;
+    totalDays: number;
+    pointsEarned: number;
+  } | null>(null);
 
   // Load calendar days for the user's challenge
   const loadCalendar = useCallback(async () => {
@@ -239,10 +245,20 @@ export const useChallengeCalendar = (challengeId: string) => {
         // Check for achievements
         await checkChallengeCompletionAchievements(challengeId);
 
-        toast({
-          title: "Challenge Completed! 🎉",
-          description: "Congratulations! You've completed this challenge and earned 50 points!",
+        // Get challenge details for celebration
+        const { data: challengeData } = await supabase
+          .from('challenges')
+          .select('title')
+          .eq('id', challengeId)
+          .single();
+
+        // Set celebration data and show modal
+        setChallengeCompletionData({
+          title: challengeData?.title || 'Challenge',
+          totalDays: totalTrainingDays,
+          pointsEarned: 50
         });
+        setShowCelebration(true);
       }
     } catch (error) {
       console.error("Error checking challenge completion:", error);
@@ -457,5 +473,8 @@ export const useChallengeCalendar = (challengeId: string) => {
     getTodayCalendarDay,
     loadCalendar,
     loadNextAvailableDay,
+    showCelebration,
+    setShowCelebration,
+    challengeCompletionData,
   };
 };

@@ -36,6 +36,7 @@ import { useChallengeAccess } from "@/hooks/useChallengeAccess";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
+import { ChallengeCompletionCelebration } from "@/components/ChallengeCompletionCelebration";
 import { format } from "date-fns";
 
 interface Challenge {
@@ -104,6 +105,9 @@ const ChallengePreview = () => {
     changeDayStatus,
     loadCalendar,
     loadNextAvailableDay,
+    showCelebration,
+    setShowCelebration,
+    challengeCompletionData,
   } = useChallengeCalendar(challengeId || "");
 
   useEffect(() => {
@@ -896,6 +900,17 @@ const ChallengePreview = () => {
           joinChallenge();
         }}
       />
+
+      {/* Challenge Completion Celebration */}
+      {showCelebration && challengeCompletionData && (
+        <ChallengeCompletionCelebration
+          isOpen={showCelebration}
+          onClose={() => setShowCelebration(false)}
+          challengeTitle={challengeCompletionData.title}
+          totalDays={challengeCompletionData.totalDays}
+          pointsEarned={challengeCompletionData.pointsEarned}
+        />
+      )}
     </div>
   );
 };
