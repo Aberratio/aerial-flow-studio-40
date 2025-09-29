@@ -53,9 +53,11 @@ const Challenges = () => {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    fetchChallenges();
-    fetchStats();
-  }, [activeTab]);
+    if (!roleLoading) {
+      fetchChallenges();
+      fetchStats();
+    }
+  }, [activeTab, roleLoading, isAdmin, canCreateChallenges, user]);
 
   const fetchChallenges = async () => {
     setIsLoading(true);
