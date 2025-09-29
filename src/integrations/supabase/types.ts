@@ -440,6 +440,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           difficulty_level: string | null
+          hold_time_seconds: number | null
           id: string
           image_url: string | null
           instructions: string | null
@@ -457,6 +458,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           difficulty_level?: string | null
+          hold_time_seconds?: number | null
           id?: string
           image_url?: string | null
           instructions?: string | null
@@ -474,6 +476,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           difficulty_level?: string | null
+          hold_time_seconds?: number | null
           id?: string
           image_url?: string | null
           instructions?: string | null

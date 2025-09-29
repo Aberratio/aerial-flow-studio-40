@@ -53,6 +53,7 @@ export const CreateExerciseModal = ({
     tags: [] as string[],
     synonyms: [] as string[],
     premium: false,
+    hold_time_seconds: 0,
   });
   const [tagInput, setTagInput] = useState("");
   const [synonymInput, setSynonymInput] = useState("");
@@ -73,6 +74,7 @@ export const CreateExerciseModal = ({
         tags: editingFigure.tags || [],
         synonyms: editingFigure.synonyms || [],
         premium: editingFigure.premium || false,
+        hold_time_seconds: editingFigure.hold_time_seconds || 0,
       });
     } else {
       setFormData({
@@ -87,6 +89,7 @@ export const CreateExerciseModal = ({
         tags: [],
         synonyms: [],
         premium: false,
+        hold_time_seconds: 0,
       });
     }
     setTagInput("");
@@ -171,6 +174,7 @@ export const CreateExerciseModal = ({
             tags: formData.tags.length > 0 ? formData.tags : null,
             synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
             premium: formData.premium,
+            hold_time_seconds: formData.hold_time_seconds > 0 ? formData.hold_time_seconds : null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingFigure.id);
@@ -189,6 +193,7 @@ export const CreateExerciseModal = ({
           tags: formData.tags.length > 0 ? formData.tags : null,
           synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
           premium: formData.premium,
+          hold_time_seconds: formData.hold_time_seconds > 0 ? formData.hold_time_seconds : null,
           created_by: user.id,
         }).select().single();
 
@@ -230,6 +235,7 @@ export const CreateExerciseModal = ({
         tags: [],
         synonyms: [],
         premium: false,
+        hold_time_seconds: 0,
       });
       setImageFile(null);
       setVideoFile(null);
@@ -396,6 +402,32 @@ export const CreateExerciseModal = ({
               </Select>
             </div>
           </div>
+
+          {/* Hold Time - show only for core exercises */}
+          {formData.category === "core" && (
+            <div>
+              <Label htmlFor="hold_time" className="text-white">
+                Default Hold Time (seconds)
+              </Label>
+              <Input
+                id="hold_time"
+                type="number"
+                min="0"
+                value={formData.hold_time_seconds}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    hold_time_seconds: parseInt(e.target.value) || 0,
+                  }))
+                }
+                className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                placeholder="Enter hold time in seconds (e.g., 30)"
+              />
+              <p className="text-sm text-white/60 mt-1">
+                How long should this exercise be held? (0 = completion mode)
+              </p>
+            </div>
+          )}
 
           <div>
             <Label htmlFor="type" className="text-white">

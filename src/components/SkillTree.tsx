@@ -32,6 +32,7 @@ interface Figure {
   difficulty_level: string;
   image_url: string | null;
   category: string;
+  hold_time_seconds?: number;
 }
 
 interface SportLevel {
@@ -122,7 +123,8 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
               description,
               difficulty_level,
               image_url,
-              category
+              category,
+              hold_time_seconds
             )
           )
         `

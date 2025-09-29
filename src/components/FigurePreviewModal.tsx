@@ -21,6 +21,7 @@ interface FigurePreviewModalProps {
     video_url?: string;
     type?: string;
     tags?: string[];
+    hold_time_seconds?: number;
   } | null;
   isOpen: boolean;
   onClose: () => void;
@@ -140,6 +141,11 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
                 <Badge className={getDifficultyColor(figure.difficulty_level)}>
                   {figure.difficulty_level || 'Unknown'}
                 </Badge>
+                {figure.category === "core" && figure.hold_time_seconds && figure.hold_time_seconds > 0 && (
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
+                    Hold {figure.hold_time_seconds}s
+                  </Badge>
+                )}
               </div>
             </div>
 
