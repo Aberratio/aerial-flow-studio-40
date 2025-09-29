@@ -592,30 +592,47 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                           <p className="text-sm text-muted-foreground">{level.challenges.title}</p>
                         </div>
                         <div className="text-right">
-                          {userChallengeParticipations[level.challenge_id!]?.completed ? (
-                            <Badge className="bg-green-500/20 text-green-400">
-                              <Trophy className="w-3 h-3 mr-1" />
-                              Completed
-                            </Badge>
-                          ) : userChallengeParticipations[level.challenge_id!]?.participating ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => navigate(`/challenges/${level.challenge_id}`)}
-                              className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
-                            >
-                              Continue
-                            </Button>
-                          ) : (
-                            <Button
-                              size="sm"
-                              onClick={() => joinChallenge(level.challenge_id!)}
-                              disabled={joiningChallenge === level.challenge_id}
-                              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                            >
-                              {joiningChallenge === level.challenge_id ? "Joining..." : "Join Challenge"}
-                            </Button>
-                          )}
+                          {(() => {
+                            const challengeParticipation = userChallengeParticipations[level.challenge_id!];
+                            console.log('Challenge debug:', {
+                              challengeId: level.challenge_id,
+                              participation: challengeParticipation,
+                              allParticipations: userChallengeParticipations
+                            });
+                            
+                            if (challengeParticipation?.completed) {
+                              return (
+                                <Badge className="bg-green-500/20 text-green-400">
+                                  <Trophy className="w-3 h-3 mr-1" />
+                                  Completed
+                                </Badge>
+                              );
+                            }
+                            
+                            if (challengeParticipation?.participating) {
+                              return (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => navigate(`/challenges/${level.challenge_id}`)}
+                                  className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+                                >
+                                  Continue
+                                </Button>
+                              );
+                            }
+                            
+                            return (
+                              <Button
+                                size="sm"
+                                onClick={() => joinChallenge(level.challenge_id!)}
+                                disabled={joiningChallenge === level.challenge_id}
+                                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                              >
+                                {joiningChallenge === level.challenge_id ? "Joining..." : "Join Challenge"}
+                              </Button>
+                            );
+                          })()}
                         </div>
                       </div>
                     </div>
