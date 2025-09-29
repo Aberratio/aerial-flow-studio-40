@@ -46,6 +46,7 @@ const AerialJourney = () => {
   const [availableSports, setAvailableSports] = useState<SportCategory[]>([]);
   const [userSelectedSports, setUserSelectedSports] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAdminMode, setIsAdminMode] = useState(false);
 
   useEffect(() => {
     fetchAvailableSports();
@@ -195,7 +196,7 @@ const AerialJourney = () => {
   };
 
   const handleSkillTreeView = (category: string, name: string) => {
-    if (isAdmin) {
+    if (isAdmin && isAdminMode) {
       navigate(`/aerial-journey/admin/${category}`);
     } else {
       navigate(`/aerial-journey/sport/${category}`);
@@ -203,10 +204,10 @@ const AerialJourney = () => {
   };
 
   // Filter sports based on user role and selected sports
-  const filteredSports = isAdmin
-    ? availableSports // Admins see all sports
+  const filteredSports = isAdmin && isAdminMode
+    ? availableSports // Admins in admin mode see all sports
     : availableSports.filter((sport) => {
-        // Regular users see only published sports that they have selected in their profile
+        // Regular users or admins in user mode see only published sports that they have selected in their profile
         const isPublished = sport.is_published;
         const isUserSport = userSelectedSports.includes(sport.id);
         return isPublished && isUserSport;
@@ -235,6 +236,18 @@ const AerialJourney = () => {
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Home
           </Button>
+          
+          {isAdmin && (
+            <div className="flex items-center gap-3 bg-black/20 rounded-lg px-4 py-2 border border-white/10">
+              <span className="text-sm text-white">User Mode</span>
+              <Switch
+                checked={isAdminMode}
+                onCheckedChange={setIsAdminMode}
+                className="data-[state=checked]:bg-yellow-500"
+              />
+              <span className="text-sm text-white">Admin Mode</span>
+            </div>
+          )}
         </div>
 
         <div className="text-center mb-8">
@@ -253,19 +266,19 @@ const AerialJourney = () => {
               <div>
                 <CardTitle className="text-white flex items-center mb-2">
                   Explore Skills by Sport
-                  {isAdmin && (
+                  {isAdmin && isAdminMode && (
                     <Badge className="ml-2 bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
                       Admin View
                     </Badge>
                   )}
                 </CardTitle>
                 <p className="text-muted-foreground">
-                  {isAdmin
+                  {isAdmin && isAdminMode
                     ? "All sports (published and draft). Use switches to publish/unpublish sports."
                     : "Click on any sport to see its complete skill tree and your progression"}
                 </p>
               </div>
-              {isAdmin && (
+              {isAdmin && isAdminMode && (
                 <div className="text-sm text-muted-foreground">
                   Admin mode: Click any sport to manage it
                 </div>
@@ -279,13 +292,13 @@ const AerialJourney = () => {
                   No Sports Available
                 </h3>
                 <p className="text-muted-foreground">
-                  {isAdmin
+                  {isAdmin && isAdminMode
                     ? "No sport categories have been created yet. Use the Manage Sports button to add some."
                     : userSelectedSports.length === 0
                     ? "You haven't selected any sports yet. Please go to your profile and choose the sports you want to train in."
                     : "No sports from your selection are currently published. Check back later!"}
                 </p>
-                {!isAdmin && userSelectedSports.length === 0 && (
+                {(!isAdmin || !isAdminMode) && userSelectedSports.length === 0 && (
                   <Button
                     variant="outline"
                     onClick={() => navigate("/home")}
@@ -313,21 +326,21 @@ const AerialJourney = () => {
                      <Card
                        key={sport.id}
                        className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
-                         (sport.unlockedLevels || 0) > 0 || isAdmin
+                         (sport.unlockedLevels || 0) > 0 || (isAdmin && isAdminMode)
                            ? sport.is_published
                              ? "bg-white/5 border-white/10 hover:border-purple-400/50"
                              : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
                            : "bg-gray-900/50 border-gray-600/20 opacity-60 cursor-not-allowed"
                        }`}
                         onClick={() => {
-                          if ((sport.unlockedLevels || 0) > 0 || isAdmin) {
+                          if ((sport.unlockedLevels || 0) > 0 || (isAdmin && isAdminMode)) {
                             handleSkillTreeView(sport.key_name!, displayName);
                           }
                         }}
                     >
-                      <CardContent className="p-4 md:p-6">
-                        {/* Admin Controls */}
-                        {isAdmin && (
+                       <CardContent className="p-4 md:p-6">
+                         {/* Admin Controls */}
+                         {isAdmin && isAdminMode && (
                           <div className="absolute top-3 right-3 flex items-center space-x-2">
                             <div className="flex items-center space-x-1 bg-black/50 rounded-lg px-2 py-1">
                               {sport.is_published ? (
@@ -350,8 +363,8 @@ const AerialJourney = () => {
                           </div>
                         )}
 
-                        {/* Status Badge */}
-                        {isAdmin && (
+                         {/* Status Badge */}
+                         {isAdmin && isAdminMode && (
                           <div className="mb-3">
                             <Badge
                               className={`text-xs ${

@@ -650,12 +650,19 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                 )}
                               </div>
                               
-                              {/* Figure Name */}
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-                                <p className="text-white text-xs font-medium truncate">
-                                  {figure.name}
-                                </p>
-                              </div>
+                               {/* Figure Name and Hold Time */}
+                               <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+                                 <p className="text-white text-xs font-medium truncate">
+                                   {figure.name}
+                                 </p>
+                                 {figure.category === "core" && figure.hold_time_seconds && (
+                                   <div className="flex items-center gap-1 mt-1">
+                                     <div className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                       {figure.hold_time_seconds}s
+                                     </div>
+                                   </div>
+                                 )}
+                               </div>
                             </div>
                           );
                         })}
