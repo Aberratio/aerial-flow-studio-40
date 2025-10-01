@@ -295,7 +295,7 @@ export const useChallengeCalendar = (challengeId: string) => {
       newStatus: "completed" | "failed" | "rest",
       notes?: string
     ) => {
-      if (!user?.id || !challengeId) return;
+      if (!user?.id || !challengeId) return false;
 
       setIsLoading(true);
       setError(null);
@@ -311,7 +311,7 @@ export const useChallengeCalendar = (challengeId: string) => {
 
         if (participantError) throw participantError;
 
-        if (!participant) return;
+        if (!participant) return false;
 
         // Get the training day (use day 1 for now as fallback)
         const { data: trainingDay, error: trainingDayError } = await supabase
@@ -321,7 +321,7 @@ export const useChallengeCalendar = (challengeId: string) => {
           .eq('day_number', 1)
           .single();
 
-        if (trainingDayError || !trainingDay) return;
+        if (trainingDayError || !trainingDay) return false;
 
         // Create or update progress record
         const { error: progressError } = await supabase
@@ -355,9 +355,10 @@ export const useChallengeCalendar = (challengeId: string) => {
         await loadCalendar();
         await loadNextAvailableDay();
 
-        // Check if challenge is completed after this day completion
+        // Check if challenge is completed after this day completion and return result
+        let isCompleted = false;
         if (newStatus === "completed") {
-          await checkChallengeCompletion();
+          isCompleted = await checkChallengeCompletion();
         }
 
         const statusMessages = {
@@ -370,6 +371,8 @@ export const useChallengeCalendar = (challengeId: string) => {
           title: "Status Updated",
           description: statusMessages[newStatus],
         });
+        
+        return isCompleted;
       } catch (err) {
         console.error("Error changing day status:", err);
         setError("Failed to update day status");
@@ -378,6 +381,7 @@ export const useChallengeCalendar = (challengeId: string) => {
           description: "Failed to update day status",
           variant: "destructive",
         });
+        return false;
       } finally {
         setIsLoading(false);
       }
