@@ -504,17 +504,7 @@ const ChallengeDayTimer = () => {
       <div className="flex-1 flex flex-col container mx-auto px-4 py-6 max-w-4xl lg:max-w-6xl md:py-6 md:max-w-3xl xl:max-w-4xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6 flex-shrink-0">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              releaseWakeLock();
-              navigate(`/challenges/${challengeId}`);
-            }}
-            className="text-white hover:bg-white/10"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
+          <div></div>
 
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-sm text-white/70">

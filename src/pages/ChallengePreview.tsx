@@ -483,16 +483,8 @@ const ChallengePreview = () => {
       <div className="relative flex-shrink-0">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent backdrop-blur-xl"></div>
         <div className="relative z-10 p-4 md:p-6">
-          {/* Navigation */}
           <div className="flex items-center justify-between mb-6">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/challenges")}
-              className="text-white hover:bg-white/10 backdrop-blur-sm"
-            >
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Back
-            </Button>
+            <div></div>
             
             {/* Edit button for admins/creators */}
             {(isAdmin || challenge.created_by === user?.id) && (

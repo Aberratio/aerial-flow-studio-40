@@ -36,7 +36,7 @@ const BackButton: React.FC<BackButtonProps> = ({ fallbackRoute = "/home" }) => {
       className="text-muted-foreground hover:text-white"
     >
       <ChevronLeft className="w-5 h-5" />
-      <span className="hidden sm:inline ml-1">Back</span>
+      <span className="ml-1">Back</span>
     </Button>
   );
 };

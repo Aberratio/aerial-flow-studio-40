@@ -12,7 +12,7 @@ const TopHeader: React.FC = () => {
             alt="IguanaFlow" 
             className="h-8 w-8"
           />
-          <span className="text-xl font-bold text-white hidden sm:inline">
+          <span className="text-xl font-bold text-white">
             IguanaFlow
           </span>
         </Link>
