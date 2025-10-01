@@ -63,17 +63,22 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
         </DialogDescription>
         <div className="flex flex-col sm:flex-row h-full min-h-0">
           {/* Media Section */}
-          <div className="flex-1 bg-black min-h-0 h-[50vh] sm:h-full flex items-center justify-center">
-            {post.image_url && <PostPreviewImage imageUrl={post.image_url} />}
-            {post.video_url && (
+          <div className="flex-1 bg-black min-h-0 h-[50vh] sm:h-full flex items-center justify-center overflow-auto">
+            {post.instagram_embed_html ? (
+              <div 
+                className="w-full max-w-lg p-4"
+                dangerouslySetInnerHTML={{ __html: post.instagram_embed_html }}
+              />
+            ) : post.image_url ? (
+              <PostPreviewImage imageUrl={post.image_url} />
+            ) : post.video_url ? (
               <video 
                 src={post.video_url} 
                 className="w-full h-full object-contain"
                 controls
                 autoPlay={false}
               />
-            )}
-            {!post.image_url && !post.video_url && (
+            ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                 No media available
               </div>

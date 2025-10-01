@@ -8,6 +8,7 @@ import {
   Video,
   Loader2,
   Target,
+  Instagram,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -55,6 +56,9 @@ export const CreatePostModal = ({
   const [figureSearchTerm, setFigureSearchTerm] = useState("");
   const [availableFigures, setAvailableFigures] = useState([]);
   const [showFigureSearch, setShowFigureSearch] = useState(false);
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [instagramEmbedHtml, setInstagramEmbedHtml] = useState<string | null>(null);
+  const [loadingInstagram, setLoadingInstagram] = useState(false);
   const { toast } = useToast();
 
   // Fetch available figures for selection
@@ -95,6 +99,45 @@ export const CreatePostModal = ({
         setSelectedFilePreview(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleInstagramFetch = async () => {
+    if (!instagramUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an Instagram URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingInstagram(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('instagram-oembed', {
+        body: { instagram_url: instagramUrl },
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setInstagramEmbedHtml(data.embed_html);
+        toast({
+          title: "Success",
+          description: "Instagram post loaded successfully",
+        });
+      } else {
+        throw new Error(data.error || 'Failed to fetch Instagram embed');
+      }
+    } catch (error: any) {
+      console.error('Error fetching Instagram embed:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load Instagram post",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingInstagram(false);
     }
   };
 
@@ -154,6 +197,8 @@ export const CreatePostModal = ({
           privacy,
           image_url: mediaType === "image" ? mediaUrl : null,
           video_url: mediaType === "video" ? mediaUrl : null,
+          instagram_url: instagramUrl || null,
+          instagram_embed_html: instagramEmbedHtml || null,
           figure_id: selectedFigure?.id || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -182,6 +227,8 @@ export const CreatePostModal = ({
       setSelectedFile(null);
       setSelectedFilePreview(null);
       setPrivacy("public");
+      setInstagramUrl("");
+      setInstagramEmbedHtml(null);
       onClose();
 
       toast({
@@ -421,6 +468,36 @@ export const CreatePostModal = ({
               </Button>
             </div>
           )}
+
+          {/* Instagram URL Input */}
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2">
+              <input
+                type="text"
+                placeholder="Instagram post URL (optional)"
+                value={instagramUrl}
+                onChange={(e) => setInstagramUrl(e.target.value)}
+                className="flex-1 p-3 bg-white/5 border border-white/10 rounded-md text-white placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+              />
+              <Button
+                onClick={handleInstagramFetch}
+                disabled={loadingInstagram || !instagramUrl.trim()}
+                className="flex-shrink-0"
+                variant="outline"
+              >
+                {loadingInstagram ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Instagram className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            {instagramEmbedHtml && (
+              <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
+                <p className="text-green-400 text-sm">✓ Instagram post loaded</p>
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex items-center space-x-2">

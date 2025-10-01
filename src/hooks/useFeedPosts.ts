@@ -7,6 +7,8 @@ export interface FeedPost {
   content: string;
   image_url: string | null;
   video_url: string | null;
+  instagram_url?: string | null;
+  instagram_embed_html?: string | null;
   created_at: string;
   user_id: string;
   privacy: string;
@@ -107,6 +109,8 @@ export const useFeedPosts = () => {
           content,
           image_url,
           video_url,
+          instagram_url,
+          instagram_embed_html,
           created_at,
           user_id,
           privacy,
@@ -165,6 +169,8 @@ export const useFeedPosts = () => {
               content: post.content,
               image_url: post.image_url,
               video_url: post.video_url,
+              instagram_url: post.instagram_url,
+              instagram_embed_html: post.instagram_embed_html,
               created_at: post.created_at,
               user_id: post.user_id,
               privacy: post.privacy,
