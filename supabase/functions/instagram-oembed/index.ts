@@ -54,14 +54,19 @@ Deno.serve(async (req) => {
 
     console.log('[INSTAGRAM-OEMBED] Fetching embed for URL:', instagram_url);
 
-    // Call Instagram oEmbed API
-    const oembedUrl = `https://graph.instagram.com/oembed?url=${encodeURIComponent(instagram_url)}&hidecaption=false`;
+    // Call Instagram public oEmbed API (no auth required)
+    const oembedUrl = `https://www.instagram.com/oembed/?url=${encodeURIComponent(instagram_url)}`;
     
-    const response = await fetch(oembedUrl);
+    const response = await fetch(oembedUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; InstagramOEmbedBot/1.0)',
+      },
+    });
     
     if (!response.ok) {
-      console.error('[INSTAGRAM-OEMBED] API Error:', response.status, await response.text());
-      throw new Error(`Instagram API returned ${response.status}`);
+      const errorText = await response.text();
+      console.error('[INSTAGRAM-OEMBED] API Error:', response.status, errorText);
+      throw new Error(`Instagram API returned ${response.status}: ${errorText}`);
     }
 
     const data: InstagramOEmbedResponse = await response.json();

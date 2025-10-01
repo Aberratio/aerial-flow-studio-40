@@ -153,6 +153,16 @@ export const CreatePostModal = ({
       return;
     }
 
+    // If Instagram URL is provided but not loaded, show error
+    if (instagramUrl.trim() && !instagramEmbedHtml) {
+      toast({
+        title: "Error",
+        description: "Please click the Instagram button to load the post before publishing",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!user) {
       toast({
         title: "Error",
@@ -472,32 +482,72 @@ export const CreatePostModal = ({
           )}
 
           {/* Instagram URL Input */}
-          <div className="space-y-2">
-            <div className="flex items-center space-x-2">
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-white">
+              Instagram Post (optional)
+            </label>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
               <input
                 type="text"
-                placeholder="Instagram post URL (optional)"
+                placeholder="Paste Instagram post URL here..."
                 value={instagramUrl}
-                onChange={(e) => setInstagramUrl(e.target.value)}
+                onChange={(e) => {
+                  setInstagramUrl(e.target.value);
+                  // Clear embed if URL changes
+                  if (instagramEmbedHtml) {
+                    setInstagramEmbedHtml(null);
+                  }
+                }}
                 className="flex-1 p-3 bg-white/5 border border-white/10 rounded-md text-white placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                disabled={!!instagramEmbedHtml}
               />
               <Button
                 onClick={handleInstagramFetch}
-                disabled={loadingInstagram || !instagramUrl.trim()}
-                className="flex-shrink-0"
-                variant="outline"
+                disabled={loadingInstagram || !instagramUrl.trim() || !!instagramEmbedHtml}
+                className="w-full sm:w-auto flex-shrink-0"
+                variant={instagramEmbedHtml ? "secondary" : "default"}
               >
                 {loadingInstagram ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Loading...
+                  </>
+                ) : instagramEmbedHtml ? (
+                  <>
+                    <Instagram className="w-4 h-4 mr-2" />
+                    Loaded ✓
+                  </>
                 ) : (
-                  <Instagram className="w-4 h-4" />
+                  <>
+                    <Instagram className="w-4 h-4 mr-2" />
+                    Load Instagram Post
+                  </>
                 )}
               </Button>
             </div>
             {instagramEmbedHtml && (
-              <div className="p-3 bg-white/5 border border-white/10 rounded-lg">
-                <p className="text-green-400 text-sm">✓ Instagram post loaded</p>
+              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center justify-between">
+                <p className="text-green-400 text-sm flex items-center">
+                  <Instagram className="w-4 h-4 mr-2" />
+                  Instagram post loaded successfully
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setInstagramEmbedHtml(null);
+                    setInstagramUrl("");
+                  }}
+                  className="text-muted-foreground hover:text-white"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
               </div>
+            )}
+            {instagramUrl.trim() && !instagramEmbedHtml && (
+              <p className="text-amber-400 text-xs flex items-center">
+                ⚠️ Click "Load Instagram Post" button to embed this post
+              </p>
             )}
           </div>
 
