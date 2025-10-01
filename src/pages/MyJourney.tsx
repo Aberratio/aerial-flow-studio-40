@@ -54,10 +54,6 @@ const MyJourney = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <Link to="/profile" className="inline-flex items-center text-muted-foreground hover:text-white mb-4 my-[32px]">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Profile
-          </Link>
           <h1 className="text-3xl font-bold text-white">My Figure Journey</h1>
           <p className="text-muted-foreground">Track your progress across all aerial figures</p>
         </div>

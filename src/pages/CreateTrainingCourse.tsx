@@ -97,15 +97,7 @@ const CreateTrainingCourse = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/admin/training")}
-            className="text-white hover:bg-white/10"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Back to Training
-          </Button>
+        <div className="mb-8">
           <div>
             <h1 className="text-3xl font-bold text-white mb-2">Create Training Course</h1>
             <p className="text-slate-400">Set up a new training course with lessons and videos</p>

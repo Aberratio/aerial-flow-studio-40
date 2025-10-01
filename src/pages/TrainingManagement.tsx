@@ -180,19 +180,9 @@ const TrainingManagement = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/")}
-              className="text-white hover:bg-white/10"
-            >
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-            <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Course Management</h1>
-              <p className="text-slate-400">Manage courses and lessons</p>
-            </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">Course Management</h1>
+            <p className="text-slate-400">Manage courses and lessons</p>
           </div>
           
           <Button

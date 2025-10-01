@@ -472,10 +472,6 @@ const ChallengePreview = () => {
           <Trophy className="w-16 h-16 text-slate-400 mx-auto mb-4" />
           <h2 className="text-xl font-bold text-white mb-2">Challenge not found</h2>
           <p className="text-slate-400 mb-6">The challenge you're looking for doesn't exist</p>
-          <Button onClick={() => navigate("/challenges")} variant="outline">
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            Back to Challenges
-          </Button>
         </div>
       </div>
     );

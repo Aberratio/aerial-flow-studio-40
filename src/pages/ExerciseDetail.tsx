@@ -489,14 +489,6 @@ const ExerciseDetail = () => {
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <Button
-              variant="ghost"
-              onClick={() => navigate("/library")}
-              className="text-white hover:bg-white/5"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Library
-            </Button>
-            <Button
               variant="outline"
               onClick={() => setShowShareModal(true)}
               className="border-white/20 text-white hover:bg-white/10"
@@ -759,15 +751,6 @@ const ExerciseDetail = () => {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/library")}
-            className="text-white hover:bg-white/5 self-start"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Library
-          </Button>
-
           <div className="flex items-center space-x-2 flex-wrap gap-2">
             <Button
               variant="outline"

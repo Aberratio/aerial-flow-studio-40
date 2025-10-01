@@ -123,22 +123,10 @@ or email us at [hello@iguanaflow.com](mailto:hello@iguanaflow.com).
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Back Button */}
-      <div className="p-6 pb-0">
-        <Link to="/">
-          <Button variant="ghost" className="text-white hover:bg-white/10 mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </Link>
-      </div>
-
-      <div className="p-6 pt-0">
+    <div className="min-h-screen p-6">
         <div className="max-w-4xl mx-auto">
           {renderMarkdown(content.content)}
         </div>
-      </div>
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 px-6 mt-12">

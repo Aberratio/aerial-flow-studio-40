@@ -128,18 +128,6 @@ const FigureOfTheDay = () => {
     return (
       <div className="min-h-screen p-3 sm:p-6">
         <div className="max-w-2xl mx-auto">
-          {/* Breadcrumb */}
-          <div className="mb-4">
-            <Button
-              onClick={() => navigate("/home")}
-              variant="ghost"
-              size="sm"
-              className="text-white hover:text-primary p-0 h-auto"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Home
-            </Button>
-          </div>
 
           {/* Empty State Card */}
           <Card className="glass-effect border-white/10 text-center">
@@ -200,18 +188,6 @@ const FigureOfTheDay = () => {
   return (
     <div className="min-h-screen p-3 sm:p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Breadcrumb */}
-        <div className="mb-4">
-          <Button
-            onClick={() => navigate("/home")}
-            variant="ghost"
-            size="sm"
-            className="text-white hover:text-primary p-0 h-auto"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
-        </div>
 
         {/* Title */}
         <div className="mb-6 sm:mb-8">

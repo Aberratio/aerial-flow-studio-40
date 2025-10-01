@@ -194,15 +194,6 @@ const PostDetail = () => {
   return (
     <div className="min-h-screen p-3 sm:p-6">
       <div className="max-w-4xl mx-auto">
-        {/* Back Button */}
-        <Button
-          onClick={() => navigate('/feed')}
-          variant="ghost"
-          className="mb-6 text-white hover:text-white/80"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Feed
-        </Button>
 
         {/* Post Content */}
         <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-lg overflow-hidden">

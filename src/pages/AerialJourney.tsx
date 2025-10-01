@@ -228,14 +228,7 @@ const AerialJourney = () => {
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="flex items-center justify-between mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/home")}
-            className="text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Home
-          </Button>
+          <div></div>
           
           {isAdmin && (
             <div className="flex items-center gap-3 bg-black/20 rounded-lg px-4 py-2 border border-white/10">

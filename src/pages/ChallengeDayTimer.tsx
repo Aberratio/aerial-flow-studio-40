@@ -494,12 +494,6 @@ const ChallengeDayTimer = () => {
           <h2 className="text-2xl font-bold text-white mb-2">
             No exercises found
           </h2>
-          <Button
-            onClick={() => navigate(`/challenges/${challengeId}`)}
-            variant="outline"
-          >
-            Back to Challenge
-          </Button>
         </div>
       </div>
     );

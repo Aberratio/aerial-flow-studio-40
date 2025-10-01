@@ -608,9 +608,6 @@ const EditChallenge = () => {
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-white text-xl mb-4">Challenge not found</h2>
-          <Button onClick={() => navigate("/challenges")} variant="outline">
-            Back to Challenges
-          </Button>
         </div>
       </div>
     );
@@ -620,15 +617,7 @@ const EditChallenge = () => {
     <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex items-center mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/challenges")}
-            className="mr-4 text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to Challenges
-          </Button>
+        <div className="mb-6">
           <div>
             <h1 className="text-3xl font-bold text-white">Edit Challenge</h1>
             <p className="text-muted-foreground">
