@@ -87,17 +87,10 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
   useEffect(() => {
     fetchSportLevelsAndProgress();
-    fetchUserChallengeParticipations().then(() => {
-      fetchUserPoints();
+    fetchUserChallengeParticipations().then((participations) => {
+      fetchUserPoints(participations);
     });
   }, [sportCategory, user]);
-
-  // Refresh points when challenge participations change
-  useEffect(() => {
-    if (Object.keys(userChallengeParticipations).length > 0) {
-      fetchUserPoints();
-    }
-  }, [userChallengeParticipations]);
 
   const fetchSportLevelsAndProgress = async () => {
     if (!user) return;
@@ -178,10 +171,13 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     }
   };
 
-  const fetchUserPoints = async () => {
+  const fetchUserPoints = async (participations?: { [challengeId: string]: { participating: boolean; completed: boolean } }) => {
     if (!user) return;
 
     try {
+      // Use provided participations or current state
+      const currentParticipations = participations || userChallengeParticipations;
+      
       // Get all sport levels for this category, ordered by level number
       const { data: levelsData } = await supabase
         .from("sport_levels")
@@ -237,7 +233,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           // Add points for completed challenges in this level (3 x level number)
           if (
             level.challenge_id &&
-            userChallengeParticipations[level.challenge_id]?.completed
+            currentParticipations[level.challenge_id]?.completed
           ) {
             calculatedPoints += 3 * level.level_number;
           }
@@ -374,9 +370,9 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
         }
       });
 
-      // Refresh user points after participation changes
-      await fetchUserChallengeParticipations();
-      await fetchUserPoints();
+      // Refresh user points immediately with fresh data
+      const participations = await fetchUserChallengeParticipations();
+      await fetchUserPoints(participations);
 
       toast({
         title: "Status updated!",
@@ -409,6 +405,41 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     return hasPremiumAccess;
   };
 
+  // Leave challenge function
+  const handleLeaveChallenge = async (challengeId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from("challenge_participants")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId);
+
+      if (error) throw error;
+
+      // Update local state
+      const newParticipations = { ...userChallengeParticipations };
+      delete newParticipations[challengeId];
+      setUserChallengeParticipations(newParticipations);
+
+      // Refresh points
+      await fetchUserPoints(newParticipations);
+
+      toast({
+        title: "Challenge left",
+        description: "You've left the challenge.",
+      });
+    } catch (error) {
+      console.error("Error leaving challenge:", error);
+      toast({
+        title: "Error",
+        description: "Failed to leave challenge.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Join challenge function
   const joinChallenge = async (challengeId: string) => {
     if (!user) return;
@@ -419,7 +450,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
       // Check if user is already participating
       const { data: existingParticipant } = await supabase
         .from("challenge_participants")
-        .select("id")
+        .select("id, completed")
         .eq("user_id", user.id)
         .eq("challenge_id", challengeId)
         .single();
@@ -452,13 +483,14 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
       });
 
       // Update local state
-      setUserChallengeParticipations((prev) => ({
-        ...prev,
+      const newParticipations = {
+        ...userChallengeParticipations,
         [challengeId]: { participating: true, completed: false },
-      }));
+      };
+      setUserChallengeParticipations(newParticipations);
 
-      // Refresh points after joining challenge
-      await fetchUserPoints();
+      // Refresh points after joining challenge with new participations
+      await fetchUserPoints(newParticipations);
 
       // Navigate to challenge page
       navigate(`/challenges/${challengeId}`);
@@ -594,18 +626,15 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                         <div className="text-right">
                           {(() => {
                             const challengeParticipation = userChallengeParticipations[level.challenge_id!];
-                            console.log('Challenge debug:', {
-                              challengeId: level.challenge_id,
-                              participation: challengeParticipation,
-                              allParticipations: userChallengeParticipations
-                            });
                             
                             if (challengeParticipation?.completed) {
                               return (
-                                <Badge className="bg-green-500/20 text-green-400">
-                                  <Trophy className="w-3 h-3 mr-1" />
-                                  Completed
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                    <Trophy className="w-3 h-3 mr-1" />
+                                    Completed
+                                  </Badge>
+                                </div>
                               );
                             }
                             
