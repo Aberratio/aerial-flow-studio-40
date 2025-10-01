@@ -61,6 +61,46 @@ export const CreatePostModal = ({
   const [loadingInstagram, setLoadingInstagram] = useState(false);
   const { toast } = useToast();
 
+  // Instagram fetch handler
+  const handleInstagramFetch = React.useCallback(async () => {
+    if (!instagramUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an Instagram URL",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingInstagram(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('instagram-oembed', {
+        body: { instagram_url: instagramUrl },
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setInstagramEmbedHtml(data.embed_html);
+        toast({
+          title: "Success",
+          description: "Instagram post loaded successfully",
+        });
+      } else {
+        throw new Error(data.error || 'Failed to fetch Instagram embed');
+      }
+    } catch (error: any) {
+      console.error('Error fetching Instagram embed:', error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to load Instagram post",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingInstagram(false);
+    }
+  }, [instagramUrl, toast]);
+
   // Fetch available figures for selection
   const fetchFigures = async () => {
     try {
@@ -102,44 +142,6 @@ export const CreatePostModal = ({
     }
   };
 
-  const handleInstagramFetch = async () => {
-    if (!instagramUrl.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter an Instagram URL",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setLoadingInstagram(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('instagram-oembed', {
-        body: { instagram_url: instagramUrl },
-      });
-
-      if (error) throw error;
-
-      if (data.success) {
-        setInstagramEmbedHtml(data.embed_html);
-        toast({
-          title: "Success",
-          description: "Instagram post loaded successfully",
-        });
-      } else {
-        throw new Error(data.error || 'Failed to fetch Instagram embed');
-      }
-    } catch (error: any) {
-      console.error('Error fetching Instagram embed:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to load Instagram post",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingInstagram(false);
-    }
-  };
 
   const handleSubmit = async () => {
     if (!content.trim()) {

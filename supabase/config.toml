@@ -56,5 +56,8 @@ ip_version = "ipv4"
 [functions.handle-stripe-webhook]
 verify_jwt = false
 
+[functions.instagram-oembed]
+verify_jwt = true
+
 [analytics]
 enabled = false
