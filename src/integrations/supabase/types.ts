@@ -2006,6 +2006,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      fix_completed_challenges: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          challenge_id: string
+          completed_days: number
+          total_days: number
+          user_id: string
+        }[]
+      }
       friendship_user_pair: {
         Args: { user1_id: string; user2_id: string }
         Returns: string[]

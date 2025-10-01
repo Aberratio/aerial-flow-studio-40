@@ -209,39 +209,59 @@ export const useChallengeCalendar = (challengeId: string) => {
   );
 
   // Check if challenge is completed and handle achievements
-  const checkChallengeCompletion = useCallback(async () => {
-    if (!user?.id || !challengeId) return;
+  const checkChallengeCompletion = async () => {
+    if (!user || !challengeId) return;
 
     try {
-      // Check if all training days are completed
-      const totalTrainingDays = calendarDays.filter(
-        (day) => !day.is_rest_day
-      ).length;
-      const completedTrainingDays = calendarDays.filter(
-        (day) => !day.is_rest_day && day.status === "completed"
-      ).length;
+      // Get all calendar days (including rest days)
+      const { data: allDays, error: daysError } = await supabase
+        .from('challenge_training_days')
+        .select('id, day_number')
+        .eq('challenge_id', challengeId)
+        .order('day_number');
 
-      if (
-        totalTrainingDays > 0 &&
-        completedTrainingDays + 1 >= totalTrainingDays
-      ) {
-        // Award completion points and mark challenge as completed
-        const { error: completionError } = await supabase.rpc(
+      if (daysError) throw daysError;
+
+      // Get user's completed days (including rest days)
+      const { data: userProgress, error: progressError } = await supabase
+        .from('challenge_day_progress')
+        .select('training_day_id, status')
+        .eq('user_id', user.id)
+        .eq('challenge_id', challengeId)
+        .eq('status', 'completed');
+
+      if (progressError) throw progressError;
+
+      const totalDays = allDays?.length || 0;
+      const completedDays = userProgress?.length || 0;
+
+      console.log('Challenge completion check:', {
+        challengeId,
+        totalDays,
+        completedDays,
+        isComplete: completedDays >= totalDays
+      });
+
+      // Check if ALL days are completed (fixed logic: >= instead of +1 >=)
+      if (completedDays >= totalDays && totalDays > 0) {
+        console.log('Challenge completed! Awarding points...');
+        
+        // Call the database function to award points
+        const { error: awardError } = await supabase.rpc(
           'award_challenge_completion_points',
           {
             p_user_id: user.id,
-            p_challenge_id: challengeId
+            p_challenge_id: challengeId,
           }
         );
 
-        if (completionError) {
-          console.error(
-            "Error marking challenge as completed:",
-            completionError
-          );
-          return;
+        if (awardError) {
+          console.error('Error awarding challenge completion points:', awardError);
+          return false;
         }
 
+        console.log('Challenge completion points awarded successfully');
+        
         // Check for achievements
         await checkChallengeCompletionAchievements(challengeId);
 
@@ -255,21 +275,18 @@ export const useChallengeCalendar = (challengeId: string) => {
         // Set celebration data and show modal
         setChallengeCompletionData({
           title: challengeData?.title || 'Challenge',
-          totalDays: totalTrainingDays,
+          totalDays: totalDays,
           pointsEarned: 50
         });
         setShowCelebration(true);
+        return true; // Return true to signal completion
       }
+      return false;
     } catch (error) {
       console.error("Error checking challenge completion:", error);
+      return false;
     }
-  }, [
-    user,
-    challengeId,
-    calendarDays,
-    checkChallengeCompletionAchievements,
-    toast,
-  ]);
+  };
 
   // Handle day status change (completed, failed, rest)
   const changeDayStatus = useCallback(
