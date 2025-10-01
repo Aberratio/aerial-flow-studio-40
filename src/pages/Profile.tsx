@@ -5,10 +5,13 @@ import { SettingsModal } from '@/components/SettingsModal';
 import { ProfileHeader } from '@/components/Profile/ProfileHeader';
 import { AchievementsSection } from '@/components/Profile/AchievementsSection';
 import { FigureJourneySection } from '@/components/Profile/FigureJourneySection';
-import { FriendsSection } from '@/components/Profile/FriendsSection';
 import { NewPendingRequestsSection } from '@/components/NewPendingRequestsSection';
 import { ContentTabs } from '@/components/Profile/ContentTabs';
 import { ShareProfileModal } from '@/components/ShareProfileModal';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Friends from './Friends';
+import Inbox from './Inbox';
+import SettingsTab from '@/components/Profile/SettingsTab';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -16,7 +19,6 @@ const Profile = () => {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [friendsRefreshTrigger, setFriendsRefreshTrigger] = useState(0);
-  const [privacyFilter, setPrivacyFilter] = useState('all');
 
   const handleFriendsUpdated = () => {
     setFriendsRefreshTrigger(prev => prev + 1);
@@ -42,9 +44,31 @@ const Profile = () => {
         {/* Pending Friend Requests */}
         <NewPendingRequestsSection onFriendsUpdated={handleFriendsUpdated} />
 
-
-        {/* Content Tabs */}
-        <ContentTabs isOwnProfile={true} />
+        {/* Main Tabs - Posts, Friends, Inbox, Settings */}
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-white/5">
+            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="friends">Friends</TabsTrigger>
+            <TabsTrigger value="inbox">Inbox</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="posts" className="mt-6">
+            <ContentTabs isOwnProfile={true} />
+          </TabsContent>
+          
+          <TabsContent value="friends" className="mt-6">
+            <Friends />
+          </TabsContent>
+          
+          <TabsContent value="inbox" className="mt-6">
+            <Inbox />
+          </TabsContent>
+          
+          <TabsContent value="settings" className="mt-6">
+            <SettingsTab />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Modals */}

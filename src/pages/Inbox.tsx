@@ -23,6 +23,7 @@ const Inbox = () => {
       return () => clearTimeout(timer);
     }
   }, [loading, activities.length, markAllAsRead]);
+
   const getActivityContent = (activity: UserActivity) => {
     const data = activity.activity_data || {};
     const targetUser = activity.target_user;
@@ -50,6 +51,7 @@ const Inbox = () => {
         return 'New activity';
     }
   };
+
   const handleActivityClick = (activity: UserActivity) => {
     // Mark individual activity as read when clicked
     if (!activity.is_read) {
@@ -92,6 +94,7 @@ const Inbox = () => {
         break;
     }
   };
+
   const getActivityIcon = (activity_type: string) => {
     switch (activity_type) {
       case 'like':
@@ -113,6 +116,7 @@ const Inbox = () => {
         return <Star className="w-5 h-5 text-purple-400" />;
     }
   };
+
   const filteredActivities = activities.filter(activity => {
     if (filter === 'likes') return activity.activity_type === 'like';
     if (filter === 'comments') return activity.activity_type === 'comment';
@@ -120,85 +124,107 @@ const Inbox = () => {
     if (filter === 'followers') return ['follow', 'new_follower'].includes(activity.activity_type);
     return true;
   });
-  return <div className="min-h-screen p-6">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-6 sm:mb-8">Inbox</h1>
 
-        {/* Filter Tabs - Hidden on mobile, show only "All" */}
-        <div className="hidden md:flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
-          {[{
-          id: 'all',
-          label: 'All'
-        }, {
-          id: 'likes',
-          label: 'Likes'
-        }, {
-          id: 'comments',
-          label: 'Comments'
-        }, {
-          id: 'friends',
-          label: 'Friends'
-        }, {
-          id: 'followers',
-          label: 'Followers'
-        }].map(tab => <Button key={tab.id} variant="ghost" className={`flex-1 transition-all ${filter === tab.id ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'} ${filter === tab.id ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''}`} onClick={() => setFilter(tab.id)}>
-              {tab.label}
-            </Button>)}
-        </div>
+  return (
+    <div className="space-y-6">
+      <h2 className="text-xl font-bold text-white">Notifications</h2>
 
-        {/* Activities List */}
-        <div className="space-y-4">
-          {loading ? <div className="text-center py-8">
-              <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
-              <p className="text-muted-foreground mt-2">Loading activities...</p>
-            </div> : filteredActivities.map(activity => <Card key={activity.id} className={`glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors ${!activity.is_read ? 'bg-white/5' : ''}`} onClick={() => handleActivityClick(activity)}>
-                <CardContent className="p-4">
-                  <div className="flex items-start space-x-4">
-                    {/* Icon */}
-                    <div className="mt-1">
-                      {getActivityIcon(activity.activity_type)}
-                    </div>
+      {/* Filter Tabs - Hidden on mobile, show only "All" */}
+      <div className="hidden md:flex space-x-1 bg-white/5 rounded-lg p-1">
+        {[
+          { id: 'all', label: 'All' },
+          { id: 'likes', label: 'Likes' },
+          { id: 'comments', label: 'Comments' },
+          { id: 'friends', label: 'Friends' },
+          { id: 'followers', label: 'Followers' }
+        ].map(tab => (
+          <Button 
+            key={tab.id}
+            variant="ghost"
+            className={`flex-1 transition-all ${
+              filter === tab.id 
+                ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
+                : 'text-muted-foreground hover:text-white hover:bg-white/5'
+            }`}
+            onClick={() => setFilter(tab.id)}
+          >
+            {tab.label}
+          </Button>
+        ))}
+      </div>
 
-                    {/* Avatar (if target user exists) */}
-                    {activity.target_user && <Avatar className="w-10 h-10">
-                        <AvatarImage src={activity.target_user.avatar_url || undefined} />
-                        <AvatarFallback>{activity.target_user.username[0]?.toUpperCase()}</AvatarFallback>
-                      </Avatar>}
+      {/* Activities List */}
+      <div className="space-y-4">
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
+            <p className="text-muted-foreground mt-2">Loading activities...</p>
+          </div>
+        ) : (
+          filteredActivities.map(activity => (
+            <Card 
+              key={activity.id} 
+              className={`glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors ${
+                !activity.is_read ? 'bg-white/5' : ''
+              }`}
+              onClick={() => handleActivityClick(activity)}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-start space-x-4">
+                  {/* Icon */}
+                  <div className="mt-1">
+                    {getActivityIcon(activity.activity_type)}
+                  </div>
 
-                    {/* Content */}
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2">
-                            <p className={`${!activity.is_read ? 'text-white font-semibold' : 'text-white'}`}>
-                              {getActivityContent(activity)}
-                            </p>
-                            {!activity.is_read && (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <Clock className="w-3 h-3 text-muted-foreground" />
-                            <span className="text-muted-foreground text-sm">
-                              {new Date(activity.created_at).toLocaleString()}
-                            </span>
-                            {activity.points_awarded > 0 && <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">
-                                +{activity.points_awarded} pts
-                              </Badge>}
-                          </div>
+                  {/* Avatar (if target user exists) */}
+                  {activity.target_user && (
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={activity.target_user.avatar_url || undefined} />
+                      <AvatarFallback>{activity.target_user.username[0]?.toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  )}
+
+                  {/* Content */}
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <p className={`${!activity.is_read ? 'text-white font-semibold' : 'text-white'}`}>
+                            {getActivityContent(activity)}
+                          </p>
+                          {!activity.is_read && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></div>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Clock className="w-3 h-3 text-muted-foreground" />
+                          <span className="text-muted-foreground text-sm">
+                            {new Date(activity.created_at).toLocaleString()}
+                          </span>
+                          {activity.points_awarded > 0 && (
+                            <Badge className="bg-yellow-500/20 text-yellow-400 text-xs">
+                              +{activity.points_awarded} pts
+                            </Badge>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>)}
-        </div>
-
-        {filteredActivities.length === 0 && <div className="text-center py-12">
-            <div className="text-muted-foreground text-lg">No activities found</div>
-            <div className="text-muted-foreground text-sm">Check back later for updates!</div>
-          </div>}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
-    </div>;
+
+      {filteredActivities.length === 0 && !loading && (
+        <div className="text-center py-12">
+          <div className="text-muted-foreground text-lg">No activities found</div>
+          <div className="text-muted-foreground text-sm">Check back later for updates!</div>
+        </div>
+      )}
+    </div>
+  );
 };
+
 export default Inbox;
