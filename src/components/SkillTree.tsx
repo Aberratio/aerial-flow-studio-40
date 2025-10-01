@@ -86,10 +86,12 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     }>({});
 
   useEffect(() => {
-    fetchSportLevelsAndProgress();
-    fetchUserChallengeParticipations().then((participations) => {
-      fetchUserPoints(participations);
-    });
+    const loadData = async () => {
+      await fetchSportLevelsAndProgress();
+      const participations = await fetchUserChallengeParticipations();
+      await fetchUserPoints(participations);
+    };
+    loadData();
   }, [sportCategory, user]);
 
   const fetchSportLevelsAndProgress = async () => {
@@ -304,6 +306,16 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   };
 
   const getLevelProgress = (level: SportLevel) => {
+    // Check if challenge is completed for this level
+    const challengeCompleted = level.challenge_id 
+      ? userChallengeParticipations[level.challenge_id]?.completed 
+      : false;
+
+    // If level has no figures but has a completed challenge, consider it 100%
+    if (level.figures.length === 0 && challengeCompleted) {
+      return 100;
+    }
+
     if (level.figures.length === 0) return 0;
 
     const completedFigures = level.figures.filter((figure) => {
@@ -311,7 +323,10 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
       return progress?.status === "completed";
     });
 
-    return Math.round((completedFigures.length / level.figures.length) * 100);
+    const figureProgress = (completedFigures.length / level.figures.length) * 100;
+    
+    // If challenge is completed, ensure progress is at least 100%
+    return challengeCompleted ? 100 : Math.round(figureProgress);
   };
 
   // Update figure progress status
@@ -627,7 +642,8 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                           {(() => {
                             const challengeParticipation = userChallengeParticipations[level.challenge_id!];
                             
-                            if (challengeParticipation?.completed) {
+                            // Check if challenge is completed
+                            if (challengeParticipation?.completed === true) {
                               return (
                                 <div className="flex items-center gap-2">
                                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
@@ -638,7 +654,8 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                               );
                             }
                             
-                            if (challengeParticipation?.participating) {
+                            // Only show Continue if participating and NOT completed
+                            if (challengeParticipation?.participating && !challengeParticipation?.completed) {
                               return (
                                 <Button
                                   size="sm"
@@ -651,16 +668,21 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                               );
                             }
                             
-                            return (
-                              <Button
-                                size="sm"
-                                onClick={() => joinChallenge(level.challenge_id!)}
-                                disabled={joiningChallenge === level.challenge_id}
-                                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
-                              >
-                                {joiningChallenge === level.challenge_id ? "Joining..." : "Join Challenge"}
-                              </Button>
-                            );
+                            // Show Join button only if not participating at all
+                            if (!challengeParticipation?.participating) {
+                              return (
+                                <Button
+                                  size="sm"
+                                  onClick={() => joinChallenge(level.challenge_id!)}
+                                  disabled={joiningChallenge === level.challenge_id}
+                                  className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                                >
+                                  {joiningChallenge === level.challenge_id ? "Joining..." : "Join Challenge"}
+                                </Button>
+                              );
+                            }
+                            
+                            return null;
                           })()}
                         </div>
                       </div>
