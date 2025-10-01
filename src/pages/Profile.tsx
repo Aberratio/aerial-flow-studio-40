@@ -8,6 +8,7 @@ import { FigureJourneySection } from '@/components/Profile/FigureJourneySection'
 import { NewPendingRequestsSection } from '@/components/NewPendingRequestsSection';
 import { ContentTabs } from '@/components/Profile/ContentTabs';
 import { ShareProfileModal } from '@/components/ShareProfileModal';
+import { YourSportsSection } from '@/components/Profile/YourSportsSection';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Friends from './Friends';
 import Inbox from './Inbox';
@@ -34,6 +35,9 @@ const Profile = () => {
           onShare={() => setIsShareModalOpen(true)}
           isOwnProfile={true}
         />
+
+        {/* Your Sports Section */}
+        <YourSportsSection />
 
         {/* Achievements */}
         <AchievementsSection />

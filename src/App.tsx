@@ -35,9 +35,7 @@ import PostDetail from "@/pages/PostDetail";
 import ExerciseDetail from "@/pages/ExerciseDetail";
 import EditExercise from "@/pages/EditExercise";
 import AchievementManagement from "@/pages/AchievementManagement";
-import Index from "@/pages/Index";
 import AerialJourneyRoutes from "@/pages/AerialJourneyRoutes";
-import FigureOfTheDay from "@/pages/FigureOfTheDay";
 
 import LandingPageManagement from "@/pages/LandingPageManagement";
 import SiteSettings from "@/pages/SiteSettings";
@@ -85,7 +83,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (user) {
-    return <Navigate to="/home" replace />;
+    return <Navigate to="/library" replace />;
   }
 
   return <>{children}</>;
@@ -124,14 +122,6 @@ const AppRoutes = () => {
           <PublicRoute>
             <Landing />
           </PublicRoute>
-        }
-      />
-      <Route
-        path="/home"
-        element={
-          <ProtectedRoute>
-            <Index />
-          </ProtectedRoute>
         }
       />
       <Route
@@ -329,14 +319,6 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <AerialJourneyRoutes />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/figure-of-the-day"
-        element={
-          <ProtectedRoute>
-            <FigureOfTheDay />
           </ProtectedRoute>
         }
       />

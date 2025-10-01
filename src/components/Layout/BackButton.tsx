@@ -7,12 +7,12 @@ interface BackButtonProps {
   fallbackRoute?: string;
 }
 
-const BackButton: React.FC<BackButtonProps> = ({ fallbackRoute = "/home" }) => {
+const BackButton: React.FC<BackButtonProps> = ({ fallbackRoute = "/library" }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Don't show back button on main pages
-  const mainPages = ["/", "/home", "/library", "/feed", "/challenges", "/profile", "/training"];
+  const mainPages = ["/", "/library", "/feed", "/challenges", "/profile", "/training"];
   const isMainPage = mainPages.includes(location.pathname);
 
   if (isMainPage) {
