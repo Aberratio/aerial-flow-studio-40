@@ -501,7 +501,8 @@ export const CreatePostModal = ({
             )}
           </div>
 
-          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+          {/* Add Photo Button - disabled when Instagram URL is present */}
+          {!instagramEmbedHtml && (
             <div className="flex items-center space-x-2">
               <input
                 type="file"
@@ -509,44 +510,34 @@ export const CreatePostModal = ({
                 onChange={handleFileUpload}
                 className="hidden"
                 id="image-upload"
+                disabled={!!instagramUrl.trim()}
               />
-              <label htmlFor="image-upload">
+              <label htmlFor="image-upload" className={instagramUrl.trim() ? 'cursor-not-allowed opacity-50' : ''}>
                 <Button
                   variant="ghost"
                   className="text-muted-foreground hover:text-white text-sm"
                   asChild
                   onClick={() => setMediaType("image")}
+                  disabled={!!instagramUrl.trim()}
                 >
                   <span className="flex items-center space-x-2 cursor-pointer">
                     <Image className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden sm:inline">Add Photo</span>
+                    <span className="hidden sm:inline">
+                      {instagramUrl.trim() ? 'Photo (disabled - Instagram URL present)' : 'Add Photo'}
+                    </span>
                     <span className="sm:hidden">Photo</span>
                   </span>
                 </Button>
               </label>
-
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="video-upload"
-                disabled
-              />
-              <Button
-                variant="ghost"
-                className="text-muted-foreground/50 text-sm cursor-not-allowed"
-                disabled={true}
-              >
-                <span className="flex items-center space-x-2">
-                  <Video className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="hidden sm:inline">
-                    Add Video (Coming Soon)
-                  </span>
-                  <span className="sm:hidden">Video</span>
-                </span>
-              </Button>
             </div>
+          )}
+
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">{instagramEmbedHtml && (
+              <div className="text-sm text-muted-foreground">
+                Instagram post selected - photo upload disabled
+              </div>
+            )}
+            <div className="flex-1"></div>
 
             <div className="flex space-x-2 justify-end">
               <Button

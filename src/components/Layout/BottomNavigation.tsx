@@ -44,12 +44,8 @@ const BottomNavigation: React.FC = () => {
               <div className="absolute top-0 left-1/2 -translate-x-1/2 w-12 h-1 bg-primary rounded-b-full" />
             )}
             
-            <item.icon className={cn("w-6 h-6", isMobile && !isActive(item.path) ? "mb-0" : "mb-1")} />
-            
-            {/* Show label on tablet/desktop or when active on mobile */}
-            {(!isMobile || isActive(item.path)) && (
-              <span className="text-xs font-medium">{item.label}</span>
-            )}
+            <item.icon className="w-6 h-6 mb-1" />
+            <span className="text-xs font-medium">{item.label}</span>
           </NavLink>
         ))}
       </div>

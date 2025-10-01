@@ -51,6 +51,8 @@ const Feed = () => {
       content: newPost.content,
       image_url: newPost.image_url,
       video_url: newPost.video_url,
+      instagram_url: newPost.instagram_url,
+      instagram_embed_html: newPost.instagram_embed_html,
       created_at: newPost.created_at,
       user_id: newPost.user_id,
       privacy: newPost.privacy || 'public',
@@ -219,11 +221,19 @@ const Feed = () => {
                 )}
 
                 {/* Media */}
-                {post.image_url && <MediaContainer imageUrl={post.image_url} onClick={() => navigate(`/post/${post.id}`)} />}
-
-                {post.video_url && <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
+                {post.instagram_embed_html ? (
+                  <div 
+                    className="mb-4 rounded-lg overflow-hidden cursor-pointer bg-white/5 p-4"
+                    onClick={() => navigate(`/post/${post.id}`)}
+                    dangerouslySetInnerHTML={{ __html: post.instagram_embed_html }}
+                  />
+                ) : post.image_url ? (
+                  <MediaContainer imageUrl={post.image_url} onClick={() => navigate(`/post/${post.id}`)} />
+                ) : post.video_url ? (
+                  <div className="mb-4 rounded-lg overflow-hidden cursor-pointer" onClick={() => navigate(`/post/${post.id}`)}>
                     <video src={post.video_url} className="w-full h-80 object-cover" controls />
-                  </div>}
+                  </div>
+                ) : null}
 
                 {/* Actions */}
                 <div className="flex items-center justify-between w-full">
