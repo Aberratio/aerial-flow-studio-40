@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, Bookmark, Plus, Loader2, MoreHorizontal, Edit, Trash2, Globe, Users, Lock, Target } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -44,6 +44,14 @@ const Feed = () => {
     user
   } = useAuth();
   const { hasPremiumAccess } = useSubscriptionStatus();
+
+  // Process Instagram embeds after posts load
+  useEffect(() => {
+    if (posts.length > 0 && window.instgrm) {
+      window.instgrm?.Embeds.process();
+    }
+  }, [posts]);
+
   const handlePostCreated = (newPost: any) => {
     // Convert the new post to match our FeedPost interface
     const feedPost = {

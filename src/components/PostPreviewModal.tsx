@@ -27,6 +27,15 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
   const { user } = useAuth();
   const { comments, loading: commentsLoading, addComment } = usePostComments(post?.id || null);
 
+  // Process Instagram embeds when modal opens
+  useEffect(() => {
+    if (isOpen && post?.instagram_embed_html && window.instgrm) {
+      setTimeout(() => {
+        window.instgrm?.Embeds.process();
+      }, 100);
+    }
+  }, [isOpen, post?.instagram_embed_html]);
+
   if (!post) return null;
 
   const handleSubmitComment = async () => {

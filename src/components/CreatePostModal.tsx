@@ -61,7 +61,7 @@ export const CreatePostModal = ({
   const [loadingInstagram, setLoadingInstagram] = useState(false);
   const { toast } = useToast();
 
-  // Instagram fetch handler - using Edge Function to avoid CORS
+  // Instagram embed handler - using official Instagram embed script
   const handleInstagramFetch = React.useCallback(async () => {
     if (!instagramUrl.trim()) {
       toast({
@@ -72,9 +72,11 @@ export const CreatePostModal = ({
       return;
     }
 
-    // Validate Instagram URL format
-    const instagramRegex = /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)\/[A-Za-z0-9_-]+/;
-    if (!instagramRegex.test(instagramUrl)) {
+    // Extract post ID from URL (remove query parameters)
+    const instagramRegex = /instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)/;
+    const match = instagramUrl.match(instagramRegex);
+    
+    if (!match) {
       toast({
         title: "Error",
         description: "Invalid Instagram URL format",
@@ -83,34 +85,25 @@ export const CreatePostModal = ({
       return;
     }
 
-    setLoadingInstagram(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('instagram-oembed', {
-        body: { instagram_url: instagramUrl }
-      });
+    const postId = match[2];
+    const cleanUrl = `https://www.instagram.com/${match[1]}/${postId}/`;
 
-      if (error) throw error;
+    // Generate Instagram blockquote embed HTML
+    const embedHtml = `<blockquote class="instagram-media" data-instgrm-permalink="${cleanUrl}" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:16px;"><a href="${cleanUrl}" style="background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;" target="_blank">View this post on Instagram</a></div></blockquote>`;
 
-      if (data.success && data.embed_html) {
-        setInstagramEmbedHtml(data.embed_html);
-        toast({
-          title: "Success",
-          description: "Instagram post loaded successfully",
-        });
-      } else {
-        throw new Error(data.error || "Failed to fetch Instagram embed");
+    setInstagramEmbedHtml(embedHtml);
+    
+    // Trigger Instagram embed script to process the embed
+    setTimeout(() => {
+      if (window.instgrm) {
+        window.instgrm.Embeds.process();
       }
-    } catch (error: any) {
-      console.error('Error fetching Instagram embed:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load Instagram post. Please check the URL and try again.",
-        variant: "destructive",
-      });
-      setInstagramEmbedHtml(null);
-    } finally {
-      setLoadingInstagram(false);
-    }
+    }, 100);
+
+    toast({
+      title: "Success",
+      description: "Instagram post loaded successfully",
+    });
   }, [instagramUrl, toast]);
 
   // Fetch available figures for selection
