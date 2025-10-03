@@ -61,7 +61,7 @@ export const CreatePostModal = ({
   const [loadingInstagram, setLoadingInstagram] = useState(false);
   const { toast } = useToast();
 
-  // Instagram fetch handler
+  // Instagram fetch handler - direct fetch from public API
   const handleInstagramFetch = React.useCallback(async () => {
     if (!instagramUrl.trim()) {
       toast({
@@ -72,30 +72,46 @@ export const CreatePostModal = ({
       return;
     }
 
+    // Validate Instagram URL format
+    const instagramRegex = /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)\/[A-Za-z0-9_-]+/;
+    if (!instagramRegex.test(instagramUrl)) {
+      toast({
+        title: "Error",
+        description: "Invalid Instagram URL format",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoadingInstagram(true);
     try {
-      const { data, error } = await supabase.functions.invoke('instagram-oembed', {
-        body: { instagram_url: instagramUrl },
-      });
+      const response = await fetch(
+        `https://www.instagram.com/oembed/?url=${encodeURIComponent(instagramUrl)}`
+      );
 
-      if (error) throw error;
+      if (!response.ok) {
+        throw new Error(`Failed to fetch Instagram post: ${response.status}`);
+      }
 
-      if (data.success) {
-        setInstagramEmbedHtml(data.embed_html);
+      const data = await response.json();
+      
+      if (data.html) {
+        setInstagramEmbedHtml(data.html);
         toast({
           title: "Success",
           description: "Instagram post loaded successfully",
         });
       } else {
-        throw new Error(data.error || 'Failed to fetch Instagram embed');
+        throw new Error("No embed HTML returned from Instagram");
       }
     } catch (error: any) {
       console.error('Error fetching Instagram embed:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to load Instagram post",
+        description: "Failed to load Instagram post. Please check the URL and try again.",
         variant: "destructive",
       });
+      setInstagramEmbedHtml(null);
     } finally {
       setLoadingInstagram(false);
     }
