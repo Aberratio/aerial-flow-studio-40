@@ -61,7 +61,7 @@ export const CreatePostModal = ({
   const [loadingInstagram, setLoadingInstagram] = useState(false);
   const { toast } = useToast();
 
-  // Instagram fetch handler - direct fetch from public API
+  // Instagram fetch handler - using Edge Function to avoid CORS
   const handleInstagramFetch = React.useCallback(async () => {
     if (!instagramUrl.trim()) {
       toast({
@@ -85,24 +85,20 @@ export const CreatePostModal = ({
 
     setLoadingInstagram(true);
     try {
-      const response = await fetch(
-        `https://www.instagram.com/oembed/?url=${encodeURIComponent(instagramUrl)}`
-      );
+      const { data, error } = await supabase.functions.invoke('instagram-oembed', {
+        body: { instagram_url: instagramUrl }
+      });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch Instagram post: ${response.status}`);
-      }
+      if (error) throw error;
 
-      const data = await response.json();
-      
-      if (data.html) {
-        setInstagramEmbedHtml(data.html);
+      if (data.success && data.embed_html) {
+        setInstagramEmbedHtml(data.embed_html);
         toast({
           title: "Success",
           description: "Instagram post loaded successfully",
         });
       } else {
-        throw new Error("No embed HTML returned from Instagram");
+        throw new Error(data.error || "Failed to fetch Instagram embed");
       }
     } catch (error: any) {
       console.error('Error fetching Instagram embed:', error);
