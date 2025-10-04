@@ -9,11 +9,22 @@ export const usePWAInstall = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstallable, setIsInstallable] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOSDevice, setIsIOSDevice] = useState(false);
 
   useEffect(() => {
+    // Detect iOS devices
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
+    setIsIOSDevice(isIOS);
+
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
+      return;
+    }
+
+    // iOS doesn't support beforeinstallprompt, so show instructions instead
+    if (isIOS && !window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstallable(true);
       return;
     }
 
@@ -61,6 +72,7 @@ export const usePWAInstall = () => {
   return {
     isInstallable,
     isInstalled,
+    isIOSDevice,
     installPWA,
   };
 };

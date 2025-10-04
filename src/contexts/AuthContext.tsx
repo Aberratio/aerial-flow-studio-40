@@ -31,9 +31,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { signIn, signUp, signOut, login, register, logout } = useAuthOperations();
 
   const handleSignOut = async () => {
-    await signOut();
-    clearAuth();
-    navigate('/');
+    try {
+      console.log('AuthContext: Starting sign out');
+      await signOut();
+      // Don't call clearAuth() - let onAuthStateChange handle it
+      console.log('AuthContext: Sign out complete');
+      navigate('/');
+    } catch (error) {
+      console.error('AuthContext: Sign out error:', error);
+    }
   };
 
   return (

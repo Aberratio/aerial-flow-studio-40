@@ -37,6 +37,7 @@ import {
 } from "@radix-ui/react-select";
 import { Badge } from "@/components/ui/badge";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
+import PWAInstallInstructions from "@/components/PWAInstallInstructions";
 
 // Lazy load heavy components
 const GallerySection = lazy(() => import("@/components/GallerySection").then(module => ({ default: module.GallerySection })));
@@ -67,7 +68,8 @@ const Landing = () => {
     abs: false,
     pricing: false
   });
-  const { isInstallable, isInstalled, installPWA } = usePWAInstall();
+  const { isInstallable, isInstalled, isIOSDevice, installPWA } = usePWAInstall();
+  const [showIOSInstructions, setShowIOSInstructions] = useState(false);
   useEffect(() => {
     const timer = setTimeout(() => setIsLoaded(true), 100);
     return () => clearTimeout(timer);
@@ -401,7 +403,7 @@ const Landing = () => {
                   <Button
                     variant="outline"
                     size="lg"
-                    onClick={installPWA}
+                    onClick={isIOSDevice ? () => setShowIOSInstructions(true) : installPWA}
                     className="text-base sm:text-lg px-6 sm:px-8 border-purple-500/50 hover:border-purple-400 hover:bg-purple-500/10"
                   >
                     <Download className="mr-2 w-4 h-4 sm:w-5 sm:h-5" />
@@ -874,6 +876,13 @@ const Landing = () => {
           </div>
         </div>
       </footer>
+
+      {/* PWA Install Instructions Modal */}
+      <PWAInstallInstructions
+        open={showIOSInstructions}
+        onOpenChange={setShowIOSInstructions}
+        isIOSDevice={isIOSDevice}
+      />
     </div>
   );
 };
