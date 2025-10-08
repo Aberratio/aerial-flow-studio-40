@@ -1,23 +1,25 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Moon, 
-  Globe, 
-  Trash2, 
-  LogOut,
-  Crown,
-  CreditCard
-} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useSubscriptionStatus } from '@/hooks/useSubscriptionStatus';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import PricingPlansModal from './PricingPlansModal';
 import { supabase } from '@/integrations/supabase/client';
-import PricingPlansModal from '@/components/PricingPlansModal';
+import { useNavigate, Link } from 'react-router-dom';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Separator } from '@/components/ui/separator';
+import { Shield, FileText, Info, CreditCard, Crown, Trash2, LogOut, Mail } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -25,84 +27,96 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { hasPremiumAccess, subscribed, subscription_tier, subscription_end, isLoading } = useSubscriptionStatus();
   const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
-  const handleSaveSettings = () => {
-    toast({
-      title: "Settings Saved",
-      description: "Your preferences have been updated.",
-    });
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
     onClose();
   };
 
-  const handleDeleteAccount = () => {
-    // Would show confirmation dialog
-    toast({
-      title: "Account Deletion",
-      description: "This action requires confirmation. Please contact support.",
-      variant: "destructive",
-    });
-  };
-
-  const handleLogout = () => {
-    // Would handle logout logic
-    toast({
-      title: "Logged Out",
-      description: "You have been successfully logged out.",
-    });
+  const handleDeleteAccount = async () => {
+    try {
+      const { error } = await supabase.auth.admin.deleteUser(user?.id || '');
+      if (error) throw error;
+      
+      toast({
+        title: "Account Deleted",
+        description: "Your account has been permanently deleted.",
+      });
+      navigate('/');
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete account. Please contact support.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[96vw] max-w-[500px] max-h-[85vh] overflow-y-auto glass-effect border-white/10 p-4 sm:p-6">
-        <DialogHeader>
-          <DialogTitle className="text-white">Settings</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="w-[96vw] max-w-[600px] max-h-[85vh] overflow-y-auto glass-effect border-white/10 p-4 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="text-white text-xl">Settings</DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4 sm:space-y-6">
-          {/* Subscription & Billing */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="flex items-center space-x-2">
-              <Crown className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
-              <h3 className="text-white font-semibold text-sm sm:text-base">Subscription & Billing</h3>
-            </div>
-            
-            <div className="space-y-3 pl-6 sm:pl-7">
-              <div className="bg-white/5 p-3 sm:p-4 rounded-lg border border-white/10">
+          <div className="space-y-6">
+            {/* Account Section */}
+            <Card className="glass-effect border-white/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white text-base flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-primary" />
+                  Account
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Email</span>
+                  <span className="text-white text-sm">{user?.email}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground text-sm">Username</span>
+                  <span className="text-white text-sm">{user?.username}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Subscription & Billing */}
+            <Card className="glass-effect border-white/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white text-base flex items-center gap-2">
+                  <Crown className="w-5 h-5 text-yellow-400" />
+                  Subscription & Billing
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 {isLoading ? (
                   <div className="flex items-center justify-center py-4">
                     <div className="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full"></div>
                   </div>
                 ) : hasPremiumAccess ? (
                   <>
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between">
                       <span className="text-white font-medium">Current Plan</span>
                       <span className="text-green-400 text-sm font-medium">
                         {subscription_tier || user?.role || 'Premium'}
                       </span>
                     </div>
 
-                    {/* Check if user has Stripe subscription or manual premium */}
                     {subscribed && subscription_end ? (
                       <>
-                        {/* Stripe subscription details */}
-                        <div className="space-y-2 mb-4">
+                        <div className="bg-white/5 p-3 rounded-lg space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Subscription active until:</span>
-                            <span className="text-white">
-                              {new Date(subscription_end).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                              })}
-                            </span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Next billing date:</span>
+                            <span className="text-muted-foreground">Active until:</span>
                             <span className="text-white">
                               {new Date(subscription_end).toLocaleDateString('en-US', {
                                 year: 'numeric',
@@ -117,54 +131,48 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                           </div>
                         </div>
                         
-                        <div className="flex flex-col sm:flex-row gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={async () => {
-                              try {
-                                const { data, error } = await supabase.functions.invoke('customer-portal');
-                                if (error) throw error;
-                                if (data.url) window.open(data.url, '_blank');
-                              } catch (error) {
-                                console.error('Portal error:', error);
-                                toast({
-                                  title: "Error",
-                                  description: "Failed to open subscription management portal",
-                                  variant: "destructive"
-                                });
-                              }
-                            }}
-                            className="flex-1 border-white/20 text-white hover:bg-white/10 text-sm"
-                          >
-                            <CreditCard className="w-4 h-4 mr-2" />
-                            Manage Subscription
-                          </Button>
-                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={async () => {
+                            try {
+                              const { data, error } = await supabase.functions.invoke('customer-portal');
+                              if (error) throw error;
+                              if (data.url) window.open(data.url, '_blank');
+                            } catch (error) {
+                              console.error('Portal error:', error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to open subscription management portal",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
+                          className="w-full border-white/20 text-white hover:bg-white/10"
+                        >
+                          <CreditCard className="w-4 h-4 mr-2" />
+                          Manage Subscription
+                        </Button>
                       </>
                     ) : (
-                      <>
-                        {/* Manual premium (no Stripe subscription) */}
-                        <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Crown className="w-4 h-4 text-blue-400" />
-                            <span className="text-blue-400 font-medium text-sm">Manual Premium Access</span>
-                          </div>
-                          <p className="text-blue-300 text-xs">
-                            Your premium access was granted manually by an administrator. 
-                            This is permanent access that doesn't require any subscription.
-                          </p>
+                      <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Crown className="w-4 h-4 text-blue-400" />
+                          <span className="text-blue-400 font-medium text-sm">Manual Premium Access</span>
                         </div>
-                      </>
+                        <p className="text-blue-300 text-xs">
+                          Your premium access was granted manually by an administrator.
+                        </p>
+                      </div>
                     )}
                   </>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between">
                       <span className="text-white font-medium">Current Plan</span>
                       <span className="text-gray-400 text-sm">Free</span>
                     </div>
-                    <p className="text-muted-foreground text-sm mb-3">
-                      You're currently on the free plan. Upgrade to unlock premium features!
+                    <p className="text-muted-foreground text-sm">
+                      Upgrade to unlock premium features!
                     </p>
                     <Button
                       variant="primary"
@@ -184,69 +192,141 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                           });
                         }
                       }}
-                      className="w-full text-sm"
+                      className="w-full"
                     >
                       <Crown className="w-4 h-4 mr-2" />
                       Upgrade to Premium
                     </Button>
                   </>
                 )}
-              </div>
-              {/* Only show View Pricing Plans for free users and users with Stripe subscriptions */}
-              {(!hasPremiumAccess || subscribed) && (
+                
+                {(!hasPremiumAccess || subscribed) && (
+                  <Button
+                    variant="outline"
+                    className="w-full border-white/20 text-white hover:bg-white/10"
+                    onClick={() => setIsPricingModalOpen(true)}
+                  >
+                    <CreditCard className="w-4 h-4 mr-2" />
+                    View Pricing Plans
+                  </Button>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Information Links */}
+            <Card className="glass-effect border-white/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-white text-base flex items-center gap-2">
+                  <Info className="w-5 h-5 text-primary" />
+                  Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Link to="/privacy-policy" onClick={onClose}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-muted-foreground hover:text-white hover:bg-white/5"
+                  >
+                    <Shield className="w-4 h-4 mr-3" />
+                    Privacy Policy
+                  </Button>
+                </Link>
+                <Link to="/terms-of-use" onClick={onClose}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-muted-foreground hover:text-white hover:bg-white/5"
+                  >
+                    <FileText className="w-4 h-4 mr-3" />
+                    Terms of Use
+                  </Button>
+                </Link>
+                <Link to="/about-us" onClick={onClose}>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start text-muted-foreground hover:text-white hover:bg-white/5"
+                  >
+                    <Info className="w-4 h-4 mr-3" />
+                    About Us
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            {/* Danger Zone */}
+            <Card className="glass-effect border-red-500/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-red-400 text-base flex items-center gap-2">
+                  <Trash2 className="w-5 h-5" />
+                  Danger Zone
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
                 <Button
                   variant="outline"
-                  className="w-full justify-start border-white/20 text-white hover:bg-white/10 text-sm"
-                  onClick={() => setIsPricingModalOpen(true)}
+                  className="w-full justify-start border-white/20 text-white hover:bg-white/10"
+                  onClick={() => setShowLogoutDialog(true)}
                 >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  View Pricing Plans
+                  <LogOut className="w-4 h-4 mr-3" />
+                  Log Out
                 </Button>
-              )}
-            </div>
+                
+                <Button
+                  variant="outline"
+                  className="w-full justify-start border-red-500/50 text-red-400 hover:bg-red-500/10"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-3" />
+                  Delete Account
+                </Button>
+              </CardContent>
+            </Card>
           </div>
 
-          <Separator className="bg-white/10" />
+          <PricingPlansModal
+            isOpen={isPricingModalOpen}
+            onClose={() => setIsPricingModalOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
 
-          {/* Account Actions */}
-          <div className="space-y-3 sm:space-y-4">
-            <div className="space-y-2 sm:space-y-3">
-              <Button
-                variant="outline"
-                className="w-full justify-start border-white/20 text-white hover:bg-white/10 hover:text-white text-sm"
-                onClick={handleLogout}
-              >
-                <LogOut className="w-4 h-4 mr-2" />
-                Log Out
-              </Button>
-              
-              <Button
-                variant="outline"
-                className="w-full justify-start border-red-500/50 text-red-400 hover:bg-red-500/10 text-sm"
-                onClick={handleDeleteAccount}
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Account
-              </Button>
-            </div>
-          </div>
+      {/* Logout Confirmation */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent className="glass-effect border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to log out?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout} className="bg-destructive hover:bg-destructive/90">
+              Log Out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-          {/* Save Button */}
-          <Button
-            variant="primary"
-            onClick={handleSaveSettings}
-            className="w-full text-sm"
-          >
-            Save Settings
-          </Button>
-        </div>
-
-        {/* Pricing Plans Modal */}
-        <PricingPlansModal
-          isOpen={isPricingModalOpen}
-          onClose={() => setIsPricingModalOpen(false)}
-        />
-      </DialogContent>
-    </Dialog>
+      {/* Delete Account Confirmation */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="glass-effect border-white/10">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteAccount} 
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Delete Account
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };

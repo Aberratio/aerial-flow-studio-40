@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Camera, Settings, Share2, Eye, Edit } from "lucide-react";
+import { Camera, Share2, Eye, Edit } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,7 +18,6 @@ import { ImageCropModal } from "@/components/ImageCropModal";
 
 interface ProfileHeaderProps {
   onEditProfile: () => void;
-  onSettings: () => void;
   onShare?: () => void;
   isOwnProfile?: boolean;
   onPrivacyChange?: (privacy: string) => void;
@@ -27,7 +26,6 @@ interface ProfileHeaderProps {
 
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditProfile,
-  onSettings,
   onShare,
   isOwnProfile = true,
   onPrivacyChange,
@@ -279,51 +277,31 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     </Button>
                     <span className="text-xs text-white/80 mt-1">Edit</span>
                   </div>
-                  <Button
-                    variant="outline"
-                    onClick={onSettings}
-                    className="border-white/20 text-white hover:bg-white/10 hidden sm:flex"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    Settings
-                  </Button>
-                  <div className="flex flex-col items-center sm:hidden">
-                    <Button
-                      variant="outline"
-                      onClick={onSettings}
-                      size="icon"
-                      className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
-                    >
-                      <Settings className="w-5 h-5" />
-                    </Button>
-                    <span className="text-xs text-white/80 mt-1">Settings</span>
-                  </div>
+                  {onShare && (
+                    <>
+                      <Button
+                        variant="outline"
+                        onClick={onShare}
+                        className="border-white/20 text-white hover:bg-white/10 hidden sm:flex"
+                      >
+                        <Share2 className="w-4 h-4 mr-2" />
+                        Share
+                      </Button>
+                      <div className="flex flex-col items-center sm:hidden">
+                        <Button
+                          variant="outline"
+                          onClick={onShare}
+                          size="icon"
+                          className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
+                        >
+                          <Share2 className="w-5 h-5" />
+                        </Button>
+                        <span className="text-xs text-white/80 mt-1">Share</span>
+                      </div>
+                    </>
+                  )}
                 </>
               ) : null}
-
-              {onShare && (
-                <>
-                  <Button
-                    variant="outline"
-                    onClick={onShare}
-                    className="border-white/20 text-white hover:bg-white/10 hidden sm:flex"
-                  >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share
-                  </Button>
-                  <div className="flex flex-col items-center sm:hidden">
-                    <Button
-                      variant="outline"
-                      onClick={onShare}
-                      size="icon"
-                      className="border-white/20 text-white hover:bg-white/10 w-12 h-12"
-                    >
-                      <Share2 className="w-5 h-5" />
-                    </Button>
-                    <span className="text-xs text-white/80 mt-1">Share</span>
-                  </div>
-                </>
-              )}
             </div>
           </div>
         </div>
