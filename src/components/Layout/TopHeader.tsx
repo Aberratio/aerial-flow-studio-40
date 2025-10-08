@@ -1,13 +1,36 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
+import { Library, MessageSquare, Trophy, GraduationCap } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { useUserRole } from "@/hooks/useUserRole";
+import { cn } from "@/lib/utils";
 import ProfileAvatar from "./ProfileAvatar";
 
 const TopHeader: React.FC = () => {
+  const isMobile = useIsMobile();
+  const { isAdmin, isTrainer } = useUserRole();
+  const location = useLocation();
+
+  const navItems = [
+    { path: "/library", icon: Library, label: "Library" },
+    { path: "/feed", icon: MessageSquare, label: "Feed" },
+    { path: "/challenges", icon: Trophy, label: "Challenges" },
+  ];
+
+  // Add Training for admins/trainers
+  if (isAdmin || isTrainer) {
+    navItems.splice(1, 0, { path: "/training", icon: GraduationCap, label: "Training" });
+  }
+
+  const isActive = (path: string) => {
+    return location.pathname.startsWith(path);
+  };
+
   return (
-    <header className="w-full bg-gradient-to-b from-background to-transparent border-b border-white/5">
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-lg border-b border-white/10">
       <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/library" className="flex items-center space-x-2">
+        <NavLink to="/library" className="flex items-center space-x-2">
           <img 
             src="/iguana-logo.svg" 
             alt="IguanaFlow" 
@@ -16,7 +39,28 @@ const TopHeader: React.FC = () => {
           <span className="text-xl font-bold text-white">
             IguanaFlow
           </span>
-        </Link>
+        </NavLink>
+
+        {/* Desktop Navigation */}
+        {!isMobile && (
+          <nav className="flex items-center space-x-1">
+            {navItems.map((item) => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                className={cn(
+                  "flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors",
+                  isActive(item.path)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-white hover:bg-white/5"
+                )}
+              >
+                <item.icon className="w-5 h-5" />
+                <span className="font-medium">{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+        )}
 
         {/* Right side - Profile Avatar */}
         <div className="flex items-center space-x-4">
