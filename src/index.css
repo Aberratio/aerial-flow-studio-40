@@ -340,3 +340,23 @@
     background-position: 200% 0;
   }
 }
+
+/* Instagram embed mobile optimization */
+.instagram-embed-container {
+  width: 100%;
+  max-width: 100%;
+}
+
+.instagram-embed-container iframe,
+.instagram-embed-container blockquote {
+  max-width: 100% !important;
+  min-width: 100% !important;
+  margin: 0 auto !important;
+}
+
+@media (max-width: 640px) {
+  .instagram-embed-container iframe,
+  .instagram-embed-container blockquote {
+    width: 100% !important;
+  }
+}

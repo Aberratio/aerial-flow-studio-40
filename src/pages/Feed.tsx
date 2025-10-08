@@ -231,10 +231,14 @@ const Feed = () => {
                 {/* Media */}
                 {post.instagram_embed_html ? (
                   <div 
-                    className="mb-4 rounded-lg overflow-hidden cursor-pointer bg-white/5 p-4"
+                    className="mb-4 rounded-lg overflow-visible sm:overflow-hidden cursor-pointer bg-white/5 p-0 sm:p-4"
                     onClick={() => navigate(`/post/${post.id}`)}
-                    dangerouslySetInnerHTML={{ __html: post.instagram_embed_html }}
-                  />
+                  >
+                    <div 
+                      className="instagram-embed-container"
+                      dangerouslySetInnerHTML={{ __html: post.instagram_embed_html }}
+                    />
+                  </div>
                 ) : post.image_url ? (
                   <MediaContainer imageUrl={post.image_url} onClick={() => navigate(`/post/${post.id}`)} />
                 ) : post.video_url ? (
