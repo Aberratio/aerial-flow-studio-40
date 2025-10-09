@@ -38,6 +38,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { usePWAInstall } from "@/hooks/usePWAInstall";
 import PWAInstallInstructions from "@/components/PWAInstallInstructions";
+import { useLandingSections } from "@/hooks/useLandingSections";
 
 // Lazy load heavy components
 const GallerySection = lazy(() => import("@/components/GallerySection").then(module => ({ default: module.GallerySection })));
@@ -57,6 +58,7 @@ interface PricingFeature {
   feature_text: string;
 }
 const Landing = () => {
+  const { data: sections } = useLandingSections();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
   const [isLoaded, setIsLoaded] = useState(false);
@@ -466,6 +468,7 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
+      {sections?.features?.is_active && (
       <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
@@ -508,6 +511,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* Abs Challenges Section */}
       {showAbsChallenges && (
@@ -592,6 +596,7 @@ const Landing = () => {
       )}
 
       {/* Media Gallery Section */}
+      {sections?.gallery?.is_active && (
       <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10" id="gallery">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
@@ -626,6 +631,7 @@ const Landing = () => {
           </LazySection>
         </div>
       </section>
+      )}
 
       {/* Instagram Feed Section */}
       <LazySection threshold={0.1}>
@@ -646,6 +652,7 @@ const Landing = () => {
       </LazySection>
 
       {/* Pricing Section */}
+      {sections?.pricing?.is_active && (
       <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
@@ -777,6 +784,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA Section */}
       <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">

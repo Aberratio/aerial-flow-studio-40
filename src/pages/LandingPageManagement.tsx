@@ -60,6 +60,7 @@ const LandingPageManagement = () => {
   const [instagramFeedActive, setInstagramFeedActive] = useState(false);
   const [instagramPosts, setInstagramPosts] = useState<InstagramPost[]>([]);
   const [newInstagramUrl, setNewInstagramUrl] = useState('');
+  const [isAddingInstagramPost, setIsAddingInstagramPost] = useState(false);
 
   useEffect(() => {
     if (!roleLoading && userRole === 'admin') {
@@ -167,8 +168,34 @@ const LandingPageManagement = () => {
       return;
     }
 
+    setIsAddingInstagramPost(true);
+
     try {
-      const newPosts = [...instagramPosts, { url: newInstagramUrl }];
+      // Fetch embed code from Edge Function
+      const { data: embedData, error: embedError } = await supabase.functions.invoke(
+        'fetch-instagram-embed',
+        {
+          body: { url: newInstagramUrl.trim() }
+        }
+      );
+
+      if (embedError) {
+        console.error('Error fetching embed:', embedError);
+        toast({
+          title: "Error",
+          description: "Failed to fetch Instagram embed",
+          variant: "destructive"
+        });
+        setIsAddingInstagramPost(false);
+        return;
+      }
+
+      const newPost: InstagramPost = {
+        url: newInstagramUrl.trim(),
+        embed_code: embedData.embed_code,
+      };
+
+      const newPosts = [...instagramPosts, newPost];
       
       const { error } = await supabase
         .from('landing_page_sections')
@@ -188,7 +215,7 @@ const LandingPageManagement = () => {
       
       toast({
         title: "Success",
-        description: "Instagram post added"
+        description: "Instagram post added with embed"
       });
     } catch (error: any) {
       toast({
@@ -196,6 +223,8 @@ const LandingPageManagement = () => {
         description: error.message || "Failed to add Instagram post",
         variant: "destructive"
       });
+    } finally {
+      setIsAddingInstagramPost(false);
     }
   };
 
@@ -593,11 +622,11 @@ const LandingPageManagement = () => {
                 />
                 <Button 
                   onClick={addInstagramPost}
-                  disabled={instagramPosts.length >= 6}
+                  disabled={instagramPosts.length >= 6 || isAddingInstagramPost}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add
+                  {isAddingInstagramPost ? 'Adding...' : 'Add'}
                 </Button>
               </div>
             </div>

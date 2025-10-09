@@ -26,11 +26,21 @@ export const InstagramEmbed: React.FC<InstagramEmbedProps> = ({ url, embedCode }
 
   if (embedCode) {
     return (
-      <div 
-        ref={embedRef}
-        className="instagram-embed-container w-full max-w-full overflow-hidden"
-        dangerouslySetInnerHTML={{ __html: embedCode }}
-      />
+      <div className="instagram-embed-wrapper w-full max-w-full overflow-hidden">
+        <style>{`
+          .instagram-embed-wrapper iframe,
+          .instagram-embed-wrapper blockquote.instagram-media {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 auto !important;
+          }
+        `}</style>
+        <div 
+          ref={embedRef}
+          className="instagram-embed-container"
+          dangerouslySetInnerHTML={{ __html: embedCode }}
+        />
+      </div>
     );
   }
 
