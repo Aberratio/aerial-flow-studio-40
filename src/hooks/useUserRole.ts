@@ -16,14 +16,25 @@ export const useUserRole = () => {
       }
 
       try {
+        // Fetch from user_roles table (security definer protected)
         const { data, error } = await supabase
-          .from('profiles')
+          .from('user_roles')
           .select('role')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
 
-        if (error) throw error;
-        setUserRole(data?.role || null);
+        if (error) {
+          // Fallback to profiles for backward compatibility
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single();
+          
+          setUserRole(profileData?.role || null);
+        } else {
+          setUserRole(data?.role || null);
+        }
       } catch (error) {
         console.error('Error fetching user role:', error);
         setUserRole(null);

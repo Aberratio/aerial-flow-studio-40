@@ -1,15 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Library, MessageSquare, Trophy, GraduationCap } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUserRole } from "@/hooks/useUserRole";
 import { cn } from "@/lib/utils";
 import ProfileAvatar from "./ProfileAvatar";
+import { AdminDropdown } from "./AdminDropdown";
+import { AdminUserImpersonationModal } from "@/components/AdminUserImpersonationModal";
 
 const TopHeader: React.FC = () => {
   const isMobile = useIsMobile();
   const { isAdmin, isTrainer } = useUserRole();
   const location = useLocation();
+  const [isImpersonateModalOpen, setIsImpersonateModalOpen] = useState(false);
 
   const navItems = [
     { path: "/library", icon: Library, label: "Library" },
@@ -62,11 +65,19 @@ const TopHeader: React.FC = () => {
           </nav>
         )}
 
-        {/* Right side - Profile Avatar */}
-        <div className="flex items-center space-x-4">
+        {/* Right side - Admin & Profile */}
+        <div className="flex items-center space-x-2">
+          {isAdmin && (
+            <AdminDropdown onImpersonateClick={() => setIsImpersonateModalOpen(true)} />
+          )}
           <ProfileAvatar />
         </div>
       </div>
+
+      <AdminUserImpersonationModal
+        isOpen={isImpersonateModalOpen}
+        onClose={() => setIsImpersonateModalOpen(false)}
+      />
     </header>
   );
 };

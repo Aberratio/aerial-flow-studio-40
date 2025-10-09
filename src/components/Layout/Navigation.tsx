@@ -70,10 +70,6 @@ const Navigation: React.FC<NavigationProps> = ({
   const hasPremiumAccess = user?.role && ['premium', 'trainer', 'admin'].includes(user.role);
   const isAdmin = user?.role === 'admin';
   const freeNavItems = [{
-    path: '/home',
-    icon: LayoutDashboard,
-    label: 'Home'
-  }, {
     path: '/feed',
     icon: Home,
     label: 'Feed'

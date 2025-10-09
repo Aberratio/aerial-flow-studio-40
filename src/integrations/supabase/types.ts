@@ -592,6 +592,7 @@ export type Database = {
           id: string
           image_url: string | null
           is_active: boolean
+          metadata: Json | null
           section_key: string
           section_type: string
           updated_at: string
@@ -602,6 +603,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          metadata?: Json | null
           section_key: string
           section_type: string
           updated_at?: string
@@ -612,6 +614,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           is_active?: boolean
+          metadata?: Json | null
           section_key?: string
           section_type?: string
           updated_at?: string
@@ -1882,6 +1885,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_scores: {
         Row: {
           created_at: string
@@ -2051,6 +2078,13 @@ export type Database = {
           total_exercises: number
           training_day_id: string
         }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["user_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       join_challenge_simple: {
         Args: { p_challenge_id: string; p_user_id: string }

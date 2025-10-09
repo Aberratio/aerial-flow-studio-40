@@ -43,6 +43,7 @@ import RedemptionCodeManager from "@/pages/RedemptionCodeManager";
 import TrainingManagement from "@/pages/TrainingManagement";
 import CreateTrainingCourse from "@/pages/CreateTrainingCourse";
 import PremiumRoute from "@/components/PremiumRoute";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 
 
@@ -343,6 +344,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <EditTrainingSession />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
             </ProtectedRoute>
           }
         />

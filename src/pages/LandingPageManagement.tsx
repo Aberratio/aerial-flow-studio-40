@@ -37,6 +37,11 @@ interface GalleryMedia {
   created_by: string | null;
 }
 
+interface InstagramPost {
+  url: string;
+  embed_code?: string;
+}
+
 const LandingPageManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -50,11 +55,17 @@ const LandingPageManagement = () => {
   const [newMediaTitle, setNewMediaTitle] = useState('');
   const [newMediaDescription, setNewMediaDescription] = useState('');
   const [newMediaType, setNewMediaType] = useState<'image' | 'video'>('image');
+  
+  // Instagram feed state
+  const [instagramFeedActive, setInstagramFeedActive] = useState(false);
+  const [instagramPosts, setInstagramPosts] = useState<InstagramPost[]>([]);
+  const [newInstagramUrl, setNewInstagramUrl] = useState('');
 
   useEffect(() => {
     if (!roleLoading && userRole === 'admin') {
       fetchData();
       fetchGalleryMedia();
+      fetchInstagramFeed();
     }
   }, [roleLoading, userRole]);
 
@@ -112,6 +123,133 @@ const LandingPageManagement = () => {
       toast({
         title: "Error",
         description: error.message || "Failed to fetch gallery media",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const fetchInstagramFeed = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('landing_page_sections')
+        .select('is_active, metadata')
+        .eq('section_key', 'instagram_feed')
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setInstagramFeedActive(data.is_active || false);
+        const metadata = data.metadata as { instagram_posts?: InstagramPost[] };
+        setInstagramPosts(metadata?.instagram_posts || []);
+      }
+    } catch (error: any) {
+      console.error('Error fetching Instagram feed:', error);
+    }
+  };
+
+  const addInstagramPost = async () => {
+    if (!newInstagramUrl.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid Instagram post URL",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (instagramPosts.length >= 6) {
+      toast({
+        title: "Error",
+        description: "Maximum 6 Instagram posts allowed",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const newPosts = [...instagramPosts, { url: newInstagramUrl }];
+      
+      const { error } = await supabase
+        .from('landing_page_sections')
+        .update({ 
+          metadata: { 
+            instagram_posts: newPosts,
+            max_posts: 6,
+            display_mode: 'grid'
+          } as any
+        })
+        .eq('section_key', 'instagram_feed');
+
+      if (error) throw error;
+
+      setInstagramPosts(newPosts);
+      setNewInstagramUrl('');
+      
+      toast({
+        title: "Success",
+        description: "Instagram post added"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add Instagram post",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const removeInstagramPost = async (index: number) => {
+    try {
+      const newPosts = instagramPosts.filter((_, i) => i !== index);
+      
+      const { error } = await supabase
+        .from('landing_page_sections')
+        .update({ 
+          metadata: { 
+            instagram_posts: newPosts,
+            max_posts: 6,
+            display_mode: 'grid'
+          } as any
+        })
+        .eq('section_key', 'instagram_feed');
+
+      if (error) throw error;
+
+      setInstagramPosts(newPosts);
+      
+      toast({
+        title: "Success",
+        description: "Instagram post removed"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove Instagram post",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const toggleInstagramFeed = async (isActive: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('landing_page_sections')
+        .update({ is_active: isActive })
+        .eq('section_key', 'instagram_feed');
+
+      if (error) throw error;
+
+      setInstagramFeedActive(isActive);
+      
+      toast({
+        title: "Success",
+        description: `Instagram feed ${isActive ? 'activated' : 'deactivated'}`
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update Instagram feed",
         variant: "destructive"
       });
     }
@@ -426,6 +564,73 @@ const LandingPageManagement = () => {
             {sections.map(renderSectionEditor)}
           </div>
         </div>
+
+        {/* Instagram Feed Management Section */}
+        <Card className="glass-effect border-white/10">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-white">Instagram Feed</CardTitle>
+              <div className="flex items-center space-x-2">
+                <Switch
+                  checked={instagramFeedActive}
+                  onCheckedChange={toggleInstagramFeed}
+                />
+                <span className="text-sm text-white/60">
+                  {instagramFeedActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-4">
+              <Label className="text-white">Add Instagram Post URL (Max 6)</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newInstagramUrl}
+                  onChange={(e) => setNewInstagramUrl(e.target.value)}
+                  placeholder="https://www.instagram.com/p/ABC123/"
+                  className="bg-white/5 border-white/10 text-white"
+                />
+                <Button 
+                  onClick={addInstagramPost}
+                  disabled={instagramPosts.length >= 6}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add
+                </Button>
+              </div>
+            </div>
+
+            {instagramPosts.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-white">Instagram Posts ({instagramPosts.length}/6)</Label>
+                <div className="grid gap-2">
+                  {instagramPosts.map((post, index) => (
+                    <div key={index} className="flex items-center gap-2 p-3 bg-white/5 rounded-lg">
+                      <span className="flex-1 text-white text-sm truncate">{post.url}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeInstagramPost(index)}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {instagramPosts.length === 0 && (
+              <div className="text-center py-8 border border-dashed border-white/10 rounded-lg">
+                <p className="text-white/60">No Instagram posts added yet</p>
+                <p className="text-white/40 text-sm mt-1">Add Instagram post URLs to display on the landing page</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Gallery Media Management Section */}
         <div className="space-y-6">

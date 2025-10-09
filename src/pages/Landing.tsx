@@ -41,6 +41,7 @@ import PWAInstallInstructions from "@/components/PWAInstallInstructions";
 
 // Lazy load heavy components
 const GallerySection = lazy(() => import("@/components/GallerySection").then(module => ({ default: module.GallerySection })));
+const InstagramFeedSection = lazy(() => import("@/components/InstagramFeedSection").then(module => ({ default: module.InstagramFeedSection })));
 interface PricingPlan {
   id: string;
   plan_key: string;
@@ -625,6 +626,24 @@ const Landing = () => {
           </LazySection>
         </div>
       </section>
+
+      {/* Instagram Feed Section */}
+      <LazySection threshold={0.1}>
+        <Suspense fallback={
+          <div className="py-20 px-4 text-center">
+            <div className="animate-pulse space-y-4">
+              <div className="h-10 w-64 bg-white/10 rounded mx-auto"></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-96 bg-white/10 rounded-2xl"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        }>
+          <InstagramFeedSection />
+        </Suspense>
+      </LazySection>
 
       {/* Pricing Section */}
       <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
