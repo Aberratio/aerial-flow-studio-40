@@ -12,6 +12,8 @@ import {
   TrendingUp,
   Award,
   Calendar,
+  Sparkles,
+  Instagram,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -81,6 +83,21 @@ const Landing = () => {
       'priority_support': 'Priority customer support'
     };
     return featureTextMap[featureKey] || featureKey.replace(/_/g, ' ');
+  };
+
+  const getFeatureIcon = (featureKey: string) => {
+    const iconMap: Record<string, React.ReactNode> = {
+      'unlimited_library': <BookOpen className="w-5 h-5" />,
+      'progress_tracking': <TrendingUp className="w-5 h-5" />,
+      '28_day_challenges': <Calendar className="w-5 h-5" />,
+      'community_access': <Users className="w-5 h-5" />,
+      'all_free_features': <Check className="w-5 h-5" />,
+      'unlimited_challenges': <Zap className="w-5 h-5" />,
+      'expert_coaching': <Target className="w-5 h-5" />,
+      'advanced_analytics': <Award className="w-5 h-5" />,
+      'priority_support': <Sparkles className="w-5 h-5" />,
+    };
+    return iconMap[featureKey] || <Check className="w-5 h-5" />;
   };
 
   // Updated features with benefit-focused copy
@@ -176,10 +193,10 @@ const Landing = () => {
             <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
               <div className="space-y-4 sm:space-y-6">
                 <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight">
-                  <span className="gradient-text-mega block">
+                  <span className="gradient-text-subtle block">
                     Transform Your
                   </span>
-                  <span className="gradient-text-tropical block">
+                  <span className="gradient-text-subtle block">
                     Aerial Skills in 28 Days
                   </span>
                 </h1>
@@ -213,36 +230,24 @@ const Landing = () => {
               {/* Social Proof */}
               <SocialProof />
 
-              {/* Stats Grid - With real data */}
+              {/* Static Stats */}
               <div className="grid grid-cols-2 sm:flex sm:items-center sm:space-x-8 gap-4 sm:gap-0 pt-6 sm:pt-8 max-w-sm mx-auto lg:mx-0">
-                {stats && (
-                  <>
-                    <div className="text-center">
-                      <div className="text-2xl sm:text-3xl font-bold text-primary">
-                        {stats.athletes}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Athletes</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl sm:text-3xl font-bold text-primary">
-                        {stats.figures}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Figures</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl sm:text-3xl font-bold text-primary">
-                        {stats.challenges}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Challenges</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl sm:text-3xl font-bold text-primary">
-                        {stats.successRate}
-                      </div>
-                      <div className="text-xs sm:text-sm text-muted-foreground">Success Rate</div>
-                    </div>
-                  </>
-                )}
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">500+</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Athletes</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">200+</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Figures</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">50+</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Challenges</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">95%</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Success Rate</div>
+                </div>
               </div>
             </div>
 
@@ -252,7 +257,7 @@ const Landing = () => {
                 <LazyImage
                   src={heroImage}
                   alt="Aerial athlete performing"
-                  className="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover mx-auto shadow-2xl pulse-glow"
+                  className="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover mx-auto shadow-2xl"
                   skeletonClassName="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] mx-auto"
                 />
               ) : (
@@ -401,55 +406,98 @@ const Landing = () => {
                 </p>
               </div>
 
+              {/* Decorative elements */}
+              <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10" />
+              <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl -z-10" />
+
               <div className="grid md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto">
                 {pricingPlans.map((plan) => (
                   <Card
                     key={plan.id}
-                    className={`glass-effect ${
+                    className={`relative overflow-hidden transition-all duration-300 ${
                       plan.is_popular
-                        ? "border-primary/50 relative overflow-hidden"
-                        : "border-white/10"
-                    } card-hover-effect`}
+                        ? "border-primary/50 shadow-lg shadow-primary/20 scale-105"
+                        : "border-white/10 hover:border-primary/30"
+                    } glass-effect hover:shadow-2xl`}
                   >
+                    {/* Popular Badge - Animated */}
                     {plan.is_popular && (
-                      <div className="absolute top-0 right-0 bg-gradient-to-r from-primary to-primary-glow text-white px-6 py-1 text-sm font-semibold">
+                      <div className="absolute top-0 right-0 bg-gradient-to-r from-primary via-purple-500 to-primary text-white px-6 py-1.5 text-sm font-semibold animate-pulse">
+                        <Sparkles className="inline w-4 h-4 mr-1" />
                         Most Popular
                       </div>
                     )}
-                    <CardHeader className="pt-8 sm:pt-12">
-                      <CardTitle className="text-2xl sm:text-3xl">
+                    
+                    {/* Decorative gradient orb */}
+                    {plan.is_popular && (
+                      <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
+                    )}
+
+                    <CardHeader className="pt-8 sm:pt-12 relative z-10">
+                      <CardTitle className="text-2xl sm:text-3xl flex items-center gap-2">
+                        {plan.is_popular && <Crown className="w-6 h-6 text-primary" />}
                         {plan.name}
                       </CardTitle>
-                      <CardDescription className="text-sm sm:text-base">
+                      <CardDescription className="text-sm sm:text-base mt-2">
                         {plan.description}
                       </CardDescription>
-                      <div className="mt-4 sm:mt-6">
-                        <span className="text-4xl sm:text-5xl font-bold gradient-text">
-                          {plan.price}
+                      
+                      {/* Price Display - Enhanced */}
+                      <div className="mt-6 flex items-baseline gap-2">
+                        <span className={`text-5xl sm:text-6xl font-extrabold ${
+                          plan.is_popular ? 'gradient-text-subtle' : 'text-foreground'
+                        }`}>
+                          {plan.price.split('/')[0]}
                         </span>
+                        {plan.price.includes('/') && (
+                          <span className="text-lg text-muted-foreground">
+                            /{plan.price.split('/')[1]}
+                          </span>
+                        )}
                       </div>
                     </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+
+                    <CardContent className="relative z-10">
+                      {/* Features List - With Icons */}
+                      <ul className="space-y-4 mb-8">
                         {plan.pricing_plan_features?.map((feature, idx) => (
                           <li
                             key={idx}
-                            className="flex items-start gap-3 text-sm sm:text-base"
+                            className="flex items-start gap-3 text-sm sm:text-base group"
                           >
-                            <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                            <span className="text-muted-foreground">
+                            <div className={`flex-shrink-0 mt-0.5 ${
+                              plan.is_popular ? 'text-primary' : 'text-muted-foreground'
+                            } group-hover:text-primary transition-colors`}>
+                              {getFeatureIcon(feature.feature_key)}
+                            </div>
+                            <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                               {getFeatureText(feature.feature_key)}
                             </span>
                           </li>
                         ))}
                       </ul>
+
+                      {/* CTA Button - Enhanced */}
                       <Button
                         onClick={() => openAuth("register")}
-                        className="w-full text-sm sm:text-base"
+                        className={`w-full text-sm sm:text-base group relative overflow-hidden ${
+                          plan.is_popular 
+                            ? 'bg-gradient-to-r from-primary to-purple-600 hover:shadow-lg hover:shadow-primary/50' 
+                            : ''
+                        }`}
                         variant={plan.is_popular ? "default" : "outline"}
+                        size="lg"
                       >
                         {plan.plan_key === "free" ? "Start Free" : "Get Premium"}
+                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </Button>
+                      
+                      {/* Subtle note for premium plan */}
+                      {plan.is_popular && (
+                        <p className="text-xs text-center text-muted-foreground mt-3">
+                          Cancel anytime • No credit card required
+                        </p>
+                      )}
                     </CardContent>
                   </Card>
                 ))}
@@ -547,10 +595,26 @@ const Landing = () => {
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Contact</h3>
-              <p className="text-sm text-muted-foreground">
-                Email: contact@iguanaflow.com
-              </p>
+              <h3 className="font-semibold mb-4">Follow Us</h3>
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                <li>
+                  <a 
+                    href="https://instagram.com/iguana.flow" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground transition-colors flex items-center gap-2 group"
+                  >
+                    <Instagram className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    @iguana.flow
+                  </a>
+                </li>
+              </ul>
+              <div className="mt-4">
+                <h3 className="font-semibold mb-2">Contact</h3>
+                <p className="text-sm text-muted-foreground">
+                  Email: contact@iguanaflow.com
+                </p>
+              </div>
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-white/10 text-center text-sm text-muted-foreground">
