@@ -37,7 +37,8 @@ export const GallerySection: React.FC = () => {
         .from('gallery_media')
         .select('*')
         .eq('is_active', true)
-        .order('display_order');
+        .order('display_order')
+        .limit(12);
 
       if (error) throw error;
       setMediaItems((data || []) as GalleryMedia[]);
@@ -51,7 +52,7 @@ export const GallerySection: React.FC = () => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-        {[...Array(8)].map((_, i) => (
+        {[...Array(12)].map((_, i) => (
           <div key={i} className="aspect-[4/5] bg-white/10 rounded-2xl animate-pulse"></div>
         ))}
       </div>

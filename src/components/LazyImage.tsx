@@ -20,7 +20,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
 }) => {
   const { ref, isIntersecting } = useIntersectionObserver({
     threshold: 0.1,
-    rootMargin: '100px',
+    rootMargin: '500px',
   });
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);

@@ -11,6 +11,16 @@ interface InstagramPost {
 }
 
 export const InstagramFeedSection: React.FC = () => {
+  // Lazy load Instagram embed script only when section is visible
+  React.useEffect(() => {
+    if (typeof window !== 'undefined' && !(window as any).instgrm) {
+      const script = document.createElement('script');
+      script.src = '//www.instagram.com/embed.js';
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, []);
+
   const { data: sectionData, isLoading } = useQuery({
     queryKey: ['instagram-feed-section'],
     queryFn: async () => {

@@ -14,7 +14,7 @@ export const LazySection: React.FC<LazySectionProps> = ({
   fallback,
   className = '',
   threshold = 0.1,
-  rootMargin = '100px',
+  rootMargin = '300px',
 }) => {
   const { ref, isIntersecting } = useIntersectionObserver({
     threshold,
