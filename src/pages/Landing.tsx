@@ -187,7 +187,7 @@ const Landing = () => {
       </header>
 
       {/* Hero Section - Always visible, no skeleton */}
-      <section className="relative px-4 sm:px-6 pt-5 sm:pt-20 pb-16 sm:pb-32 z-10">
+      <section className="relative px-4 sm:px-6 pt-20 sm:pt-24 lg:pt-28 pb-16 sm:pb-32 z-10">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
             <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
