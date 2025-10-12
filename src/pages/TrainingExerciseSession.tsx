@@ -441,7 +441,22 @@ const TrainingExerciseSession = () => {
   };
 
   const handlePlayPause = () => {
-    if (isPreparingToStart) {
+    if (!isRunning && !isPreparingToStart) {
+      // Only show preparation phase for exercises, not rest periods
+      const currentSegment = segments[currentSegmentIndex];
+      const shouldPrepare = currentSegment?.type === "exercise" && timeRemaining === currentSegment?.duration;
+      
+      if (shouldPrepare) {
+        setIsPreparingToStart(true);
+        setPreparationTime(10);
+        if (audioMode === "sound") {
+          speak("Get ready!");
+        }
+      } else {
+        // Resume directly without preparation for rest or paused exercises
+        setIsRunning(true);
+      }
+    } else if (isPreparingToStart) {
       setIsPreparingToStart(false);
       setPreparationTime(10);
     } else {

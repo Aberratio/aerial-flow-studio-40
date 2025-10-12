@@ -427,13 +427,23 @@ const ChallengeDayTimer = () => {
 
   const handlePlayPause = () => {
     if (!isRunning && !isPreparingToStart) {
-      setIsPreparingToStart(true);
-      setPreparationTime(10);
-      if (audioMode === "sound") {
-        speak("Get ready!");
+      // Only show preparation phase for exercises, not rest periods
+      const currentSegment = segments[currentSegmentIndex];
+      const shouldPrepare = currentSegment?.type === "exercise" && timeRemaining === currentSegment?.duration;
+      
+      if (shouldPrepare) {
+        setIsPreparingToStart(true);
+        setPreparationTime(10);
+        if (audioMode === "sound") {
+          speak("Get ready!");
+        }
+        // Request wake lock when starting the timer
+        requestWakeLock();
+      } else {
+        // Resume directly without preparation for rest or paused exercises
+        setIsRunning(true);
+        requestWakeLock();
       }
-      // Request wake lock when starting the timer
-      requestWakeLock();
     } else if (isPreparingToStart) {
       setIsPreparingToStart(false);
       setPreparationTime(10);
