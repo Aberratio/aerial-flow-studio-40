@@ -558,17 +558,17 @@ const Landing = () => {
               <h3 className="font-semibold mb-4">Company</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link to="/about" className="hover:text-foreground transition-colors">
+                  <Link to="/about-us" className="hover:text-foreground transition-colors">
                     About Us
                   </Link>
                 </li>
                 <li>
-                  <Link to="/privacy" className="hover:text-foreground transition-colors">
+                  <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link to="/terms" className="hover:text-foreground transition-colors">
+                  <Link to="/terms-of-use" className="hover:text-foreground transition-colors">
                     Terms of Use
                   </Link>
                 </li>
@@ -611,9 +611,12 @@ const Landing = () => {
               </ul>
               <div className="mt-4">
                 <h3 className="font-semibold mb-2">Contact</h3>
-                <p className="text-sm text-muted-foreground">
-                  Email: contact@iguanaflow.com
-                </p>
+                <a 
+                  href="mailto:contact@iguanaflow.com"
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  contact@iguanaflow.com
+                </a>
               </div>
             </div>
           </div>
