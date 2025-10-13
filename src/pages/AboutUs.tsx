@@ -1,7 +1,5 @@
-import { ArrowLeft } from "lucide-react";
-import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
+import InfoPageLayout from "@/components/Layout/InfoPageLayout";
 
 const AboutUs = () => {
   const content = {
@@ -123,40 +121,9 @@ or email us at [hello@iguanaflow.com](mailto:hello@iguanaflow.com).
   };
 
   return (
-    <div className="min-h-screen p-6">
-        <div className="max-w-4xl mx-auto">
-          {renderMarkdown(content.content)}
-        </div>
-
-      {/* Footer */}
-      <footer className="border-t border-white/10 py-8 px-6 mt-12">
-        <div className="max-w-4xl mx-auto text-center">
-          <p className="text-sm text-muted-foreground">
-            © 2025 IguanaFlow. All rights reserved.
-          </p>
-          <div className="flex justify-center space-x-6 mt-4">
-            <Link
-              to="/privacy-policy"
-              className="text-sm text-muted-foreground hover:text-purple-400 transition-colors"
-            >
-              Privacy Policy
-            </Link>
-            <Link
-              to="/terms-of-use"
-              className="text-sm text-muted-foreground hover:text-purple-400 transition-colors"
-            >
-              Terms of Use
-            </Link>
-            <Link
-              to="/about-us"
-              className="text-sm text-muted-foreground hover:text-purple-400 transition-colors"
-            >
-              About Us
-            </Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+    <InfoPageLayout>
+      {renderMarkdown(content.content)}
+    </InfoPageLayout>
   );
 };
 
