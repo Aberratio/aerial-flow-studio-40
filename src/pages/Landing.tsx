@@ -72,15 +72,15 @@ const Landing = () => {
 
   const getFeatureText = (featureKey: string): string => {
     const featureTextMap: Record<string, string> = {
-      'unlimited_library': 'Learn 200+ figures with step-by-step tutorials',
-      'progress_tracking': 'Track your progress with visual analytics',
-      '28_day_challenges': 'Join 28-Day challenges to stay motivated',
-      'community_access': 'Connect with 500+ athletes worldwide',
-      'all_free_features': 'All free features included',
-      'unlimited_challenges': 'Unlimited access to all challenges',
-      'expert_coaching': 'Expert coaching and feedback',
-      'advanced_analytics': 'Advanced performance analytics',
-      'priority_support': 'Priority customer support'
+      'unlimited_library': 'Naucz się 200+ figur z instrukcjami krok po kroku',
+      'progress_tracking': 'Śledź postępy z wizualną analityką',
+      '28_day_challenges': 'Dołącz do 28-dniowych wyzwań i zachowaj motywację',
+      'community_access': 'Połącz się z 500+ sportowcami na całym świecie',
+      'all_free_features': 'Wszystkie darmowe funkcje',
+      'unlimited_challenges': 'Nieograniczony dostęp do wszystkich wyzwań',
+      'expert_coaching': 'Coaching ekspertów i opinie',
+      'advanced_analytics': 'Zaawansowana analityka wydajności',
+      'priority_support': 'Priorytetowe wsparcie klienta'
     };
     return featureTextMap[featureKey] || featureKey.replace(/_/g, ' ');
   };
@@ -104,23 +104,23 @@ const Landing = () => {
   const features = [
     {
       icon: <BookOpen className="w-12 h-12 text-primary" />,
-      title: "200+ Figures Library",
-      description: "Learn 200+ figures with step-by-step video tutorials and detailed instructions"
+      title: "Biblioteka 200+ Figur",
+      description: "Naucz się 200+ figur z wideo instrukcjami krok po kroku i szczegółowymi wskazówkami"
     },
     {
       icon: <Target className="w-12 h-12 text-primary" />,
-      title: "Visual Progress Tracking",
-      description: "Track your progress with visual analytics and see your improvement over time"
+      title: "Wizualne Śledzenie Postępów",
+      description: "Śledź swoje postępy z wizualną analityką i obserwuj swoją poprawę w czasie"
     },
     {
       icon: <Trophy className="w-12 h-12 text-primary" />,
-      title: "28-Day Challenges",
-      description: "Join structured 28-day challenges to stay motivated and reach your goals"
+      title: "28-dniowe Wyzwania",
+      description: "Dołącz do strukturalnych 28-dniowych wyzwań, zachowaj motywację i osiągnij cele"
     },
     {
       icon: <Users className="w-12 h-12 text-primary" />,
-      title: "Global Community",
-      description: "Connect with 500+ aerial athletes worldwide, share progress, and get inspired"
+      title: "Globalna Społeczność",
+      description: "Łącz się z 500+ akrobatami powietrznymi na świecie, dziel się postępami i inspiruj"
     }
   ];
 
@@ -174,13 +174,13 @@ const Landing = () => {
               onClick={() => openAuth("login")}
               className="text-xs sm:text-sm"
             >
-              Log In
+              Zaloguj się
             </Button>
             <Button
               onClick={() => openAuth("register")}
               className="text-xs sm:text-sm"
             >
-              Get Started
+              Rozpocznij
             </Button>
           </div>
         </div>
@@ -194,14 +194,14 @@ const Landing = () => {
               <div className="space-y-4 sm:space-y-6">
                 <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight">
                   <span className="gradient-text-subtle block">
-                    Transform Your
+                    Zmień swoje umiejętności
                   </span>
                   <span className="gradient-text-subtle block">
-                    Aerial Skills in 28 Days
+                    w powietrzu w 28 dni
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">
-                  Join structured challenges, master 200+ figures, and track your progress with our comprehensive aerial training platform.
+                  Dołącz do wyzwań, opanuj 200+ figur i śledź swoje postępy z naszą kompleksową platformą treningową.
                 </p>
               </div>
 
@@ -211,7 +211,7 @@ const Landing = () => {
                   size="lg"
                   className="text-sm sm:text-base group"
                 >
-                  Start Free Trial
+                  Wypróbuj za darmo
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 {(isInstallable || isIOSDevice) && !isInstalled && (
@@ -222,7 +222,7 @@ const Landing = () => {
                     className="text-sm sm:text-base border-primary/50 hover:bg-primary/10"
                   >
                     <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                    {isIOSDevice ? 'Install App' : 'Get Desktop App'}
+                    {isIOSDevice ? 'Pobierz aplikację' : 'Pobierz aplikację'}
                   </Button>
                 )}
               </div>
@@ -234,19 +234,19 @@ const Landing = () => {
               <div className="grid grid-cols-2 sm:flex sm:items-center sm:space-x-8 gap-4 sm:gap-0 pt-6 sm:pt-8 max-w-sm mx-auto lg:mx-0">
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-primary">500+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Athletes</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Sportowców</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-primary">200+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Figures</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Figur</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-primary">50+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Challenges</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Wyzwań</div>
                 </div>
                 <div className="text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-primary">95%</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Success Rate</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Skuteczność</div>
                 </div>
               </div>
             </div>
@@ -279,10 +279,10 @@ const Landing = () => {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                  <span className="gradient-text">Everything You Need</span>
+                  <span className="gradient-text">Wszystko czego potrzebujesz</span>
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-                  From beginner to expert, our platform provides all the tools and community support you need to excel in your aerial journey.
+                  Od początkującego do eksperta, nasza platforma zapewnia wszystkie narzędzia i wsparcie społeczności potrzebne do sukcesu w Twojej powietrznej podróży.
                 </p>
               </div>
 
@@ -320,19 +320,19 @@ const Landing = () => {
                 <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
                   <div className="p-6 sm:p-8 lg:p-12 flex flex-col justify-center">
                     <Badge className="w-fit mb-4 bg-primary/20 text-primary border-primary/30">
-                      Featured Challenge
+                      Wyróżnione Wyzwanie
                     </Badge>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
                       <span className="gradient-text-tropical">
-                        28-Day Abs Challenge
+                        28-dniowe wyzwanie na brzuch
                       </span>
                     </h2>
                     <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
-                      Build core strength and master fundamental aerial positions with our comprehensive 28-day program.
+                      Zbuduj siłę core i opanuj podstawowe pozycje powietrzne z naszym kompleksowym 28-dniowym programem.
                     </p>
                     <Button asChild size="lg" className="w-full sm:w-auto">
                       <Link to="/challenges">
-                        View Challenge
+                        Zobacz Wyzwanie
                         <ArrowRight className="ml-2 h-5 w-5" />
                       </Link>
                     </Button>
@@ -359,10 +359,10 @@ const Landing = () => {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                  <span className="gradient-text">Community Highlights</span>
+                  <span className="gradient-text">Osiągnięcia społeczności</span>
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-                  See what our community has achieved
+                  Zobacz co osiągnęła nasza społeczność
                 </p>
               </div>
               <Suspense fallback={
@@ -399,10 +399,10 @@ const Landing = () => {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                  <span className="gradient-text">Simple, Transparent Pricing</span>
+                  <span className="gradient-text">Proste, przejrzyste ceny</span>
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-                  Choose the plan that fits your journey. Start free, upgrade anytime.
+                  Wybierz plan dopasowany do Twojej podróży. Zacznij za darmo, ulepsz kiedykolwiek.
                 </p>
               </div>
 
@@ -424,7 +424,7 @@ const Landing = () => {
                     {plan.is_popular && (
                       <div className="absolute top-0 right-0 bg-gradient-to-r from-primary via-purple-500 to-primary text-white px-6 py-1.5 text-sm font-semibold animate-pulse">
                         <Sparkles className="inline w-4 h-4 mr-1" />
-                        Most Popular
+                        Najpopularniejszy
                       </div>
                     )}
                     
@@ -488,14 +488,14 @@ const Landing = () => {
                         variant={plan.is_popular ? "default" : "outline"}
                         size="lg"
                       >
-                        {plan.plan_key === "free" ? "Start Free" : "Get Premium"}
+                        {plan.plan_key === "free" ? "Zacznij za darmo" : "Zdobądź Premium"}
                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </Button>
                       
                       {/* Subtle note for premium plan */}
                       {plan.is_popular && (
                         <p className="text-xs text-center text-muted-foreground mt-3">
-                          Cancel anytime • No credit card required
+                          Anuluj kiedykolwiek • Bez karty kredytowej
                         </p>
                       )}
                     </CardContent>
@@ -515,18 +515,18 @@ const Landing = () => {
               <CardContent className="p-8 sm:p-12">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
                   <span className="gradient-text-mega">
-                    Ready to Transform Your Aerial Skills?
+                    Gotowy zmienić swoje umiejętności w powietrzu?
                   </span>
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
-                  Join thousands of athletes already mastering their craft with IguanaFlow.
+                  Dołącz do tysięcy sportowców, którzy już doskonalą swoje umiejętności z IguanaFlow.
                 </p>
                 <Button
                   onClick={() => openAuth("register")}
                   size="lg"
                   className="text-sm sm:text-base group"
                 >
-                  Get Started Free
+                  Zacznij za darmo
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </CardContent>
@@ -551,51 +551,51 @@ const Landing = () => {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Transform your aerial skills with our comprehensive training platform.
+                Zmień swoje umiejętności powietrzne dzięki kompleksowej platformie treningowej.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Company</h3>
+              <h3 className="font-semibold mb-4">Firma</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link to="/about-us" className="hover:text-foreground transition-colors">
-                    About Us
+                    O nas
                   </Link>
                 </li>
                 <li>
                   <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
-                    Privacy Policy
+                    Polityka prywatności
                   </Link>
                 </li>
                 <li>
                   <Link to="/terms-of-use" className="hover:text-foreground transition-colors">
-                    Terms of Use
+                    Regulamin
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Quick Links</h3>
+              <h3 className="font-semibold mb-4">Szybkie linki</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link to="/library" className="hover:text-foreground transition-colors">
-                    Figure Library
+                    Biblioteka figur
                   </Link>
                 </li>
                 <li>
                   <Link to="/challenges" className="hover:text-foreground transition-colors">
-                    Challenges
+                    Wyzwania
                   </Link>
                 </li>
                 <li>
                   <Link to="/pricing" className="hover:text-foreground transition-colors">
-                    Pricing
+                    Cennik
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Follow Us</h3>
+              <h3 className="font-semibold mb-4">Śledź nas</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <a 
@@ -610,7 +610,7 @@ const Landing = () => {
                 </li>
               </ul>
               <div className="mt-4">
-                <h3 className="font-semibold mb-2">Contact</h3>
+                <h3 className="font-semibold mb-2">Kontakt</h3>
                 <a 
                   href="mailto:contact@iguanaflow.com"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
