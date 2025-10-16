@@ -76,35 +76,35 @@ const Navigation: React.FC<NavigationProps> = ({
   }, {
     path: '/library',
     icon: BookOpen,
-    label: 'Library'
+    label: 'Biblioteka'
   }, {
     path: '/challenges',
     icon: Trophy,
-    label: 'Challenges'
+    label: 'Wyzwania'
   }, {
     path: '/aerial-journey',
     icon: Plane,
-    label: 'Aerial Journey'
+    label: 'Powietrzna podróż'
   }];
 
   // User-related items
   const userNavItems = [{
     path: '/profile',
     icon: User,
-    label: 'Profile'
+    label: 'Profil'
   }, {
     path: '/friends',
     icon: Users,
-    label: 'Friends'
+    label: 'Znajomi'
   }, {
     path: '/inbox',
     icon: Bell,
-    label: 'Inbox'
+    label: 'Wiadomości'
   }];
   const premiumNavItems = [{
     path: '/training',
     icon: Dumbbell,
-    label: 'Training',
+    label: 'Trening',
     premium: true
   }];
 
@@ -112,20 +112,20 @@ const Navigation: React.FC<NavigationProps> = ({
   const adminItems = user?.role === 'admin' ? [{
     path: '/admin/achievements',
     icon: Settings,
-    label: 'Achievements'
+    label: 'Osiągnięcia'
   }, {
     path: '/admin/training',
     icon: BookOpen,
-    label: 'Training'
+    label: 'Treningi'
   }, {
     path: '/admin/landing-page',
     icon: Globe,
-    label: 'Landing Page'
+    label: 'Strona główna'
   }] : [];
 
   const adminActions = user?.role === 'admin' ? [{
     icon: UserCheck,
-    label: 'Impersonate User',
+    label: 'Wciel się w użytkownika',
     onClick: () => setShowImpersonationModal(true)
   }] : [];
   const isActive = (path: string) => location.pathname === path;
@@ -152,7 +152,7 @@ const Navigation: React.FC<NavigationProps> = ({
           {/* User Section */}
           <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
           <div className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2 ${isMobile ? 'block' : 'hidden lg:block'}`}>
-            User
+            Użytkownik
           </div>
           
           {userNavItems.map(item => {
@@ -173,7 +173,7 @@ const Navigation: React.FC<NavigationProps> = ({
               Premium
             </span>
             {!hasPremiumAccess && <Badge className={`bg-yellow-500/20 text-yellow-400 text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                Upgrade
+                Ulepsz
               </Badge>}
           </div>
           
@@ -191,7 +191,7 @@ const Navigation: React.FC<NavigationProps> = ({
           {adminItems.length > 0 && <>
               <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
               <div className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2 ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                Admin
+                Administrator
               </div>
               {adminItems.map(item => {
             const Icon = item.icon;
@@ -234,19 +234,19 @@ const Navigation: React.FC<NavigationProps> = ({
           if (isMobile && onClose) onClose();
         }} variant="ghost" size="sm" className="w-full mt-2 text-muted-foreground hover:text-white hover:bg-white/10 justify-start">
             <LogOut className="w-4 h-4 mr-3" />
-            <span className={isMobile ? 'block' : 'hidden lg:block'}>Logout</span>
+            <span className={isMobile ? 'block' : 'hidden lg:block'}>Wyloguj</span>
           </Button>
           
           {/* Footer Links */}
           <div className={`space-y-2 border-t border-white/10 ${isMobile ? 'mt-2 pt-2' : 'mt-4 pt-4'}`}>
             <Link to="/privacy-policy" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              Privacy Policy
+              Polityka prywatności
             </Link>
             <Link to="/terms-of-use" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              Terms of Use
+              Regulamin
             </Link>
             <Link to="/about-us" className="flex items-center justify-center text-xs text-muted-foreground hover:text-white transition-colors">
-              About Us
+              O nas
             </Link>
           </div>
         </div>

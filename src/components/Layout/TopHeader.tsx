@@ -15,14 +15,14 @@ const TopHeader: React.FC = () => {
   const [isImpersonateModalOpen, setIsImpersonateModalOpen] = useState(false);
 
   const navItems = [
-    { path: "/library", icon: Library, label: "Library" },
+    { path: "/library", icon: Library, label: "Biblioteka" },
     { path: "/feed", icon: MessageSquare, label: "Feed" },
-    { path: "/challenges", icon: Trophy, label: "Challenges" },
+    { path: "/challenges", icon: Trophy, label: "Wyzwania" },
   ];
 
   // Add Training for admins/trainers
   if (isAdmin || isTrainer) {
-    navItems.splice(1, 0, { path: "/training", icon: GraduationCap, label: "Training" });
+    navItems.splice(1, 0, { path: "/training", icon: GraduationCap, label: "Trening" });
   }
 
   const isActive = (path: string) => {

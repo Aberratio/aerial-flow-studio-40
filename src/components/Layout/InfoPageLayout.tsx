@@ -36,7 +36,7 @@ const InfoPageLayout: React.FC<InfoPageLayoutProps> = ({ children }) => {
               size="sm"
               className="text-xs sm:text-sm"
             >
-              Back to Home
+              Powrót na stronę główną
             </Button>
           </Link>
         </div>
@@ -51,7 +51,7 @@ const InfoPageLayout: React.FC<InfoPageLayoutProps> = ({ children }) => {
             className="text-muted-foreground hover:text-foreground group"
           >
             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-            Back to Home
+            Powrót na stronę główną
           </Button>
         </Link>
       </div>
@@ -77,51 +77,51 @@ const InfoPageLayout: React.FC<InfoPageLayoutProps> = ({ children }) => {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Transform your aerial skills with our comprehensive training platform.
+                Zmień swoje umiejętności powietrzne dzięki kompleksowej platformie treningowej.
               </p>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Company</h3>
+              <h3 className="font-semibold mb-4">Firma</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link to="/about-us" className="hover:text-foreground transition-colors">
-                    About Us
+                    O nas
                   </Link>
                 </li>
                 <li>
                   <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
-                    Privacy Policy
+                    Polityka prywatności
                   </Link>
                 </li>
                 <li>
                   <Link to="/terms-of-use" className="hover:text-foreground transition-colors">
-                    Terms of Use
+                    Regulamin
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Quick Links</h3>
+              <h3 className="font-semibold mb-4">Szybkie linki</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <Link to="/library" className="hover:text-foreground transition-colors">
-                    Figure Library
+                    Biblioteka figur
                   </Link>
                 </li>
                 <li>
                   <Link to="/challenges" className="hover:text-foreground transition-colors">
-                    Challenges
+                    Wyzwania
                   </Link>
                 </li>
                 <li>
                   <Link to="/pricing" className="hover:text-foreground transition-colors">
-                    Pricing
+                    Cennik
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Follow Us</h3>
+              <h3 className="font-semibold mb-4">Śledź nas</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
                   <a 
@@ -136,7 +136,7 @@ const InfoPageLayout: React.FC<InfoPageLayoutProps> = ({ children }) => {
                 </li>
               </ul>
               <div className="mt-4">
-                <h3 className="font-semibold mb-2">Contact</h3>
+                <h3 className="font-semibold mb-2">Kontakt</h3>
                 <a 
                   href="mailto:contact@iguanaflow.com"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
