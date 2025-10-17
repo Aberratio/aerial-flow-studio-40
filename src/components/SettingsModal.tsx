@@ -66,7 +66,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="w-[96vw] max-w-[600px] max-h-[85vh] overflow-y-auto glass-effect border-white/10 p-4 sm:p-6">
           <DialogHeader>
-            <DialogTitle className="text-white text-xl">Settings</DialogTitle>
+            <DialogTitle className="text-white text-xl">Ustawienia</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-6">
@@ -75,7 +75,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-white text-base flex items-center gap-2">
                   <Mail className="w-5 h-5 text-primary" />
-                  Account
+                  Konto
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -84,7 +84,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   <span className="text-white text-sm">{user?.email}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground text-sm">Username</span>
+                  <span className="text-muted-foreground text-sm">Nazwa użytkownika</span>
                   <span className="text-white text-sm">{user?.username}</span>
                 </div>
               </CardContent>
@@ -95,7 +95,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-white text-base flex items-center gap-2">
                   <Crown className="w-5 h-5 text-yellow-400" />
-                  Subscription & Billing
+                  Subskrypcja i płatności
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -106,7 +106,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 ) : hasPremiumAccess ? (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-white font-medium">Current Plan</span>
+                      <span className="text-white font-medium">Aktualny plan</span>
                       <span className="text-green-400 text-sm font-medium">
                         {subscription_tier || user?.role || 'Premium'}
                       </span>
@@ -116,9 +116,9 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                       <>
                         <div className="bg-white/5 p-3 rounded-lg space-y-2">
                           <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Active until:</span>
+                            <span className="text-muted-foreground">Aktywny do:</span>
                             <span className="text-white">
-                              {new Date(subscription_end).toLocaleDateString('en-US', {
+                              {new Date(subscription_end).toLocaleDateString('pl-PL', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
@@ -126,8 +126,8 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                             </span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-muted-foreground">Plan type:</span>
-                            <span className="text-white">Monthly subscription</span>
+                            <span className="text-muted-foreground">Typ planu:</span>
+                            <span className="text-white">Subskrypcja miesięczna</span>
                           </div>
                         </div>
                         
@@ -141,8 +141,8 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                             } catch (error) {
                               console.error('Portal error:', error);
                               toast({
-                                title: "Error",
-                                description: "Failed to open subscription management portal",
+                                title: "Błąd",
+                                description: "Nie udało się otworzyć panelu zarządzania subskrypcją",
                                 variant: "destructive"
                               });
                             }
@@ -150,17 +150,17 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                           className="w-full border-white/20 text-white hover:bg-white/10"
                         >
                           <CreditCard className="w-4 h-4 mr-2" />
-                          Manage Subscription
+                          Zarządzaj subskrypcją
                         </Button>
                       </>
                     ) : (
                       <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-3">
                         <div className="flex items-center gap-2 mb-2">
                           <Crown className="w-4 h-4 text-blue-400" />
-                          <span className="text-blue-400 font-medium text-sm">Manual Premium Access</span>
+                          <span className="text-blue-400 font-medium text-sm">Dostęp Premium nadany ręcznie</span>
                         </div>
                         <p className="text-blue-300 text-xs">
-                          Your premium access was granted manually by an administrator.
+                          Twój dostęp premium został nadany ręcznie przez administratora.
                         </p>
                       </div>
                     )}
@@ -168,11 +168,11 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                 ) : (
                   <>
                     <div className="flex items-center justify-between">
-                      <span className="text-white font-medium">Current Plan</span>
-                      <span className="text-gray-400 text-sm">Free</span>
+                      <span className="text-white font-medium">Aktualny plan</span>
+                      <span className="text-gray-400 text-sm">Darmowy</span>
                     </div>
                     <p className="text-muted-foreground text-sm">
-                      Upgrade to unlock premium features!
+                      Ulepsz konto, aby odblokować funkcje premium!
                     </p>
                     <Button
                       variant="primary"
@@ -186,8 +186,8 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                         } catch (error) {
                           console.error('Checkout error:', error);
                           toast({
-                            title: "Error",
-                            description: "Failed to start checkout process",
+                            title: "Błąd",
+                            description: "Nie udało się rozpocząć procesu płatności",
                             variant: "destructive"
                           });
                         }
@@ -195,7 +195,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                       className="w-full"
                     >
                       <Crown className="w-4 h-4 mr-2" />
-                      Upgrade to Premium
+                      Ulepsz do Premium
                     </Button>
                   </>
                 )}
@@ -207,7 +207,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                     onClick={() => setIsPricingModalOpen(true)}
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    View Pricing Plans
+                    Zobacz plany cenowe
                   </Button>
                 )}
               </CardContent>
@@ -218,7 +218,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-white text-base flex items-center gap-2">
                   <Info className="w-5 h-5 text-primary" />
-                  Information
+                  Informacje
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -228,7 +228,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                     className="w-full justify-start text-muted-foreground hover:text-white hover:bg-white/5"
                   >
                     <Shield className="w-4 h-4 mr-3" />
-                    Privacy Policy
+                    Polityka prywatności
                   </Button>
                 </Link>
                 <Link to="/terms-of-use" onClick={onClose}>
@@ -237,7 +237,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                     className="w-full justify-start text-muted-foreground hover:text-white hover:bg-white/5"
                   >
                     <FileText className="w-4 h-4 mr-3" />
-                    Terms of Use
+                    Regulamin
                   </Button>
                 </Link>
                 <Link to="/about-us" onClick={onClose}>
@@ -246,7 +246,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                     className="w-full justify-start text-muted-foreground hover:text-white hover:bg-white/5"
                   >
                     <Info className="w-4 h-4 mr-3" />
-                    About Us
+                    O nas
                   </Button>
                 </Link>
               </CardContent>
@@ -257,7 +257,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
               <CardHeader className="pb-3">
                 <CardTitle className="text-red-400 text-base flex items-center gap-2">
                   <Trash2 className="w-5 h-5" />
-                  Danger Zone
+                  Strefa zagrożenia
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -267,7 +267,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   onClick={() => setShowLogoutDialog(true)}
                 >
                   <LogOut className="w-4 h-4 mr-3" />
-                  Log Out
+                  Wyloguj się
                 </Button>
                 
                 <Button
@@ -276,7 +276,7 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
                   onClick={() => setShowDeleteDialog(true)}
                 >
                   <Trash2 className="w-4 h-4 mr-3" />
-                  Delete Account
+                  Usuń konto
                 </Button>
               </CardContent>
             </Card>
@@ -293,15 +293,15 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <AlertDialogContent className="glass-effect border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
+            <AlertDialogTitle>Potwierdź wylogowanie</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to log out?
+              Czy na pewno chcesz się wylogować?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction onClick={handleLogout} className="bg-destructive hover:bg-destructive/90">
-              Log Out
+              Wyloguj się
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -311,18 +311,18 @@ export const SettingsModal = ({ isOpen, onClose }: SettingsModalProps) => {
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent className="glass-effect border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+            <AlertDialogTitle>Usuń konto</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+              Ta operacja jest nieodwracalna. Spowoduje to trwałe usunięcie Twojego konta i wszystkich danych z naszych serwerów.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDeleteAccount} 
               className="bg-destructive hover:bg-destructive/90"
             >
-              Delete Account
+              Usuń konto
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

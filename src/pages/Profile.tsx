@@ -47,9 +47,9 @@ const Profile = () => {
         {/* Main Tabs - Posts, Friends, Inbox */}
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-3 bg-white/5">
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="friends">Friends</TabsTrigger>
-            <TabsTrigger value="inbox">Inbox</TabsTrigger>
+            <TabsTrigger value="posts">Posty</TabsTrigger>
+            <TabsTrigger value="friends">Znajomi</TabsTrigger>
+            <TabsTrigger value="inbox">Wiadomości</TabsTrigger>
           </TabsList>
           
           <TabsContent value="posts" className="mt-6">
