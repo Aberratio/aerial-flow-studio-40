@@ -448,10 +448,10 @@ const Challenges = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                Challenges
+                Wyzwania
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base">
-                Push your limits with structured training programs
+                Przekrocz swoje granice ze strukturalnym treningiem
               </p>
             </div>
             {canCreateChallenges && (
@@ -460,7 +460,7 @@ const Challenges = () => {
                 variant="primary"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Create Challenge
+                Stwórz wyzwanie
               </Button>
             )}
           </div>
@@ -474,22 +474,22 @@ const Challenges = () => {
         >
           <TabsList className="grid w-full grid-cols-4 text-xs sm:text-sm">
             <TabsTrigger value="all" className="px-2 sm:px-4">
-              All
+              Wszystkie
             </TabsTrigger>
             <TabsTrigger value="active" className="px-2 sm:px-4">
-              Active
+              Aktywne
             </TabsTrigger>
             <TabsTrigger
               value="not-started"
               className="px-2 sm:px-4 hidden sm:inline-flex"
             >
-              Not Started
+              Nowe
             </TabsTrigger>
             <TabsTrigger value="not-started" className="px-2 sm:px-4 sm:hidden">
-              New
+              Nowe
             </TabsTrigger>
             <TabsTrigger value="completed" className="px-2 sm:px-4">
-              Done
+              Ukończone
             </TabsTrigger>
           </TabsList>
 

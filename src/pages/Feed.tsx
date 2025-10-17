@@ -118,8 +118,8 @@ const Feed = () => {
         <div className="mb-6 sm:mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-2">Your Feed</h1>
-              <p className="text-muted-foreground">See what your fellow aerial athletes are up to</p>
+              <h1 className="text-3xl font-bold text-white mb-2">Twój Feed</h1>
+              <p className="text-muted-foreground">Zobacz co słychać u innych akrobatów powietrznych</p>
             </div>
           </div>
         </div>
@@ -134,7 +134,7 @@ const Feed = () => {
               </Avatar>
               <Button onClick={() => setShowCreatePost(true)} variant="ghost" className="flex-1 min-w-0 justify-start text-muted-foreground hover:text-white bg-white/5 hover:bg-white/10 h-12 text-sm sm:text-base">
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0" />
-                <span className="truncate">What's on your mind?</span>
+                <span className="truncate">Co u Ciebie słychać?</span>
               </Button>
             </div>
           </CardContent>
@@ -144,10 +144,10 @@ const Feed = () => {
         <Tabs value={activeTab} onValueChange={(value) => switchTab(value as 'my_feed' | 'public_feed')} className="w-full mb-6">
           <TabsList className="grid w-full grid-cols-2 bg-white/5 rounded-lg p-1">
             <TabsTrigger value="my_feed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-white">
-              My Feed
+              Mój Feed
             </TabsTrigger>
             <TabsTrigger value="public_feed" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500/20 data-[state=active]:via-pink-500/20 data-[state=active]:to-blue-500/20 data-[state=active]:text-white">
-              Public Feed
+              Publiczny Feed
             </TabsTrigger>
           </TabsList>
           
@@ -157,8 +157,8 @@ const Feed = () => {
                 <CardContent className="p-8 text-center">
                   <p className="text-muted-foreground">
                     {activeTab === 'my_feed' 
-                      ? 'No posts from your friends and followed users yet. Try the Public Feed to discover new content!'
-                      : 'No public posts to show at the moment.'
+                      ? 'Brak postów od znajomych i obserwowanych użytkowników. Spróbuj publicznego feed\'a!'
+                      : 'Brak publicznych postów w tym momencie.'
                     }
                   </p>
                 </CardContent>
@@ -196,11 +196,11 @@ const Feed = () => {
                         <DropdownMenuContent align="end" className="bg-background/95 border-white/10">
                           <DropdownMenuItem onClick={() => setEditingPost(post)} className="text-white hover:bg-white/10">
                             <Edit className="w-4 h-4 mr-2" />
-                            Edit Post
+                            Edytuj post
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => setDeletingPost(post)} className="text-red-400 hover:bg-red-400/10 hover:text-red-300">
                             <Trash2 className="w-4 h-4 mr-2" />
-                            Delete Post
+                            Usuń post
                           </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>}
@@ -222,7 +222,7 @@ const Feed = () => {
                        onClick={() => handleExerciseClick(post.figure.id)}>
                     <div className="flex items-center space-x-2">
                       <Target className="w-4 h-4 text-purple-400" />
-                      <span className="text-sm text-purple-400 font-medium">Exercise:</span>
+                      <span className="text-sm text-purple-400 font-medium">Ćwiczenie:</span>
                       <span className="text-sm text-white underline hover:text-purple-300">{post.figure.name}</span>
                     </div>
                   </div>
@@ -278,7 +278,7 @@ const Feed = () => {
           <div className="flex justify-center mt-8">
             <Button onClick={loadMorePosts} disabled={loadingMore} variant="outline" className="border-white/20 text-white hover:bg-white/10">
               {loadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {loadingMore ? 'Loading...' : 'Load More Posts'}
+              {loadingMore ? 'Ładowanie...' : 'Załaduj więcej postów'}
             </Button>
           </div>
         )}

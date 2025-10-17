@@ -98,10 +98,10 @@ export const PricingModal = ({
       >
         <DialogHeader>
           <DialogTitle className="text-white text-center text-xl sm:text-2xl">
-            Choose Your Plan
+            Wybierz swój plan
           </DialogTitle>
           <p className="text-white/70 text-center text-sm sm:text-base">
-            Start your aerial journey with the perfect plan for you
+            Rozpocznij swoją powietrzną przygodę z idealnym planem
           </p>
           <div className="flex justify-center mt-4">
             <Select
@@ -127,10 +127,10 @@ export const PricingModal = ({
                 <Users className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400" />
               </div>
               <CardTitle className="text-white text-xl sm:text-2xl">
-                Free
+                Darmowy
               </CardTitle>
               <CardDescription className="text-white/70 text-sm sm:text-base">
-                Perfect for getting started
+                Idealny na start
               </CardDescription>
               <div className="mt-4">
                 <span className="text-2xl sm:text-3xl font-bold text-white">
@@ -166,7 +166,7 @@ export const PricingModal = ({
           {/* Premium Plan */}
           <Card className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 border-purple-500/50 relative">
             <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs">
-              Most Popular
+              Najpopularniejszy
             </Badge>
             <CardHeader className="text-center p-6">
               <div className="flex items-center justify-center mb-2">
@@ -176,7 +176,7 @@ export const PricingModal = ({
                 Premium
               </CardTitle>
               <CardDescription className="text-white/70 text-sm sm:text-base">
-                Unlock your full potential
+                Uwolnij swój pełny potencjał
               </CardDescription>
               <div className="mt-4">
                 <span className="text-2xl sm:text-3xl font-bold text-white">
@@ -206,7 +206,7 @@ export const PricingModal = ({
                 variant="primary"
                 className="w-full text-sm sm:text-base py-2 sm:py-3"
               >
-                {isLoading ? "Processing..." : "Upgrade to Premium"}
+                {isLoading ? "Przetwarzanie..." : "Przejdź na Premium"}
               </Button>
             </CardContent>
           </Card>
@@ -219,7 +219,7 @@ export const PricingModal = ({
             className="text-white/60 hover:text-white"
           >
             <X className="w-4 h-4 mr-2" />
-            Maybe later
+            Może później
           </Button>
         </div>
       </DialogContent>

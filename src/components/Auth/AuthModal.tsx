@@ -100,7 +100,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
       <DialogContent className="max-w-md bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm">
         <DialogHeader>
           <DialogTitle className="text-white text-center">
-            {mode === "login" ? "Sign In" : "Create Account"}
+            {mode === "login" ? "Zaloguj się" : "Utwórz konto"}
           </DialogTitle>
         </DialogHeader>
 
@@ -110,13 +110,13 @@ const AuthModal: React.FC<AuthModalProps> = ({
               value="login"
               className="text-white data-[state=active]:bg-white/10"
             >
-              Sign In
+              Zaloguj się
             </TabsTrigger>
             <TabsTrigger
               value="register"
               className="text-white data-[state=active]:bg-white/10"
             >
-              Sign Up
+              Zarejestruj się
             </TabsTrigger>
           </TabsList>
 
@@ -133,14 +133,14 @@ const AuthModal: React.FC<AuthModalProps> = ({
                   value={formData.email}
                   onChange={handleInputChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Enter your email"
+                  placeholder="Wpisz swój email"
                   required
                 />
               </div>
 
               <div>
                 <Label htmlFor="password" className="text-white">
-                  Password
+                  Hasło
                 </Label>
                 <div className="relative">
                   <Input
@@ -150,7 +150,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                     value={formData.password}
                     onChange={handleInputChange}
                     className="bg-white/5 border-white/10 text-white placeholder:text-white/60 pr-10"
-                    placeholder="Enter your password"
+                    placeholder="Wpisz hasło"
                     required
                   />
                   <Button
@@ -178,10 +178,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Signing in...
+                    Logowanie...
                   </>
                 ) : (
-                  "Sign In"
+                  "Zaloguj się"
                 )}
               </Button>
             </form>
@@ -207,7 +207,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
               <div>
                 <Label htmlFor="username" className="text-white">
-                  Username
+                  Nazwa użytkownika
                 </Label>
                 <Input
                   id="username"
@@ -216,14 +216,14 @@ const AuthModal: React.FC<AuthModalProps> = ({
                   value={formData.username}
                   onChange={handleInputChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Choose a username"
+                  placeholder="Wybierz nazwę użytkownika"
                   required
                 />
               </div>
 
               <div>
                 <Label htmlFor="signup-password" className="text-white">
-                  Password
+                  Hasło
                 </Label>
                 <div className="relative">
                   <Input
@@ -233,7 +233,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                     value={formData.password}
                     onChange={handleInputChange}
                     className="bg-white/5 border-white/10 text-white placeholder:text-white/60 pr-10"
-                    placeholder="Create a password"
+                    placeholder="Utwórz hasło"
                     required
                   />
                   <Button
@@ -254,7 +254,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
               <div>
                 <Label htmlFor="confirmPassword" className="text-white">
-                  Confirm Password
+                  Potwierdź hasło
                 </Label>
                 <Input
                   id="confirmPassword"
@@ -263,7 +263,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Confirm your password"
+                  placeholder="Potwierdź hasło"
                   required
                 />
               </div>
@@ -277,10 +277,10 @@ const AuthModal: React.FC<AuthModalProps> = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating account...
+                    Tworzenie konta...
                   </>
                 ) : (
-                  "Create Account"
+                  "Utwórz konto"
                 )}
               </Button>
             </form>
