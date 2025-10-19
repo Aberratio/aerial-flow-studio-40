@@ -278,7 +278,7 @@ export const CreatePostModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-white">Create New Post</DialogTitle>
+          <DialogTitle className="text-white">Utwórz nowy post</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
@@ -304,10 +304,10 @@ export const CreatePostModal = ({
                       {getPrivacyIcon()}
                       <span className="capitalize">
                         {privacy === "friends"
-                          ? "Friends only"
+                          ? "Tylko znajomi"
                           : privacy === "private"
-                          ? "Only me"
-                          : "Public"}
+                          ? "Tylko ja"
+                          : "Publiczny"}
                       </span>
                     </div>
                   </SelectValue>
@@ -316,19 +316,19 @@ export const CreatePostModal = ({
                   <SelectItem value="public">
                     <div className="flex items-center space-x-2">
                       <Globe className="w-4 h-4" />
-                      <span>Public</span>
+                      <span>Publiczny</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="friends">
                     <div className="flex items-center space-x-2">
                       <Users className="w-4 h-4" />
-                      <span>Friends only</span>
+                      <span>Tylko znajomi</span>
                     </div>
                   </SelectItem>
                   <SelectItem value="private">
                     <div className="flex items-center space-x-2">
                       <Lock className="w-4 h-4" />
-                      <span>Only me</span>
+                      <span>Tylko ja</span>
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -339,8 +339,8 @@ export const CreatePostModal = ({
           <Textarea
             placeholder={
               preselectedFigure
-                ? `Share your version of ${preselectedFigure.name}...`
-                : "What's on your mind?"
+                ? `Podziel się swoją wersją ${preselectedFigure.name}...`
+                : "Co u Ciebie słychać?"
             }
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -392,15 +392,15 @@ export const CreatePostModal = ({
               >
                 <Target className="w-4 h-4 mr-2" />
                 {showFigureSearch
-                  ? "Hide Figure Selection"
-                  : "Link to a Figure (Optional)"}
+                  ? "Ukryj wybór figury"
+                  : "Połącz z figurą (opcjonalnie)"}
               </Button>
 
               {showFigureSearch && (
                 <div className="space-y-3 p-4 bg-white/5 rounded-lg border border-white/10">
                   <input
                     type="text"
-                    placeholder="Search figures..."
+                    placeholder="Szukaj figur..."
                     value={figureSearchTerm}
                     onChange={(e) => setFigureSearchTerm(e.target.value)}
                     className="w-full p-3 bg-white/10 border border-white/20 rounded-md text-white placeholder:text-white/60 focus:border-primary focus:outline-none"
@@ -435,7 +435,7 @@ export const CreatePostModal = ({
                     ))}
                     {filteredFigures.length === 0 && (
                       <p className="text-muted-foreground text-center py-4">
-                        No figures found
+                        Nie znaleziono figur
                       </p>
                     )}
                   </div>
@@ -489,7 +489,7 @@ export const CreatePostModal = ({
           {/* Instagram URL Input */}
           <div className="space-y-3">
             <label className="text-sm font-medium text-white">
-              Instagram Post (optional)
+              Post Instagram (opcjonalnie)
             </label>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
               <input

@@ -205,8 +205,8 @@ const Library = () => {
     } catch (error) {
       console.error("Error fetching figures:", error);
       toast({
-        title: "Error",
-        description: "Failed to load exercises",
+        title: "Błąd",
+        description: "Nie udało się załadować ćwiczeń",
         variant: "destructive",
       });
     } finally {
@@ -223,16 +223,16 @@ const Library = () => {
         .eq("id", figureId);
       if (error) throw error;
       toast({
-        title: "Success",
-        description: "Exercise deleted successfully",
+        title: "Sukces",
+        description: "Ćwiczenie usunięte pomyślnie",
       });
       fetchFigures();
       setDeleteModal({ isOpen: false, figure: null });
     } catch (error: any) {
       console.error("Error deleting figure:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete exercise",
+        title: "Błąd",
+        description: error.message || "Nie udało się usunąć ćwiczenia",
         variant: "destructive",
       });
     }
@@ -442,7 +442,7 @@ const Library = () => {
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
+        <div className="text-white">Ładowanie...</div>
       </div>
     );
   }
@@ -478,10 +478,10 @@ const Library = () => {
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                Exercise Library
+                Biblioteka ćwiczeń
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base">
-                Discover and master aerial exercises
+                Odkryj i opanuj ćwiczenia powietrzne
               </p>
             </div>
             {(user?.role === "trainer" || user?.role === "admin") && (
@@ -491,7 +491,7 @@ const Library = () => {
                 className="w-full sm:w-auto"
               >
                 <Plus className="w-4 h-4 mr-2" />
-                Add Exercise
+                Dodaj ćwiczenie
               </Button>
             )}
           </div>
@@ -503,7 +503,7 @@ const Library = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               type="text"
-              placeholder="Search exercises..."
+              placeholder="Szukaj ćwiczeń..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-white/60"
@@ -533,13 +533,13 @@ const Library = () => {
                     >
                       <span className="truncate">
                         {selectedCategories.length === 0
-                          ? "Categories"
+                          ? "Kategorie"
                           : selectedCategories.includes("all")
-                          ? "All Categories"
+                          ? "Wszystkie kategorie"
                           : selectedCategories.length === 1
                           ? selectedCategories[0].charAt(0).toUpperCase() +
                             selectedCategories[0].slice(1)
-                          : `${selectedCategories.length} Categories`}
+                          : `${selectedCategories.length} kategorie`}
                       </span>
                       <div className="flex items-center gap-1">
                         {selectedCategories.length > 0 &&
@@ -570,7 +570,7 @@ const Library = () => {
                           htmlFor="all-categories"
                           className="text-white font-medium"
                         >
-                          All Categories
+                          Wszystkie kategorie
                         </label>
                       </div>
                       {categories.slice(1).map((category) => (
@@ -612,13 +612,13 @@ const Library = () => {
                     >
                       <span className="truncate">
                         {selectedLevels.length === 0
-                          ? "Difficulty"
+                          ? "Trudność"
                           : selectedLevels.includes("all")
-                          ? "All Difficulties"
+                          ? "Wszystkie poziomy"
                           : selectedLevels.length === 1
                           ? selectedLevels[0].charAt(0).toUpperCase() +
                             selectedLevels[0].slice(1)
-                          : `${selectedLevels.length} Difficulties`}
+                          : `${selectedLevels.length} poziomy`}
                       </span>
                       <div className="flex items-center gap-1">
                         {selectedLevels.length > 0 &&
@@ -649,7 +649,7 @@ const Library = () => {
                           htmlFor="all-levels"
                           className="text-white font-medium"
                         >
-                          All Difficulties
+                          Wszystkie poziomy
                         </label>
                       </div>
                       {levels.slice(1).map((level) => (
@@ -688,16 +688,16 @@ const Library = () => {
                     >
                       <span className="truncate">
                         {selectedTypes.length === 0
-                          ? "Types"
+                          ? "Typy"
                           : selectedTypes.includes("all")
-                          ? "All Types"
+                          ? "Wszystkie typy"
                           : selectedTypes.length === 1
                           ? selectedTypes[0]
                               .replace("_", " ")
                               .split(" ")
                               .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
                               .join(" ")
-                          : `${selectedTypes.length} Types`}
+                          : `${selectedTypes.length} typy`}
                       </span>
                       <div className="flex items-center gap-1">
                         {selectedTypes.length > 0 &&
@@ -728,7 +728,7 @@ const Library = () => {
                           htmlFor="all-types"
                           className="text-white font-medium"
                         >
-                          All Types
+                          Wszystkie typy
                         </label>
                       </div>
                       {types.slice(1).map((type) => (
@@ -769,14 +769,14 @@ const Library = () => {
                         {selectedStatuses.length === 0
                           ? "Status"
                           : selectedStatuses.includes("all")
-                          ? "All Statuses"
+                          ? "Wszystkie statusy"
                           : selectedStatuses.length === 1
                           ? selectedStatuses[0]
                               .replace("_", " ")
                               .split(" ")
                               .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
                               .join(" ")
-                          : `${selectedStatuses.length} Statuses`}
+                          : `${selectedStatuses.length} statusy`}
                       </span>
                       <div className="flex items-center gap-1">
                         {selectedStatuses.length > 0 &&
@@ -807,7 +807,7 @@ const Library = () => {
                           htmlFor="all-statuses"
                           className="text-white font-medium"
                         >
-                          All Statuses
+                          Wszystkie statusy
                         </label>
                       </div>
                       {statuses.slice(1).map((status) => (
@@ -844,7 +844,7 @@ const Library = () => {
                   {/* Expert Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-white/80">
-                      Experts
+                      Eksperci
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
