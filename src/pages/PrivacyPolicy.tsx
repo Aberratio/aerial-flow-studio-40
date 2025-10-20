@@ -5,71 +5,71 @@ const PrivacyPolicy = () => {
   const content = {
     title: "Privacy Policy",
     content: `
-# 🦎 Privacy Policy - IguanaFlow
+# 🦎 Polityka Prywatności - IguanaFlow
 
-Last updated: 13.07.2025
+Ostatnia aktualizacja: 13.07.2025
 
 ---
 
-## Who is the data controller?
+## Kto jest administratorem danych?
 
-The controller of your personal data is:  
+Administratorem Twoich danych osobowych jest:  
 Joanna Kokot Usługi Informatyczne                     
-Tax ID: PL9161389290                   
+NIP: PL9161389290                   
 E-mail: 📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
 
 ---
 
-## What data do we collect?
+## Jakie dane zbieramy?
 
-We only collect data necessary for IguanaFlow to work properly:
-- your email address (for login, notifications, contact),
-- photos and videos of poses uploaded by users,
-- info about your activity in the app (saved poses, friends you follow).
-
----
-
-##  Why do we process your data?
-
-We use your data to:
-- create and manage your account,
-- provide community features,
-- improve content and app functionality,
-- contact you for technical or service reasons.
+Zbieramy tylko dane niezbędne do prawidłowego działania IguanaFlow:
+- Twój adres e-mail (do logowania, powiadomień, kontaktu),
+- zdjęcia i filmy pozycji dodawane przez użytkowników,
+- informacje o Twojej aktywności w aplikacji (zapisane pozycje, obserwowani znajomi).
 
 ---
 
-## Who do we share data with?
+##  Po co przetwarzamy Twoje dane?
 
-We do not sell your data.  
-We may share it only with:
-- technical service providers (e.g. hosting, Stripe payments),
-- if required by law.
-
----
-
-## How long do we keep your data?
-
-We keep your data as long as you use IguanaFlow.  
-If you delete your account - we'll remove your data except where we must keep it for legal reasons.
+Wykorzystujemy Twoje dane, aby:
+- tworzyć i zarządzać Twoim kontem,
+- udostępniać funkcje społecznościowe,
+- ulepszać zawartość i funkcjonalność aplikacji,
+- kontaktować się z Tobą w sprawach technicznych lub serwisowych.
 
 ---
 
-## Your rights
+## Komu udostępniamy dane?
 
-You have the right to:
-- access your data,
-- correct it,
-- delete it,
-- restrict processing,
-- transfer your data,
-- file a complaint with your local data protection authority (e.g. in the EU: GDPR).
+Nie sprzedajemy Twoich danych.  
+Możemy je udostępnić tylko:
+- dostawcom usług technicznych (np. hosting, płatności Stripe),
+- jeśli jest to wymagane prawem.
 
 ---
 
-## Contact
+## Jak długo przechowujemy Twoje dane?
 
-Got questions? Reach out:  
+Przechowujemy Twoje dane tak długo, jak korzystasz z IguanaFlow.  
+Jeśli usuniesz swoje konto - usuniemy Twoje dane z wyjątkiem przypadków, gdy musimy je zachować ze względów prawnych.
+
+---
+
+## Twoje prawa
+
+Masz prawo do:
+- dostępu do swoich danych,
+- ich poprawiania,
+- usunięcia,
+- ograniczenia przetwarzania,
+- przeniesienia swoich danych,
+- złożenia skargi do lokalnego organu ochrony danych (np. w UE: RODO).
+
+---
+
+## Kontakt
+
+Masz pytania? Skontaktuj się z nami:  
 📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
 `,
   };

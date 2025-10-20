@@ -5,64 +5,64 @@ const TermsOfUse = () => {
   const content = {
     title: "Terms of Use",
     content: `
-# 🦎 Terms of Service - IguanaFlow
+# 🦎 Regulamin - IguanaFlow
 
-Last updated: 13.07.2025
+Ostatnia aktualizacja: 13.07.2025
 
 ---
 
-## General provisions
+## Postanowienia ogólne
 
-1. These Terms of Service set out the rules for using the IguanaFlow app available at **[iguanaflow.com](https://iguanaflow.com)**.
-2. The app is operated by:  
+1. Niniejszy Regulamin określa zasady korzystania z aplikacji IguanaFlow dostępnej pod adresem **[iguanaflow.com](https://iguanaflow.com)**.
+2. Aplikacja prowadzona jest przez:  
    Joanna Kokot Usługi Informatyczne                           
-   Tax ID: PL9161389290                     
-   Contact e-mail: 📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
+   NIP: PL9161389290                     
+   E-mail kontaktowy: 📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
 
 ---
 
-## Conditions of use
+## Warunki korzystania
 
-1. Using the app requires creating an account.
-2. Users must provide true and accurate information.
-3. It is forbidden to post illegal, offensive or infringing content.
-4. The administrator may block an account if the Terms are violated.
-
----
-
-## Intellectual property
-
-1. All content in the app (photos, videos, descriptions) is protected by copyright.
-2. Copying, distributing or using content without permission is prohibited.
-3. Content uploaded by users remains their property, but users grant a license for it to be displayed within the app.
+1. Korzystanie z aplikacji wymaga założenia konta.
+2. Użytkownicy muszą podawać prawdziwe i dokładne informacje.
+3. Zabronione jest publikowanie treści niezgodnych z prawem, obraźliwych lub naruszających prawa osób trzecich.
+4. Administrator może zablokować konto w przypadku naruszenia Regulaminu.
 
 ---
 
-## Payments
+## Własność intelektualna
 
-1. Some IguanaFlow features may be paid.
-2. Payments are handled via Stripe.
-3. Failure to pay for a subscription or course may limit access to paid content.
-
----
-
-## Liability
-
-1. The administrator is not responsible for content uploaded by users.
-2. Users use the app at their own risk and should always exercise safely.
+1. Wszystkie treści w aplikacji (zdjęcia, filmy, opisy) są chronione prawem autorskim.
+2. Kopiowanie, rozpowszechnianie lub wykorzystywanie treści bez zgody jest zabronione.
+3. Treści dodawane przez użytkowników pozostają ich własnością, ale użytkownicy udzielają licencji na ich wyświetlanie w ramach aplikacji.
 
 ---
 
-## Changes to the Terms
+## Płatności
 
-1. The administrator reserves the right to change the Terms.
-2. Users will be informed about changes by e-mail or via the app.
+1. Niektóre funkcje IguanaFlow mogą być płatne.
+2. Płatności obsługiwane są przez Stripe.
+3. Brak opłaty za subskrypcję lub kurs może ograniczyć dostęp do płatnych treści.
 
 ---
 
-## Contact
+## Odpowiedzialność
 
-Questions? Contact us:  
+1. Administrator nie ponosi odpowiedzialności za treści dodawane przez użytkowników.
+2. Użytkownicy korzystają z aplikacji na własne ryzyko i powinni zawsze ćwiczyć bezpiecznie.
+
+---
+
+## Zmiany w Regulaminie
+
+1. Administrator zastrzega sobie prawo do zmiany Regulaminu.
+2. Użytkownicy zostaną poinformowani o zmianach e-mailem lub za pośrednictwem aplikacji.
+
+---
+
+## Kontakt
+
+Pytania? Skontaktuj się z nami:  
 📧 [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
 `,
   };

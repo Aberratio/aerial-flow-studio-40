@@ -1,14 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Instagram } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import IguanaLogo from "@/assets/iguana-logo.svg";
+import AuthModal from "@/components/Auth/AuthModal";
 
 interface InfoPageLayoutProps {
   children: React.ReactNode;
 }
 
 const InfoPageLayout: React.FC<InfoPageLayoutProps> = ({ children }) => {
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+
+  const handleAuthClick = (mode: "login" | "register") => {
+    setAuthMode(mode);
+    setShowAuthModal(true);
+  };
+
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* Animated Background - same as landing */}
@@ -30,17 +39,33 @@ const InfoPageLayout: React.FC<InfoPageLayoutProps> = ({ children }) => {
               IguanaFlow
             </span>
           </Link>
-          <Link to="/">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
               size="sm"
+              onClick={() => handleAuthClick("login")}
               className="text-xs sm:text-sm"
             >
-              Powrót na stronę główną
+              Zaloguj się
             </Button>
-          </Link>
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => handleAuthClick("register")}
+              className="text-xs sm:text-sm"
+            >
+              Rozpocznij
+            </Button>
+          </div>
         </div>
       </header>
+
+      <AuthModal
+        open={showAuthModal}
+        onOpenChange={setShowAuthModal}
+        mode={authMode}
+        onModeChange={setAuthMode}
+      />
 
       {/* Back Button - elegant and visible */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-20 sm:pt-24 pb-4">
