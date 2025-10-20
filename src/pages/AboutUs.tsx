@@ -3,57 +3,57 @@ import InfoPageLayout from "@/components/Layout/InfoPageLayout";
 
 const AboutUs = () => {
   const content = {
-    title: "About Us",
+    title: "O nas",
     content: `
-# 🦎 About IguanaFlow
+# 🦎 O IguanaFlow
 
-Welcome to **IguanaFlow** - a growing community and platform for aerial artists, pole dancers, and everyone who loves to fly.
-
----
-
-## Our Mission
-
-We believe aerial arts are for everyone - no matter if you're just learning your first figure or mastering advanced combos.  
-**IguanaFlow** helps you:
-
-- Explore a curated library of poses, tricks, and transitions.
-- Find inspiration for your training.
-- Connect with other aerialists around the world.
-- Take on challenges and celebrate your progress.
-- Unlock your flow - anytime, anywhere.
+Witaj w **IguanaFlow** - rozwijającej się społeczności i platformie dla artystów powietrznych, tancerzy pole dance i wszystkich, którzy kochają latać.
 
 ---
 
-## What You'll Find Here
+## Nasza misja
 
-- **Library of Moves:** Clear photos, quick video demos, tips & variations.
-- **Feed & Community:** Share your progress, ask for tips, cheer each other on.
-- **Friends & Follows:** Build your aerial network - train together, stay inspired.
-- **Badges & Challenges:** Gamify your journey, hit milestones, stay motivated.
-- **Future Courses:** Soon you'll find full training programs created by real aerial instructors.
+Wierzymy, że sztuki powietrzne są dla każdego - niezależnie od tego, czy dopiero uczysz się pierwszej figury, czy opanowujesz zaawansowane kombinacje.  
+**IguanaFlow** pomoże Ci:
 
----
-
-## Why Iguana?
-
-The **iguana** is one of our favorite moves - but it's also a symbol: calm, strong, adaptable, always ready to climb higher. Just like you.
+- Poznać starannie wyselekcjonowaną bibliotekę pozycji, trików i przejść.
+- Znaleźć inspirację do treningów.
+- Połączyć się z innymi powietrznikami z całego świata.
+- Podejmować wyzwania i świętować swoje postępy.
+- Odkryć swój flow - w dowolnym czasie i miejscu.
 
 ---
 
-## Join the Flow
+## Co tu znajdziesz
 
-We're just getting started - and you can help shape this space!  
-Upload figures, share ideas, become an early tester or a course creator.
-
-Together, we'll make aerial knowledge more accessible, fun and organized - for every student and every teacher.
+- **Bibliotekę ruchów:** Wyraźne zdjęcia, krótkie dema wideo, wskazówki i wariacje.
+- **Feed i społeczność:** Dziel się swoimi postępami, pytaj o porady, kibicuj innym.
+- **Znajomi i obserwowani:** Buduj swoją sieć powietrzną - trenujcie razem, inspirujcie się.
+- **Odznaki i wyzwania:** Urozmaić swoją podróż, osiągać kamienie milowe, utrzymywać motywację.
+- **Przyszłe kursy:** Wkrótce znajdziesz pełne programy treningowe stworzone przez prawdziwych instruktorów powietrznych.
 
 ---
 
-## Let's Connect
+## Dlaczego Iguana?
 
-Got feedback, ideas or questions?  
-DM us on Instagram [@iguana.flow](https://www.instagram.com/iguana.flow)  
-or email us at [hello@iguanaflow.com](mailto:hello@iguanaflow.com).
+**Iguana** to jeden z naszych ulubionych ruchów - ale to także symbol: spokojny, silny, adaptacyjny, zawsze gotowy wspiąć się wyżej. Tak jak Ty.
+
+---
+
+## Dołącz do flow
+
+Dopiero zaczynamy - a Ty możesz pomóc kształtować tę przestrzeń!  
+Dodawaj figury, dziel się pomysłami, zostań wczesnym testerem lub twórcą kursu.
+
+Razem uczynimy wiedzę o sztukach powietrznych bardziej dostępną, zabawną i zorganizowaną - dla każdego ucznia i każdego nauczyciela.
+
+---
+
+## Skontaktuj się
+
+Masz uwagi, pomysły lub pytania?  
+Napisz do nas na Instagramie [@iguana.flow](https://www.instagram.com/iguana.flow)  
+lub wyślij e-mail na [hello@iguanaflow.com](mailto:hello@iguanaflow.com).
 `,
   };
 

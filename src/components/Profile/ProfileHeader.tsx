@@ -93,8 +93,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       console.log("Profile avatar updated successfully!");
 
       toast({
-        title: "Profile Photo Updated",
-        description: "Your profile photo has been successfully updated.",
+        title: "Zdjęcie profilowe zaktualizowane",
+        description: "Twoje zdjęcie profilowe zostało pomyślnie zaktualizowane.",
       });
 
       // Refresh user data to show new avatar
@@ -102,8 +102,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     } catch (error: any) {
       console.error("Avatar upload error:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to update profile photo",
+        title: "Błąd",
+        description: error.message || "Nie udało się zaktualizować zdjęcia profilowego",
         variant: "destructive",
       });
     } finally {
@@ -213,7 +213,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   {stats.posts}
                 </div>
                 <div className="text-muted-foreground text-sm">
-                  Posts
+                  Posty
                 </div>
               </div>
             </div>
@@ -224,7 +224,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 <div className="flex items-center space-x-2 mb-2">
                   <Eye className="w-4 h-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    View as:
+                    Widok jako:
                   </span>
                 </div>
                 <Select value={privacyFilter} onValueChange={onPrivacyChange}>
@@ -236,19 +236,19 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                       value="all"
                       className="text-white hover:bg-white/10"
                     >
-                      All Content (Private View)
+                      Cała zawartość (widok prywatny)
                     </SelectItem>
                     <SelectItem
                       value="public"
                       className="text-white hover:bg-white/10"
                     >
-                      Public Only
+                      Tylko publiczne
                     </SelectItem>
                     <SelectItem
                       value="friends"
                       className="text-white hover:bg-white/10"
                     >
-                      Friends Only
+                      Tylko znajomi
                     </SelectItem>
                   </SelectContent>
                 </Select>
@@ -264,7 +264,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     onClick={onEditProfile}
                     className="hidden sm:flex"
                   >
-                    Edit Profile
+                    Edytuj profil
                   </Button>
                   <div className="flex flex-col items-center sm:hidden">
                     <Button
@@ -275,7 +275,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     >
                       <Edit className="w-5 h-5" />
                     </Button>
-                    <span className="text-xs text-white/80 mt-1">Edit</span>
+                    <span className="text-xs text-white/80 mt-1">Edytuj</span>
                   </div>
                   {onShare && (
                     <>
@@ -285,7 +285,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         className="border-white/20 text-white hover:bg-white/10 hidden sm:flex"
                       >
                         <Share2 className="w-4 h-4 mr-2" />
-                        Share
+                        Udostępnij
                       </Button>
                       <div className="flex flex-col items-center sm:hidden">
                         <Button
@@ -296,7 +296,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                         >
                           <Share2 className="w-5 h-5" />
                         </Button>
-                        <span className="text-xs text-white/80 mt-1">Share</span>
+                        <span className="text-xs text-white/80 mt-1">Udostępnij</span>
                       </div>
                     </>
                   )}

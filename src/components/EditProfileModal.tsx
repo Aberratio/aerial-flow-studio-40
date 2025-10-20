@@ -153,14 +153,14 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
       await refreshUser();
 
       toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
+        title: "Profil zaktualizowany",
+        description: "Twój profil został pomyślnie zaktualizowany.",
       });
       onClose();
     } catch (error: any) {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
+        title: "Błąd",
+        description: error.message || "Nie udało się zaktualizować profilu",
         variant: "destructive"
       });
     } finally {
@@ -172,7 +172,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[96vw] max-w-md max-h-[85vh] overflow-y-auto bg-slate-900/95 border-white/30 shadow-2xl backdrop-blur-sm p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="text-white">Edit Profile</DialogTitle>
+          <DialogTitle className="text-white">Edytuj profil</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 sm:space-y-6">
@@ -211,20 +211,20 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
               className="border-white/20 text-white hover:bg-white/10"
               onClick={() => document.getElementById('avatar-upload')?.click()}
             >
-              Change Photo
+              Zmień zdjęcie
             </Button>
           </div>
 
           {/* Form Fields */}
           <div className="space-y-4">
             <div>
-              <Label htmlFor="username" className="text-white">Username</Label>
+              <Label htmlFor="username" className="text-white">Nazwa użytkownika</Label>
               <Input
                 id="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                placeholder="Enter username"
+                placeholder="Podaj nazwę użytkownika"
               />
             </div>
 
@@ -236,7 +236,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                placeholder="Enter email"
+                placeholder="Podaj email"
               />
             </div>
 
@@ -247,12 +247,12 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/60 min-h-[100px]"
-                placeholder="Tell us about yourself..."
+                placeholder="Opowiedz coś o sobie..."
               />
             </div>
 
             <div>
-              <Label className="text-white">Sports & Activities</Label>
+              <Label className="text-white">Sport i aktywności</Label>
               <div className="space-y-3">
                 {/* Available Sports from Database */}
                 <div className="flex flex-wrap gap-2">
@@ -276,7 +276,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
                 {/* Selected Sports */}
                 {sports.length > 0 && (
                   <div className="border border-white/10 rounded-lg p-3 bg-white/5">
-                    <Label className="text-white text-sm mb-2 block">Your Sports:</Label>
+                    <Label className="text-white text-sm mb-2 block">Twoje sporty:</Label>
                     <div className="flex flex-wrap gap-2">
                       {sports.map((sportId) => {
                         const sport = availableSports.find(s => s.id === sportId);
@@ -319,7 +319,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
               ) : (
                 <Save className="w-4 h-4 mr-2" />
               )}
-              Save Changes
+              Zapisz zmiany
             </Button>
             <Button
               variant="outline"
@@ -327,7 +327,7 @@ export const EditProfileModal = ({ isOpen, onClose }: EditProfileModalProps) => 
               className="border-white/20 text-white hover:bg-white/10"
             >
               <X className="w-4 h-4 mr-2" />
-              Cancel
+              Anuluj
             </Button>
           </div>
         </div>
