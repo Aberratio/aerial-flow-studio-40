@@ -80,7 +80,16 @@ const Landing = () => {
       'unlimited_challenges': 'Nieograniczony dostęp do wszystkich wyzwań',
       'expert_coaching': 'Coaching ekspertów i opinie',
       'advanced_analytics': 'Zaawansowana analityka wydajności',
-      'priority_support': 'Priorytetowe wsparcie klienta'
+      'priority_support': 'Priorytetowe wsparcie klienta',
+      'posts_sharing': 'Udostępnianie postów',
+      'basic_progress_tracking': 'Podstawowe śledzenie postępów',
+      'advanced_progress_tracking': 'Zaawansowane śledzenie postępów',
+      'full_library_access': 'Pełny dostęp do biblioteki',
+      'library_access': 'Dostęp do biblioteki',
+      'custom_training_sessions': 'Personalizowane sesje treningowe',
+      'training_sessions': 'Sesje treningowe',
+      'challenges_access': 'Dostęp do wyzwań',
+      'exclusive_content': 'Ekskluzywne treści'
     };
     return featureTextMap[featureKey] || featureKey.replace(/_/g, ' ');
   };
