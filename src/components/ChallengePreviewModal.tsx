@@ -379,7 +379,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
         <DialogContent className="max-w-xl glass-effect border-white/10 text-white">
           <div className="flex items-center justify-center py-12">
             <div className="text-muted-foreground">
-              Loading challenge details...
+              Ładowanie szczegółów wyzwania...
             </div>
           </div>
         </DialogContent>
@@ -433,7 +433,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 )} bg-black/80 backdrop-blur-sm text-xs`}
               >
                 {challenge.status === "published"
-                  ? "Available"
+                  ? "Dostępne"
                   : challenge.status}
               </Badge>
             </div>
@@ -442,14 +442,14 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 variant="outline"
                 className="border-white/30 text-white/90 text-xs"
               >
-                {challenge.training_days?.length || 0} Days
+                {challenge.training_days?.length || 0} Dni
               </Badge>
               {challenge.level && (
                 <Badge
                   variant="outline"
                   className="border-purple-400/50 text-purple-300 bg-purple-500/20 text-xs"
                 >
-                  Level {challenge.level}
+                  Poziom {challenge.level}
                 </Badge>
               )}
             </div>
@@ -459,15 +459,15 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
           <div className="grid grid-cols-3 gap-3">
             <Card className="glass-effect border-white/10 p-3 text-center">
               <Clock className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-              <div className="text-xs text-muted-foreground">Duration</div>
+              <div className="text-xs text-muted-foreground">Czas trwania</div>
               <div className="text-sm text-white font-semibold">
-                {challenge.training_days?.length || 0} days
+                {challenge.training_days?.length || 0} dni
               </div>
             </Card>
 
             <Card className="glass-effect border-white/10 p-3 text-center">
               <Users className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-              <div className="text-xs text-muted-foreground">Participants</div>
+              <div className="text-xs text-muted-foreground">Uczestnicy</div>
               <div className="text-sm text-white font-semibold">
                 {challenge.participants_count?.toLocaleString() || "0"}
               </div>
@@ -475,7 +475,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
             <Card className="glass-effect border-white/10 p-3 text-center">
               <Trophy className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-              <div className="text-xs text-muted-foreground">Difficulty</div>
+              <div className="text-xs text-muted-foreground">Trudność</div>
               <Badge
                 className={`${getDifficultyColor(getDifficultyFromChallenge())} text-xs mt-1`}
               >
@@ -490,7 +490,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             {challenge.achievements && challenge.achievements.length > 0 && (
               <div className="space-y-2">
                 <h3 className="text-sm font-semibold text-white">
-                  Achievements
+                  Osiągnięcia
                 </h3>
                 <div className="space-y-1">
                   {challenge.achievements.slice(0, 2).map((achievement) => (
@@ -504,14 +504,14 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                           {achievement.name}
                         </div>
                         <div className="text-xs text-purple-400">
-                          {achievement.points}pts
+                          {achievement.points} pkt
                         </div>
                       </div>
                     </div>
                   ))}
                   {challenge.achievements.length > 2 && (
                     <div className="text-xs text-muted-foreground text-center">
-                      +{challenge.achievements.length - 2} more
+                      +{challenge.achievements.length - 2} więcej
                     </div>
                   )}
                 </div>
@@ -520,13 +520,13 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
             {/* Duration */}
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-white">Duration</h3>
+              <h3 className="text-sm font-semibold text-white">Czas trwania</h3>
               <div className="bg-background/20 rounded-lg p-2">
                 <div className="text-xs text-white font-medium">
-                  {challenge.training_days?.length || 0} days
+                  {challenge.training_days?.length || 0} dni
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {challenge.training_days?.filter(day => !day.is_rest_day).length || 0} training days
+                  {challenge.training_days?.filter(day => !day.is_rest_day).length || 0} dni treningowych
                 </div>
               </div>
             </div>
@@ -536,7 +536,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             {challenge.training_days && challenge.training_days.length > 0 && (
               <div className="space-y-3">
                 <h3 className="text-sm font-semibold text-white">
-                  Training
+                  Trening
                 </h3>
 
                 {/* Compact Daily Time */}
@@ -545,7 +545,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4 text-purple-400" />
                       <span className="text-sm text-muted-foreground">
-                        Daily Time
+                        Dzienny czas
                       </span>
                     </div>
                     <div className="text-sm text-white font-semibold">
@@ -563,14 +563,14 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 {/* Exercises Grid */}
                 <div className="space-y-2">
                   <h4 className="text-sm font-medium text-white">
-                    Exercises ({getUniqueExercisesWithImages().length})
+                    Ćwiczenia ({getUniqueExercisesWithImages().length})
                   </h4>
                   <div className="text-muted-foreground">
                     {(() => {
                       const exercises = getUniqueExercisesWithImages();
                       if (exercises.length === 0) {
                         return (
-                          <p className="text-xs">No exercises configured</p>
+                          <p className="text-xs">Brak skonfigurowanych ćwiczeń</p>
                         );
                       }
                       return (
@@ -610,7 +610,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                           ))}
                           {exercises.length > 6 && (
                             <div className="text-xs text-muted-foreground col-span-2 text-center py-1">
-                              +{exercises.length - 6} more exercises
+                              +{exercises.length - 6} więcej ćwiczeń
                             </div>
                           )}
                         </div>
@@ -622,9 +622,9 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 {/* Compact Challenge Stats */}
                 <div className="text-xs text-muted-foreground bg-white/5 rounded-lg p-3">
                   <p>
-                    <span className="font-medium">{challenge.training_days?.length || 0} days</span> total
-                    • <span className="font-medium">{challenge.training_days?.filter((day) => !day.is_rest_day).length || 0}</span> training
-                    • <span className="font-medium">{challenge.training_days?.filter((day) => day.is_rest_day).length || 0}</span> rest
+                    <span className="font-medium">{challenge.training_days?.length || 0} dni</span> łącznie
+                    • <span className="font-medium">{challenge.training_days?.filter((day) => !day.is_rest_day).length || 0}</span> treningowe
+                    • <span className="font-medium">{challenge.training_days?.filter((day) => day.is_rest_day).length || 0}</span> odpoczynku
                   </p>
                 </div>
               </div>
@@ -637,7 +637,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
               onClick={onClose}
               className="flex-1 border-white/20 text-white hover:bg-white/10"
             >
-              Close
+              Zamknij
             </Button>
 
             {/* Dynamic Action Button */}
@@ -655,7 +655,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                     onClick={() => setIsRetakeModalOpen(true)}
                     className="flex-1"
                   >
-                    Retake Challenge
+                    Powtórz wyzwanie
                     <ChevronRight className="ml-2 w-4 h-4" />
                   </Button>
                 );
@@ -708,14 +708,14 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                           onClose();
                           navigate(`/challenges/${challenge.id}`);
                           toast({
-                            title: "Success!",
-                            description: "You've joined the challenge. Good luck!",
+                            title: "Sukces!",
+                            description: "Dołączyłeś do wyzwania. Powodzenia!",
                           });
                         } catch (error) {
                           console.error("Error joining challenge:", error);
                           toast({
-                            title: "Error",
-                            description: "Failed to join challenge. Please try again.",
+                            title: "Błąd",
+                            description: "Nie udało się dołączyć do wyzwania. Spróbuj ponownie.",
                             variant: "destructive",
                           });
                         }

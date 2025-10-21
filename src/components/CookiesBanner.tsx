@@ -33,10 +33,10 @@ const CookiesBanner = () => {
           <div className="flex items-start gap-3 flex-1">
             <Cookie className="w-6 h-6 text-amber-500 mt-1 flex-shrink-0" />
             <div className="space-y-2">
-              <h3 className="font-semibold text-white text-lg">We use cookies</h3>
+              <h3 className="font-semibold text-white text-lg">Używamy plików cookie</h3>
               <p className="text-sm text-slate-300 leading-relaxed">
-                We use cookies to enhance your experience, analyze site traffic, and personalize content. 
-                By clicking "Accept All", you consent to our use of cookies.
+                Używamy plików cookie, aby poprawić Twoje doświadczenia, analizować ruch na stronie i personalizować treści. 
+                Klikając "Zaakceptuj wszystkie", wyrażasz zgodę na używanie plików cookie.
               </p>
             </div>
           </div>
@@ -48,7 +48,7 @@ const CookiesBanner = () => {
               onClick={rejectCookies}
               className="border-slate-600 text-slate-300 hover:bg-slate-800 hover:text-white"
             >
-              Reject
+              Odrzuć
             </Button>
             <Button
               variant="primary"
@@ -56,7 +56,7 @@ const CookiesBanner = () => {
               onClick={acceptCookies}
               className="min-w-[120px]"
             >
-              Accept All
+              Zaakceptuj wszystkie
             </Button>
           </div>
         </div>

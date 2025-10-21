@@ -94,9 +94,9 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyF
   }, [user, privacyFilter]);
 
   const tabs = [
-    { id: 'posts', label: 'Posts', mobileLabel: 'Posts', icon: Grid },
-    { id: 'achievements', label: 'All Achievements', mobileLabel: 'Awards', icon: Award },
-    { id: 'saved', label: 'Saved', mobileLabel: 'Saved', icon: Bookmark }
+    { id: 'posts', label: 'Posty', mobileLabel: 'Posty', icon: Grid },
+    { id: 'achievements', label: 'Wszystkie osiągnięcia', mobileLabel: 'Nagrody', icon: Award },
+    { id: 'saved', label: 'Zapisane', mobileLabel: 'Zapisane', icon: Bookmark }
   ];
 
   return (
@@ -127,13 +127,13 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyF
       {/* Content based on active tab */}
       {activeTab === 'posts' && (
         loading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading posts...</div>
+          <div className="text-center py-8 text-muted-foreground">Ładowanie postów...</div>
         ) : userPosts.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No posts yet!</p>
+            <p>Jeszcze brak postów!</p>
             <p className="text-sm mt-2">
               <Link to="/feed" className="text-purple-400 hover:text-purple-300">
-                Share your first aerial moment
+                Podziel się swoim pierwszym powietrznym momentem
               </Link>
             </p>
           </div>
@@ -191,11 +191,11 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyF
 
       {activeTab === 'achievements' && (
         achievementsLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading achievements...</div>
+          <div className="text-center py-8 text-muted-foreground">Ładowanie osiągnięć...</div>
         ) : achievements.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No achievements earned yet!</p>
-            <p className="text-sm mt-2">Start training to unlock your first achievement</p>
+            <p>Jeszcze brak zdobytych osiągnięć!</p>
+            <p className="text-sm mt-2">Zacznij trenować, aby odblokować swoje pierwsze osiągnięcie</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -204,7 +204,7 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyF
                 <div className="text-4xl mb-3">{achievement.icon}</div>
                 <div className="text-white font-semibold mb-2">{achievement.name}</div>
                 <div className="text-muted-foreground text-sm mb-3">{achievement.description}</div>
-                <div className="text-purple-400 font-bold text-lg">+{achievement.points} pts</div>
+                <div className="text-purple-400 font-bold text-lg">+{achievement.points} pkt</div>
               </div>
             ))}
           </div>
@@ -213,11 +213,11 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyF
 
       {activeTab === 'saved' && (
         savedPostsLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading saved posts...</div>
+          <div className="text-center py-8 text-muted-foreground">Ładowanie zapisanych postów...</div>
         ) : savedPosts.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No saved posts yet!</p>
-            <p className="text-sm mt-2">Save posts from other users to see them here</p>
+            <p>Jeszcze brak zapisanych postów!</p>
+            <p className="text-sm mt-2">Zapisuj posty innych użytkowników, aby je tu zobaczyć</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">

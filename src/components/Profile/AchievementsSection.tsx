@@ -9,14 +9,14 @@ export const AchievementsSection: React.FC = () => {
     <Card className="glass-effect border-white/10 mb-6">
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">Recent Achievements</h2>
+          <h2 className="text-xl font-bold text-white">Ostatnie osiągnięcia</h2>
         </div>
         {achievementsLoading ? (
-          <div className="text-center py-8 text-muted-foreground">Loading achievements...</div>
+          <div className="text-center py-8 text-muted-foreground">Ładowanie osiągnięć...</div>
         ) : achievements.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
-            <p>No achievements earned yet!</p>
-            <p className="text-sm mt-2">Start training to unlock your first achievement</p>
+            <p>Jeszcze brak zdobytych osiągnięć!</p>
+            <p className="text-sm mt-2">Zacznij trenować, aby odblokować swoje pierwsze osiągnięcie</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -27,7 +27,7 @@ export const AchievementsSection: React.FC = () => {
               >
                 <div className="text-3xl mb-2">{achievement.icon}</div>
                 <div className="text-white font-semibold text-sm">{achievement.name}</div>
-                <div className="text-purple-400 text-xs font-semibold mt-1">+{achievement.points} pts</div>
+                <div className="text-purple-400 text-xs font-semibold mt-1">+{achievement.points} pkt</div>
                 
                 {/* Mobile-friendly tooltip */}
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800/95 backdrop-blur-sm text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-normal max-w-[200px] text-center pointer-events-none z-50 border border-white/20">

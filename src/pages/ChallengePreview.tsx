@@ -459,7 +459,7 @@ const ChallengePreview = () => {
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-white/80 font-medium">Loading challenge...</p>
+          <p className="text-white/80 font-medium">Ładowanie wyzwania...</p>
         </div>
       </div>
     );
@@ -470,8 +470,8 @@ const ChallengePreview = () => {
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
           <Trophy className="w-16 h-16 text-slate-400 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-white mb-2">Challenge not found</h2>
-          <p className="text-slate-400 mb-6">The challenge you're looking for doesn't exist</p>
+          <h2 className="text-xl font-bold text-white mb-2">Nie znaleziono wyzwania</h2>
+          <p className="text-slate-400 mb-6">Wyzwanie, którego szukasz, nie istnieje</p>
         </div>
       </div>
     );
@@ -531,15 +531,15 @@ const ChallengePreview = () => {
             <div className="hidden sm:flex items-center justify-center gap-6 mt-6 text-sm text-white/70">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
-                <span>{challenge.training_days?.length || 0} days</span>
+                <span>{challenge.training_days?.length || 0} dni</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span>Daily workouts</span>
+                <span>Codzienne treningi</span>
               </div>
               <div className="flex items-center gap-2">
                 <Target className="w-4 h-4" />
-                <span>Full program</span>
+                <span>Pełny program</span>
               </div>
             </div>
           </div>
@@ -555,12 +555,12 @@ const ChallengePreview = () => {
                 {isJoining ? (
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                    Joining...
+                    Dołączanie...
                   </>
                 ) : (
                   <>
                     <Star className="w-5 h-5 mr-2" />
-                    Join Challenge
+                    Dołącz do wyzwania
                   </>
                 )}
               </Button>
@@ -573,7 +573,7 @@ const ChallengePreview = () => {
       {isParticipant && (
         <div className="flex-1 px-4 md:px-6 lg:px-8 xl:px-12 2xl:px-16 overflow-hidden pt-6">
           <div className="max-w-7xl mx-auto">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Your Training Journey</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">Twoja podróż treningowa</h2>
             
             {(() => {
               const todayStr = format(new Date(), "yyyy-MM-dd");
@@ -686,8 +686,8 @@ const ChallengePreview = () => {
                                   }`}
                                 >
                                   {actualIsLocked
-                                    ? "Complete previous day first"
-                                    : trainingDay.title || "Training Day"}
+                                    ? "Ukończ poprzedni dzień najpierw"
+                                    : trainingDay.title || "Dzień treningowy"}
                                 </div>
                               </div>
                             </div>
@@ -698,11 +698,11 @@ const ChallengePreview = () => {
                             <div className="flex items-center justify-between mb-4 md:mb-6">
                               <div className="flex items-center gap-2 text-sm text-white/70">
                                 <Clock className="w-4 h-4" />
-                                {Math.ceil(totalDuration / 60)} mins
+                                {Math.ceil(totalDuration / 60)} min
                               </div>
                               <div className="flex items-center gap-2 text-sm text-white/70">
                                 <Target className="w-4 h-4" />
-                                {exercises.length} exercises
+                                {exercises.length} ćwiczeń
                               </div>
                             </div>
 
@@ -798,11 +798,11 @@ const ChallengePreview = () => {
                                </div>
                              ) : (
                                <div className="flex-1 mb-4 md:mb-6 flex flex-col items-center justify-center text-center p-6 md:p-8 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 rounded-2xl border border-emerald-500/20">
-                                 <Bed className="w-12 h-12 text-emerald-400 mb-4" />
-                                 <h4 className="text-lg font-semibold text-white mb-2">Rest Day</h4>
-                                 <p className="text-white/70 text-sm leading-relaxed max-w-xs">
-                                   Today is designed for recovery. Take this time to rest, stretch, or do light movement that feels good.
-                                 </p>
+                                  <Bed className="w-12 h-12 text-emerald-400 mb-4" />
+                                  <h4 className="text-lg font-semibold text-white mb-2">Dzień odpoczynku</h4>
+                                  <p className="text-white/70 text-sm leading-relaxed max-w-xs">
+                                    Ten dzień przeznaczony jest na regenerację. Poświęć ten czas na odpoczynek, rozciąganie lub lekki ruch, który sprawia Ci przyjemność.
+                                  </p>
                                </div>
                              )}
 
@@ -817,7 +817,7 @@ const ChallengePreview = () => {
                                       className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
                                     >
                                       <Bed className="w-5 h-5 mr-2" />
-                                      Rest
+                                      Odpoczynek
                                     </Button>
                                   ) : (
                                     <Button
@@ -828,7 +828,7 @@ const ChallengePreview = () => {
                                       className="w-full py-4 text-lg font-bold rounded-xl transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
                                     >
                                       <Play className="w-5 h-5 mr-2" />
-                                      Train
+                                      Trenuj
                                     </Button>
                                   )}
                                 </>

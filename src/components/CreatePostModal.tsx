@@ -525,7 +525,7 @@ export const CreatePostModal = ({
                 ) : (
                   <>
                     <Instagram className="w-4 h-4 mr-2" />
-                    Load Instagram Post
+                    Załaduj Instagram
                   </>
                 )}
               </Button>
@@ -600,7 +600,7 @@ export const CreatePostModal = ({
                 onClick={onClose}
                 className="text-muted-foreground hover:text-white hover:bg-white/5 text-sm"
               >
-                Cancel
+                Anuluj
               </Button>
               <Button
                 onClick={handleSubmit}
@@ -611,11 +611,11 @@ export const CreatePostModal = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    <span className="hidden sm:inline">Posting...</span>
+                    <span className="hidden sm:inline">Publikowanie...</span>
                     <span className="sm:hidden">...</span>
                   </>
                 ) : (
-                  "Post"
+                  "Opublikuj"
                 )}
               </Button>
             </div>

@@ -13,9 +13,9 @@ export const FigureJourneySection: React.FC = () => {
     if (figures.length === 0) return null;
 
     const statusConfig = {
-      completed: { label: 'Completed', icon: '✅', color: 'text-green-400' },
-      for_later: { label: 'For Later', icon: '🔖', color: 'text-blue-400' },
-      failed: { label: 'Failed', icon: '❌', color: 'text-red-400' }
+      completed: { label: 'Ukończone', icon: '✅', color: 'text-green-400' },
+      for_later: { label: 'Na później', icon: '🔖', color: 'text-blue-400' },
+      failed: { label: 'Nieudane', icon: '❌', color: 'text-red-400' }
     };
 
     const config = statusConfig[status as keyof typeof statusConfig];
@@ -59,23 +59,23 @@ export const FigureJourneySection: React.FC = () => {
       <Card className="glass-effect border-white/10 mb-6">
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-white">My Figure Journey</h2>
+            <h2 className="text-xl font-bold text-white">Moja podróż przez figury</h2>
             <Link 
               to="/profile/my-journey"
               className="flex items-center text-purple-400 hover:text-purple-300 text-sm"
             >
-              Show More <ArrowRight className="w-4 h-4 ml-1" />
+              Pokaż więcej <ArrowRight className="w-4 h-4 ml-1" />
             </Link>
           </div>
           
           {figureLoading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading figures...</div>
+            <div className="text-center py-8 text-muted-foreground">Ładowanie figur...</div>
           ) : figureProgress.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              <p>No figure progress yet!</p>
+              <p>Jeszcze brak postępów w figurach!</p>
               <p className="text-sm mt-2">
                 <Link to="/library" className="text-purple-400 hover:text-purple-300">
-                  Explore the library to start your journey
+                  Przejdź do biblioteki, aby rozpocząć swoją podróż
                 </Link>
               </p>
             </div>

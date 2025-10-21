@@ -16,25 +16,25 @@ const MyJourney = () => {
   const [activeStatus, setActiveStatus] = useState('all');
   const statusConfig = {
     completed: {
-      label: 'Completed',
+      label: 'Ukończone',
       icon: CheckCircle,
       color: 'text-green-400',
       bgColor: 'bg-green-400/10'
     },
     for_later: {
-      label: 'For Later',
+      label: 'Na później',
       icon: Bookmark,
       color: 'text-blue-400',
       bgColor: 'bg-blue-400/10'
     },
     failed: {
-      label: 'Failed',
+      label: 'Nieudane',
       icon: XCircle,
       color: 'text-red-400',
       bgColor: 'bg-red-400/10'
     },
     not_tried: {
-      label: 'Not Tried',
+      label: 'Niewykonane',
       icon: Clock,
       color: 'text-yellow-400',
       bgColor: 'bg-yellow-400/10'
@@ -47,20 +47,20 @@ const MyJourney = () => {
   const filteredFigures = getFilteredFigures();
   if (loading) {
     return <div className="min-h-screen p-6 flex items-center justify-center">
-        <div className="text-center text-muted-foreground">Loading your journey...</div>
+        <div className="text-center text-muted-foreground">Ładowanie Twojej podróży...</div>
       </div>;
   }
   return <div className="min-h-screen p-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-white">My Figure Journey</h1>
-          <p className="text-muted-foreground">Track your progress across all aerial figures</p>
+          <h1 className="text-3xl font-bold text-white">Moja podróż przez figury</h1>
+          <p className="text-muted-foreground">Śledź swoje postępy we wszystkich figurach powietrznych</p>
         </div>
 
         {/* Status Filter */}
         <div className="mb-6">
-          <h2 className="text-lg font-semibold text-white mb-3">Filter by Status</h2>
+          <h2 className="text-lg font-semibold text-white mb-3">Filtruj według statusu</h2>
           <div className="flex flex-wrap gap-3">
             <Button 
               variant={activeStatus === 'all' ? 'default' : 'outline'}
@@ -71,7 +71,7 @@ const MyJourney = () => {
                   : 'text-white hover:text-white hover:bg-white/10 hover:border-white/30'
               }`}
             >
-              All
+              Wszystkie
               <Badge variant="secondary" className="ml-2 bg-white/20 text-white text-xs">
                 {figureProgress.length}
               </Badge>
@@ -107,10 +107,10 @@ const MyJourney = () => {
         {filteredFigures.length === 0 ? <Card className="glass-effect border-white/10">
             <CardContent className="p-12 text-center">
               <div className="text-muted-foreground">
-                <p>No figures found for this status.</p>
+                <p>Nie znaleziono figur dla tego statusu.</p>
                 <p className="text-sm mt-2">
                   <Link to="/library" className="text-purple-400 hover:text-purple-300">
-                    Explore the library to start your journey
+                    Przejdź do biblioteki, aby rozpocząć swoją podróż
                   </Link>
                 </p>
               </div>

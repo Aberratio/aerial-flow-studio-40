@@ -426,17 +426,17 @@ const Challenges = () => {
     switch (status) {
       case "not-started":
       case "available":
-        return "Join Challenge";
+        return "Dołącz do wyzwania";
       case "active":
-        return "Continue";
+        return "Kontynuuj";
       case "completed":
-        return "View Results";
+        return "Zobacz wyniki";
       case "failed":
-        return "View Results";
+        return "Zobacz wyniki";
       case "done":
-        return "View Results";
+        return "Zobacz wyniki";
       default:
-        return "View";
+        return "Zobacz";
     }
   };
 
@@ -524,10 +524,10 @@ const Challenges = () => {
                 <div className="col-span-2 text-center py-12">
                   <Trophy className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-white mb-2">
-                    No Challenges Available
+                    Brak dostępnych wyzwań
                   </h3>
                   <p className="text-muted-foreground">
-                    Check back later for new challenges!
+                    Wróć później po nowe wyzwania!
                   </p>
                 </div>
               ) : (
@@ -587,15 +587,15 @@ const Challenges = () => {
                         {challenge.title}
                       </h3>
                       
-                      <div className="flex items-center gap-4 text-sm text-white/90 mb-4">
+                        <div className="flex items-center gap-4 text-sm text-white/90 mb-4">
                         <div className="flex items-center gap-1.5">
                           <Clock className="w-4 h-4" />
-                          <span className="font-medium">{challenge.duration} days</span>
+                          <span className="font-medium">{challenge.duration} dni</span>
                         </div>
                         {challenge.level && (
                           <div className="flex items-center gap-1.5">
                             <Trophy className="w-4 h-4" />
-                            <span className="font-medium">Level {challenge.level}</span>
+                            <span className="font-medium">Poziom {challenge.level}</span>
                           </div>
                         )}
                         <Badge className={getDifficultyColor(challenge.difficulty) + " text-xs font-medium px-2 py-1"}>
@@ -605,13 +605,13 @@ const Challenges = () => {
                       {/* Progress Bar */}
                       <div className="mb-4">
                         <div className="flex justify-between text-sm mb-2">
-                          <span className="text-white">Progress</span>
+                          <span className="text-white">Postęp</span>
                           <span className="text-muted-foreground">
                             {challenge.status === "completed" || challenge.status === "done" 
-                              ? "100% complete"
+                              ? "100% ukończone"
                               : challenge.status === "active" && challenge.userProgress !== undefined 
-                                ? `${challenge.userProgress}% complete`
-                                : "0% complete"
+                                ? `${challenge.userProgress}% ukończone`
+                                : "0% ukończone"
                             }
                           </span>
                         </div>
@@ -645,7 +645,7 @@ const Challenges = () => {
                               }
                             }}
                           >
-                            {isPremiumLocked ? "Unlock" : "Preview"}
+                            {isPremiumLocked ? "Odblokuj" : "Podgląd"}
                           </Button>
                         )}
                         <Button
