@@ -84,7 +84,7 @@ const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   }
 
   if (user) {
-    return <Navigate to="/library" replace />;
+    return <Navigate to="/aerial-journey" replace />;
   }
 
   return <>{children}</>;

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Eye, EyeOff, Settings } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Settings, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -245,11 +245,19 @@ const AerialJourney = () => {
 
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-            Aerial Journey
+            Twoja Podróż Powietrzna
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground">
-            Master aerial skills through gamified progression
+            Opanuj umiejętności powietrzne poprzez gamifikowany rozwój
           </p>
+          <Button
+            variant="outline"
+            onClick={() => navigate('/library')}
+            className="mt-4 border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            Przeglądaj pełną bibliotekę figur
+          </Button>
         </div>
 
         {/* Available Sports */}
@@ -258,22 +266,22 @@ const AerialJourney = () => {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle className="text-white flex items-center mb-2">
-                  Explore Skills by Sport
+                  Odkrywaj umiejętności według sportu
                   {isAdmin && isAdminMode && (
                     <Badge className="ml-2 bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
-                      Admin View
+                      Widok admina
                     </Badge>
                   )}
                 </CardTitle>
                 <p className="text-muted-foreground">
                   {isAdmin && isAdminMode
-                    ? "All sports (published and draft). Use switches to publish/unpublish sports."
-                    : "Click on any sport to see its complete skill tree and your progression"}
+                    ? "Wszystkie sporty (opublikowane i wersje robocze). Użyj przełączników, aby publikować/odpublikować sporty."
+                    : "Kliknij na dowolny sport, aby zobaczyć pełne drzewo umiejętności i swoją progresję"}
                 </p>
               </div>
               {isAdmin && isAdminMode && (
                 <div className="text-sm text-muted-foreground">
-                  Admin mode: Click any sport to manage it
+                  Tryb admina: Kliknij dowolny sport, aby nim zarządzać
                 </div>
               )}
             </div>
@@ -282,22 +290,22 @@ const AerialJourney = () => {
             {filteredSports.length === 0 ? (
               <div className="text-center py-12">
                 <h3 className="text-xl font-semibold text-white mb-2">
-                  No Sports Available
+                  Brak dostępnych sportów
                 </h3>
                 <p className="text-muted-foreground">
                   {isAdmin && isAdminMode
-                    ? "No sport categories have been created yet. Use the Manage Sports button to add some."
+                    ? "Nie utworzono jeszcze żadnych kategorii sportowych. Użyj przycisku Zarządzaj sportami, aby dodać."
                     : userSelectedSports.length === 0
-                    ? "You haven't selected any sports yet. Please go to your profile and choose the sports you want to train in."
-                    : "No sports from your selection are currently published. Check back later!"}
+                    ? "Nie wybrałeś jeszcze żadnych sportów. Przejdź do swojego profilu i wybierz sporty, w których chcesz trenować."
+                    : "Żaden sport z twojego wyboru nie jest obecnie opublikowany. Sprawdź ponownie później!"}
                 </p>
                 {(!isAdmin || !isAdminMode) && userSelectedSports.length === 0 && (
                   <Button
                     variant="outline"
-                    onClick={() => navigate("/home")}
+                    onClick={() => navigate("/aerial-journey")}
                     className="mt-4 border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
                   >
-                    Go to Home Page
+                    Wróć do strony głównej
                   </Button>
                 )}
               </div>
@@ -358,7 +366,7 @@ const AerialJourney = () => {
 
                          {/* Status Badge */}
                          {isAdmin && isAdminMode && (
-                          <div className="mb-3">
+                           <div className="mb-3">
                             <Badge
                               className={`text-xs ${
                                 sport.is_published
@@ -366,7 +374,7 @@ const AerialJourney = () => {
                                   : "bg-orange-500/20 text-orange-400 border-orange-400/30"
                               }`}
                             >
-                              {sport.is_published ? "Published" : "Draft"}
+                              {sport.is_published ? "Opublikowane" : "Wersja robocza"}
                             </Badge>
                           </div>
                         )}
@@ -392,16 +400,16 @@ const AerialJourney = () => {
                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-black font-bold text-sm">
                                      {sport.unlockedLevels}
                                    </div>
-                                   <span className="text-yellow-400 font-semibold text-sm">Level {sport.unlockedLevels}</span>
-                                 </div>
-                               ) : (
-                                 <div className="flex items-center gap-2 opacity-50">
-                                   <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-gray-400 font-bold text-sm">
-                                     ?
-                                   </div>
-                                   <span className="text-gray-400 text-sm">Locked</span>
-                                 </div>
-                               )}
+                                    <span className="text-yellow-400 font-semibold text-sm">Poziom {sport.unlockedLevels}</span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2 opacity-50">
+                                    <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-gray-400 font-bold text-sm">
+                                      ?
+                                    </div>
+                                    <span className="text-gray-400 text-sm">Zablokowane</span>
+                                  </div>
+                                )}
                              </div>
                            )}
 
@@ -416,19 +424,19 @@ const AerialJourney = () => {
                             )}
                            
                            {/* Only show figure count if not locked */}
-                           {(sport.unlockedLevels || 0) > 0 ? (
-                             <div className="text-center">
-                               <span className="text-xs text-muted-foreground">
-                                 {sport.count} figures available
-                               </span>
-                             </div>
-                           ) : (
-                             <div className="text-center">
-                               <span className="text-xs text-gray-500">
-                                 Complete other sports to unlock
-                               </span>
-                             </div>
-                           )}
+                            {(sport.unlockedLevels || 0) > 0 ? (
+                              <div className="text-center">
+                                <span className="text-xs text-muted-foreground">
+                                  {sport.count} dostępnych figur
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="text-center">
+                                <span className="text-xs text-gray-500">
+                                  Ukończ inne sporty, aby odblokować
+                                </span>
+                              </div>
+                            )}
                         </div>
                       </CardContent>
                     </Card>

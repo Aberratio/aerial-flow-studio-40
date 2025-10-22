@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Library, MessageSquare, Trophy, GraduationCap, LayoutDashboard } from "lucide-react";
+import { Plane, MessageSquare, Trophy, GraduationCap, LayoutDashboard } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUserRole } from "@/hooks/useUserRole";
 import { cn } from "@/lib/utils";
@@ -15,7 +15,7 @@ const BottomNavigation: React.FC = () => {
   const [isImpersonateModalOpen, setIsImpersonateModalOpen] = useState(false);
 
   const navItems = [
-    { path: "/library", icon: Library, label: "Biblioteka" },
+    { path: "/aerial-journey", icon: Plane, label: "Podróż" },
     { path: "/feed", icon: MessageSquare, label: "Feed" },
     { path: "/challenges", icon: Trophy, label: "Wyzwania" },
   ];

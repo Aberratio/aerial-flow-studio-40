@@ -561,14 +561,14 @@ const SportAdminPanel = ({ sportKey }: SportAdminPanelProps) => {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-white mb-2">Sport not found</h2>
-          <p className="text-muted-foreground">The sport category you're looking for doesn't exist.</p>
+          <h2 className="text-xl font-semibold text-white mb-2">Sport nie znaleziony</h2>
+          <p className="text-muted-foreground">Kategoria sportowa, której szukasz, nie istnieje.</p>
           <Button 
             onClick={() => navigate('/aerial-journey')} 
             className="mt-4"
             variant="outline"
           >
-            Back to Aerial Journey
+            Wróć do Podróży
           </Button>
         </div>
       </div>
@@ -587,13 +587,13 @@ const SportAdminPanel = ({ sportKey }: SportAdminPanelProps) => {
                 className="text-white/70 hover:text-white cursor-pointer flex items-center gap-1"
               >
                 <Home className="w-4 h-4" />
-                Aerial Journey
+                Podróż
               </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
               <BreadcrumbPage className="text-white font-medium">
-                {sportCategory.name} Management
+                Zarządzanie {sportCategory.name}
               </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>

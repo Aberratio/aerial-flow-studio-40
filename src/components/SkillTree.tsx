@@ -538,18 +538,18 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           className="mb-6 text-white hover:bg-white/10"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Sports
+          Wróć do sportów
         </Button>
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-            {sportName} Journey
+            Podróż {sportName}
           </h1>
           <div className="flex items-center justify-center mb-6">
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-black font-bold text-xl">
               {userPoints}
             </div>
-            <span className="ml-3 text-yellow-400 font-semibold">Total Points</span>
+            <span className="ml-3 text-yellow-400 font-semibold">Całkowite punkty</span>
           </div>
         </div>
 
@@ -589,31 +589,31 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                         </h3>
                         {isUnlocked && (
                           <p className="text-sm text-muted-foreground">
-                            {level.figures.length} figures available
+                            {level.figures.length} dostępnych figur
                           </p>
                         )}
                       </div>
                     </div>
 
                     {/* Status Indicator */}
-                    {isUnlocked ? (
+                      {isUnlocked ? (
                       <div className="text-right">
                         {isCompleted ? (
                           <div className="flex items-center gap-2 text-green-400">
                             <CheckCircle className="w-5 h-5" />
-                            <span className="text-sm font-medium">Complete</span>
+                            <span className="text-sm font-medium">Ukończone</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-blue-400">
                             <Circle className="w-5 h-5" />
-                            <span className="text-sm font-medium">{progress}% Complete</span>
+                            <span className="text-sm font-medium">{progress}% ukończone</span>
                           </div>
                         )}
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 text-gray-500">
                         <Lock className="w-5 h-5" />
-                        <span className="text-sm">Locked</span>
+                        <span className="text-sm">Zablokowane</span>
                       </div>
                     )}
                   </div>
@@ -635,7 +635,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                     <div className="mt-4 p-4 bg-purple-900/20 border border-purple-400/20 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium text-purple-400 mb-1">Challenge Available</h4>
+                          <h4 className="font-medium text-purple-400 mb-1">Dostępne wyzwanie</h4>
                           <p className="text-sm text-muted-foreground">{level.challenges.title}</p>
                         </div>
                         <div className="text-right">
@@ -648,7 +648,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                 <div className="flex items-center gap-2">
                                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                                     <Trophy className="w-3 h-3 mr-1" />
-                                    Completed
+                                    Ukończone
                                   </Badge>
                                 </div>
                               );
@@ -663,7 +663,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                   onClick={() => navigate(`/challenges/${level.challenge_id}`)}
                                   className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
                                 >
-                                  Continue
+                                  Kontynuuj
                                 </Button>
                               );
                             }
@@ -677,7 +677,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                   disabled={joiningChallenge === level.challenge_id}
                                   className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
                                 >
-                                  {joiningChallenge === level.challenge_id ? "Joining..." : "Join Challenge"}
+                                  {joiningChallenge === level.challenge_id ? "Dołączanie..." : "Dołącz do wyzwania"}
                                 </Button>
                               );
                             }
@@ -764,7 +764,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                   {!isUnlocked && (
                     <div className="text-center py-4">
                       <p className="text-gray-500 text-sm">
-                        Earn {level.point_limit - userPoints} more points to unlock this level
+                        Zdobądź jeszcze {level.point_limit - userPoints} punktów, aby odblokować ten poziom
                       </p>
                     </div>
                   )}

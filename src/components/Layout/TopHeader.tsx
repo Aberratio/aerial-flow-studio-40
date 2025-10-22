@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import { Library, MessageSquare, Trophy, GraduationCap } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Plane, MessageSquare, Trophy, GraduationCap, BookOpen } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
 import { useUserRole } from "@/hooks/useUserRole";
 import { cn } from "@/lib/utils";
 import ProfileAvatar from "./ProfileAvatar";
@@ -10,19 +11,20 @@ import { AdminUserImpersonationModal } from "@/components/AdminUserImpersonation
 
 const TopHeader: React.FC = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const { isAdmin, isTrainer } = useUserRole();
   const location = useLocation();
   const [isImpersonateModalOpen, setIsImpersonateModalOpen] = useState(false);
 
   const navItems = [
-    { path: "/library", icon: Library, label: "Biblioteka" },
+    { path: "/aerial-journey", icon: Plane, label: "Podróż" },
     { path: "/feed", icon: MessageSquare, label: "Feed" },
     { path: "/challenges", icon: Trophy, label: "Wyzwania" },
   ];
 
   // Add Training for admins/trainers
   if (isAdmin || isTrainer) {
-    navItems.splice(1, 0, { path: "/training", icon: GraduationCap, label: "Trening" });
+    navItems.push({ path: "/training", icon: GraduationCap, label: "Trening" });
   }
 
   const isActive = (path: string) => {
@@ -65,8 +67,16 @@ const TopHeader: React.FC = () => {
           </nav>
         )}
 
-        {/* Right side - Admin & Profile */}
+        {/* Right side - Biblioteka, Admin & Profile */}
         <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/library')}
+            className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+          >
+            <BookOpen className="w-4 h-4 mr-2" />
+            {!isMobile && <span>Biblioteka</span>}
+          </Button>
           {isAdmin && (
             <AdminDropdown onImpersonateClick={() => setIsImpersonateModalOpen(true)} />
           )}

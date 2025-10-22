@@ -70,21 +70,17 @@ const Navigation: React.FC<NavigationProps> = ({
   const hasPremiumAccess = user?.role && ['premium', 'trainer', 'admin'].includes(user.role);
   const isAdmin = user?.role === 'admin';
   const freeNavItems = [{
+    path: '/aerial-journey',
+    icon: Plane,
+    label: 'Podróż'
+  }, {
     path: '/feed',
     icon: Home,
     label: 'Feed'
   }, {
-    path: '/library',
-    icon: BookOpen,
-    label: 'Biblioteka'
-  }, {
     path: '/challenges',
     icon: Trophy,
     label: 'Wyzwania'
-  }, {
-    path: '/aerial-journey',
-    icon: Plane,
-    label: 'Powietrzna podróż'
   }];
 
   // User-related items
@@ -101,11 +97,18 @@ const Navigation: React.FC<NavigationProps> = ({
     icon: Bell,
     label: 'Wiadomości'
   }];
-  const premiumNavItems = [{
+  // Training section for admins/trainers - not behind premium paywall
+  const trainingNavItems = (isAdmin || user?.role === 'trainer') ? [{
     path: '/training',
     icon: Dumbbell,
-    label: 'Trening',
-    premium: true
+    label: 'Trening'
+  }] : [];
+
+  // Separate section for library access
+  const resourcesNavItems = [{
+    path: '/library',
+    icon: BookOpen,
+    label: 'Biblioteka'
   }];
 
   // Admin-only items
@@ -165,27 +168,33 @@ const Navigation: React.FC<NavigationProps> = ({
               </Link>;
         })}
 
-          {/* Premium Section */}
+          {/* Resources Section */}
           <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
-          <div className="flex items-center space-x-2 px-3 mb-2">
-            <Crown className="w-4 h-4 text-yellow-400" />
-            <span className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider ${isMobile ? 'block' : 'hidden lg:block'}`}>
-              Premium
-            </span>
-            {!hasPremiumAccess && <Badge className={`bg-yellow-500/20 text-yellow-400 text-xs ${isMobile ? 'block' : 'hidden lg:block'}`}>
-                Ulepsz
-              </Badge>}
+          <div className={`text-xs font-semibold text-muted-foreground uppercase tracking-wider px-3 mb-2 ${isMobile ? 'block' : 'hidden lg:block'}`}>
+            Zasoby
           </div>
           
-          {premiumNavItems.map(item => {
+          {resourcesNavItems.map(item => {
           const Icon = item.icon;
-          const isDisabled = !hasPremiumAccess && !isAdmin;
-          return <Link key={item.path} to={isDisabled ? '/pricing' : item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) && !isDisabled ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : isDisabled ? 'text-muted-foreground/50 cursor-not-allowed' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
-                <Icon className={`w-5 h-5 flex-shrink-0 ${!isDisabled ? 'group-hover:scale-110' : ''} transition-transform`} />
+          return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+                <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                 <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
-                {isDisabled && <Lock className={`w-3 h-3 ml-auto text-muted-foreground/50 ${isMobile ? 'block' : 'hidden lg:block'}`} />}
               </Link>;
-        })}
+         })}
+
+          {/* Training Section for Admins/Trainers */}
+          {trainingNavItems.length > 0 && (
+            <>
+              <div className={`border-t border-white/10 ${isMobile ? 'my-2' : 'my-4'} ${isMobile ? 'block' : 'hidden lg:block'}`}></div>
+              {trainingNavItems.map(item => {
+                const Icon = item.icon;
+                return <Link key={item.path} to={item.path} onClick={isMobile ? onClose : undefined} className={`flex items-center space-x-3 px-3 py-3 rounded-lg transition-all group relative ${isActive(item.path) ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' : 'text-muted-foreground hover:text-white hover:bg-white/5'}`}>
+                      <Icon className="w-5 h-5 flex-shrink-0 group-hover:scale-110 transition-transform" />
+                      <span className={`font-medium ${isMobile ? 'block' : 'hidden lg:block'}`}>{item.label}</span>
+                    </Link>;
+              })}
+            </>
+          )}
 
           {/* Admin Section */}
           {adminItems.length > 0 && <>
