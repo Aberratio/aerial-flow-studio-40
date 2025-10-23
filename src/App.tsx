@@ -44,6 +44,9 @@ import TrainingManagement from "@/pages/TrainingManagement";
 import CreateTrainingCourse from "@/pages/CreateTrainingCourse";
 import PremiumRoute from "@/components/PremiumRoute";
 import AdminDashboard from "@/pages/AdminDashboard";
+import TrainingLibrary from "@/pages/TrainingLibrary";
+import TrainingLibraryDetail from "@/pages/TrainingLibraryDetail";
+import TrainingLibrarySession from "@/pages/TrainingLibrarySession";
 
 
 
@@ -291,14 +294,38 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/training-session"
-        element={
-          <ProtectedRoute>
-            <TrainingSessionPageWrapper />
-          </ProtectedRoute>
-        }
-      />
+       <Route
+         path="/training-session"
+         element={
+           <ProtectedRoute>
+             <TrainingSessionPageWrapper />
+           </ProtectedRoute>
+         }
+       />
+       <Route
+         path="/training/library"
+         element={
+           <ProtectedRoute>
+             <TrainingLibrary />
+           </ProtectedRoute>
+         }
+       />
+       <Route
+         path="/training/library/:id"
+         element={
+           <ProtectedRoute>
+             <TrainingLibraryDetail />
+           </ProtectedRoute>
+         }
+       />
+       <Route
+         path="/training/library/:id/session"
+         element={
+           <ProtectedRoute>
+             <TrainingLibrarySession />
+           </ProtectedRoute>
+         }
+       />
       <Route
         path="/challenges/:challengeId/edit"
         element={

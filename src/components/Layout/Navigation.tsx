@@ -102,6 +102,10 @@ const Navigation: React.FC<NavigationProps> = ({
     path: '/training',
     icon: Dumbbell,
     label: 'Trening'
+  }, {
+    path: '/training/library',
+    icon: BookOpen,
+    label: 'Biblioteka treningów'
   }] : [];
 
   // Separate section for library access

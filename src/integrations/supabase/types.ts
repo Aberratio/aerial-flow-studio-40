@@ -1368,6 +1368,179 @@ export type Database = {
           },
         ]
       }
+      training_library: {
+        Row: {
+          category: string
+          completions_count: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          difficulty_level: string | null
+          duration_seconds: number | null
+          id: string
+          is_published: boolean | null
+          premium: boolean | null
+          sport_type: string[] | null
+          tags: string[] | null
+          thumbnail_url: string | null
+          title: string
+          training_type: string
+          updated_at: string | null
+          video_url: string | null
+          views_count: number | null
+        }
+        Insert: {
+          category: string
+          completions_count?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_published?: boolean | null
+          premium?: boolean | null
+          sport_type?: string[] | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title: string
+          training_type: string
+          updated_at?: string | null
+          video_url?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          category?: string
+          completions_count?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_published?: boolean | null
+          premium?: boolean | null
+          sport_type?: string[] | null
+          tags?: string[] | null
+          thumbnail_url?: string | null
+          title?: string
+          training_type?: string
+          updated_at?: string | null
+          video_url?: string | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_library_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_library_compositions: {
+        Row: {
+          child_training_id: string
+          created_at: string | null
+          id: string
+          order_index: number
+          parent_training_id: string
+        }
+        Insert: {
+          child_training_id: string
+          created_at?: string | null
+          id?: string
+          order_index: number
+          parent_training_id: string
+        }
+        Update: {
+          child_training_id?: string
+          created_at?: string | null
+          id?: string
+          order_index?: number
+          parent_training_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_library_compositions_child_training_id_fkey"
+            columns: ["child_training_id"]
+            isOneToOne: false
+            referencedRelation: "training_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_library_compositions_parent_training_id_fkey"
+            columns: ["parent_training_id"]
+            isOneToOne: false
+            referencedRelation: "training_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_library_exercises: {
+        Row: {
+          audio_cue_url: string | null
+          completion_mode: string
+          created_at: string | null
+          figure_id: string
+          hold_time_seconds: number | null
+          id: string
+          notes: string | null
+          order_index: number
+          reps: number | null
+          rest_time_seconds: number | null
+          sets: number | null
+          target_completions: number | null
+          training_id: string
+        }
+        Insert: {
+          audio_cue_url?: string | null
+          completion_mode: string
+          created_at?: string | null
+          figure_id: string
+          hold_time_seconds?: number | null
+          id?: string
+          notes?: string | null
+          order_index: number
+          reps?: number | null
+          rest_time_seconds?: number | null
+          sets?: number | null
+          target_completions?: number | null
+          training_id: string
+        }
+        Update: {
+          audio_cue_url?: string | null
+          completion_mode?: string
+          created_at?: string | null
+          figure_id?: string
+          hold_time_seconds?: number | null
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps?: number | null
+          rest_time_seconds?: number | null
+          sets?: number | null
+          target_completions?: number | null
+          training_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_library_exercises_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_library_exercises_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "training_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       training_redemption_codes: {
         Row: {
           code: string
@@ -1933,6 +2106,102 @@ export type Database = {
         }
         Relationships: []
       }
+      user_training_bookmarks: {
+        Row: {
+          created_at: string | null
+          id: string
+          training_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          training_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          training_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_training_bookmarks_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "training_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_training_bookmarks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_training_progress: {
+        Row: {
+          completed_at: string | null
+          completed_exercises: Json | null
+          created_at: string | null
+          current_exercise_index: number | null
+          id: string
+          last_activity_at: string | null
+          notes: string | null
+          started_at: string | null
+          status: string | null
+          training_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_exercises?: Json | null
+          created_at?: string | null
+          current_exercise_index?: number | null
+          id?: string
+          last_activity_at?: string | null
+          notes?: string | null
+          started_at?: string | null
+          status?: string | null
+          training_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          completed_exercises?: Json | null
+          created_at?: string | null
+          current_exercise_index?: number | null
+          id?: string
+          last_activity_at?: string | null
+          notes?: string | null
+          started_at?: string | null
+          status?: string | null
+          training_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_training_progress_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "training_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_training_progress_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_training_purchases: {
         Row: {
           created_at: string | null
@@ -2040,7 +2309,7 @@ export type Database = {
         Returns: undefined
       }
       fix_completed_challenges: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           challenge_id: string
           completed_days: number
@@ -2052,10 +2321,7 @@ export type Database = {
         Args: { user1_id: string; user2_id: string }
         Returns: string[]
       }
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_role: { Args: never; Returns: string }
       get_next_available_challenge_day: {
         Args: { p_challenge_id: string; p_user_id: string }
         Returns: {
