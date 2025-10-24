@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useCanAccessTraining } from '@/hooks/useCanAccessTraining';
+import { useTrainingBookmarks } from '@/hooks/useTrainingBookmarks';
+import { PremiumLockScreen } from '@/components/PremiumLockScreen';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Clock, Play } from 'lucide-react';
+import { ArrowLeft, Clock, Play, Heart, Lock } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { TrainingLibrary } from '@/hooks/useTrainingLibrary';
 
@@ -28,9 +32,12 @@ interface TrainingExercise {
 const TrainingLibraryDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [training, setTraining] = useState<TrainingLibrary | null>(null);
   const [exercises, setExercises] = useState<TrainingExercise[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { canAccess } = useCanAccessTraining(training?.premium || false);
+  const { bookmarkedIds, toggleBookmark } = useTrainingBookmarks(user?.id);
 
   useEffect(() => {
     if (id) {
@@ -45,7 +52,7 @@ const TrainingLibraryDetail = () => {
         .from('training_library')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
 
       if (trainingError) throw trainingError;
       setTraining(trainingData as TrainingLibrary);
@@ -97,6 +104,10 @@ const TrainingLibraryDetail = () => {
         <p className="text-xl text-muted-foreground">Nie znaleziono treningu</p>
       </div>
     );
+  }
+
+  if (!canAccess) {
+    return <PremiumLockScreen />;
   }
 
   return (
@@ -206,13 +217,23 @@ const TrainingLibraryDetail = () => {
         )}
 
         {/* Start Training Button */}
-        <Button
-          onClick={handleStartTraining}
-          className="w-full h-14 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-        >
-          <Play className="w-5 h-5 mr-2" />
-          Rozpocznij trening
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={handleStartTraining}
+            className="flex-1 h-14 text-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+          >
+            <Play className="w-5 h-5 mr-2" />
+            Rozpocznij trening
+          </Button>
+          <Button
+            onClick={() => toggleBookmark(id!)}
+            variant="outline"
+            size="lg"
+            className="h-14"
+          >
+            <Heart className={`w-5 h-5 ${bookmarkedIds.includes(id!) ? 'fill-primary text-primary' : ''}`} />
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ export const useTrainingTimer = ({
 
   useEffect(() => {
     setTimeRemaining(initialSeconds);
+    setIsRunning(false);
   }, [initialSeconds]);
 
   useEffect(() => {

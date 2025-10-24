@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { useTrainingLibrary } from '@/hooks/useTrainingLibrary';
+import { useTrainingBookmarks } from '@/hooks/useTrainingBookmarks';
+import { useAuth } from '@/contexts/AuthContext';
 import TrainingLibraryCard from '@/components/TrainingLibraryCard';
 import TrainingLibraryFilters from '@/components/TrainingLibraryFilters';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const TrainingLibrary = () => {
+  const { user } = useAuth();
   const isMobile = useIsMobile();
   const [search, setSearch] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -18,6 +21,7 @@ const TrainingLibrary = () => {
     trainingType: [],
     premium: null as boolean | null,
   });
+  const { bookmarkedIds, toggleBookmark } = useTrainingBookmarks(user?.id);
 
   const { trainings, isLoading } = useTrainingLibrary({ ...filters, search });
 
@@ -94,7 +98,12 @@ const TrainingLibrary = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {trainings.map((training) => (
-                  <TrainingLibraryCard key={training.id} training={training} />
+            <TrainingLibraryCard 
+              key={training.id} 
+              training={training}
+              isBookmarked={bookmarkedIds.includes(training.id)}
+              onToggleBookmark={() => toggleBookmark(training.id)}
+            />
                 ))}
               </div>
             )}
