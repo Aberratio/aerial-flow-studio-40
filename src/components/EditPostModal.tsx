@@ -160,9 +160,9 @@ export const EditPostModal = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-white">Edit Post</DialogTitle>
+          <DialogTitle className="text-white">Edytuj post</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Update your post content and privacy settings.
+            Zaktualizuj treść i ustawienia prywatności posta.
           </DialogDescription>
         </DialogHeader>
 
@@ -172,7 +172,7 @@ export const EditPostModal = ({
             <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
               <p className="text-blue-400 text-sm flex items-center">
                 <Instagram className="w-4 h-4 mr-2" />
-                This is an Instagram post. You can only edit the caption and privacy.
+                To jest post z Instagrama. Możesz edytować tylko opis i prywatność.
               </p>
             </div>
           )}
@@ -180,7 +180,7 @@ export const EditPostModal = ({
           {/* Privacy Setting */}
           <div>
             <label className="text-white text-sm font-medium mb-2 block">
-              Privacy Setting
+              Ustawienia prywatności
             </label>
             <Select value={privacy} onValueChange={setPrivacy}>
               <SelectTrigger className="w-full h-10 bg-white/5 border-white/10 text-white">
@@ -189,10 +189,10 @@ export const EditPostModal = ({
                     {getPrivacyIcon()}
                     <span className="capitalize">
                       {privacy === "friends"
-                        ? "Friends only"
+                        ? "Tylko znajomi"
                         : privacy === "private"
-                        ? "Only me"
-                        : "Public"}
+                        ? "Tylko ja"
+                        : "Publiczny"}
                     </span>
                   </div>
                 </SelectValue>
@@ -201,19 +201,19 @@ export const EditPostModal = ({
                 <SelectItem value="public">
                   <div className="flex items-center space-x-2">
                     <Globe className="w-4 h-4" />
-                    <span>Public</span>
+                    <span>Publiczny</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="friends">
                   <div className="flex items-center space-x-2">
                     <Users className="w-4 h-4" />
-                    <span>Friends only</span>
+                    <span>Tylko znajomi</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="private">
                   <div className="flex items-center space-x-2">
                     <Lock className="w-4 h-4" />
-                    <span>Only me</span>
+                    <span>Tylko ja</span>
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -221,7 +221,7 @@ export const EditPostModal = ({
           </div>
 
           <Textarea
-            placeholder="What's on your mind?"
+            placeholder="Co słychać?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-muted-foreground resize-none"
@@ -295,8 +295,8 @@ export const EditPostModal = ({
                   >
                     <span className="flex items-center space-x-2 cursor-pointer">
                       <Image className="w-4 h-4" />
-                      <span className="hidden sm:inline">Change Photo</span>
-                      <span className="sm:hidden">Photo</span>
+                      <span className="hidden sm:inline">Zmień zdjęcie</span>
+                      <span className="sm:hidden">Zdjęcie</span>
                     </span>
                   </Button>
                 </label>
@@ -310,7 +310,7 @@ export const EditPostModal = ({
                 onClick={onClose}
                 className="text-muted-foreground hover:text-white hover:bg-white/5 text-sm flex-1 sm:flex-none"
               >
-                Cancel
+                Anuluj
               </Button>
               <Button
                 onClick={handleSubmit}
@@ -321,11 +321,11 @@ export const EditPostModal = ({
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    <span className="hidden sm:inline">Updating...</span>
+                    <span className="hidden sm:inline">Aktualizacja...</span>
                     <span className="sm:hidden">...</span>
                   </>
                 ) : (
-                  "Update"
+                  "Zaktualizuj"
                 )}
               </Button>
             </div>

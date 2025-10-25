@@ -79,7 +79,7 @@ export const AdminUserImpersonationModal: React.FC<AdminUserImpersonationModalPr
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserCheck className="w-5 h-5" />
-            Impersonate User
+            Wciel się w użytkownika
           </DialogTitle>
         </DialogHeader>
 
@@ -87,7 +87,7 @@ export const AdminUserImpersonationModal: React.FC<AdminUserImpersonationModalPr
           <div className="relative">
             <Search className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
             <Input
-              placeholder="Search by username or email..."
+              placeholder="Szukaj po nazwie użytkownika lub e-mailu..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -98,9 +98,9 @@ export const AdminUserImpersonationModal: React.FC<AdminUserImpersonationModalPr
             <div className="flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
               <div className="text-sm text-orange-300">
-                <p className="font-medium">Admin Warning</p>
+                <p className="font-medium">Ostrzeżenie dla Administratora</p>
                 <p className="text-xs mt-1">
-                  You will view the app from this user's perspective. Use responsibly for debugging only.
+                  Zobaczysz aplikację z perspektywy tego użytkownika. Używaj odpowiedzialnie tylko do debugowania.
                 </p>
               </div>
             </div>
@@ -110,11 +110,11 @@ export const AdminUserImpersonationModal: React.FC<AdminUserImpersonationModalPr
             <div className="space-y-2 max-h-60 overflow-y-auto">
               {isLoading ? (
                 <div className="text-center py-4 text-muted-foreground">
-                  Searching...
+                  Wyszukiwanie...
                 </div>
               ) : users.length === 0 ? (
                 <div className="text-center py-4 text-muted-foreground">
-                  No users found
+                  Nie znaleziono użytkowników
                 </div>
               ) : (
                 users.map((user) => (
@@ -144,7 +144,7 @@ export const AdminUserImpersonationModal: React.FC<AdminUserImpersonationModalPr
                       onClick={() => handleImpersonate(user.id, user.username)}
                       className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                     >
-                      Impersonate
+                      Wciel się
                     </Button>
                   </div>
                 ))
@@ -155,7 +155,7 @@ export const AdminUserImpersonationModal: React.FC<AdminUserImpersonationModalPr
           {searchTerm.length < 2 && (
             <div className="text-center py-8 text-muted-foreground">
               <UserCheck className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>Start typing to search for users</p>
+              <p>Zacznij pisać, aby wyszukać użytkowników</p>
             </div>
           )}
         </div>

@@ -41,14 +41,14 @@ export const ConfirmDeleteModal = ({
             className="flex-1 border-white/20 text-white hover:bg-white/10"
             disabled={isLoading}
           >
-            Cancel
+            Anuluj
           </Button>
           <Button
             onClick={onConfirm}
             className="flex-1 bg-red-500 hover:bg-red-600 text-white"
             disabled={isLoading}
           >
-            {isLoading ? 'Deleting...' : 'Delete'}
+            {isLoading ? 'Usuwanie...' : 'Usuń'}
           </Button>
         </div>
       </DialogContent>

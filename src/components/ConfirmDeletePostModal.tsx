@@ -17,10 +17,10 @@ export const ConfirmDeletePostModal = ({ isOpen, onClose, onConfirm, loading }: 
         <DialogHeader>
           <DialogTitle className="text-white flex items-center">
             <AlertTriangle className="w-5 h-5 mr-2 text-red-400" />
-            Delete Post
+            Usuń post
           </DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Are you sure you want to delete this post? This action cannot be undone.
+            Czy na pewno chcesz usunąć ten post? Ta operacja jest nieodwracalna.
           </DialogDescription>
         </DialogHeader>
         
@@ -31,7 +31,7 @@ export const ConfirmDeletePostModal = ({ isOpen, onClose, onConfirm, loading }: 
             disabled={loading}
             className="text-muted-foreground hover:text-white"
           >
-            Cancel
+            Anuluj
           </Button>
           <Button 
             variant="destructive" 
@@ -39,7 +39,7 @@ export const ConfirmDeletePostModal = ({ isOpen, onClose, onConfirm, loading }: 
             disabled={loading}
             className="bg-red-600 hover:bg-red-700"
           >
-            {loading ? 'Deleting...' : 'Delete Post'}
+            {loading ? 'Usuwanie...' : 'Usuń post'}
           </Button>
         </div>
       </DialogContent>

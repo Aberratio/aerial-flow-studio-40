@@ -180,7 +180,7 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] glass-effect border-white/10 text-white overflow-hidden flex flex-col p-4 md:p-6">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-xl md:text-2xl gradient-text">Day {dayNumber} Exercises</DialogTitle>
+          <DialogTitle className="text-xl md:text-2xl gradient-text">Dzień {dayNumber} - Ćwiczenia</DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="flex-1 -mx-4 md:-mx-6 px-4 md:px-6">
@@ -190,9 +190,9 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-base md:text-lg font-semibold text-white">Progress</h3>
+                    <h3 className="text-base md:text-lg font-semibold text-white">Postęp</h3>
                     <p className="text-sm text-muted-foreground">
-                      {completedExercises.size} of {exercises.length} exercises completed
+                      {completedExercises.size} z {exercises.length} ćwiczeń ukończono
                     </p>
                   </div>
                   <div className="text-right">
@@ -208,7 +208,7 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
 
             {/* Exercise List */}
             <div className="space-y-3 md:space-y-4">
-              <h3 className="text-base md:text-lg font-semibold text-white">Exercises</h3>
+              <h3 className="text-base md:text-lg font-semibold text-white">Ćwiczenia</h3>
               {exercises.map((exercise, index) => {
                 const isCompleted = completedExercises.has(exercise.id);
                 return (
@@ -273,25 +273,25 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
                             {exercise.sets && (
                               <div className="flex items-center gap-1 md:gap-2">
                                 <span className="w-2 h-2 bg-purple-400 rounded-full flex-shrink-0" />
-                                <span className="truncate">{exercise.sets} sets</span>
+                                <span className="truncate">{exercise.sets} serie</span>
                               </div>
                             )}
                             {exercise.reps && (
                               <div className="flex items-center gap-1 md:gap-2">
                                 <span className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0" />
-                                <span className="truncate">{exercise.reps} reps</span>
+                                <span className="truncate">{exercise.reps} powtórzeń</span>
                               </div>
                             )}
                             {exercise.hold_time_seconds && (
                               <div className="flex items-center gap-1 md:gap-2">
                                 <Clock className="w-3 h-3 text-green-400 flex-shrink-0" />
-                                <span className="truncate">{exercise.hold_time_seconds}s hold</span>
+                                <span className="truncate">{exercise.hold_time_seconds}s trzymaj</span>
                               </div>
                             )}
                             {exercise.rest_time_seconds && (
                               <div className="flex items-center gap-1 md:gap-2">
                                 <span className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0" />
-                                <span className="truncate">{exercise.rest_time_seconds}s rest</span>
+                                <span className="truncate">{exercise.rest_time_seconds}s odpoczynek</span>
                               </div>
                             )}
                           </div>
@@ -344,14 +344,14 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
             onClick={onClose}
             className="flex-1 border-white/20 text-white hover:bg-white/10 text-sm md:text-base"
           >
-            Close
+            Zamknij
           </Button>
           <Button 
             onClick={handleFinishDay}
             disabled={isLoading}
             className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-sm md:text-base"
           >
-            {isLoading ? 'Saving...' : 'Finish Day'}
+            {isLoading ? 'Zapisywanie...' : 'Zakończ dzień'}
           </Button>
         </div>
       </DialogContent>

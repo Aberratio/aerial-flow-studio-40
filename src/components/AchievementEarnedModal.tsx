@@ -29,10 +29,10 @@ export const AchievementEarnedModal = ({ achievement, isOpen, onClose }: Achieve
             <Trophy className="w-8 h-8 text-white" />
           </div>
           <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
-            Achievement Unlocked!
+            Osiągnięcie Odblokowane!
           </DialogTitle>
           <DialogDescription className="text-base">
-            Congratulations! You've earned a new achievement.
+            Gratulacje! Zdobyłeś nowe osiągnięcie.
           </DialogDescription>
         </DialogHeader>
         
@@ -43,19 +43,19 @@ export const AchievementEarnedModal = ({ achievement, isOpen, onClose }: Achieve
             <p className="text-muted-foreground mb-3">{achievement.description}</p>
             <Badge className="bg-gradient-to-r from-yellow-600 to-orange-600 text-white">
               <Star className="w-3 h-3 mr-1" />
-              {achievement.points} points
+              {achievement.points} pkt
             </Badge>
           </div>
           
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Gift className="w-4 h-4" />
-            <span>Your total points have been updated!</span>
+            <span>Twoje punkty zostały zaktualizowane!</span>
           </div>
         </div>
         
         <div className="mt-6">
           <Button onClick={onClose} className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700">
-            Awesome!
+            Super!
           </Button>
         </div>
       </DialogContent>

@@ -51,11 +51,11 @@ export const SharePostModal = ({ isOpen, onClose, postId, userName, post }: Shar
   const getPrivacyText = () => {
     switch (post?.privacy) {
       case 'friends':
-        return 'Friends only';
+        return 'Tylko znajomi';
       case 'private':
-        return 'Only me';
+        return 'Tylko ja';
       default:
-        return 'Public';
+        return 'Publiczny';
     }
   };
 
@@ -63,9 +63,9 @@ export const SharePostModal = ({ isOpen, onClose, postId, userName, post }: Shar
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-white">Share Post</DialogTitle>
+          <DialogTitle className="text-white">Udostępnij post</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Share {userName}'s post with others by copying the link below.
+            Udostępnij post użytkownika {userName} kopiując link poniżej.
           </DialogDescription>
         </DialogHeader>
         
@@ -79,10 +79,10 @@ export const SharePostModal = ({ isOpen, onClose, postId, userName, post }: Shar
               </div>
               <p className="text-muted-foreground text-xs">
                 {post.privacy === 'private' 
-                  ? 'This post is private and only visible to the author'
+                  ? 'Ten post jest prywatny i widoczny tylko dla autora'
                   : post.privacy === 'friends' 
-                  ? 'This post is only visible to friends of the author'
-                  : 'This post is public and visible to everyone'
+                  ? 'Ten post jest widoczny tylko dla znajomych autora'
+                  : 'Ten post jest publiczny i widoczny dla wszystkich'
                 }
               </p>
             </div>
@@ -110,7 +110,7 @@ export const SharePostModal = ({ isOpen, onClose, postId, userName, post }: Shar
           
           <div className="flex justify-end">
             <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-white">
-              Close
+              Zamknij
             </Button>
           </div>
         </div>

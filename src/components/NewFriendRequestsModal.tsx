@@ -219,14 +219,14 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-[500px] max-h-[85vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-white">Friend Requests</DialogTitle>
+          <DialogTitle className="text-white">Zaproszenia do znajomych</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-6">
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
-              <p className="text-muted-foreground mt-2">Loading friend requests...</p>
+              <p className="text-muted-foreground mt-2">Ładowanie zaproszeń...</p>
             </div>
           ) : (
             <>
@@ -234,7 +234,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
               {receivedRequests.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-white">Received Requests</h3>
+                <h3 className="text-sm font-medium text-white">Otrzymane zaproszenia</h3>
                 <Badge variant="secondary" className="bg-primary/20 text-primary">
                   {receivedRequests.length}
                 </Badge>
@@ -271,7 +271,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
                       className="bg-green-600 hover:bg-green-700 text-white flex-1 sm:flex-none"
                     >
                       <Check className="w-4 h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Accept</span>
+                      <span className="hidden sm:inline">Akceptuj</span>
                     </Button>
                     <Button
                       size="sm"
@@ -283,7 +283,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
                       className="text-muted-foreground hover:text-white hover:bg-red-600/20 flex-1 sm:flex-none"
                     >
                       <X className="w-4 h-4 sm:mr-1" />
-                      <span className="hidden sm:inline">Decline</span>
+                      <span className="hidden sm:inline">Odrzuć</span>
                     </Button>
                   </div>
                 </div>
@@ -295,7 +295,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
           {sentRequests.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-medium text-white">Sent Requests</h3>
+                <h3 className="text-sm font-medium text-white">Wysłane zaproszenia</h3>
                 <Badge variant="secondary" className="bg-muted/20 text-muted-foreground">
                   {sentRequests.length}
                 </Badge>
@@ -317,7 +317,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-white truncate">{request.user.username}</p>
                         <p className="text-sm text-muted-foreground">
-                          Sent {request.timestamp}
+                          Wysłano {request.timestamp}
                         </p>
                       </div>
                     </div>
@@ -325,7 +325,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
                   <div className="flex items-center space-x-2 sm:flex-shrink-0">
                     <div className="flex items-center space-x-1 text-yellow-400">
                       <Clock className="w-4 h-4" />
-                      <span className="text-sm">Pending</span>
+                      <span className="text-sm">Oczekuje</span>
                     </div>
                     <Button
                       size="sm"
@@ -347,7 +347,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
               {/* Empty State */}
               {receivedRequests.length === 0 && sentRequests.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No friend requests at the moment</p>
+                  <p>Brak zaproszeń do znajomych</p>
                 </div>
               )}
             </>

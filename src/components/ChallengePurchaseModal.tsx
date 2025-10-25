@@ -137,7 +137,7 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
           <DialogTitle className="text-xl sm:text-2xl text-white text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
               <Crown className="w-6 h-6 text-yellow-400" />
-              Premium Challenge
+              Wyzwanie Premium
             </div>
           </DialogTitle>
         </DialogHeader>
@@ -163,26 +163,26 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
           <TabsList className="grid w-full grid-cols-2 bg-white/10">
             <TabsTrigger value="purchase" className="text-white data-[state=active]:bg-white/20">
               <CreditCard className="w-4 h-4 mr-2" />
-              Purchase
+              Kup
             </TabsTrigger>
             <TabsTrigger value="code" className="text-white data-[state=active]:bg-white/20">
               <Gift className="w-4 h-4 mr-2" />
-              Redeem Code
+              Użyj kodu
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="purchase" className="space-y-6 mt-6">
             <Card className="bg-white/5 border-white/10">
               <CardHeader>
-                <CardTitle className="text-white text-lg">Purchase Challenge</CardTitle>
+                <CardTitle className="text-white text-lg">Kup wyzwanie</CardTitle>
                 <CardDescription className="text-white/70">
-                  Get lifetime access to this premium challenge
+                  Uzyskaj dożywotni dostęp do tego wyzwania premium
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="currency" className="text-white">
-                    Currency
+                    Waluta
                   </Label>
                   <Select value={currency} onValueChange={(value: "usd" | "pln") => setCurrency(value)}>
                     <SelectTrigger className="bg-white/10 border-white/20 text-white">
@@ -197,7 +197,7 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
 
                 <div className="bg-white/5 rounded-lg p-4 border border-white/10">
                   <div className="flex items-center justify-between">
-                    <span className="text-white/70">Price:</span>
+                    <span className="text-white/70">Cena:</span>
                     <span className="text-2xl font-bold text-white">
                       {prices[currency].symbol}{prices[currency].amount}
                     </span>
@@ -212,12 +212,12 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
+                      Przetwarzanie...
                     </>
                   ) : (
                     <>
                       <CreditCard className="w-4 h-4 mr-2" />
-                      Purchase Challenge
+                      Kup wyzwanie
                     </>
                   )}
                 </Button>
@@ -228,21 +228,21 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
           <TabsContent value="code" className="space-y-6 mt-6">
             <Card className="bg-white/5 border-white/10">
               <CardHeader>
-                <CardTitle className="text-white text-lg">Redeem Code</CardTitle>
+                <CardTitle className="text-white text-lg">Użyj kodu</CardTitle>
                 <CardDescription className="text-white/70">
-                  Have a redemption code? Enter it below to unlock this challenge
+                  Masz kod aktywacyjny? Wpisz go poniżej, aby odblokować to wyzwanie
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="code" className="text-white">
-                    Redemption Code
+                    Kod aktywacyjny
                   </Label>
                   <Input
                     id="code"
                     value={redemptionCode}
                     onChange={(e) => setRedemptionCode(e.target.value.toUpperCase())}
-                    placeholder="Enter your code here"
+                    placeholder="Wpisz swój kod tutaj"
                     className="bg-white/10 border-white/20 text-white placeholder-white/50"
                   />
                 </div>
@@ -256,12 +256,12 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Redeeming...
+                      Aktywacja...
                     </>
                   ) : (
                     <>
                       <Gift className="w-4 h-4 mr-2" />
-                      Redeem Code
+                      Użyj kodu
                     </>
                   )}
                 </Button>
@@ -272,10 +272,10 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
 
         <div className="mt-6 text-center space-y-2">
           <p className="text-white/70 text-sm">
-            Once purchased, you'll have lifetime access to this challenge
+            Po zakupie będziesz mieć dożywotni dostęp do tego wyzwania
           </p>
           <p className="text-white/60 text-xs">
-            Payments are processed securely through Stripe
+            Płatności są bezpiecznie przetwarzane przez Stripe
           </p>
         </div>
       </DialogContent>

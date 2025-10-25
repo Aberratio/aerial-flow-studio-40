@@ -115,11 +115,11 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
                 </Badge>
                 <div className="flex items-center text-muted-foreground">
                   <Calendar className="w-4 h-4 mr-1" />
-                  {challenge.totalDays} days
+                  {challenge.totalDays} dni
                 </div>
                 <div className="flex items-center text-muted-foreground">
                   <Trophy className="w-4 h-4 mr-1" />
-                  {challenge.completedDays}/{challenge.totalDays} completed
+                  {challenge.completedDays}/{challenge.totalDays} ukończono
                 </div>
               </div>
 
@@ -137,7 +137,7 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
           <div>
             <h3 className="text-white font-semibold mb-4 flex items-center">
               <Calendar className="w-5 h-5 mr-2" />
-              Daily Schedule
+              Plan treningowy
             </h3>
             
             <div className="space-y-3 max-h-60 overflow-y-auto">
@@ -161,8 +161,8 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
                      <h4 className="text-white font-medium flex items-center">
                        {day.completed && <CheckCircle className="w-4 h-4 text-green-400 mr-2" />}
                        {day.day === challenge.currentDay && !day.completed && <Play className="w-4 h-4 text-purple-400 mr-2" />}
-                       Day {day.day}: {day.title}
-                       {day.isRestDay && <Badge variant="outline" className="ml-2 text-xs border-blue-500/30 text-blue-400">Rest Day</Badge>}
+                       Dzień {day.day}: {day.title}
+                       {day.isRestDay && <Badge variant="outline" className="ml-2 text-xs border-blue-500/30 text-blue-400">Odpoczynek</Badge>}
                      </h4>
                      <div className="flex items-center text-muted-foreground text-sm">
                        <Clock className="w-3 h-3 mr-1" />
@@ -195,7 +195,7 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
                 className="flex-1"
               >
                 <Play className="w-4 h-4 mr-2" />
-                Continue Challenge
+                Kontynuuj wyzwanie
               </Button>
             ) : (
               <Button 
@@ -204,7 +204,7 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
                 className="flex-1"
               >
                 <Play className="w-4 h-4 mr-2" />
-                Start Challenge
+                Rozpocznij wyzwanie
               </Button>
             )}
             
@@ -213,7 +213,7 @@ export const ChallengeDetailsModal = ({ challenge, isOpen, onClose, onStart, onC
               onClick={onClose}
               className="border-white/20 text-white hover:bg-white/10"
             >
-              Close
+              Zamknij
             </Button>
           </div>
         </div>
