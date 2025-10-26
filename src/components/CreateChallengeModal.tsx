@@ -170,8 +170,9 @@ const CreateChallengeModal = ({
 
     if (!title.trim() || !startDate || !endDate) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in title, start date, and end date.",
+        title: "Brakujące informacje",
+        description:
+          "Proszę wypełnić tytuł, datę rozpoczęcia i datę zakończenia.",
         variant: "destructive",
       });
       return;
@@ -230,14 +231,14 @@ const CreateChallengeModal = ({
       await saveAchievementsAndTrainingDays(result.data.id);
 
       toast({
-        title: "Draft Saved",
-        description: "Challenge saved as draft successfully.",
+        title: "Szkic zapisany",
+        description: "Wyzwanie zostało pomyślnie zapisane jako szkic.",
       });
     } catch (error) {
       console.error("Error saving challenge:", error);
       toast({
-        title: "Error",
-        description: "Failed to save challenge draft.",
+        title: "Błąd",
+        description: "Nie udało się zapisać szkicu wyzwania.",
         variant: "destructive",
       });
     } finally {
@@ -386,8 +387,8 @@ const CreateChallengeModal = ({
   const publishChallenge = async () => {
     if (!challengeId && !title.trim()) {
       toast({
-        title: "Save Draft First",
-        description: "Please save as draft before publishing.",
+        title: "Najpierw zapisz szkic",
+        description: "Proszę najpierw zapisać jako szkic przed opublikowaniem.",
         variant: "destructive",
       });
       return;
@@ -410,8 +411,8 @@ const CreateChallengeModal = ({
       if (error) throw error;
 
       toast({
-        title: "Challenge Published",
-        description: "Challenge has been published successfully.",
+        title: "Wyzwanie opublikowane",
+        description: "Wyzwanie zostało pomyślnie opublikowane.",
       });
 
       onChallengeCreated();
@@ -440,30 +441,30 @@ const CreateChallengeModal = ({
 
         <div className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="title">Challenge Title *</Label>
+            <Label htmlFor="title">Tytuł wyzwania *</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter challenge title"
+              placeholder="Wprowadź tytuł wyzwania"
               maxLength={100}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Opis</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Describe your challenge..."
+              placeholder="Opisz swoje wyzwanie..."
               rows={4}
               maxLength={500}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">Challenge Image</Label>
+            <Label htmlFor="image">Zdjęcie wyzwania</Label>
             <div className="space-y-2">
               <Input
                 id="image"
@@ -497,19 +498,19 @@ const CreateChallengeModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="level">Level</Label>
+            <Label htmlFor="level">Poziom</Label>
             <Input
               id="level"
               type="number"
               min="1"
               value={level}
               onChange={(e) => setLevel(parseInt(e.target.value) || 1)}
-              placeholder="Enter challenge level"
+              placeholder="Wprowadź poziom wyzwania"
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="difficulty">Difficulty Level</Label>
+            <Label htmlFor="difficulty">Poziom trudności</Label>
             <select
               id="difficulty"
               value={difficultyLevel}
@@ -523,7 +524,7 @@ const CreateChallengeModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Challenge Type</Label>
+            <Label htmlFor="type">Typ wyzwania</Label>
             <select
               id="type"
               value={type}
@@ -644,7 +645,7 @@ const CreateChallengeModal = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CalendarDays className="w-5 h-5 text-blue-400" />
-                <Label className="text-lg font-semibold">Training Days</Label>
+                <Label className="text-lg font-semibold">Dni treningowe</Label>
               </div>
               <Button
                 type="button"
@@ -654,13 +655,16 @@ const CreateChallengeModal = ({
                 className="flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                Add Day
+                Dodaj dzień
               </Button>
             </div>
 
             <div className="space-y-3 max-h-48 sm:max-h-60 overflow-y-auto">
               {trainingDays.map((day, index) => (
-                <div key={index} className="border rounded-lg p-3 sm:p-4 space-y-3">
+                <div
+                  key={index}
+                  className="border rounded-lg p-3 sm:p-4 space-y-3"
+                >
                   <div className="flex items-center justify-between">
                     <Label className="text-sm font-medium">
                       Day {index + 1}
@@ -679,7 +683,9 @@ const CreateChallengeModal = ({
                     <div className="space-y-2">
                       <Label className="text-xs">Date</Label>
                       <div className="px-3 py-2 border rounded-md bg-muted text-sm">
-                        {day.date ? format(day.date, "PPP") : "Date will be set automatically"}
+                        {day.date
+                          ? format(day.date, "PPP")
+                          : "Date will be set automatically"}
                       </div>
                     </div>
 
@@ -719,7 +725,7 @@ const CreateChallengeModal = ({
                       className="rounded border-gray-300"
                     />
                     <Label htmlFor={`rest-day-${index}`} className="text-xs">
-                      Rest Day (no exercises)
+                      Dzień odpoczynku (brak ćwiczeń)
                     </Label>
                   </div>
 
@@ -739,7 +745,9 @@ const CreateChallengeModal = ({
                   {day.isRestDay && (
                     <div className="text-center py-4 text-muted-foreground border-2 border-dashed rounded-lg">
                       <span className="text-2xl">😴</span>
-                      <p className="mt-2">Rest Day - No exercises scheduled</p>
+                      <p className="mt-2">
+                        Dzień odpoczynku - Brak zaplanowanych ćwiczeń
+                      </p>
                     </div>
                   )}
                 </div>
@@ -750,7 +758,7 @@ const CreateChallengeModal = ({
                   <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-50" />
                   <p>No training days added yet</p>
                   <p className="text-sm">
-                    Click "Add Day" to create training sessions
+                    Kliknij "Dodaj dzień", aby utworzyć sesje treningowe
                   </p>
                 </div>
               )}
@@ -758,8 +766,12 @@ const CreateChallengeModal = ({
           </div>
 
           <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4">
-            <Button variant="outline" onClick={handleClose} className="w-full sm:w-auto">
-              Cancel
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              className="w-full sm:w-auto"
+            >
+              Anuluj
             </Button>
 
             <div className="flex flex-col sm:flex-row gap-2">
@@ -770,8 +782,8 @@ const CreateChallengeModal = ({
                 className="flex items-center justify-center gap-2 w-full sm:w-auto"
               >
                 <Save className="w-4 h-4" />
-                <span className="hidden sm:inline">Save Draft</span>
-                <span className="sm:hidden">Draft</span>
+                <span className="hidden sm:inline">Zapisz szkic</span>
+                <span className="sm:hidden">Szkic</span>
               </Button>
 
               <Button
@@ -780,8 +792,8 @@ const CreateChallengeModal = ({
                 className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 w-full sm:w-auto"
               >
                 <Globe className="w-4 h-4" />
-                <span className="hidden sm:inline">Publish Challenge</span>
-                <span className="sm:hidden">Publish</span>
+                <span className="hidden sm:inline">Opublikuj wyzwanie</span>
+                <span className="sm:hidden">Opublikuj</span>
               </Button>
             </div>
           </div>

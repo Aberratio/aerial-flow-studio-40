@@ -911,7 +911,7 @@ const ExerciseDetail = () => {
                       className="flex-1 min-w-[120px]"
                     >
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      Nieudane
+                      Uczę się!
                     </Button>
                     <Button
                       size="sm"
@@ -922,7 +922,7 @@ const ExerciseDetail = () => {
                       className="flex-1 min-w-[120px]"
                     >
                       <Target className="w-4 h-4 mr-2" />
-                      Niepróbowane
+                      Na TO-DO liście
                     </Button>
                   </div>
 

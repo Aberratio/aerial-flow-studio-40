@@ -472,7 +472,7 @@ export const CreateExerciseModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="image-upload" className="text-white">
-                Exercise Image *
+                Zdjęcie ćwiczenia *
               </Label>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -492,7 +492,7 @@ export const CreateExerciseModal = ({
                     className="border-white/10 text-white hover:bg-white/10"
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Upload Image
+                    Prześlij zdjęcie
                   </Button>
                   {imageFile && (
                     <span className="text-sm text-white/60">
@@ -502,7 +502,7 @@ export const CreateExerciseModal = ({
                 </div>
                 {(formData.image_url || imageFile) && (
                   <div className="text-sm text-green-400">
-                    {imageFile ? "New image selected" : "Image uploaded"}
+                    {imageFile ? "Nowe zdjęcie wybrane" : "Zdjęcie przesłane"}
                   </div>
                 )}
               </div>
@@ -510,7 +510,7 @@ export const CreateExerciseModal = ({
 
             <div>
               <Label htmlFor="video-upload" className="text-white">
-                Exercise Video (Optional)
+                Wideo ćwiczenia (Opcjonalne)
               </Label>
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
@@ -530,7 +530,7 @@ export const CreateExerciseModal = ({
                     className="border-white/10 text-white hover:bg-white/10"
                   >
                     <Upload className="h-4 w-4 mr-2" />
-                    Upload Video
+                    Prześlij wideo
                   </Button>
                   {videoFile && (
                     <span className="text-sm text-white/60">
@@ -540,7 +540,7 @@ export const CreateExerciseModal = ({
                 </div>
                 {(formData.video_url || videoFile) && (
                   <div className="text-sm text-green-400">
-                    {videoFile ? "New video selected" : "Video uploaded"}
+                    {videoFile ? "Nowe wideo wybrane" : "Wideo przesłane"}
                   </div>
                 )}
               </div>
@@ -551,7 +551,7 @@ export const CreateExerciseModal = ({
             <>
               <div>
                 <Label htmlFor="premium" className="text-white">
-                  Access Level
+                  Poziom dostępu
                 </Label>
                 <div className="flex items-center space-x-3 mt-2">
                   <Switch
@@ -569,14 +569,14 @@ export const CreateExerciseModal = ({
                     {formData.premium ? "Premium" : "Free"}
                   </Label>
                   <div className="text-xs text-white/60 ml-2">
-                    Current: {formData.premium ? "Premium" : "Free"}
+                    Obecnie: {formData.premium ? "Premium" : "Darmowe"}
                   </div>
                 </div>
               </div>
 
               <div>
                 <Label htmlFor="description" className="text-white">
-                  Description (Optional)
+                  Opis (Opcjonalne)
                 </Label>
                 <Textarea
                   id="description"
@@ -588,14 +588,14 @@ export const CreateExerciseModal = ({
                     }))
                   }
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Brief description of the exercise"
+                  placeholder="Krótki opis ćwiczenia"
                   rows={3}
                 />
               </div>
 
               <div>
                 <Label htmlFor="instructions" className="text-white">
-                  Instructions (Optional)
+                  Instrukcje (Opcjonalne)
                 </Label>
                 <Textarea
                   id="instructions"
@@ -607,14 +607,14 @@ export const CreateExerciseModal = ({
                     }))
                   }
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Step-by-step instructions"
+                  placeholder="Instrukcje krok po kroku"
                   rows={4}
                 />
               </div>
 
               <div>
                 <Label htmlFor="tags" className="text-white">
-                  Tags (Optional)
+                  Tagi (Opcjonalne)
                 </Label>
                 <div className="space-y-2">
                   <div className="flex gap-2">
@@ -624,7 +624,7 @@ export const CreateExerciseModal = ({
                       onChange={(e) => setTagInput(e.target.value)}
                       onKeyPress={handleKeyPress}
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                      placeholder="Add a tag and press Enter"
+                      placeholder="Dodaj tag i naciśnij Enter"
                     />
                     <Button
                       type="button"
@@ -652,10 +652,10 @@ export const CreateExerciseModal = ({
 
               <div>
                 <Label htmlFor="synonyms" className="text-white">
-                  Synonyms (Optional)
+                  Synonimy (Opcjonalne)
                 </Label>
                 <p className="text-sm text-white/60 mb-2">
-                  Alternative names for this exercise
+                  Alternatywne nazwy dla tego ćwiczenia
                 </p>
                 <div className="space-y-2">
                   <div className="flex gap-2">
@@ -665,7 +665,7 @@ export const CreateExerciseModal = ({
                       onChange={(e) => setSynonymInput(e.target.value)}
                       onKeyPress={handleSynonymKeyPress}
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                      placeholder="Add a synonym and press Enter"
+                      placeholder="Dodaj synonim i naciśnij Enter"
                     />
                     <Button
                       type="button"
@@ -705,7 +705,7 @@ export const CreateExerciseModal = ({
               onClick={onClose}
               className="border-white/10 text-white hover:bg-white/10"
             >
-              Cancel
+              Anuluj
             </Button>
             <Button
               type="submit"
@@ -715,12 +715,12 @@ export const CreateExerciseModal = ({
               {isLoading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  {editingFigure ? "Updating..." : "Creating..."}
+                  {editingFigure ? "Aktualizowanie..." : "Tworzenie..."}
                 </>
               ) : editingFigure ? (
-                "Update Exercise"
+                "Zaktualizuj ćwiczenie"
               ) : (
-                "Create Exercise"
+                "Utwórz ćwiczenie"
               )}
             </Button>
           </div>
