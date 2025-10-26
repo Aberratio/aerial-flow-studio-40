@@ -204,14 +204,15 @@ const AerialJourney = () => {
   };
 
   // Filter sports based on user role and selected sports
-  const filteredSports = isAdmin && isAdminMode
-    ? availableSports // Admins in admin mode see all sports
-    : availableSports.filter((sport) => {
-        // Regular users or admins in user mode see only published sports that they have selected in their profile
-        const isPublished = sport.is_published;
-        const isUserSport = userSelectedSports.includes(sport.id);
-        return isPublished && isUserSport;
-      });
+  const filteredSports =
+    isAdmin && isAdminMode
+      ? availableSports // Admins in admin mode see all sports
+      : availableSports.filter((sport) => {
+          // Regular users or admins in user mode see only published sports that they have selected in their profile
+          const isPublished = sport.is_published;
+          const isUserSport = userSelectedSports.includes(sport.id);
+          return isPublished && isUserSport;
+        });
 
   // Remove conditional rendering for level manager, sport manager, and skill tree
   // since they're now handled by routing
@@ -229,7 +230,7 @@ const AerialJourney = () => {
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         <div className="flex items-center justify-between mb-6">
           <div></div>
-          
+
           {isAdmin && (
             <div className="flex items-center gap-3 bg-black/20 rounded-lg px-4 py-2 border border-white/10">
               <span className="text-sm text-white">User Mode</span>
@@ -245,19 +246,11 @@ const AerialJourney = () => {
 
         <div className="text-center mb-8">
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-            Twoja Podróż Powietrzna
+            Twoja Podróż
           </h1>
-          <p className="text-lg md:text-xl text-muted-foreground">
-            Opanuj umiejętności powietrzne poprzez gamifikowany rozwój
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/library')}
-            className="mt-4 border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
-          >
-            <BookOpen className="w-4 h-4 mr-2" />
-            Przeglądaj pełną bibliotekę figur
-          </Button>
+          {/* <p className="text-lg md:text-xl text-muted-foreground">
+            Opanuj nowe umiejętności poprzez gamifikowany rozwój
+          </p> */}
         </div>
 
         {/* Available Sports */}
@@ -299,15 +292,16 @@ const AerialJourney = () => {
                     ? "Nie wybrałeś jeszcze żadnych sportów. Przejdź do swojego profilu i wybierz sporty, w których chcesz trenować."
                     : "Żaden sport z twojego wyboru nie jest obecnie opublikowany. Sprawdź ponownie później!"}
                 </p>
-                {(!isAdmin || !isAdminMode) && userSelectedSports.length === 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => navigate("/aerial-journey")}
-                    className="mt-4 border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
-                  >
-                    Wróć do strony głównej
-                  </Button>
-                )}
+                {(!isAdmin || !isAdminMode) &&
+                  userSelectedSports.length === 0 && (
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/aerial-journey")}
+                      className="mt-4 border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+                    >
+                      Wróć do strony głównej
+                    </Button>
+                  )}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -324,24 +318,28 @@ const AerialJourney = () => {
                     : 0;
 
                   return (
-                     <Card
-                       key={sport.id}
-                       className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
-                         (sport.unlockedLevels || 0) > 0 || (isAdmin && isAdminMode)
-                           ? sport.is_published
-                             ? "bg-white/5 border-white/10 hover:border-purple-400/50"
-                             : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
-                           : "bg-gray-900/50 border-gray-600/20 opacity-60 cursor-not-allowed"
-                       }`}
-                        onClick={() => {
-                          if ((sport.unlockedLevels || 0) > 0 || (isAdmin && isAdminMode)) {
-                            handleSkillTreeView(sport.key_name!, displayName);
-                          }
-                        }}
+                    <Card
+                      key={sport.id}
+                      className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
+                        (sport.unlockedLevels || 0) > 0 ||
+                        (isAdmin && isAdminMode)
+                          ? sport.is_published
+                            ? "bg-white/5 border-white/10 hover:border-purple-400/50"
+                            : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
+                          : "bg-gray-900/50 border-gray-600/20 opacity-60 cursor-not-allowed"
+                      }`}
+                      onClick={() => {
+                        if (
+                          (sport.unlockedLevels || 0) > 0 ||
+                          (isAdmin && isAdminMode)
+                        ) {
+                          handleSkillTreeView(sport.key_name!, displayName);
+                        }
+                      }}
                     >
-                       <CardContent className="p-4 md:p-6">
-                         {/* Admin Controls */}
-                         {isAdmin && isAdminMode && (
+                      <CardContent className="p-4 md:p-6">
+                        {/* Admin Controls */}
+                        {isAdmin && isAdminMode && (
                           <div className="absolute top-3 right-3 flex items-center space-x-2">
                             <div className="flex items-center space-x-1 bg-black/50 rounded-lg px-2 py-1">
                               {sport.is_published ? (
@@ -364,9 +362,9 @@ const AerialJourney = () => {
                           </div>
                         )}
 
-                         {/* Status Badge */}
-                         {isAdmin && isAdminMode && (
-                           <div className="mb-3">
+                        {/* Status Badge */}
+                        {isAdmin && isAdminMode && (
+                          <div className="mb-3">
                             <Badge
                               className={`text-xs ${
                                 sport.is_published
@@ -374,7 +372,9 @@ const AerialJourney = () => {
                                   : "bg-orange-500/20 text-orange-400 border-orange-400/30"
                               }`}
                             >
-                              {sport.is_published ? "Opublikowane" : "Wersja robocza"}
+                              {sport.is_published
+                                ? "Opublikowane"
+                                : "Wersja robocza"}
                             </Badge>
                           </div>
                         )}
@@ -391,52 +391,58 @@ const AerialJourney = () => {
                           )}
                         </div>
 
-                         <div className="space-y-2">
-                           {/* Badge/Achievement System */}
-                           {user && (
-                             <div className="flex items-center justify-center mb-3">
-                               {(sport.unlockedLevels || 0) > 0 ? (
-                                 <div className="flex items-center gap-2">
-                                   <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-black font-bold text-sm">
-                                     {sport.unlockedLevels}
-                                   </div>
-                                    <span className="text-yellow-400 font-semibold text-sm">Poziom {sport.unlockedLevels}</span>
+                        <div className="space-y-2">
+                          {/* Badge/Achievement System */}
+                          {user && (
+                            <div className="flex items-center justify-center mb-3">
+                              {(sport.unlockedLevels || 0) > 0 ? (
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-black font-bold text-sm">
+                                    {sport.unlockedLevels}
                                   </div>
-                                ) : (
-                                  <div className="flex items-center gap-2 opacity-50">
-                                    <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-gray-400 font-bold text-sm">
-                                      ?
-                                    </div>
-                                    <span className="text-gray-400 text-sm">Zablokowane</span>
+                                  <span className="text-yellow-400 font-semibold text-sm">
+                                    Poziom {sport.unlockedLevels}
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2 opacity-50">
+                                  <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-gray-400 font-bold text-sm">
+                                    ?
                                   </div>
-                                )}
-                             </div>
-                           )}
+                                  <span className="text-gray-400 text-sm">
+                                    Zablokowane
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
-                           {/* Simple progress bar - only show if user has progress */}
-                           {hasLevels && user && (sport.unlockedLevels || 0) > 0 && (
-                             <div className="w-full bg-gray-700 rounded-full h-2">
-                               <div 
-                                 className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300" 
-                                 style={{ width: `${progressPercentage}%` }}
-                               />
-                             </div>
-                            )}
-                           
-                           {/* Only show figure count if not locked */}
-                            {(sport.unlockedLevels || 0) > 0 ? (
-                              <div className="text-center">
-                                <span className="text-xs text-muted-foreground">
-                                  {sport.count} dostępnych figur
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="text-center">
-                                <span className="text-xs text-gray-500">
-                                  Ukończ inne sporty, aby odblokować
-                                </span>
+                          {/* Simple progress bar - only show if user has progress */}
+                          {hasLevels &&
+                            user &&
+                            (sport.unlockedLevels || 0) > 0 && (
+                              <div className="w-full bg-gray-700 rounded-full h-2">
+                                <div
+                                  className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300"
+                                  style={{ width: `${progressPercentage}%` }}
+                                />
                               </div>
                             )}
+
+                          {/* Only show figure count if not locked */}
+                          {(sport.unlockedLevels || 0) > 0 ? (
+                            <div className="text-center">
+                              <span className="text-xs text-muted-foreground">
+                                {sport.count} dostępnych figur
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="text-center">
+                              <span className="text-xs text-gray-500">
+                                Ukończ inne sporty, aby odblokować
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </CardContent>
                     </Card>
