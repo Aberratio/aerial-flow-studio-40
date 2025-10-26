@@ -42,8 +42,16 @@ import { LoadingProgressBar } from "@/components/LoadingProgressBar";
 import { SocialProof } from "@/components/SocialProof";
 
 // Lazy load heavy components
-const GallerySection = lazy(() => import("@/components/GallerySection").then(module => ({ default: module.GallerySection })));
-const InstagramFeedSection = lazy(() => import("@/components/InstagramFeedSection").then(module => ({ default: module.InstagramFeedSection })));
+const GallerySection = lazy(() =>
+  import("@/components/GallerySection").then((module) => ({
+    default: module.GallerySection,
+  }))
+);
+const InstagramFeedSection = lazy(() =>
+  import("@/components/InstagramFeedSection").then((module) => ({
+    default: module.InstagramFeedSection,
+  }))
+);
 
 interface PricingPlan {
   id: string;
@@ -67,44 +75,45 @@ const Landing = () => {
   const { data: stats } = useLandingStats();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const { isInstallable, isInstalled, isIOSDevice, installPWA } = usePWAInstall();
+  const { isInstallable, isInstalled, isIOSDevice, installPWA } =
+    usePWAInstall();
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
 
   const getFeatureText = (featureKey: string): string => {
     const featureTextMap: Record<string, string> = {
-      'unlimited_library': 'Naucz się 200+ figur z instrukcjami krok po kroku',
-      'progress_tracking': 'Śledź postępy z wizualną analityką',
-      '28_day_challenges': 'Dołącz do 28-dniowych wyzwań i zachowaj motywację',
-      'community_access': 'Połącz się z 500+ sportowcami na całym świecie',
-      'all_free_features': 'Wszystkie darmowe funkcje',
-      'unlimited_challenges': 'Nieograniczony dostęp do wszystkich wyzwań',
-      'expert_coaching': 'Coaching ekspertów i opinie',
-      'advanced_analytics': 'Zaawansowana analityka wydajności',
-      'priority_support': 'Priorytetowe wsparcie klienta',
-      'posts_sharing': 'Udostępnianie postów',
-      'basic_progress_tracking': 'Podstawowe śledzenie postępów',
-      'advanced_progress_tracking': 'Zaawansowane śledzenie postępów',
-      'full_library_access': 'Pełny dostęp do biblioteki',
-      'library_access': 'Dostęp do biblioteki',
-      'custom_training_sessions': 'Personalizowane sesje treningowe',
-      'training_sessions': 'Sesje treningowe',
-      'challenges_access': 'Dostęp do wyzwań',
-      'exclusive_content': 'Ekskluzywne treści'
+      unlimited_library: "Naucz się 200+ figur z instrukcjami krok po kroku",
+      progress_tracking: "Śledź postępy z wizualną analityką",
+      "28_day_challenges": "Dołącz do 28-dniowych wyzwań i zachowaj motywację",
+      community_access: "Połącz się z innymi sportowcami",
+      all_free_features: "Wszystkie darmowe funkcje",
+      unlimited_challenges: "Nieograniczony dostęp do wszystkich wyzwań",
+      expert_coaching: "Coaching ekspertów i opinie",
+      advanced_analytics: "Zaawansowana analityka wydajności",
+      priority_support: "Priorytetowe wsparcie klienta",
+      posts_sharing: "Udostępnianie postów",
+      basic_progress_tracking: "Podstawowe śledzenie postępów",
+      advanced_progress_tracking: "Zaawansowane śledzenie postępów",
+      full_library_access: "Pełny dostęp do biblioteki",
+      library_access: "Dostęp do biblioteki",
+      custom_training_sessions: "Personalizowane sesje treningowe",
+      training_sessions: "Sesje treningowe",
+      challenges_access: "Dostęp do wyzwań",
+      exclusive_content: "Ekskluzywne treści",
     };
-    return featureTextMap[featureKey] || featureKey.replace(/_/g, ' ');
+    return featureTextMap[featureKey] || featureKey.replace(/_/g, " ");
   };
 
   const getFeatureIcon = (featureKey: string) => {
     const iconMap: Record<string, React.ReactNode> = {
-      'unlimited_library': <BookOpen className="w-5 h-5" />,
-      'progress_tracking': <TrendingUp className="w-5 h-5" />,
-      '28_day_challenges': <Calendar className="w-5 h-5" />,
-      'community_access': <Users className="w-5 h-5" />,
-      'all_free_features': <Check className="w-5 h-5" />,
-      'unlimited_challenges': <Zap className="w-5 h-5" />,
-      'expert_coaching': <Target className="w-5 h-5" />,
-      'advanced_analytics': <Award className="w-5 h-5" />,
-      'priority_support': <Sparkles className="w-5 h-5" />,
+      unlimited_library: <BookOpen className="w-5 h-5" />,
+      progress_tracking: <TrendingUp className="w-5 h-5" />,
+      "28_day_challenges": <Calendar className="w-5 h-5" />,
+      community_access: <Users className="w-5 h-5" />,
+      all_free_features: <Check className="w-5 h-5" />,
+      unlimited_challenges: <Zap className="w-5 h-5" />,
+      expert_coaching: <Target className="w-5 h-5" />,
+      advanced_analytics: <Award className="w-5 h-5" />,
+      priority_support: <Sparkles className="w-5 h-5" />,
     };
     return iconMap[featureKey] || <Check className="w-5 h-5" />;
   };
@@ -114,23 +123,27 @@ const Landing = () => {
     {
       icon: <BookOpen className="w-12 h-12 text-primary" />,
       title: "Biblioteka 200+ Figur",
-      description: "Naucz się 200+ figur z wideo instrukcjami krok po kroku i szczegółowymi wskazówkami"
+      description:
+        "Naucz się 200+ figur z wideo instrukcjami krok po kroku i szczegółowymi wskazówkami",
     },
     {
       icon: <Target className="w-12 h-12 text-primary" />,
       title: "Wizualne Śledzenie Postępów",
-      description: "Śledź swoje postępy z wizualną analityką i obserwuj swoją poprawę w czasie"
+      description:
+        "Śledź swoje postępy z wizualną analityką i obserwuj swoją poprawę w czasie",
     },
     {
       icon: <Trophy className="w-12 h-12 text-primary" />,
       title: "28-dniowe Wyzwania",
-      description: "Dołącz do strukturalnych 28-dniowych wyzwań, zachowaj motywację i osiągnij cele"
+      description:
+        "Dołącz do strukturalnych 28-dniowych wyzwań, zachowaj motywację i osiągnij cele",
     },
     {
       icon: <Users className="w-12 h-12 text-primary" />,
       title: "Globalna Społeczność",
-      description: "Łącz się z 500+ akrobatami powietrznymi na świecie, dziel się postępami i inspiruj"
-    }
+      description:
+        "Łącz się z innymi sportowcami, dziel się postępami i inspiruj",
+    },
   ];
 
   const openAuth = (mode: "login" | "register") => {
@@ -147,8 +160,10 @@ const Landing = () => {
   };
 
   const heroImage = landingData?.sections?.hero?.image_url || "";
-  const absChallengesImage = landingData?.sections?.abs_challenges?.image_url || "";
-  const showAbsChallenges = landingData?.sections?.abs_challenges?.is_active || false;
+  const absChallengesImage =
+    landingData?.sections?.abs_challenges?.image_url || "";
+  const showAbsChallenges =
+    landingData?.sections?.abs_challenges?.is_active || false;
   const pricingPlans = landingData?.pricing || [];
 
   const isLoading = sectionsLoading || dataLoading;
@@ -160,8 +175,14 @@ const Landing = () => {
 
       {/* Animated Background - Reduced particles */}
       <div className="fixed inset-0 -z-10 parallax-bg">
-        <div className="hero-particle" style={{ width: '100px', height: '100px', top: '15%', left: '10%' }}></div>
-        <div className="hero-particle-tropical" style={{ width: '120px', height: '120px', top: '65%', right: '15%' }}></div>
+        <div
+          className="hero-particle"
+          style={{ width: "100px", height: "100px", top: "15%", left: "10%" }}
+        ></div>
+        <div
+          className="hero-particle-tropical"
+          style={{ width: "120px", height: "120px", top: "65%", right: "15%" }}
+        ></div>
       </div>
 
       {/* Header */}
@@ -203,14 +224,13 @@ const Landing = () => {
               <div className="space-y-4 sm:space-y-6">
                 <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight">
                   <span className="gradient-text-subtle block">
-                    Zmień swoje umiejętności
-                  </span>
-                  <span className="gradient-text-subtle block">
-                    w powietrzu w 28 dni
+                    Kiedy ostatnio coś było dla Ciebie?
                   </span>
                 </h1>
                 <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">
-                  Dołącz do wyzwań, opanuj 200+ figur i śledź swoje postępy z naszą kompleksową platformą treningową.
+                  Aerial i praca z ciałem. Zero przypadków: poziom, energia i
+                  nastrój ustalają plan, a progres przychodzi naturalnie. Ego
+                  zapraszamy innym wejściem.
                 </p>
               </div>
 
@@ -220,7 +240,7 @@ const Landing = () => {
                   size="lg"
                   className="text-sm sm:text-base group"
                 >
-                  Wypróbuj za darmo
+                  Wchodzę w to
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
                 {(isInstallable || isIOSDevice) && !isInstalled && (
@@ -231,7 +251,7 @@ const Landing = () => {
                     className="text-sm sm:text-base border-primary/50 hover:bg-primary/10"
                   >
                     <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
-                    {isIOSDevice ? 'Pobierz aplikację' : 'Pobierz aplikację'}
+                    {isIOSDevice ? "Pobierz aplikację" : "Pobierz aplikację"}
                   </Button>
                 )}
               </div>
@@ -240,22 +260,32 @@ const Landing = () => {
               <SocialProof />
 
               {/* Static Stats */}
-              <div className="grid grid-cols-2 sm:flex sm:items-center sm:space-x-8 gap-4 sm:gap-0 pt-6 sm:pt-8 max-w-sm mx-auto lg:mx-0">
+              <div className="grid grid-cols-2 sm:flex sm:items-center sm:space-x-8 gap-2 sm:gap-2 pt-6 sm:pt-8 max-w-sm mx-auto lg:mx-0">
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-primary">500+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Sportowców</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">
+                    100%
+                  </div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    Postępów, które widać
+                  </div>
                 </div>
+
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-primary">200+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Figur</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">
+                    ∞ razy
+                  </div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    Możesz zacząć od nowa
+                  </div>
                 </div>
+
                 <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-primary">50+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Wyzwań</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl sm:text-3xl font-bold text-primary">95%</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Skuteczność</div>
+                  <div className="text-2xl sm:text-3xl font-bold text-primary">
+                    10/10
+                  </div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">
+                    Poleca Twoje ciało
+                  </div>
                 </div>
               </div>
             </div>
@@ -288,10 +318,14 @@ const Landing = () => {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                  <span className="gradient-text">Wszystko czego potrzebujesz</span>
+                  <span className="gradient-text">
+                    Wszystko czego potrzebujesz
+                  </span>
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-                  Od początkującego do eksperta, nasza platforma zapewnia wszystkie narzędzia i wsparcie społeczności potrzebne do sukcesu w Twojej powietrznej podróży.
+                  Od początkującego do eksperta, nasza platforma zapewnia
+                  narzędzia i wsparcie społeczności potrzebne do sukcesu w
+                  Twojej aerialowej podróży.
                 </p>
               </div>
 
@@ -337,7 +371,8 @@ const Landing = () => {
                       </span>
                     </h2>
                     <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8">
-                      Zbuduj siłę core i opanuj podstawowe pozycje powietrzne z naszym kompleksowym 28-dniowym programem.
+                      Zbuduj siłę core i opanuj podstawowe pozycje powietrzne z
+                      naszym kompleksowym 28-dniowym programem.
                     </p>
                     <Button asChild size="lg" className="w-full sm:w-auto">
                       <Link to="/challenges">
@@ -368,19 +403,25 @@ const Landing = () => {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                  <span className="gradient-text">Osiągnięcia społeczności</span>
+                  <span className="gradient-text">Jak to wygląda?</span>
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-                  Zobacz co osiągnęła nasza społeczność
+                  Poniżej mały spojler. Zobacz jak Kasia (jedna z naszych
+                  trenerek) wymiata na kole!
                 </p>
               </div>
-              <Suspense fallback={
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                  {[...Array(12)].map((_, i) => (
-                    <div key={i} className="aspect-[4/5] bg-white/10 rounded-2xl animate-pulse"></div>
-                  ))}
-                </div>
-              }>
+              <Suspense
+                fallback={
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    {[...Array(12)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="aspect-[4/5] bg-white/10 rounded-2xl animate-pulse"
+                      ></div>
+                    ))}
+                  </div>
+                }
+              >
                 <GallerySection />
               </Suspense>
             </div>
@@ -391,7 +432,11 @@ const Landing = () => {
       {/* Instagram Feed Section - Conditionally rendered */}
       {sections?.instagram_feed?.is_active && (
         <LazySection threshold={0.1} rootMargin="300px">
-          <Suspense fallback={<div className="h-96 w-full bg-white/5 rounded-2xl animate-pulse" />}>
+          <Suspense
+            fallback={
+              <div className="h-96 w-full bg-white/5 rounded-2xl animate-pulse" />
+            }
+          >
             <InstagramFeedSection />
           </Suspense>
         </LazySection>
@@ -408,10 +453,13 @@ const Landing = () => {
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                  <span className="gradient-text">Proste, przejrzyste ceny</span>
+                  <span className="gradient-text">
+                    Proste, przejrzyste ceny
+                  </span>
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
-                  Wybierz plan dopasowany do Twojej podróży. Zacznij za darmo, ulepsz kiedykolwiek.
+                  Wybierz plan dopasowany do Twojej podróży. Zacznij za darmo,
+                  ulepsz kiedykolwiek.
                 </p>
               </div>
 
@@ -436,7 +484,7 @@ const Landing = () => {
                         Najpopularniejszy
                       </div>
                     )}
-                    
+
                     {/* Decorative gradient orb */}
                     {plan.is_popular && (
                       <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
@@ -444,23 +492,29 @@ const Landing = () => {
 
                     <CardHeader className="pt-8 sm:pt-12 relative z-10">
                       <CardTitle className="text-2xl sm:text-3xl flex items-center gap-2">
-                        {plan.is_popular && <Crown className="w-6 h-6 text-primary" />}
+                        {plan.is_popular && (
+                          <Crown className="w-6 h-6 text-primary" />
+                        )}
                         {plan.name}
                       </CardTitle>
                       <CardDescription className="text-sm sm:text-base mt-2">
                         {plan.description}
                       </CardDescription>
-                      
+
                       {/* Price Display - Enhanced */}
                       <div className="mt-6 flex items-baseline gap-2">
-                        <span className={`text-5xl sm:text-6xl font-extrabold ${
-                          plan.is_popular ? 'gradient-text-subtle' : 'text-foreground'
-                        }`}>
-                          {plan.price.split('/')[0]}
+                        <span
+                          className={`text-5xl sm:text-6xl font-extrabold ${
+                            plan.is_popular
+                              ? "gradient-text-subtle"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {plan.price.split("/")[0]}
                         </span>
-                        {plan.price.includes('/') && (
+                        {plan.price.includes("/") && (
                           <span className="text-lg text-muted-foreground">
-                            /{plan.price.split('/')[1]}
+                            /{plan.price.split("/")[1]}
                           </span>
                         )}
                       </div>
@@ -474,9 +528,13 @@ const Landing = () => {
                             key={idx}
                             className="flex items-start gap-3 text-sm sm:text-base group"
                           >
-                            <div className={`flex-shrink-0 mt-0.5 ${
-                              plan.is_popular ? 'text-primary' : 'text-muted-foreground'
-                            } group-hover:text-primary transition-colors`}>
+                            <div
+                              className={`flex-shrink-0 mt-0.5 ${
+                                plan.is_popular
+                                  ? "text-primary"
+                                  : "text-muted-foreground"
+                              } group-hover:text-primary transition-colors`}
+                            >
                               {getFeatureIcon(feature.feature_key)}
                             </div>
                             <span className="text-muted-foreground group-hover:text-foreground transition-colors">
@@ -490,17 +548,19 @@ const Landing = () => {
                       <Button
                         onClick={() => openAuth("register")}
                         className={`w-full text-sm sm:text-base group relative overflow-hidden ${
-                          plan.is_popular 
-                            ? 'bg-gradient-to-r from-primary to-purple-600 hover:shadow-lg hover:shadow-primary/50' 
-                            : ''
+                          plan.is_popular
+                            ? "bg-gradient-to-r from-primary to-purple-600 hover:shadow-lg hover:shadow-primary/50"
+                            : ""
                         }`}
                         variant={plan.is_popular ? "default" : "outline"}
                         size="lg"
                       >
-                        {plan.plan_key === "free" ? "Zacznij za darmo" : "Zdobądź Premium"}
+                        {plan.plan_key === "free"
+                          ? "Zacznij za darmo"
+                          : "Zdobądź Premium"}
                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </Button>
-                      
+
                       {/* Subtle note for premium plan */}
                       {plan.is_popular && (
                         <p className="text-xs text-center text-muted-foreground mt-3">
@@ -524,11 +584,12 @@ const Landing = () => {
               <CardContent className="p-8 sm:p-12">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
                   <span className="gradient-text-mega">
-                    Gotowy zmienić swoje umiejętności w powietrzu?
+                    Gotowy wnieść swoje treningi na wyższy poziom?
                   </span>
                 </h2>
                 <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto">
-                  Dołącz do tysięcy sportowców, którzy już doskonalą swoje umiejętności z IguanaFlow.
+                  Dołącz do sportowców, którzy już doskonalą swoje umiejętności
+                  z IguanaFlow.
                 </p>
                 <Button
                   onClick={() => openAuth("register")}
@@ -547,7 +608,7 @@ const Landing = () => {
       {/* Footer */}
       <footer className="border-t border-white/10 bg-background/50 backdrop-blur-lg relative z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
                 <img
@@ -560,55 +621,44 @@ const Landing = () => {
                 </span>
               </div>
               <p className="text-sm text-muted-foreground">
-                Zmień swoje umiejętności powietrzne dzięki kompleksowej platformie treningowej.
+                Zmień swoje treningi dzięki kompleksowej platformie treningowej.
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-4">Firma</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link to="/about-us" className="hover:text-foreground transition-colors">
+                  <Link
+                    to="/about-us"
+                    className="hover:text-foreground transition-colors"
+                  >
                     O nas
                   </Link>
                 </li>
                 <li>
-                  <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
+                  <Link
+                    to="/privacy-policy"
+                    className="hover:text-foreground transition-colors"
+                  >
                     Polityka prywatności
                   </Link>
                 </li>
                 <li>
-                  <Link to="/terms-of-use" className="hover:text-foreground transition-colors">
+                  <Link
+                    to="/terms-of-use"
+                    className="hover:text-foreground transition-colors"
+                  >
                     Regulamin
                   </Link>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Szybkie linki</h3>
+              <h3 className="font-semibold mb-4">Obserwuj nas</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link to="/library" className="hover:text-foreground transition-colors">
-                    Biblioteka figur
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/challenges" className="hover:text-foreground transition-colors">
-                    Wyzwania
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/pricing" className="hover:text-foreground transition-colors">
-                    Cennik
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Śledź nas</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li>
-                  <a 
-                    href="https://instagram.com/iguana.flow" 
+                  <a
+                    href="https://instagram.com/iguana.flow"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:text-foreground transition-colors flex items-center gap-2 group"
@@ -620,7 +670,7 @@ const Landing = () => {
               </ul>
               <div className="mt-4">
                 <h3 className="font-semibold mb-2">Kontakt</h3>
-                <a 
+                <a
                   href="mailto:contact@iguanaflow.com"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
