@@ -55,12 +55,7 @@ const AerialJourney = () => {
     fetchUserProfile();
   }, [user, navigate]);
 
-  // Auto-open modal for users without selected sports
-  useEffect(() => {
-    if (!loading && !isAdminMode && userSelectedSports.length === 0 && user) {
-      setShowSportSelectionModal(true);
-    }
-  }, [loading, isAdminMode, userSelectedSports, user]);
+  // No need for auto-open modal - we'll show inline selection instead
 
   const fetchAvailableSports = async () => {
     try {
@@ -239,6 +234,111 @@ const AerialJourney = () => {
     );
   }
 
+  // Show inline sport selection for users without selected sports
+  if (!loading && !isAdminMode && userSelectedSports.length === 0 && user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
+        <div className="container mx-auto px-4 py-6 max-w-4xl">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+              Witaj w Twojej Podróży!
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground">
+              Wybierz sporty, które Cię interesują, aby rozpocząć
+            </p>
+          </div>
+
+          <Card className="glass-effect border-white/10">
+            <CardHeader>
+              <CardTitle className="text-white text-center">
+                Wybierz swoje sporty
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {availableSports.filter(s => s.is_published).length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-muted-foreground">
+                    Brak dostępnych sportów. Sprawdź ponownie później!
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+                    {availableSports
+                      .filter(sport => sport.is_published)
+                      .map((sport) => {
+                        const isSelected = userSelectedSports.includes(sport.id);
+                        return (
+                          <Card
+                            key={sport.id}
+                            className={`cursor-pointer transition-all duration-200 ${
+                              isSelected
+                                ? "bg-purple-500/20 border-purple-400/50 scale-105"
+                                : "bg-white/5 border-white/10 hover:border-purple-400/30"
+                            }`}
+                            onClick={() => {
+                              setUserSelectedSports(prev =>
+                                prev.includes(sport.id)
+                                  ? prev.filter(id => id !== sport.id)
+                                  : [...prev, sport.id]
+                              );
+                            }}
+                          >
+                            <CardContent className="p-4 text-center">
+                              <div className="text-3xl md:text-4xl mb-2">{sport.icon}</div>
+                              <h3 className="font-semibold text-white text-sm md:text-base">
+                                {sport.name}
+                              </h3>
+                              {sport.description && (
+                                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                  {sport.description}
+                                </p>
+                              )}
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                  </div>
+
+                  <div className="flex justify-center">
+                    <Button
+                      onClick={async () => {
+                        if (userSelectedSports.length === 0) {
+                          toast.error("Wybierz przynajmniej jeden sport");
+                          return;
+                        }
+                        
+                        try {
+                          const { error } = await supabase
+                            .from("profiles")
+                            .update({ sports: userSelectedSports })
+                            .eq("id", user.id);
+
+                          if (error) throw error;
+
+                          toast.success("Sporty zapisane!");
+                          fetchAvailableSports();
+                        } catch (error) {
+                          console.error("Error saving sports:", error);
+                          toast.error("Nie udało się zapisać sportów");
+                        }
+                      }}
+                      disabled={userSelectedSports.length === 0}
+                      size="lg"
+                      className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+                    >
+                      Potwierdź wybór ({userSelectedSports.length})
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
       <div className="container mx-auto px-4 py-6 max-w-7xl">
@@ -262,9 +362,6 @@ const AerialJourney = () => {
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
             Twoja Podróż
           </h1>
-          {/* <p className="text-lg md:text-xl text-muted-foreground">
-            Opanuj nowe umiejętności poprzez gamifikowany rozwój
-          </p> */}
         </div>
 
         {/* Available Sports */}
