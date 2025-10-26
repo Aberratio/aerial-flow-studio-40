@@ -173,13 +173,16 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     }
   };
 
-  const fetchUserPoints = async (participations?: { [challengeId: string]: { participating: boolean; completed: boolean } }) => {
+  const fetchUserPoints = async (participations?: {
+    [challengeId: string]: { participating: boolean; completed: boolean };
+  }) => {
     if (!user) return;
 
     try {
       // Use provided participations or current state
-      const currentParticipations = participations || userChallengeParticipations;
-      
+      const currentParticipations =
+        participations || userChallengeParticipations;
+
       // Get all sport levels for this category, ordered by level number
       const { data: levelsData } = await supabase
         .from("sport_levels")
@@ -307,8 +310,8 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
   const getLevelProgress = (level: SportLevel) => {
     // Check if challenge is completed for this level
-    const challengeCompleted = level.challenge_id 
-      ? userChallengeParticipations[level.challenge_id]?.completed 
+    const challengeCompleted = level.challenge_id
+      ? userChallengeParticipations[level.challenge_id]?.completed
       : false;
 
     // If level has no figures but has a completed challenge, consider it 100%
@@ -323,8 +326,9 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
       return progress?.status === "completed";
     });
 
-    const figureProgress = (completedFigures.length / level.figures.length) * 100;
-    
+    const figureProgress =
+      (completedFigures.length / level.figures.length) * 100;
+
     // If challenge is completed, ensure progress is at least 100%
     return challengeCompleted ? 100 : Math.round(figureProgress);
   };
@@ -491,7 +495,6 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
       // Skipping legacy calendar generation (handled client-side)
 
-
       toast({
         title: "Challenge joined!",
         description: "You've successfully joined the challenge. Good luck!",
@@ -532,17 +535,6 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
-        {onBack && (
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="mb-6 text-white hover:bg-white/10"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Wróć do podróży
-          </Button>
-        )}
-
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
             Podróż {sportName}
@@ -551,7 +543,9 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
             <div className="w-16 h-16 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-black font-bold text-xl">
               {userPoints}
             </div>
-            <span className="ml-3 text-yellow-400 font-semibold">Całkowite punkty</span>
+            <span className="ml-3 text-yellow-400 font-semibold">
+              Całkowite punkty
+            </span>
           </div>
         </div>
 
@@ -561,7 +555,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
             const isUnlocked = isLevelUnlocked(level);
             const progress = getLevelProgress(level);
             const isCompleted = progress === 100;
-            
+
             return (
               <Card
                 key={level.id}
@@ -575,18 +569,28 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-4">
                       {/* Level Badge */}
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
-                        isCompleted 
-                          ? "bg-gradient-to-r from-green-400 to-emerald-400 text-black"
-                          : isUnlocked
-                          ? "bg-gradient-to-r from-purple-400 to-blue-400 text-white"
-                          : "bg-gray-600 text-gray-400"
-                      }`}>
-                        {isCompleted ? <Crown className="w-6 h-6" /> : level.level_number}
+                      <div
+                        className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                          isCompleted
+                            ? "bg-gradient-to-r from-green-400 to-emerald-400 text-black"
+                            : isUnlocked
+                            ? "bg-gradient-to-r from-purple-400 to-blue-400 text-white"
+                            : "bg-gray-600 text-gray-400"
+                        }`}
+                      >
+                        {isCompleted ? (
+                          <Crown className="w-6 h-6" />
+                        ) : (
+                          level.level_number
+                        )}
                       </div>
-                      
+
                       <div>
-                        <h3 className={`font-semibold text-lg ${isUnlocked ? "text-white" : "text-gray-500"}`}>
+                        <h3
+                          className={`font-semibold text-lg ${
+                            isUnlocked ? "text-white" : "text-gray-500"
+                          }`}
+                        >
                           {level.level_name}
                         </h3>
                         {isUnlocked && (
@@ -598,17 +602,21 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                     </div>
 
                     {/* Status Indicator */}
-                      {isUnlocked ? (
+                    {isUnlocked ? (
                       <div className="text-right">
                         {isCompleted ? (
                           <div className="flex items-center gap-2 text-green-400">
                             <CheckCircle className="w-5 h-5" />
-                            <span className="text-sm font-medium">Ukończone</span>
+                            <span className="text-sm font-medium">
+                              Ukończone
+                            </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-blue-400">
                             <Circle className="w-5 h-5" />
-                            <span className="text-sm font-medium">{progress}% ukończone</span>
+                            <span className="text-sm font-medium">
+                              {progress}% ukończone
+                            </span>
                           </div>
                         )}
                       </div>
@@ -624,8 +632,8 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                   {isUnlocked && !isCompleted && (
                     <div className="mb-4">
                       <div className="w-full bg-gray-700 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300" 
+                        <div
+                          className="bg-gradient-to-r from-purple-400 to-blue-400 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${progress}%` }}
                         />
                       </div>
@@ -637,13 +645,18 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                     <div className="mt-4 p-4 bg-purple-900/20 border border-purple-400/20 rounded-lg">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-medium text-purple-400 mb-1">Dostępne wyzwanie</h4>
-                          <p className="text-sm text-muted-foreground">{level.challenges.title}</p>
+                          <h4 className="font-medium text-purple-400 mb-1">
+                            Dostępne wyzwanie
+                          </h4>
+                          <p className="text-sm text-muted-foreground">
+                            {level.challenges.title}
+                          </p>
                         </div>
                         <div className="text-right">
                           {(() => {
-                            const challengeParticipation = userChallengeParticipations[level.challenge_id!];
-                            
+                            const challengeParticipation =
+                              userChallengeParticipations[level.challenge_id!];
+
                             // Check if challenge is completed
                             if (challengeParticipation?.completed === true) {
                               return (
@@ -655,35 +668,48 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                 </div>
                               );
                             }
-                            
+
                             // Only show Continue if participating and NOT completed
-                            if (challengeParticipation?.participating && !challengeParticipation?.completed) {
+                            if (
+                              challengeParticipation?.participating &&
+                              !challengeParticipation?.completed
+                            ) {
                               return (
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => navigate(`/challenges/${level.challenge_id}`)}
+                                  onClick={() =>
+                                    navigate(
+                                      `/challenges/${level.challenge_id}`
+                                    )
+                                  }
                                   className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
                                 >
                                   Kontynuuj
                                 </Button>
                               );
                             }
-                            
+
                             // Show Join button only if not participating at all
                             if (!challengeParticipation?.participating) {
                               return (
                                 <Button
                                   size="sm"
-                                  onClick={() => joinChallenge(level.challenge_id!)}
-                                  disabled={joiningChallenge === level.challenge_id}
+                                  onClick={() =>
+                                    joinChallenge(level.challenge_id!)
+                                  }
+                                  disabled={
+                                    joiningChallenge === level.challenge_id
+                                  }
                                   className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
                                 >
-                                  {joiningChallenge === level.challenge_id ? "Dołączanie..." : "Dołącz do wyzwania"}
+                                  {joiningChallenge === level.challenge_id
+                                    ? "Dołączanie..."
+                                    : "Dołącz do wyzwania"}
                                 </Button>
                               );
                             }
-                            
+
                             return null;
                           })()}
                         </div>
@@ -697,15 +723,18 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                         {level.figures.slice(0, 8).map((figure) => {
                           const figureProgress = getFigureProgress(figure.id);
-                          const canPractice = isUnlocked && canAccessFigure(figure);
-                          
+                          const canPractice =
+                            isUnlocked && canAccessFigure(figure);
+
                           return (
                             <div
                               key={figure.id}
                               className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
                                 canPractice ? "hover:scale-105" : "opacity-60"
                               }`}
-                              onClick={() => handleFigureClick(figure, canPractice)}
+                              onClick={() =>
+                                handleFigureClick(figure, canPractice)
+                              }
                             >
                               {figure.image_url ? (
                                 <img
@@ -718,7 +747,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                   <span className="text-2xl">🤸</span>
                                 </div>
                               )}
-                              
+
                               {/* Status Overlay */}
                               <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                                 {figureProgress?.status === "completed" ? (
@@ -733,24 +762,25 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                   <Lock className="w-6 h-6 text-gray-400" />
                                 )}
                               </div>
-                              
-                               {/* Figure Name and Hold Time */}
-                               <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-                                 <p className="text-white text-xs font-medium truncate">
-                                   {figure.name}
-                                 </p>
-                                 {figure.category === "core" && figure.hold_time_seconds && (
-                                   <div className="flex items-center gap-1 mt-1">
-                                     <div className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                                       {figure.hold_time_seconds}s
-                                     </div>
-                                   </div>
-                                 )}
-                               </div>
+
+                              {/* Figure Name and Hold Time */}
+                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+                                <p className="text-white text-xs font-medium truncate">
+                                  {figure.name}
+                                </p>
+                                {figure.category === "core" &&
+                                  figure.hold_time_seconds && (
+                                    <div className="flex items-center gap-1 mt-1">
+                                      <div className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                        {figure.hold_time_seconds}s
+                                      </div>
+                                    </div>
+                                  )}
+                              </div>
                             </div>
                           );
                         })}
-                        
+
                         {level.figures.length > 8 && (
                           <div className="aspect-square rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center">
                             <span className="text-white/60 text-sm font-medium">
@@ -766,7 +796,8 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                   {!isUnlocked && (
                     <div className="text-center py-4">
                       <p className="text-gray-500 text-sm">
-                        Zdobądź jeszcze {level.point_limit - userPoints} punktów, aby odblokować ten poziom
+                        Zdobądź jeszcze {level.point_limit - userPoints}{" "}
+                        punktów, aby odblokować ten poziom
                       </p>
                     </div>
                   )}
