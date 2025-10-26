@@ -109,8 +109,8 @@ export const CreateExerciseModal = ({
     // Check if image is required (for new exercises or if no existing image)
     if (!editingFigure && !imageFile && !formData.image_url) {
       toast({
-        title: "Image Required",
-        description: "Please upload an image for the exercise.",
+        title: "Wymagane zdjęcie",
+        description: "Prześlij zdjęcie ćwiczenia.",
         variant: "destructive",
       });
       return;
@@ -174,28 +174,38 @@ export const CreateExerciseModal = ({
             tags: formData.tags.length > 0 ? formData.tags : null,
             synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
             premium: formData.premium,
-            hold_time_seconds: formData.hold_time_seconds > 0 ? formData.hold_time_seconds : null,
+            hold_time_seconds:
+              formData.hold_time_seconds > 0
+                ? formData.hold_time_seconds
+                : null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingFigure.id);
 
         if (error) throw error;
       } else {
-        const { data: figureData, error } = await supabase.from("figures").insert({
-          name: formData.name.trim(),
-          description: formData.description.trim() || null,
-          instructions: formData.instructions.trim() || null,
-          difficulty_level: formData.difficulty_level || null,
-          category: formData.category || null,
-          type: formData.type || null,
-          image_url: imageUrl || null,
-          video_url: videoUrl || null,
-          tags: formData.tags.length > 0 ? formData.tags : null,
-          synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
-          premium: formData.premium,
-          hold_time_seconds: formData.hold_time_seconds > 0 ? formData.hold_time_seconds : null,
-          created_by: user.id,
-        }).select().single();
+        const { data: figureData, error } = await supabase
+          .from("figures")
+          .insert({
+            name: formData.name.trim(),
+            description: formData.description.trim() || null,
+            instructions: formData.instructions.trim() || null,
+            difficulty_level: formData.difficulty_level || null,
+            category: formData.category || null,
+            type: formData.type || null,
+            image_url: imageUrl || null,
+            video_url: videoUrl || null,
+            tags: formData.tags.length > 0 ? formData.tags : null,
+            synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
+            premium: formData.premium,
+            hold_time_seconds:
+              formData.hold_time_seconds > 0
+                ? formData.hold_time_seconds
+                : null,
+            created_by: user.id,
+          })
+          .select()
+          .single();
 
         if (error) throw error;
 
@@ -216,10 +226,10 @@ export const CreateExerciseModal = ({
       }
 
       toast({
-        title: editingFigure ? "Exercise Updated" : "Exercise Added",
+        title: editingFigure ? "Ćwiczenie zaktualizowane" : "Ćwiczenie dodane",
         description: editingFigure
-          ? "Your exercise has been successfully updated."
-          : "Your exercise has been successfully added to the library.",
+          ? "Twoje ćwiczenie zostało pomyślnie zaktualizowane."
+          : "Twoje ćwiczenie zostało pomyślnie dodane do biblioteki.",
       });
 
       // Reset form
@@ -247,8 +257,8 @@ export const CreateExerciseModal = ({
     } catch (error: any) {
       console.error("Error creating exercise:", error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to create exercise",
+        title: "Błąd",
+        description: error.message || "Nie udało się utworzyć ćwiczenia",
         variant: "destructive",
       });
     } finally {
@@ -324,14 +334,14 @@ export const CreateExerciseModal = ({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
           <DialogTitle className="text-white">
-            {editingFigure ? "Edit Exercise" : "Add New Exercise"}
+            {editingFigure ? "Edytuj ćwiczenie" : "Dodaj nowe ćwiczenie"}
           </DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <Label htmlFor="name" className="text-white">
-              Exercise Name *
+              Nazwa ćwiczenia *
             </Label>
             <Input
               id="name"
@@ -340,7 +350,7 @@ export const CreateExerciseModal = ({
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
               className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-              placeholder="Enter exercise name"
+              placeholder="Wprowadź nazwę ćwiczenia"
               required
             />
           </div>
@@ -348,7 +358,7 @@ export const CreateExerciseModal = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="difficulty" className="text-white">
-                Difficulty Level *
+                Poziom trudności *
               </Label>
               <Select
                 value={formData.difficulty_level}
@@ -358,7 +368,7 @@ export const CreateExerciseModal = ({
                 required
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="Select difficulty" />
+                  <SelectValue placeholder="Wybierz poziom trudności" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Beginner">Beginner</SelectItem>
@@ -371,7 +381,7 @@ export const CreateExerciseModal = ({
 
             <div>
               <Label htmlFor="category" className="text-white">
-                Category *
+                Kategoria *
               </Label>
               <Select
                 value={formData.category}
@@ -381,7 +391,7 @@ export const CreateExerciseModal = ({
                 required
               >
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder="Wybierz kategorię" />
                 </SelectTrigger>
                 <SelectContent>
                   {isTrainingSpecial ? (
@@ -407,7 +417,7 @@ export const CreateExerciseModal = ({
           {formData.category === "core" && (
             <div>
               <Label htmlFor="hold_time" className="text-white">
-                Default Hold Time (seconds)
+                Domyślny czas trzymania (sekundy)
               </Label>
               <Input
                 id="hold_time"
@@ -421,17 +431,17 @@ export const CreateExerciseModal = ({
                   }))
                 }
                 className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                placeholder="Enter hold time in seconds (e.g., 30)"
+                placeholder="Wprowadź czas trzymania w sekundach (np. 30)"
               />
               <p className="text-sm text-white/60 mt-1">
-                How long should this exercise be held? (0 = completion mode)
+                Jak długo należy trzymać to ćwiczenie? (0 = tryb ukończenia)
               </p>
             </div>
           )}
 
           <div>
             <Label htmlFor="type" className="text-white">
-              Type *
+              Typ *
             </Label>
             <Select
               value={formData.type}
@@ -441,7 +451,7 @@ export const CreateExerciseModal = ({
               required
             >
               <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                <SelectValue placeholder="Select type" />
+                <SelectValue placeholder="Wybierz typ" />
               </SelectTrigger>
               <SelectContent>
                 {isTrainingSpecial ? (
@@ -476,14 +486,18 @@ export const CreateExerciseModal = ({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => document.getElementById("image-upload")?.click()}
+                    onClick={() =>
+                      document.getElementById("image-upload")?.click()
+                    }
                     className="border-white/10 text-white hover:bg-white/10"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Upload Image
                   </Button>
                   {imageFile && (
-                    <span className="text-sm text-white/60">{imageFile.name}</span>
+                    <span className="text-sm text-white/60">
+                      {imageFile.name}
+                    </span>
                   )}
                 </div>
                 {(formData.image_url || imageFile) && (
@@ -510,14 +524,18 @@ export const CreateExerciseModal = ({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => document.getElementById("video-upload")?.click()}
+                    onClick={() =>
+                      document.getElementById("video-upload")?.click()
+                    }
                     className="border-white/10 text-white hover:bg-white/10"
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Upload Video
                   </Button>
                   {videoFile && (
-                    <span className="text-sm text-white/60">{videoFile.name}</span>
+                    <span className="text-sm text-white/60">
+                      {videoFile.name}
+                    </span>
                   )}
                 </div>
                 {(formData.video_url || videoFile) && (
@@ -544,7 +562,10 @@ export const CreateExerciseModal = ({
                       setFormData((prev) => ({ ...prev, premium: checked }));
                     }}
                   />
-                  <Label htmlFor="premium" className="text-white cursor-pointer">
+                  <Label
+                    htmlFor="premium"
+                    className="text-white cursor-pointer"
+                  >
                     {formData.premium ? "Premium" : "Free"}
                   </Label>
                   <div className="text-xs text-white/60 ml-2">
@@ -696,8 +717,10 @@ export const CreateExerciseModal = ({
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   {editingFigure ? "Updating..." : "Creating..."}
                 </>
+              ) : editingFigure ? (
+                "Update Exercise"
               ) : (
-                editingFigure ? "Update Exercise" : "Create Exercise"
+                "Create Exercise"
               )}
             </Button>
           </div>

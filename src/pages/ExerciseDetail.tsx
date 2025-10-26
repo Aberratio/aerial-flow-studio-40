@@ -194,8 +194,8 @@ const ExerciseDetail = () => {
       // Only navigate away if user is logged in, for non-logged-in users show the error state
       if (user) {
         toast({
-          title: "Error",
-          description: "Failed to load exercise details",
+          title: "Błąd",
+          description: "Nie udało się załadować szczegółów ćwiczenia",
           variant: "destructive",
         });
         navigate("/library");
@@ -242,15 +242,15 @@ const ExerciseDetail = () => {
         setTimeout(() => setShowCongrats(false), 3000);
       } else {
         toast({
-          title: "Progress Updated",
-          description: `Exercise marked as ${status.replace("_", " ")}`,
+          title: "Postęp zaktualizowany",
+          description: `Ćwiczenie oznaczone jako ${status.replace("_", " ")}`,
         });
       }
     } catch (error) {
       console.error("Error updating progress:", error);
       toast({
-        title: "Error",
-        description: "Failed to update progress",
+        title: "Błąd",
+        description: "Nie udało się zaktualizować postępu",
         variant: "destructive",
       });
     }
@@ -276,15 +276,15 @@ const ExerciseDetail = () => {
       if (error) throw error;
 
       toast({
-        title: "Exercise Deleted",
-        description: "Exercise has been deleted successfully",
+        title: "Ćwiczenie usunięte",
+        description: "Ćwiczenie zostało pomyślnie usunięte",
       });
       navigate("/library");
     } catch (error) {
       console.error("Error deleting exercise:", error);
       toast({
-        title: "Error",
-        description: "Failed to delete exercise",
+        title: "Błąd",
+        description: "Nie udało się usunąć ćwiczenia",
         variant: "destructive",
       });
     }
@@ -354,8 +354,8 @@ const ExerciseDetail = () => {
       if (error) throw error;
 
       toast({
-        title: "Expert Added",
-        description: "Expert has been added successfully",
+        title: "Ekspert dodany",
+        description: "Ekspert został pomyślnie dodany",
       });
 
       // Refresh experts list
@@ -366,8 +366,8 @@ const ExerciseDetail = () => {
     } catch (error) {
       console.error("Error adding expert:", error);
       toast({
-        title: "Error",
-        description: "Failed to add expert",
+        title: "Błąd",
+        description: "Nie udało się dodać eksperta",
         variant: "destructive",
       });
     }
@@ -383,8 +383,8 @@ const ExerciseDetail = () => {
       if (error) throw error;
 
       toast({
-        title: "Expert Removed",
-        description: "Expert has been removed successfully",
+        title: "Ekspert usunięty",
+        description: "Ekspert został pomyślnie usunięty",
       });
 
       // Refresh experts list
@@ -392,8 +392,8 @@ const ExerciseDetail = () => {
     } catch (error) {
       console.error("Error removing expert:", error);
       toast({
-        title: "Error",
-        description: "Failed to remove expert",
+        title: "Błąd",
+        description: "Nie udało się usunąć eksperta",
         variant: "destructive",
       });
     }
@@ -442,10 +442,12 @@ const ExerciseDetail = () => {
           {user ? (
             // Logged-in user - show generic not found
             <>
-              <p className="text-white text-lg mb-4">Exercise not found</p>
+              <p className="text-white text-lg mb-4">
+                Ćwiczenie nie znalezione
+              </p>
               <Button onClick={() => navigate("/library")}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Back to Library
+                Powrót do biblioteki
               </Button>
             </>
           ) : (
@@ -453,16 +455,17 @@ const ExerciseDetail = () => {
             <>
               <UserPlus className="w-16 h-16 text-purple-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-4">
-                Sign Up to Access Exercises
+                Zarejestruj się, aby uzyskać dostęp do ćwiczeń
               </h2>
               <p className="text-muted-foreground mb-6">
-                Join our community to access thousands of aerial exercises,
-                track your progress, and connect with other athletes.
+                Dołącz do naszej społeczności, aby uzyskać dostęp do tysięcy
+                ćwiczeń akrobatycznych, śledzić swoje postępy i łączyć się z
+                innymi sportowcami.
               </p>
               <div className="flex flex-col gap-3">
                 <Button onClick={() => navigate("/")} variant="primary">
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Sign Up Now
+                  Zarejestruj się teraz
                 </Button>
                 <Button
                   onClick={() => navigate("/")}
@@ -470,7 +473,7 @@ const ExerciseDetail = () => {
                   className="border-white/20 text-white hover:bg-white/10"
                 >
                   <LogIn className="w-4 h-4 mr-2" />
-                  Already have an account?
+                  Masz już konto?
                 </Button>
               </div>
             </>
@@ -496,7 +499,7 @@ const ExerciseDetail = () => {
               className="border-white/20 text-white hover:bg-white/10"
             >
               <Share className="w-4 h-4 mr-2" />
-              Share
+              Udostępnij
             </Button>
           </div>
 
@@ -553,20 +556,20 @@ const ExerciseDetail = () => {
                   <div className="flex items-center text-muted-foreground">
                     <Target className="w-4 h-4 mr-2" />
                     <span className="text-sm">
-                      Difficulty: {exercise.difficulty_level}
+                      Trudność: {exercise.difficulty_level}
                     </span>
                   </div>
                   {exercise.category && (
                     <div className="flex items-center text-muted-foreground">
                       <BookOpen className="w-4 h-4 mr-2" />
                       <span className="text-sm">
-                        Category: {exercise.category}
+                        Kategoria: {exercise.category}
                       </span>
                     </div>
                   )}
                   {exercise.tags && exercise.tags.length > 0 && (
                     <div className="flex items-center text-muted-foreground">
-                      <span className="text-sm mr-2">Tags:</span>
+                      <span className="text-sm mr-2">Tagi:</span>
                       <div className="flex flex-wrap gap-1">
                         {exercise.tags
                           .slice(0, 3)
@@ -581,7 +584,7 @@ const ExerciseDetail = () => {
                           ))}
                         {exercise.tags.length > 3 && (
                           <Badge variant="secondary" className="text-xs">
-                            +{exercise.tags.length - 3} more
+                            +{exercise.tags.length - 3} więcej
                           </Badge>
                         )}
                       </div>
@@ -595,25 +598,25 @@ const ExerciseDetail = () => {
                     <div className="flex items-center mb-3">
                       <Crown className="w-5 h-5 text-yellow-400 mr-2" />
                       <h3 className="text-lg font-semibold text-white">
-                        Premium Content
+                        Zawartość Premium
                       </h3>
                     </div>
                     <p className="text-sm text-muted-foreground mb-3">
-                      This exercise is available for Premium subscribers,
-                      Trainers, and Administrators.
+                      To ćwiczenie jest dostępne dla subskrybentów Premium,
+                      Trenerów i Administratorów.
                     </p>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center text-muted-foreground">
                         <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                        <span>Full exercise instructions</span>
+                        <span>Pełne instrukcje ćwiczeń</span>
                       </div>
                       <div className="flex items-center text-muted-foreground">
                         <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                        <span>Progress tracking</span>
+                        <span>Śledzenie postępów</span>
                       </div>
                       <div className="flex items-center text-muted-foreground">
                         <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                        <span>Community features</span>
+                        <span>Funkcje społeczności</span>
                       </div>
                     </div>
                   </div>
@@ -627,7 +630,7 @@ const ExerciseDetail = () => {
                     className="w-full"
                   >
                     <UserPlus className="w-4 h-4 mr-2" />
-                    Sign Up to Access
+                    Zarejestruj się, aby uzyskać dostęp
                   </Button>
                   <Button
                     onClick={() => navigate("/")}
@@ -635,7 +638,7 @@ const ExerciseDetail = () => {
                     className="w-full border-white/20 text-white hover:bg-white/10"
                   >
                     <LogIn className="w-4 h-4 mr-2" />
-                    Already have an account?
+                    Masz już konto?
                   </Button>
                 </div>
               </CardContent>
@@ -647,7 +650,7 @@ const ExerciseDetail = () => {
             <Card className="glass-effect border-white/10">
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold text-white mb-4">
-                  Community Versions
+                  Wersje społeczności
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {communityVersions.slice(0, 6).map((version) => (
@@ -683,7 +686,8 @@ const ExerciseDetail = () => {
                 </div>
                 <div className="text-center mt-4">
                   <p className="text-sm text-muted-foreground">
-                    Sign up to see more community versions and share your own!
+                    Zarejestruj się, aby zobaczyć więcej wersji społeczności i
+                    udostępnić swoje!
                   </p>
                 </div>
               </CardContent>
@@ -705,24 +709,24 @@ const ExerciseDetail = () => {
                 <Crown className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                Premium Exercise
+                Ćwiczenie Premium
               </h1>
               <p className="text-muted-foreground text-lg mb-6">
-                This exercise is available for Premium subscribers, Trainers,
-                and Administrators.
+                To ćwiczenie jest dostępne dla subskrybentów Premium, Trenerów i
+                Administratorów.
               </p>
               <div className="space-y-3 text-left">
                 <div className="flex items-center text-muted-foreground">
                   <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
-                  <span>Access to all difficulty levels</span>
+                  <span>Dostęp do wszystkich poziomów trudności</span>
                 </div>
                 <div className="flex items-center text-muted-foreground">
                   <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
-                  <span>Advanced exercise library</span>
+                  <span>Zaawansowana biblioteka ćwiczeń</span>
                 </div>
                 <div className="flex items-center text-muted-foreground">
                   <div className="w-2 h-2 bg-yellow-500 rounded-full mr-3"></div>
-                  <span>Progress tracking and achievements</span>
+                  <span>Śledzenie postępów i osiągnięcia</span>
                 </div>
               </div>
             </div>
@@ -732,7 +736,7 @@ const ExerciseDetail = () => {
               className="mr-4"
             >
               <Crown className="w-4 h-4 mr-2" />
-              Upgrade to Premium
+              Przejdź na Premium
             </Button>
             <Button
               onClick={() => navigate("/library")}
@@ -740,7 +744,7 @@ const ExerciseDetail = () => {
               className="border-white/20 text-white hover:bg-white/10"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Library
+              Powrót do biblioteki
             </Button>
           </div>
         </div>
@@ -761,7 +765,7 @@ const ExerciseDetail = () => {
               size="sm"
             >
               <Share className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden sm:inline">Udostępnij</span>
             </Button>
 
             {canModifyExercise() && (
@@ -772,7 +776,7 @@ const ExerciseDetail = () => {
                 size="sm"
               >
                 <Edit className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Edit</span>
+                <span className="hidden sm:inline">Edytuj</span>
               </Button>
             )}
 
@@ -829,9 +833,9 @@ const ExerciseDetail = () => {
                       className="w-full min-h-64 max-h-[600px] object-contain"
                       onError={() => {
                         toast({
-                          title: "Video Error",
+                          title: "Błąd wideo",
                           description:
-                            "Unable to load video. Please try again.",
+                            "Nie można załadować wideo. Spróbuj ponownie.",
                           variant: "destructive",
                         });
                         setShowVideoPlayer(false);
@@ -849,7 +853,7 @@ const ExerciseDetail = () => {
                         {getStatusIcon(progress.status)}
                         <span className="text-white text-sm capitalize">
                           {progress.status === "failed"
-                            ? "Failed"
+                            ? "Nieudane"
                             : progress.status.replace("_", " ")}
                         </span>
                       </div>
@@ -863,13 +867,13 @@ const ExerciseDetail = () => {
               <Card className="glass-effect border-white/10">
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-white font-semibold">Your Progress</h3>
+                    <h3 className="text-white font-semibold">Twój postęp</h3>
                     {progress?.status && progress.status !== "not_tried" && (
                       <div className="flex items-center space-x-2">
                         {getStatusIcon(progress.status)}
                         <span className="text-sm text-muted-foreground capitalize">
                           {progress.status === "failed"
-                            ? "Failed"
+                            ? "Nieudane"
                             : progress.status.replace("_", " ")}
                         </span>
                       </div>
@@ -885,7 +889,7 @@ const ExerciseDetail = () => {
                       className="flex-1 min-w-[120px]"
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
-                      Completed
+                      Ukończone
                     </Button>
                     <Button
                       size="sm"
@@ -896,7 +900,7 @@ const ExerciseDetail = () => {
                       className="flex-1 min-w-[120px]"
                     >
                       <Bookmark className="w-4 h-4 mr-2" />
-                      For Later
+                      Na później
                     </Button>
                     <Button
                       size="sm"
@@ -907,7 +911,7 @@ const ExerciseDetail = () => {
                       className="flex-1 min-w-[120px]"
                     >
                       <AlertCircle className="w-4 h-4 mr-2" />
-                      Failed
+                      Nieudane
                     </Button>
                     <Button
                       size="sm"
@@ -918,7 +922,7 @@ const ExerciseDetail = () => {
                       className="flex-1 min-w-[120px]"
                     >
                       <Target className="w-4 h-4 mr-2" />
-                      Not Tried
+                      Niepróbowane
                     </Button>
                   </div>
 
@@ -930,7 +934,7 @@ const ExerciseDetail = () => {
                       className="w-full border-purple-500/30 text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/50"
                     >
                       <MessageCircle className="w-4 h-4 mr-2" />
-                      Share Your Version
+                      Udostępnij swoją wersję
                     </Button>
                   </div>
                 </CardContent>
@@ -1021,7 +1025,8 @@ const ExerciseDetail = () => {
                               </AvatarFallback>
                             </Avatar>
                             <span className="text-white text-sm">
-                              {expert.profiles?.username || "Unknown user"}
+                              {expert.profiles?.username ||
+                                "Nieznany użytkownik"}
                             </span>
                           </div>
                           {canManageExperts() && (
