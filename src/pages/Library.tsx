@@ -38,7 +38,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Pagination,
   PaginationContent,
@@ -396,20 +402,52 @@ const Library = () => {
   // Reset to first page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCategories, selectedLevels, selectedTypes, selectedTags, selectedStatuses, selectedExperts, selectedContentTypes, selectedVideoTypes]);
+  }, [
+    searchTerm,
+    selectedCategories,
+    selectedLevels,
+    selectedTypes,
+    selectedTags,
+    selectedStatuses,
+    selectedExperts,
+    selectedContentTypes,
+    selectedVideoTypes,
+  ]);
 
   // Auto-scroll to results on mobile when filters are applied
   useEffect(() => {
-    if (isMobile && (searchTerm || selectedCategories.length > 0 || selectedLevels.length > 0 || selectedTypes.length > 0 || selectedTags.length > 0 || selectedStatuses.length > 0 || selectedExperts.length > 0 || selectedContentTypes.length > 0 || selectedVideoTypes.length > 0)) {
+    if (
+      isMobile &&
+      (searchTerm ||
+        selectedCategories.length > 0 ||
+        selectedLevels.length > 0 ||
+        selectedTypes.length > 0 ||
+        selectedTags.length > 0 ||
+        selectedStatuses.length > 0 ||
+        selectedExperts.length > 0 ||
+        selectedContentTypes.length > 0 ||
+        selectedVideoTypes.length > 0)
+    ) {
       const timer = setTimeout(() => {
-        const resultsSection = document.querySelector('[data-results-section]');
+        const resultsSection = document.querySelector("[data-results-section]");
         if (resultsSection) {
-          resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [isMobile, searchTerm, selectedCategories, selectedLevels, selectedTypes, selectedTags, selectedStatuses, selectedExperts, selectedContentTypes, selectedVideoTypes]);
+  }, [
+    isMobile,
+    searchTerm,
+    selectedCategories,
+    selectedLevels,
+    selectedTypes,
+    selectedTags,
+    selectedStatuses,
+    selectedExperts,
+    selectedContentTypes,
+    selectedVideoTypes,
+  ]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
@@ -523,7 +561,13 @@ const Library = () => {
           {/* Filters Section */}
           {!isMobile ? (
             <div>
-              <div className={`grid gap-3 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4'}`}>
+              <div
+                className={`grid gap-3 ${
+                  isMobile
+                    ? "grid-cols-1"
+                    : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4"
+                }`}
+              >
                 {/* Category Filter */}
                 <Popover>
                   <PopoverTrigger asChild>
@@ -574,7 +618,10 @@ const Library = () => {
                         </label>
                       </div>
                       {categories.slice(1).map((category) => (
-                        <div key={category} className="flex items-center space-x-2">
+                        <div
+                          key={category}
+                          className="flex items-center space-x-2"
+                        >
                           <Checkbox
                             id={category}
                             checked={selectedCategories.includes(category)}
@@ -653,7 +700,10 @@ const Library = () => {
                         </label>
                       </div>
                       {levels.slice(1).map((level) => (
-                        <div key={level} className="flex items-center space-x-2">
+                        <div
+                          key={level}
+                          className="flex items-center space-x-2"
+                        >
                           <Checkbox
                             id={level}
                             checked={selectedLevels.includes(level)}
@@ -670,7 +720,10 @@ const Library = () => {
                               }
                             }}
                           />
-                          <label htmlFor={level} className="text-white capitalize">
+                          <label
+                            htmlFor={level}
+                            className="text-white capitalize"
+                          >
                             {level}
                           </label>
                         </div>
@@ -695,7 +748,9 @@ const Library = () => {
                           ? selectedTypes[0]
                               .replace("_", " ")
                               .split(" ")
-                              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                              .map(
+                                (w) => w.charAt(0).toUpperCase() + w.slice(1)
+                              )
                               .join(" ")
                           : `${selectedTypes.length} typy`}
                       </span>
@@ -749,7 +804,10 @@ const Library = () => {
                               }
                             }}
                           />
-                          <label htmlFor={type} className="text-white capitalize">
+                          <label
+                            htmlFor={type}
+                            className="text-white capitalize"
+                          >
                             {type.replace("_", " ")}
                           </label>
                         </div>
@@ -774,7 +832,9 @@ const Library = () => {
                           ? selectedStatuses[0]
                               .replace("_", " ")
                               .split(" ")
-                              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                              .map(
+                                (w) => w.charAt(0).toUpperCase() + w.slice(1)
+                              )
                               .join(" ")
                           : `${selectedStatuses.length} statusy`}
                       </span>
@@ -811,7 +871,10 @@ const Library = () => {
                         </label>
                       </div>
                       {statuses.slice(1).map((status) => (
-                        <div key={status} className="flex items-center space-x-2">
+                        <div
+                          key={status}
+                          className="flex items-center space-x-2"
+                        >
                           <Checkbox
                             id={status}
                             checked={selectedStatuses.includes(status)}
@@ -828,7 +891,10 @@ const Library = () => {
                               }
                             }}
                           />
-                          <label htmlFor={status} className="text-white capitalize">
+                          <label
+                            htmlFor={status}
+                            className="text-white capitalize"
+                          >
                             {status.replace("_", " ")}
                           </label>
                         </div>
@@ -854,14 +920,16 @@ const Library = () => {
                         >
                           <span className="truncate">
                             {selectedExperts.length === 0
-                              ? "All Experts"
+                              ? "Wszyscy eksperci"
                               : selectedExperts.includes("all")
-                              ? "All Experts"
+                              ? "Wszyscy eksperci"
                               : selectedExperts.includes("no_expert")
-                              ? "No Expert"
+                              ? "Brak eksperta"
                               : selectedExperts.length === 1
-                              ? availableExperts.find(e => e.id === selectedExperts[0])?.username || "Selected"
-                              : `${selectedExperts.length} Selected`}
+                              ? availableExperts.find(
+                                  (e) => e.id === selectedExperts[0]
+                                )?.username || "Selected"
+                              : `${selectedExperts.length} Wybrane`}
                           </span>
                           <div className="flex items-center gap-1">
                             {selectedExperts.length > 0 &&
@@ -892,7 +960,7 @@ const Library = () => {
                               htmlFor="all-experts"
                               className="text-white font-medium text-sm"
                             >
-                              All Experts
+                              Wszyscy eksperci
                             </label>
                           </div>
                           <div className="border-t border-white/10 pt-2 space-y-2 max-h-40 overflow-y-auto">
@@ -917,7 +985,7 @@ const Library = () => {
                                 htmlFor="no-expert"
                                 className="text-white text-sm"
                               >
-                                No Expert
+                                Brak eksperta
                               </label>
                             </div>
                             {availableExperts.map((expert) => (
@@ -958,7 +1026,7 @@ const Library = () => {
                   {/* Tags Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-white/80">
-                      Tags
+                      Tagi
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -968,10 +1036,10 @@ const Library = () => {
                         >
                           <span className="truncate">
                             {selectedTags.length === 0
-                              ? "All Tags"
+                              ? "Wszystkie tagi"
                               : selectedTags.length === 1
                               ? selectedTags[0]
-                              : `${selectedTags.length} Selected`}
+                              : `${selectedTags.length} Wybrane`}
                           </span>
                           <div className="flex items-center gap-1">
                             {selectedTags.length > 0 && (
@@ -986,7 +1054,10 @@ const Library = () => {
                       <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
                         <div className="space-y-2 max-h-40 overflow-y-auto">
                           {availableTags.map((tag) => (
-                            <div key={tag} className="flex items-center space-x-2">
+                            <div
+                              key={tag}
+                              className="flex items-center space-x-2"
+                            >
                               <Checkbox
                                 id={`tag-${tag}`}
                                 checked={selectedTags.includes(tag)}
@@ -1016,7 +1087,7 @@ const Library = () => {
                   {/* Content Type Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-white/80">
-                      Content Type
+                      Typ treści
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -1027,11 +1098,13 @@ const Library = () => {
                           <span className="truncate">
                             {selectedContentTypes.length === 0 ||
                             selectedContentTypes.includes("all")
-                              ? "All Content"
+                              ? "Wszystkie treści"
                               : selectedContentTypes.length === 1
-                              ? selectedContentTypes[0].charAt(0).toUpperCase() +
+                              ? selectedContentTypes[0]
+                                  .charAt(0)
+                                  .toUpperCase() +
                                 selectedContentTypes[0].slice(1)
-                              : `${selectedContentTypes.length} Selected`}
+                              : `${selectedContentTypes.length} Wybrane`}
                           </span>
                           <div className="flex items-center gap-1">
                             {selectedContentTypes.length > 0 &&
@@ -1047,7 +1120,10 @@ const Library = () => {
                       <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
                         <div className="space-y-2">
                           {contentTypes.map((type) => (
-                            <div key={type} className="flex items-center space-x-2">
+                            <div
+                              key={type}
+                              className="flex items-center space-x-2"
+                            >
                               <Checkbox
                                 id={`content-${type}`}
                                 checked={selectedContentTypes.includes(type)}
@@ -1087,7 +1163,7 @@ const Library = () => {
                   {/* Video Type Filter */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-white/80">
-                      Video Availability
+                      Dostępność wideo
                     </label>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -1117,7 +1193,10 @@ const Library = () => {
                       <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
                         <div className="space-y-2">
                           {videoTypes.map((type) => (
-                            <div key={type} className="flex items-center space-x-2">
+                            <div
+                              key={type}
+                              className="flex items-center space-x-2"
+                            >
                               <Checkbox
                                 id={`video-${type}`}
                                 checked={selectedVideoTypes.includes(type)}
@@ -1156,15 +1235,22 @@ const Library = () => {
                 </div>
               ) : (
                 // Desktop extended filters
-                <Collapsible open={extendedFiltersOpen} onOpenChange={setExtendedFiltersOpen}>
+                <Collapsible
+                  open={extendedFiltersOpen}
+                  onOpenChange={setExtendedFiltersOpen}
+                >
                   <CollapsibleTrigger asChild>
                     <Button
                       variant="ghost"
                       className="w-full text-white hover:bg-white/10 justify-center mt-4"
                     >
                       <span className="flex items-center gap-2">
-                        Extended Filters
-                        {extendedFiltersOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                        Rozszerzone filtry
+                        {extendedFiltersOpen ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
                       </span>
                     </Button>
                   </CollapsibleTrigger>
@@ -1173,7 +1259,7 @@ const Library = () => {
                       {/* Expert Filter */}
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-white/80">
-                          Experts
+                          Eksperci
                         </label>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -1183,14 +1269,16 @@ const Library = () => {
                             >
                               <span className="truncate">
                                 {selectedExperts.length === 0
-                                  ? "All Experts"
+                                  ? "Wszyscy eksperci"
                                   : selectedExperts.includes("all")
-                                  ? "All Experts"
+                                  ? "Wszyscy eksperci"
                                   : selectedExperts.includes("no_expert")
-                                  ? "No Expert"
+                                  ? "Brak eksperta"
                                   : selectedExperts.length === 1
-                                  ? availableExperts.find(e => e.id === selectedExperts[0])?.username || "Selected"
-                                  : `${selectedExperts.length} Selected`}
+                                  ? availableExperts.find(
+                                      (e) => e.id === selectedExperts[0]
+                                    )?.username || "Wybrane"
+                                  : `${selectedExperts.length} Wybrane`}
                               </span>
                               <div className="flex items-center gap-1">
                                 {selectedExperts.length > 0 &&
@@ -1221,14 +1309,16 @@ const Library = () => {
                                   htmlFor="all-experts-desktop"
                                   className="text-white font-medium text-sm"
                                 >
-                                  All Experts
+                                  Wszyscy eksperci
                                 </label>
                               </div>
                               <div className="border-t border-white/10 pt-2 space-y-2 max-h-40 overflow-y-auto">
                                 <div className="flex items-center space-x-2">
                                   <Checkbox
                                     id="no-expert-desktop"
-                                    checked={selectedExperts.includes("no_expert")}
+                                    checked={selectedExperts.includes(
+                                      "no_expert"
+                                    )}
                                     onCheckedChange={(checked) => {
                                       if (checked) {
                                         setSelectedExperts((prev) => [
@@ -1246,7 +1336,7 @@ const Library = () => {
                                     htmlFor="no-expert-desktop"
                                     className="text-white text-sm"
                                   >
-                                    No Expert
+                                    Brak eksperta
                                   </label>
                                 </div>
                                 {availableExperts.map((expert) => (
@@ -1256,7 +1346,9 @@ const Library = () => {
                                   >
                                     <Checkbox
                                       id={`expert-desktop-${expert.id}`}
-                                      checked={selectedExperts.includes(expert.id)}
+                                      checked={selectedExperts.includes(
+                                        expert.id
+                                      )}
                                       onCheckedChange={(checked) => {
                                         if (checked) {
                                           setSelectedExperts((prev) => [
@@ -1287,7 +1379,7 @@ const Library = () => {
                       {/* Tags Filter */}
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-white/80">
-                          Tags
+                          Tagi
                         </label>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -1297,10 +1389,10 @@ const Library = () => {
                             >
                               <span className="truncate">
                                 {selectedTags.length === 0
-                                  ? "All Tags"
+                                  ? "Wszystkie tagi"
                                   : selectedTags.length === 1
                                   ? selectedTags[0]
-                                  : `${selectedTags.length} Selected`}
+                                  : `${selectedTags.length} Wybrane`}
                               </span>
                               <div className="flex items-center gap-1">
                                 {selectedTags.length > 0 && (
@@ -1315,13 +1407,19 @@ const Library = () => {
                           <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
                             <div className="space-y-2 max-h-40 overflow-y-auto">
                               {availableTags.map((tag) => (
-                                <div key={tag} className="flex items-center space-x-2">
+                                <div
+                                  key={tag}
+                                  className="flex items-center space-x-2"
+                                >
                                   <Checkbox
                                     id={`tag-desktop-${tag}`}
                                     checked={selectedTags.includes(tag)}
                                     onCheckedChange={(checked) => {
                                       if (checked) {
-                                        setSelectedTags((prev) => [...prev, tag]);
+                                        setSelectedTags((prev) => [
+                                          ...prev,
+                                          tag,
+                                        ]);
                                       } else {
                                         setSelectedTags((prev) =>
                                           prev.filter((t) => t !== tag)
@@ -1345,7 +1443,7 @@ const Library = () => {
                       {/* Content Type Filter */}
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-white/80">
-                          Content Type
+                          Typ treści
                         </label>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -1356,11 +1454,13 @@ const Library = () => {
                               <span className="truncate">
                                 {selectedContentTypes.length === 0 ||
                                 selectedContentTypes.includes("all")
-                                  ? "All Content"
+                                  ? "Wszystkie treści"
                                   : selectedContentTypes.length === 1
-                                  ? selectedContentTypes[0].charAt(0).toUpperCase() +
+                                  ? selectedContentTypes[0]
+                                      .charAt(0)
+                                      .toUpperCase() +
                                     selectedContentTypes[0].slice(1)
-                                  : `${selectedContentTypes.length} Selected`}
+                                  : `${selectedContentTypes.length} Wybrane`}
                               </span>
                               <div className="flex items-center gap-1">
                                 {selectedContentTypes.length > 0 &&
@@ -1376,10 +1476,15 @@ const Library = () => {
                           <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
                             <div className="space-y-2">
                               {contentTypes.map((type) => (
-                                <div key={type} className="flex items-center space-x-2">
+                                <div
+                                  key={type}
+                                  className="flex items-center space-x-2"
+                                >
                                   <Checkbox
                                     id={`content-desktop-${type}`}
-                                    checked={selectedContentTypes.includes(type)}
+                                    checked={selectedContentTypes.includes(
+                                      type
+                                    )}
                                     onCheckedChange={(checked) => {
                                       if (checked) {
                                         if (type === "all") {
@@ -1416,7 +1521,7 @@ const Library = () => {
                       {/* Video Type Filter */}
                       <div className="space-y-2">
                         <label className="text-sm font-medium text-white/80">
-                          Video Availability
+                          Dostępność wideo
                         </label>
                         <Popover>
                           <PopoverTrigger asChild>
@@ -1427,10 +1532,10 @@ const Library = () => {
                               <span className="truncate">
                                 {selectedVideoTypes.length === 0 ||
                                 selectedVideoTypes.includes("all")
-                                  ? "All Videos"
+                                  ? "Wszystkie wideo"
                                   : selectedVideoTypes.length === 1
                                   ? selectedVideoTypes[0].replace("_", " ")
-                                  : `${selectedVideoTypes.length} Selected`}
+                                  : `${selectedVideoTypes.length} Wybrane`}
                               </span>
                               <div className="flex items-center gap-1">
                                 {selectedVideoTypes.length > 0 &&
@@ -1446,7 +1551,10 @@ const Library = () => {
                           <PopoverContent className="bg-slate-900/95 border-white/20 backdrop-blur-sm w-64 p-3">
                             <div className="space-y-2">
                               {videoTypes.map((type) => (
-                                <div key={type} className="flex items-center space-x-2">
+                                <div
+                                  key={type}
+                                  className="flex items-center space-x-2"
+                                >
                                   <Checkbox
                                     id={`video-desktop-${type}`}
                                     checked={selectedVideoTypes.includes(type)}
@@ -1485,18 +1593,18 @@ const Library = () => {
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
-               )}
+              )}
             </div>
           ) : null}
 
           {/* Active Filters Summary */}
           {(selectedCategories.length > 0 ||
-             selectedLevels.length > 0 ||
-             selectedTypes.length > 0 ||
-             selectedStatuses.length > 0 ||
-             selectedExperts.length > 0 ||
-             selectedContentTypes.length > 0 ||
-             selectedVideoTypes.length > 0) && (
+            selectedLevels.length > 0 ||
+            selectedTypes.length > 0 ||
+            selectedStatuses.length > 0 ||
+            selectedExperts.length > 0 ||
+            selectedContentTypes.length > 0 ||
+            selectedVideoTypes.length > 0) && (
             <div className="flex flex-wrap gap-2 pt-2">
               {selectedCategories
                 .filter((c) => c !== "all")
@@ -1584,9 +1692,7 @@ const Library = () => {
                   <X
                     className="w-3 h-3 cursor-pointer"
                     onClick={() =>
-                      setSelectedTags((prev) =>
-                        prev.filter((t) => t !== tag)
-                      )
+                      setSelectedTags((prev) => prev.filter((t) => t !== tag))
                     }
                   />
                 </Badge>
@@ -1599,9 +1705,10 @@ const Library = () => {
                     variant="secondary"
                     className="bg-purple-500/20 text-purple-300 border-purple-400/30 flex items-center gap-1"
                   >
-                    {expertId === "no_expert" 
-                      ? "No Expert" 
-                      : availableExperts.find(e => e.id === expertId)?.username || expertId}
+                    {expertId === "no_expert"
+                      ? "No Expert"
+                      : availableExperts.find((e) => e.id === expertId)
+                          ?.username || expertId}
                     <X
                       className="w-3 h-3 cursor-pointer"
                       onClick={() =>
@@ -1654,16 +1761,20 @@ const Library = () => {
           )}
         </div>
 
-
         {/* Results summary */}
         {filteredFigures.length > 0 && (
           <div className="mb-4 text-white/60 text-sm">
-            Showing {startIndex + 1}-{Math.min(endIndex, filteredFigures.length)} of {filteredFigures.length} exercises
+            Pokazano {startIndex + 1}-
+            {Math.min(endIndex, filteredFigures.length)} z{" "}
+            {filteredFigures.length} ćwiczeń
           </div>
         )}
 
         {/* Exercise Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" data-results-section>
+        <div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          data-results-section
+        >
           {paginatedFigures.map((figure) => (
             <Card
               key={figure.id}
@@ -1683,7 +1794,7 @@ const Library = () => {
                       <span className="text-6xl">🤸</span>
                     </div>
                   )}
-                  
+
                   {/* Premium badge */}
                   {figure.premium && (
                     <div className="absolute top-3 right-3 z-10">
@@ -1706,22 +1817,24 @@ const Library = () => {
                     <div className="absolute bottom-3 right-3 z-10">
                       <div className="bg-black/70 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
                         <Video className="w-3 h-3" />
-                        Video
+                        Wideo
                       </div>
                     </div>
                   )}
 
                   {/* Gradient overlay for better text readability */}
                   <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
-                  
+
                   {/* Exercise type badge */}
                   <div className="absolute bottom-3 left-3 z-10">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
-                      figure.type === 'single_figure' 
-                        ? 'bg-blue-500/90 text-white' 
-                        : 'bg-purple-500/90 text-white'
-                    }`}>
-                      {figure.type === 'single_figure' ? 'Figure' : 'Combo'}
+                    <div
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        figure.type === "single_figure"
+                          ? "bg-blue-500/90 text-white"
+                          : "bg-purple-500/90 text-white"
+                      }`}
+                    >
+                      {figure.type === "single_figure" ? "Figure" : "Kombo"}
                     </div>
                   </div>
                 </div>
@@ -1746,7 +1859,7 @@ const Library = () => {
                         </span>
                       </div>
                     </div>
-                    
+
                     {canModifyFigure(figure) && (
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
                         <Button
@@ -1809,7 +1922,7 @@ const Library = () => {
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious 
+                  <PaginationPrevious
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1817,23 +1930,29 @@ const Library = () => {
                         setCurrentPage(currentPage - 1);
                       }
                     }}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                    }
                   />
                 </PaginationItem>
-                
+
                 {[...Array(totalPages)].map((_, index) => {
                   const pageNumber = index + 1;
                   const isCurrentPage = pageNumber === currentPage;
-                  
+
                   // Show first page, last page, current page, and pages around current page
-                  const showPage = 
-                    pageNumber === 1 || 
-                    pageNumber === totalPages || 
-                    (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1);
-                  
+                  const showPage =
+                    pageNumber === 1 ||
+                    pageNumber === totalPages ||
+                    (pageNumber >= currentPage - 1 &&
+                      pageNumber <= currentPage + 1);
+
                   if (!showPage) {
                     // Show ellipsis for gaps
-                    if (pageNumber === currentPage - 2 || pageNumber === currentPage + 2) {
+                    if (
+                      pageNumber === currentPage - 2 ||
+                      pageNumber === currentPage + 2
+                    ) {
                       return (
                         <PaginationItem key={pageNumber}>
                           <span className="px-3 py-2 text-white/60">...</span>
@@ -1842,7 +1961,7 @@ const Library = () => {
                     }
                     return null;
                   }
-                  
+
                   return (
                     <PaginationItem key={pageNumber}>
                       <PaginationLink
@@ -1858,9 +1977,9 @@ const Library = () => {
                     </PaginationItem>
                   );
                 })}
-                
+
                 <PaginationItem>
-                  <PaginationNext 
+                  <PaginationNext
                     href="#"
                     onClick={(e) => {
                       e.preventDefault();
@@ -1868,7 +1987,11 @@ const Library = () => {
                         setCurrentPage(currentPage + 1);
                       }
                     }}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                    className={
+                      currentPage === totalPages
+                        ? "pointer-events-none opacity-50"
+                        : ""
+                    }
                   />
                 </PaginationItem>
               </PaginationContent>
@@ -1879,7 +2002,7 @@ const Library = () => {
         {filteredFigures.length === 0 && (
           <div className="text-center py-12">
             <div className="text-white/60 mb-4">
-              No exercises found matching your filters
+              Nie znaleziono ćwiczeń pasujących do Twoich filtrów
             </div>
             <Button
               variant="outline"
@@ -1896,7 +2019,7 @@ const Library = () => {
               }}
               className="bg-white/5 border-white/10 text-white hover:bg-white/10"
             >
-              Clear All Filters
+              Wyczyść wszystkie filtry
             </Button>
           </div>
         )}
@@ -1905,7 +2028,7 @@ const Library = () => {
         {isMobile && (
           <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
             <SheetTrigger asChild>
-              <Button 
+              <Button
                 className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg z-50"
                 size="icon"
               >
@@ -1918,19 +2041,22 @@ const Library = () => {
                   selectedContentTypes.length > 0 ||
                   selectedVideoTypes.length > 0) && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">
-                    {(selectedCategories.filter(c => c !== "all").length +
-                      selectedLevels.filter(l => l !== "all").length +
-                      selectedTypes.filter(t => t !== "all").length +
-                      selectedStatuses.filter(s => s !== "all").length +
-                      selectedExperts.filter(e => e !== "all").length +
-                      selectedContentTypes.filter(c => c !== "all").length +
-                      selectedVideoTypes.filter(v => v !== "all").length +
-                      selectedTags.length)}
+                    {selectedCategories.filter((c) => c !== "all").length +
+                      selectedLevels.filter((l) => l !== "all").length +
+                      selectedTypes.filter((t) => t !== "all").length +
+                      selectedStatuses.filter((s) => s !== "all").length +
+                      selectedExperts.filter((e) => e !== "all").length +
+                      selectedContentTypes.filter((c) => c !== "all").length +
+                      selectedVideoTypes.filter((v) => v !== "all").length +
+                      selectedTags.length}
                   </span>
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="h-[80vh] bg-slate-900/95 border-white/20">
+            <SheetContent
+              side="bottom"
+              className="h-[80vh] bg-slate-900/95 border-white/20"
+            >
               <SheetHeader>
                 <SheetTitle className="text-white">Filter Exercises</SheetTitle>
               </SheetHeader>
@@ -1938,7 +2064,9 @@ const Library = () => {
                 <div className="grid gap-4">
                   {/* Category Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-white">Categories</label>
+                    <label className="text-sm font-medium text-white">
+                      Kategorie
+                    </label>
                     <div className="grid grid-cols-2 gap-3">
                       <label className="flex items-center space-x-2">
                         <Checkbox
@@ -1951,10 +2079,13 @@ const Library = () => {
                             }
                           }}
                         />
-                        <span className="text-white text-sm">All</span>
+                        <span className="text-white text-sm">Wszystkie</span>
                       </label>
                       {categories.slice(1).map((category) => (
-                        <label key={category} className="flex items-center space-x-2">
+                        <label
+                          key={category}
+                          className="flex items-center space-x-2"
+                        >
                           <Checkbox
                             checked={selectedCategories.includes(category)}
                             onCheckedChange={(checked) => {
@@ -1970,7 +2101,9 @@ const Library = () => {
                               }
                             }}
                           />
-                          <span className="text-white text-sm capitalize">{category}</span>
+                          <span className="text-white text-sm capitalize">
+                            {category}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -1978,7 +2111,9 @@ const Library = () => {
 
                   {/* Difficulty Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-white">Difficulty</label>
+                    <label className="text-sm font-medium text-white">
+                      Trudność
+                    </label>
                     <div className="grid grid-cols-2 gap-3">
                       <label className="flex items-center space-x-2">
                         <Checkbox
@@ -1991,10 +2126,13 @@ const Library = () => {
                             }
                           }}
                         />
-                        <span className="text-white text-sm">All</span>
+                        <span className="text-white text-sm">Wszystkie</span>
                       </label>
                       {levels.slice(1).map((level) => (
-                        <label key={level} className="flex items-center space-x-2">
+                        <label
+                          key={level}
+                          className="flex items-center space-x-2"
+                        >
                           <Checkbox
                             checked={selectedLevels.includes(level)}
                             onCheckedChange={(checked) => {
@@ -2010,7 +2148,9 @@ const Library = () => {
                               }
                             }}
                           />
-                          <span className="text-white text-sm capitalize">{level}</span>
+                          <span className="text-white text-sm capitalize">
+                            {level}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -2018,7 +2158,9 @@ const Library = () => {
 
                   {/* Type Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-white">Types</label>
+                    <label className="text-sm font-medium text-white">
+                      Typy
+                    </label>
                     <div className="grid grid-cols-1 gap-3">
                       <label className="flex items-center space-x-2">
                         <Checkbox
@@ -2031,10 +2173,15 @@ const Library = () => {
                             }
                           }}
                         />
-                        <span className="text-white text-sm">All Types</span>
+                        <span className="text-white text-sm">
+                          Wszystkie typy
+                        </span>
                       </label>
                       {types.slice(1).map((type) => (
-                        <label key={type} className="flex items-center space-x-2">
+                        <label
+                          key={type}
+                          className="flex items-center space-x-2"
+                        >
                           <Checkbox
                             checked={selectedTypes.includes(type)}
                             onCheckedChange={(checked) => {
@@ -2050,7 +2197,9 @@ const Library = () => {
                               }
                             }}
                           />
-                          <span className="text-white text-sm capitalize">{type.replace("_", " ")}</span>
+                          <span className="text-white text-sm capitalize">
+                            {type.replace("_", " ")}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -2058,7 +2207,9 @@ const Library = () => {
 
                   {/* Status Filter */}
                   <div className="space-y-3">
-                    <label className="text-sm font-medium text-white">Progress Status</label>
+                    <label className="text-sm font-medium text-white">
+                      Status postępu
+                    </label>
                     <div className="grid grid-cols-1 gap-3">
                       <label className="flex items-center space-x-2">
                         <Checkbox
@@ -2071,10 +2222,15 @@ const Library = () => {
                             }
                           }}
                         />
-                        <span className="text-white text-sm">All Statuses</span>
+                        <span className="text-white text-sm">
+                          Wszystkie statusy
+                        </span>
                       </label>
                       {statuses.slice(1).map((status) => (
-                        <label key={status} className="flex items-center space-x-2">
+                        <label
+                          key={status}
+                          className="flex items-center space-x-2"
+                        >
                           <Checkbox
                             checked={selectedStatuses.includes(status)}
                             onCheckedChange={(checked) => {
@@ -2090,7 +2246,9 @@ const Library = () => {
                               }
                             }}
                           />
-                          <span className="text-white text-sm capitalize">{status.replace("_", " ")}</span>
+                          <span className="text-white text-sm capitalize">
+                            {status.replace("_", " ")}
+                          </span>
                         </label>
                       ))}
                     </div>
@@ -2113,7 +2271,7 @@ const Library = () => {
                     }}
                     className="w-full bg-white/5 border-white/10 text-white hover:bg-white/10"
                   >
-                    Clear All Filters
+                    Wyczyść wszystkie filtry
                   </Button>
                 </div>
               </div>
@@ -2137,8 +2295,8 @@ const Library = () => {
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, figure: null })}
         onConfirm={() => deleteFigure(deleteModal.figure?.id)}
-        title="Delete Exercise"
-        description={`Are you sure you want to delete "${deleteModal.figure?.name}"? This action cannot be undone.`}
+        title="Usuń ćwiczenie"
+        description={`Czy na pewno chcesz usunąć "${deleteModal.figure?.name}"? Ta akcja nie może zostać cofnięta.`}
       />
 
       <PricingModal

@@ -66,10 +66,12 @@ const ExerciseDetail = () => {
   const [showCreatePost, setShowCreatePost] = useState(false);
 
   // Similar exercises hook
-  const { similarExercises, loading: similarLoading } = useSimilarExercises(exerciseId);
-  
+  const { similarExercises, loading: similarLoading } =
+    useSimilarExercises(exerciseId);
+
   // Prerequisite exercises hook
-  const { prerequisiteExercises, loading: prerequisiteLoading } = usePrerequisiteExercises(exerciseId);
+  const { prerequisiteExercises, loading: prerequisiteLoading } =
+    usePrerequisiteExercises(exerciseId);
 
   // Fetch exercise details
   const fetchExerciseDetails = async () => {
@@ -256,7 +258,7 @@ const ExerciseDetail = () => {
 
   const handlePostCreated = (newPost: any) => {
     // Add the new post to my versions
-    setMyVersions(prev => [newPost, ...prev]);
+    setMyVersions((prev) => [newPost, ...prev]);
     // Switch to my-versions tab to show the new post
     setActiveTab("my-versions");
     setShowCreatePost(false);
@@ -919,7 +921,7 @@ const ExerciseDetail = () => {
                       Not Tried
                     </Button>
                   </div>
-                  
+
                   {/* Share Your Version Button */}
                   <div className="mt-4 pt-4 border-t border-white/10">
                     <Button
@@ -976,7 +978,7 @@ const ExerciseDetail = () => {
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center">
                       <UserCheck className="w-5 h-5 text-purple-400 mr-2" />
-                      <h3 className="text-white font-semibold">Experts</h3>
+                      <h3 className="text-white font-semibold">Eksperci</h3>
                     </div>
                     {canManageExperts() && (
                       <Button
@@ -986,14 +988,14 @@ const ExerciseDetail = () => {
                         className="border-white/20 text-white hover:bg-white/10"
                       >
                         <Plus className="w-4 h-4 mr-1" />
-                        Add Expert
+                        Dodaj eksperta
                       </Button>
                     )}
                   </div>
 
                   {experts.length === 0 ? (
                     <p className="text-muted-foreground text-sm">
-                      No experts assigned yet
+                      Brak przypisanych ekspertów
                     </p>
                   ) : (
                     <div className="space-y-2">
@@ -1005,17 +1007,21 @@ const ExerciseDetail = () => {
                           <div
                             className="flex items-center cursor-pointer hover:bg-white/5 rounded-lg p-2 transition-colors"
                             onClick={() => {
-                              if (expert.profiles?.id) navigate(`/profile/${expert.profiles.id}`);
+                              if (expert.profiles?.id)
+                                navigate(`/profile/${expert.profiles.id}`);
                             }}
                           >
                             <Avatar className="w-8 h-8 mr-3">
-                              <AvatarImage src={expert.profiles?.avatar_url || undefined} />
+                              <AvatarImage
+                                src={expert.profiles?.avatar_url || undefined}
+                              />
                               <AvatarFallback>
-                                {expert.profiles?.username?.[0]?.toUpperCase() || 'U'}
+                                {expert.profiles?.username?.[0]?.toUpperCase() ||
+                                  "U"}
                               </AvatarFallback>
                             </Avatar>
                             <span className="text-white text-sm">
-                              {expert.profiles?.username || 'Unknown user'}
+                              {expert.profiles?.username || "Unknown user"}
                             </span>
                           </div>
                           {canManageExperts() && (
@@ -1040,7 +1046,9 @@ const ExerciseDetail = () => {
                 <Card className="glass-effect border-white/10">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-white font-semibold">Add Expert</h3>
+                      <h3 className="text-white font-semibold">
+                        Dodaj eksperta
+                      </h3>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1058,7 +1066,7 @@ const ExerciseDetail = () => {
                     <div className="space-y-3">
                       <input
                         type="text"
-                        placeholder="Search for users..."
+                        placeholder="Wyszukaj użytkownika..."
                         value={searchUser}
                         onChange={(e) => {
                           setSearchUser(e.target.value);
@@ -1103,7 +1111,7 @@ const ExerciseDetail = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center mb-3">
                     <BookOpen className="w-5 h-5 text-purple-400 mr-2" />
-                    <h3 className="text-white font-semibold">Description</h3>
+                    <h3 className="text-white font-semibold">Opis</h3>
                   </div>
                   <p className="text-muted-foreground">
                     {exercise.description}
@@ -1118,7 +1126,7 @@ const ExerciseDetail = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center mb-3">
                     <Target className="w-5 h-5 text-green-400 mr-2" />
-                    <h3 className="text-white font-semibold">Instructions</h3>
+                    <h3 className="text-white font-semibold">Instrukcje</h3>
                   </div>
                   <div className="text-muted-foreground whitespace-pre-line">
                     {exercise.instructions}
@@ -1131,7 +1139,7 @@ const ExerciseDetail = () => {
             {exercise.tags && exercise.tags.length > 0 && (
               <Card className="glass-effect border-white/10">
                 <CardContent className="p-4">
-                  <h3 className="text-white font-semibold mb-3">Tags</h3>
+                  <h3 className="text-white font-semibold mb-3">Tagi</h3>
                   <div className="flex flex-wrap gap-2">
                     {exercise.tags.map((tag: string, index: number) => (
                       <Badge
@@ -1153,10 +1161,13 @@ const ExerciseDetail = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center mb-3">
                     <BookOpen className="w-5 h-5 text-orange-400 mr-2" />
-                    <h3 className="text-white font-semibold">Learn These First</h3>
+                    <h3 className="text-white font-semibold">
+                      Naucz się tych ćwiczeń
+                    </h3>
                   </div>
                   <p className="text-muted-foreground text-sm mb-4">
-                    Master these foundational exercises before attempting this one
+                    Naucz się tych podstawowych ćwiczeń przed próbą tego
+                    ćwiczenia
                   </p>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {prerequisiteExercises.map((prerequisite) => (
@@ -1187,8 +1198,10 @@ const ExerciseDetail = () => {
                           {prerequisite.name}
                         </h4>
                         {prerequisite.difficulty_level && (
-                          <Badge 
-                            className={`text-xs ${getDifficultyColor(prerequisite.difficulty_level)}`}
+                          <Badge
+                            className={`text-xs ${getDifficultyColor(
+                              prerequisite.difficulty_level
+                            )}`}
                           >
                             {prerequisite.difficulty_level}
                           </Badge>
@@ -1206,7 +1219,9 @@ const ExerciseDetail = () => {
                 <CardContent className="p-4">
                   <div className="flex items-center mb-3">
                     <Target className="w-5 h-5 text-blue-400 mr-2" />
-                    <h3 className="text-white font-semibold">Similar Exercises</h3>
+                    <h3 className="text-white font-semibold">
+                      Podobne ćwiczenia
+                    </h3>
                   </div>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                     {similarExercises.map((similar) => (
@@ -1237,8 +1252,10 @@ const ExerciseDetail = () => {
                           {similar.name}
                         </h4>
                         {similar.difficulty_level && (
-                          <Badge 
-                            className={`text-xs ${getDifficultyColor(similar.difficulty_level)}`}
+                          <Badge
+                            className={`text-xs ${getDifficultyColor(
+                              similar.difficulty_level
+                            )}`}
                           >
                             {similar.difficulty_level}
                           </Badge>
@@ -1265,8 +1282,8 @@ const ExerciseDetail = () => {
                 className="flex-1 text-xs sm:text-sm"
               >
                 <User className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">My Versions</span>
-                <span className="sm:hidden">My</span>
+                <span className="hidden sm:inline">Moje wersje</span>
+                <span className="sm:hidden">Moje</span>
                 <span className="ml-1">({myVersions.length})</span>
               </TabsTrigger>
               <TabsTrigger
@@ -1274,8 +1291,8 @@ const ExerciseDetail = () => {
                 className="flex-1 text-xs sm:text-sm"
               >
                 <Users className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Friends</span>
-                <span className="sm:hidden">Friends</span>
+                <span className="hidden sm:inline">Znajomi</span>
+                <span className="sm:hidden">Znajomi</span>
                 <span className="ml-1">({friendsVersions.length})</span>
               </TabsTrigger>
               <TabsTrigger
@@ -1283,8 +1300,8 @@ const ExerciseDetail = () => {
                 className="flex-1 text-xs sm:text-sm"
               >
                 <Globe className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Community</span>
-                <span className="sm:hidden">All</span>
+                <span className="hidden sm:inline">Społeczność</span>
+                <span className="sm:hidden">Społeczność</span>
                 <span className="ml-1">({communityVersions.length})</span>
               </TabsTrigger>
             </TabsList>
@@ -1294,7 +1311,7 @@ const ExerciseDetail = () => {
                 <Card className="glass-effect border-white/10">
                   <CardContent className="p-8 text-center">
                     <p className="text-muted-foreground">
-                      No versions yet. Share your practice!
+                      Brak wersji. Udostępnij swoją praktykę!
                     </p>
                   </CardContent>
                 </Card>
@@ -1343,7 +1360,7 @@ const ExerciseDetail = () => {
                 <Card className="glass-effect border-white/10">
                   <CardContent className="p-8 text-center">
                     <p className="text-muted-foreground">
-                      No friends' versions yet.
+                      Brak wersji znajomych.
                     </p>
                   </CardContent>
                 </Card>
@@ -1392,7 +1409,7 @@ const ExerciseDetail = () => {
                 <Card className="glass-effect border-white/10">
                   <CardContent className="p-8 text-center">
                     <p className="text-muted-foreground">
-                      No community versions yet.
+                      Brak wersji społeczności.
                     </p>
                   </CardContent>
                 </Card>
@@ -1451,8 +1468,8 @@ const ExerciseDetail = () => {
         isOpen={showDeleteModal}
         onClose={() => setShowDeleteModal(false)}
         onConfirm={deleteExercise}
-        title="Delete Exercise"
-        description={`Are you sure you want to delete "${exercise.name}"? This action cannot be undone.`}
+        title="Usuń ćwiczenie"
+        description={`Czy na pewno chcesz usunąć "${exercise.name}"? Ta akcja nie może zostać cofnięta.`}
       />
 
       {/* Image Preview Modal */}
@@ -1542,11 +1559,9 @@ const ExerciseDetail = () => {
               </div>
 
               <h2 className="text-2xl font-bold text-white mb-2">
-                Congratulations!
+                Gratulacje!
               </h2>
-              <p className="text-white/90 mb-4">
-                You've completed this exercise!
-              </p>
+              <p className="text-white/90 mb-4">Ukończyłeś to ćwiczenie!</p>
               <div className="flex justify-center space-x-2">
                 <div className="w-2 h-2 bg-purple-300 rounded-full animate-pulse"></div>
                 <div
