@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Eye, EyeOff, Settings, BookOpen } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, Settings, BookOpen, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import SportSelectionModal from "@/components/SportSelectionModal";
 
 interface UserJourney {
   id: string;
@@ -47,11 +48,19 @@ const AerialJourney = () => {
   const [userSelectedSports, setUserSelectedSports] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdminMode, setIsAdminMode] = useState(false);
+  const [showSportSelectionModal, setShowSportSelectionModal] = useState(false);
 
   useEffect(() => {
     fetchAvailableSports();
     fetchUserProfile();
   }, [user, navigate]);
+
+  // Auto-open modal for users without selected sports
+  useEffect(() => {
+    if (!loading && !isAdminMode && userSelectedSports.length === 0 && user) {
+      setShowSportSelectionModal(true);
+    }
+  }, [loading, isAdminMode, userSelectedSports, user]);
 
   const fetchAvailableSports = async () => {
     try {
@@ -203,6 +212,11 @@ const AerialJourney = () => {
     }
   };
 
+  const handleSportSelectionSuccess = () => {
+    fetchUserProfile();
+    fetchAvailableSports();
+  };
+
   // Filter sports based on user role and selected sports
   const filteredSports =
     isAdmin && isAdminMode
@@ -257,7 +271,7 @@ const AerialJourney = () => {
         <Card className="glass-effect border-white/10">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
-              <div>
+              <div className="flex-1">
                 <CardTitle className="text-white flex items-center mb-2">
                   Odkrywaj umiejętności według sportu
                   {isAdmin && isAdminMode && (
@@ -272,10 +286,16 @@ const AerialJourney = () => {
                     : "Kliknij na dowolny sport, aby zobaczyć pełne drzewo umiejętności i swoją progresję"}
                 </p>
               </div>
-              {isAdmin && isAdminMode && (
-                <div className="text-sm text-muted-foreground">
-                  Tryb admina: Kliknij dowolny sport, aby nim zarządzać
-                </div>
+              {!isAdminMode && userSelectedSports.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowSportSelectionModal(true)}
+                  className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edytuj sporty
+                </Button>
               )}
             </div>
           </CardHeader>
@@ -289,19 +309,9 @@ const AerialJourney = () => {
                   {isAdmin && isAdminMode
                     ? "Nie utworzono jeszcze żadnych kategorii sportowych. Użyj przycisku Zarządzaj sportami, aby dodać."
                     : userSelectedSports.length === 0
-                    ? "Nie wybrałeś jeszcze żadnych sportów. Przejdź do swojego profilu i wybierz sporty, w których chcesz trenować."
+                    ? "Nie wybrałeś jeszcze żadnych sportów. Użyj modala wyboru sportów, aby dodać."
                     : "Żaden sport z twojego wyboru nie jest obecnie opublikowany. Sprawdź ponownie później!"}
                 </p>
-                {(!isAdmin || !isAdminMode) &&
-                  userSelectedSports.length === 0 && (
-                    <Button
-                      variant="outline"
-                      onClick={() => navigate("/aerial-journey")}
-                      className="mt-4 border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
-                    >
-                      Wróć do strony głównej
-                    </Button>
-                  )}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
@@ -452,6 +462,13 @@ const AerialJourney = () => {
             )}
           </CardContent>
         </Card>
+
+        <SportSelectionModal
+          isOpen={showSportSelectionModal}
+          onClose={() => setShowSportSelectionModal(false)}
+          onSuccess={handleSportSelectionSuccess}
+          preSelectedSports={userSelectedSports}
+        />
       </div>
     </div>
   );

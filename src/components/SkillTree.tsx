@@ -63,7 +63,7 @@ interface UserProgress {
 interface SkillTreeProps {
   sportCategory: string;
   sportName: string;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
@@ -532,14 +532,16 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
-        <Button
-          variant="ghost"
-          onClick={onBack}
-          className="mb-6 text-white hover:bg-white/10"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Wróć do sportów
-        </Button>
+        {onBack && (
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="mb-6 text-white hover:bg-white/10"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Wróć do podróży
+          </Button>
+        )}
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">

@@ -12,7 +12,7 @@ const BackButton: React.FC<BackButtonProps> = ({ fallbackRoute = "/library" }) =
   const location = useLocation();
 
   // Don't show back button on main pages
-  const mainPages = ["/", "/library", "/feed", "/challenges", "/profile", "/training"];
+  const mainPages = ["/", "/library", "/feed", "/challenges", "/profile", "/training", "/aerial-journey"];
   const isMainPage = mainPages.includes(location.pathname);
 
   if (isMainPage) {

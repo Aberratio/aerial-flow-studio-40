@@ -35,7 +35,7 @@ const TopHeader: React.FC = () => {
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-lg border-b border-white/10">
       <div className="max-w-screen-xl mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <NavLink to="/library" className="flex items-center space-x-2">
+        <NavLink to="/aerial-journey" className="flex items-center space-x-2">
           <img 
             src="/iguana-logo.svg" 
             alt="IguanaFlow" 
