@@ -68,8 +68,8 @@ const AuthModal: React.FC<AuthModalProps> = ({
 
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "Password mismatch",
-        description: "Passwords do not match. Please try again.",
+        title: "Hasła się nie zgadzają",
+        description: "Wprowadzone hasła są różne. Spróbuj ponownie.",
         variant: "destructive",
       });
       return;
@@ -78,16 +78,32 @@ const AuthModal: React.FC<AuthModalProps> = ({
     setIsLoading(true);
 
     try {
-      await signUp(formData.email, formData.password, formData.username);
-      // toast({
-      //   title: "Account created!",
-      //   description: "Please check your email to verify your account.",
-      // });
-      onOpenChange(false);
+      const result = await signUp(formData.email, formData.password, formData.username);
+      
+      // Check if session was created
+      if (result?.session) {
+        toast({
+          title: "Konto utworzone!",
+          description: "Zostałeś automatycznie zalogowany. Witaj!",
+        });
+        
+        // Wait for onAuthStateChange to update state
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        onOpenChange(false);
+      } else if (result?.user && !result.session) {
+        toast({
+          title: "Konto utworzone!",
+          description: "Sprawdź email aby potwierdzić konto i się zalogować.",
+        });
+        onOpenChange(false);
+      } else {
+        throw new Error("Nie udało się utworzyć sesji");
+      }
     } catch (error: any) {
       toast({
-        title: "Sign up failed",
-        description: error.message || "Please try again.",
+        title: "Rejestracja nie powiodła się",
+        description: error.message || "Spróbuj ponownie.",
         variant: "destructive",
       });
     } finally {

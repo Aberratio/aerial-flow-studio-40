@@ -28,7 +28,7 @@ export const useAuthOperations = () => {
   const signUp = async (email: string, password: string, username: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -42,6 +42,9 @@ export const useAuthOperations = () => {
     if (error) {
       throw error;
     }
+
+    // Return session and user data
+    return { session: data.session, user: data.user };
   };
 
   const signOut = async () => {

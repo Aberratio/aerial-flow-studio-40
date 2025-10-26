@@ -19,14 +19,14 @@ export interface AuthContextType {
   user: User | null;
   session: Session | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, username: string) => Promise<void>;
+  signUp: (email: string, password: string, username: string) => Promise<{ session: Session | null; user: any }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
   refetchCounts: () => void;
   refreshUser: () => Promise<void>;
   // Backward compatibility
   login: (email: string, password: string) => Promise<void>;
-  register: (email: string, password: string, username: string) => Promise<void>;
+  register: (email: string, password: string, username: string) => Promise<{ session: Session | null; user: any }>;
   logout: () => Promise<void>;
   // Admin impersonation
   impersonateUser: (userId: string) => Promise<void>;
