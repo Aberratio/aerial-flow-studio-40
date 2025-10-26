@@ -200,7 +200,7 @@ const AuthModal: React.FC<AuthModalProps> = ({
                   value={formData.email}
                   onChange={handleInputChange}
                   className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Enter your email"
+                  placeholder="Wprowadź swój adres mailowy"
                   required
                 />
               </div>
