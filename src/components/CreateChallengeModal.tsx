@@ -168,11 +168,10 @@ const CreateChallengeModal = ({
   const saveDraft = async () => {
     if (!user) return;
 
-    if (!title.trim() || !startDate || !endDate) {
+    if (!title.trim()) {
       toast({
         title: "Brakujące informacje",
-        description:
-          "Proszę wypełnić tytuł, datę rozpoczęcia i datę zakończenia.",
+        description: "Proszę wypełnić tytuł.",
         variant: "destructive",
       });
       return;
@@ -183,7 +182,6 @@ const CreateChallengeModal = ({
     try {
       let uploadedImageUrl = imageUrl;
 
-      // Upload image if a new file is selected
       if (imageFile) {
         const uploadedUrl = await uploadImage(imageFile);
         if (uploadedUrl) {
@@ -198,8 +196,8 @@ const CreateChallengeModal = ({
         level: level,
         difficulty_level: difficultyLevel,
         type: type,
-        start_date: startDate?.toISOString(),
-        end_date: endDate?.toISOString(),
+        start_date: null,
+        end_date: null,
         created_by: user.id,
         status: "draft",
         image_url: uploadedImageUrl || null,
@@ -341,13 +339,10 @@ const CreateChallengeModal = ({
   };
 
   const addTrainingDay = () => {
-    // Calculate next date based on last training day or start date
     let nextDate = new Date();
     if (trainingDays.length > 0) {
       const lastDate = trainingDays[trainingDays.length - 1].date;
-      nextDate = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000); // Add 1 day
-    } else if (startDate) {
-      nextDate = new Date(startDate);
+      nextDate = new Date(lastDate.getTime() + 24 * 60 * 60 * 1000);
     }
 
     setTrainingDays([
@@ -534,72 +529,6 @@ const CreateChallengeModal = ({
               <option value="manual">Manual</option>
               <option value="timer">Timer</option>
             </select>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Start Date *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal text-sm",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {startDate ? (
-                      format(startDate, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    disabled={(date) => date < new Date()}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-
-            <div className="space-y-2">
-              <Label>End Date *</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal text-sm",
-                      !endDate && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {endDate ? (
-                      format(endDate, "PPP")
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    disabled={(date) => date < (startDate || new Date())}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
           </div>
 
           {/* Achievements Section */}

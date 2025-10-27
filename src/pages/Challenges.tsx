@@ -281,15 +281,15 @@ const Challenges = () => {
       let activeChallenges = 0;
       let completedChallenges = 0;
 
-      publishedChallenges?.forEach((challenge) => {
-        const start = new Date(challenge.start_date);
-        const end = new Date(challenge.end_date);
-        if (start <= now && end >= now) {
-          activeChallenges++;
-        } else if (end < now) {
-          completedChallenges++;
-        }
-      });
+      // Count based on participant status instead of dates
+      for (const challengeId of publishedChallengeIds) {
+        const participants = participantData?.filter(p => p.challenge_id === challengeId) || [];
+        const hasActiveParticipants = participants.some(p => p.status === 'active');
+        const hasCompletedParticipants = participants.some(p => p.status === 'completed');
+        
+        if (hasActiveParticipants) activeChallenges++;
+        if (hasCompletedParticipants) completedChallenges++;
+      }
 
       const averageDuration = publishedChallenges?.length
         ? Math.round(totalDurationDays / publishedChallenges.length)

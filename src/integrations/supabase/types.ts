@@ -287,14 +287,14 @@ export type Database = {
           created_by: string | null
           description: string | null
           difficulty_level: string | null
-          end_date: string
+          end_date: string | null
           id: string
           image_url: string | null
           level: number | null
           premium: boolean
           price_pln: number | null
           price_usd: number | null
-          start_date: string
+          start_date: string | null
           status: string
           title: string
           type: string
@@ -305,14 +305,14 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           difficulty_level?: string | null
-          end_date: string
+          end_date?: string | null
           id?: string
           image_url?: string | null
           level?: number | null
           premium?: boolean
           price_pln?: number | null
           price_usd?: number | null
-          start_date: string
+          start_date?: string | null
           status?: string
           title: string
           type?: string
@@ -323,14 +323,14 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           difficulty_level?: string | null
-          end_date?: string
+          end_date?: string | null
           id?: string
           image_url?: string | null
           level?: number | null
           premium?: boolean
           price_pln?: number | null
           price_usd?: number | null
-          start_date?: string
+          start_date?: string | null
           status?: string
           title?: string
           type?: string

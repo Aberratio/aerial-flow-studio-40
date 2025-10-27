@@ -53,6 +53,7 @@ import { cn } from "@/lib/utils";
 import ExerciseManagement from "@/components/ExerciseManagement";
 import RedemptionCodeManagement from "@/components/RedemptionCodeManagement";
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
+import { BulkDayCreator } from "@/components/BulkDayCreator";
 
 interface Achievement {
   id: string;
@@ -165,6 +166,13 @@ const EditChallenge = () => {
   const [collapsedDays, setCollapsedDays] = useState<Set<number>>(new Set());
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [saveProgress, setSaveProgress] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{
+    title?: string;
+    description?: string;
+    trainingDays?: string;
+    image?: string;
+  }>({});
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -319,40 +327,68 @@ const EditChallenge = () => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors: typeof errors = {};
+    
+    if (!title.trim()) {
+      newErrors.title = "Title is required";
+    } else if (title.length > 100) {
+      newErrors.title = "Title is too long (max 100 characters)";
+    }
+    
+    if (description && description.length > 1000) {
+      newErrors.description = "Description is too long (max 1000 characters)";
+    }
+    
+    if (trainingDays.length === 0) {
+      newErrors.trainingDays = "At least one training day is required";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const saveChallenge = async () => {
     if (!user || !challenge) return;
 
-    if (!title.trim() || !startDate || !endDate) {
+    // Validate form
+    if (!validateForm()) {
       toast({
-        title: "Missing Information",
-        description: "Please fill in title, start date, and end date.",
+        title: "Validation Error",
+        description: "Please fix the errors in the form.",
         variant: "destructive",
       });
       return;
     }
 
     setIsLoading(true);
+    let currentStep = "Starting";
 
     try {
+      // Step 1: Upload image if needed
       let uploadedImageUrl = imageUrl;
-
-      // Upload image if a new file is selected
       if (imageFile) {
+        currentStep = "Uploading image";
+        setSaveProgress("Uploading challenge image...");
         const uploadedUrl = await uploadImage(imageFile);
         if (uploadedUrl) {
           uploadedImageUrl = uploadedUrl;
           setImageUrl(uploadedUrl);
+        } else {
+          throw new Error("Failed to upload image");
         }
       }
 
-      // Update challenge
+      // Step 2: Update challenge details
+      currentStep = "Updating challenge details";
+      setSaveProgress("Updating challenge details...");
       const { error: updateError } = await supabase
         .from("challenges")
         .update({
           title: title.trim(),
           description: description.trim() || null,
-          start_date: startDate.toISOString(),
-          end_date: endDate.toISOString(),
+          start_date: null, // Dates are now optional
+          end_date: null,
           level: level,
           difficulty_level: difficultyLevel,
           type: type,
@@ -364,26 +400,129 @@ const EditChallenge = () => {
         })
         .eq("id", challengeId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("Update error details:", updateError);
+        throw new Error(`Database update failed: ${updateError.message}`);
+      }
 
-      // Save achievements and training days
-      await saveAchievementsAndTrainingDays();
+      // Step 3: Save achievements
+      currentStep = "Saving achievements";
+      setSaveProgress("Saving achievements...");
+      await saveAchievements();
 
+      // Step 4: Save training days
+      currentStep = "Saving training days";
+      setSaveProgress(`Saving ${trainingDays.length} training days...`);
+      await saveTrainingDays();
+
+      setSaveProgress(null);
       toast({
         title: "Success",
-        description: "Challenge updated successfully.",
+        description: `Challenge "${title}" updated successfully.`,
       });
 
       navigate("/challenges");
-    } catch (error) {
-      console.error("Error updating challenge:", error);
+    } catch (error: any) {
+      console.error("Error updating challenge:", {
+        step: currentStep,
+        error,
+        challengeData: { 
+          title, 
+          description, 
+          level, 
+          difficultyLevel,
+          trainingDaysCount: trainingDays.length 
+        }
+      });
+      
+      setSaveProgress(null);
       toast({
-        title: "Error",
-        description: "Failed to update challenge.",
+        title: `Error at step: ${currentStep}`,
+        description: error.message || "Failed to update challenge. Check console for details.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const saveAchievements = async () => {
+    if (!challengeId) return;
+    
+    // Delete existing achievements
+    const { error: deleteError } = await supabase
+      .from("challenge_achievements")
+      .delete()
+      .eq("challenge_id", challengeId);
+
+    if (deleteError) throw new Error(`Failed to delete old achievements: ${deleteError.message}`);
+
+    // Insert new achievements
+    if (selectedAchievements.length > 0) {
+      const achievementData = selectedAchievements.map((achievementId) => ({
+        challenge_id: challengeId,
+        achievement_id: achievementId,
+      }));
+
+      const { error: insertError } = await supabase
+        .from("challenge_achievements")
+        .insert(achievementData);
+
+      if (insertError) throw new Error(`Failed to insert achievements: ${insertError.message}`);
+    }
+  };
+
+  const saveTrainingDays = async () => {
+    if (!challengeId) return;
+    
+    // Delete existing training days (cascades to exercises)
+    const { error: deleteError } = await supabase
+      .from("challenge_training_days")
+      .delete()
+      .eq("challenge_id", challengeId);
+
+    if (deleteError) throw new Error(`Failed to delete old training days: ${deleteError.message}`);
+
+    // Insert new training days
+    for (let i = 0; i < trainingDays.length; i++) {
+      const day = trainingDays[i];
+      const durationSeconds = day.isRestDay ? 0 : calculateTrainingDayDuration(day.exercises);
+
+      const { data: trainingDayData, error: dayError } = await supabase
+        .from("challenge_training_days")
+        .insert({
+          challenge_id: challengeId,
+          day_number: i + 1,
+          title: day.title,
+          description: day.description,
+          duration_seconds: durationSeconds,
+        })
+        .select()
+        .single();
+
+      if (dayError) throw new Error(`Failed to insert day ${i + 1}: ${dayError.message}`);
+
+      // Save exercises for this day
+      if (day.exercises && day.exercises.length > 0) {
+        const exerciseData = day.exercises.map((exercise, index) => ({
+          training_day_id: trainingDayData.id,
+          figure_id: exercise.figure_id,
+          order_index: exercise.order_index || index,
+          sets: exercise.sets,
+          reps: exercise.reps,
+          hold_time_seconds: exercise.hold_time_seconds,
+          rest_time_seconds: exercise.rest_time_seconds,
+          video_url: exercise.video_url,
+          audio_url: exercise.audio_url,
+          notes: exercise.notes,
+        }));
+
+        const { error: exerciseError } = await supabase
+          .from("training_day_exercises")
+          .insert(exerciseData);
+
+        if (exerciseError) throw new Error(`Failed to insert exercises for day ${i + 1}: ${exerciseError.message}`);
+      }
     }
   };
 
@@ -400,87 +539,6 @@ const EditChallenge = () => {
     });
 
     return totalDuration;
-  };
-
-  const saveAchievementsAndTrainingDays = async () => {
-    if (!challengeId) return;
-
-    // Save achievements
-    if (selectedAchievements.length > 0) {
-      const achievementData = selectedAchievements.map((achievementId) => ({
-        challenge_id: challengeId,
-        achievement_id: achievementId,
-      }));
-
-      const { error: deleteError } = await supabase
-        .from("challenge_achievements")
-        .delete()
-        .eq("challenge_id", challengeId);
-
-      if (deleteError) throw deleteError;
-
-      const { error: insertError } = await supabase
-        .from("challenge_achievements")
-        .insert(achievementData);
-
-      if (insertError) throw insertError;
-    }
-
-    // Save training days and their exercises
-    if (trainingDays.length > 0) {
-      // First, delete existing training days (this will cascade delete exercises)
-      const { error: deleteError } = await supabase
-        .from("challenge_training_days")
-        .delete()
-        .eq("challenge_id", challengeId);
-
-      if (deleteError) throw deleteError;
-
-      // Insert training days one by one to get their IDs
-      for (const day of trainingDays) {
-        // Calculate duration for this training day
-        const durationSeconds = day.isRestDay
-          ? 0
-          : calculateTrainingDayDuration(day.exercises);
-
-        const { data: trainingDayData, error: dayError } = await supabase
-          .from("challenge_training_days")
-          .insert({
-            challenge_id: challengeId,
-            day_number: trainingDays.indexOf(day) + 1,
-            title: day.title,
-            description: day.description || null,
-            is_rest_day: day.isRestDay || false,
-            duration_seconds: durationSeconds,
-          })
-          .select()
-          .single();
-
-        if (dayError) throw dayError;
-
-        // Now save exercises for this training day
-        if (day.exercises && day.exercises.length > 0) {
-          const exerciseData = day.exercises.map((exercise, index) => ({
-            training_day_id: trainingDayData.id,
-            figure_id: exercise.figure_id,
-            order_index: exercise.order_index || index,
-            sets: exercise.sets,
-            reps: exercise.reps,
-            hold_time_seconds: exercise.hold_time_seconds,
-            rest_time_seconds: exercise.rest_time_seconds,
-            video_url: exercise.video_url,
-            audio_url: exercise.audio_url,
-            notes: exercise.notes,
-          }));
-
-          const { error: exerciseError } = await supabase
-            .from("training_day_exercises")
-            .insert(exerciseData);
-
-          if (exerciseError) throw exerciseError;
-        }
-      }
-    }
   };
 
   const deleteChallenge = async () => {
@@ -633,10 +691,19 @@ const EditChallenge = () => {
               <Input
                 id="title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (errors.title) {
+                    setErrors(prev => ({ ...prev, title: undefined }));
+                  }
+                }}
                 placeholder="Enter challenge title"
                 maxLength={100}
+                className={cn(errors.title && "border-red-500")}
               />
+              {errors.title && (
+                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -644,11 +711,20 @@ const EditChallenge = () => {
               <Textarea
                 id="description"
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  if (errors.description) {
+                    setErrors(prev => ({ ...prev, description: undefined }));
+                  }
+                }}
                 placeholder="Describe your challenge..."
                 rows={4}
-                maxLength={500}
+                maxLength={1000}
+                className={cn(errors.description && "border-red-500")}
               />
+              {errors.description && (
+                <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -753,72 +829,6 @@ const EditChallenge = () => {
                   />
                 </div>
               )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Start Date *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !startDate && "text-muted-foreground"
-                      )}
-                    >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {startDate ? (
-                        format(startDate, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={startDate}
-                      onSelect={setStartDate}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <div className="space-y-2">
-                <Label>End Date *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !endDate && "text-muted-foreground"
-                      )}
-                    >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {endDate ? (
-                        format(endDate, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={endDate}
-                      onSelect={setEndDate}
-                      disabled={(date) => date < (startDate || new Date())}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
             </div>
 
             {/* Publishing and Premium Settings */}
@@ -947,22 +957,33 @@ const EditChallenge = () => {
                 <div className="flex items-center gap-3">
                   <CalendarDays className="w-6 h-6 text-blue-400" />
                   <div>
-                    <Label className="text-xl font-bold">Training Days</Label>
+                    <Label className="text-xl font-bold">
+                      Training Days ({trainingDays.length})
+                    </Label>
                     <p className="text-sm text-muted-foreground">
                       Design your challenge schedule
                     </p>
+                    {errors.trainingDays && (
+                      <p className="text-red-500 text-sm mt-1">{errors.trainingDays}</p>
+                    )}
                   </div>
                 </div>
-                <Button
-                  type="button"
-                  variant="default"
-                  size="lg"
-                  onClick={addTrainingDay}
-                  className="flex items-center gap-2 bg-primary hover:bg-primary/90"
-                >
-                  <Plus className="w-5 h-5" />
-                  Add Training Day
-                </Button>
+                <div className="flex gap-2">
+                  <BulkDayCreator
+                    trainingDays={trainingDays}
+                    onUpdateDays={setTrainingDays}
+                  />
+                  <Button
+                    type="button"
+                    variant="default"
+                    size="lg"
+                    onClick={addTrainingDay}
+                    className="flex items-center gap-2 bg-primary hover:bg-primary/90"
+                  >
+                    <Plus className="w-5 h-5" />
+                    Add Day
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-6">
@@ -985,54 +1006,59 @@ const EditChallenge = () => {
                         {/* Day Header */}
                         <CollapsibleTrigger asChild>
                           <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6 border-b border-border/50 cursor-pointer hover:bg-primary/15 transition-colors">
-                            <div className="flex items-center justify-between mb-4">
-                              <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-                                  <GripVertical className="w-5 h-5" />
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  {isCollapsed ? (
-                                    <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform" />
-                                  ) : (
-                                    <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform" />
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-4 flex-1">
+                                  <div className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                                    <GripVertical className="w-5 h-5" />
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    {isCollapsed ? (
+                                      <ChevronRight className="w-5 h-5 text-muted-foreground transition-transform" />
+                                    ) : (
+                                      <ChevronDown className="w-5 h-5 text-muted-foreground transition-transform" />
+                                    )}
+                                  </div>
+                                  <Badge variant={day.isRestDay ? "secondary" : "default"} className="text-sm px-3 py-1">
+                                    Day {index + 1}/{trainingDays.length}
+                                  </Badge>
+                                  <div className="flex-1">
+                                    <h3 className="text-lg font-bold">
+                                      {day.title || `Day ${index + 1}`}
+                                    </h3>
+                                    <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                                      <span>{day.exercises.length} exercise{day.exercises.length !== 1 ? 's' : ''}</span>
+                                      {/* Progress indicator */}
+                                      <div className={cn(
+                                        "w-2 h-2 rounded-full",
+                                        day.exercises.length === 0 ? "bg-red-500" :
+                                        day.exercises.length < 3 ? "bg-yellow-500" :
+                                        "bg-green-500"
+                                      )} />
+                                    </div>
+                                  </div>
+                                  {day.isRestDay && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-sm px-3 py-1"
+                                    >
+                                      😴 Rest
+                                    </Badge>
                                   )}
                                 </div>
-                                <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary/30 flex items-center justify-center">
-                                  <span className="text-lg font-bold text-primary">
-                                    {index + 1}
-                                  </span>
-                                </div>
-                                <div>
-                                  <h3 className="text-xl font-bold">
-                                    Day {index + 1}
-                                  </h3>
-                                  <p className="text-sm text-muted-foreground">
-                                    Training session {index + 1}
-                                  </p>
-                                </div>
-                                {day.isRestDay && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-sm px-3 py-1"
-                                  >
-                                    <span className="mr-2">😴</span> Rest Day
-                                  </Badge>
-                                )}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removeTrainingDay(index);
+                                  }}
+                                  className="hover:bg-destructive/20 hover:text-destructive hover:border-destructive/50"
+                                >
+                                  <X className="w-4 h-4 mr-2" />
+                                  Remove
+                                </Button>
                               </div>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  removeTrainingDay(index);
-                                }}
-                                className="hover:bg-destructive/20 hover:text-destructive hover:border-destructive/50"
-                              >
-                                <X className="w-4 h-4 mr-2" />
-                                Remove Day
-                              </Button>
-                            </div>
                           </div>
                         </CollapsibleTrigger>
 
@@ -1224,12 +1250,22 @@ const EditChallenge = () => {
                 className="flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
               >
                 <Save className="w-4 h-4" />
-                Update Challenge
+                {isLoading ? "Saving..." : "Update Challenge"}
               </Button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Save Progress Indicator */}
+      {saveProgress && (
+        <div className="fixed bottom-4 right-4 bg-primary text-primary-foreground p-4 rounded-lg shadow-lg z-50">
+          <div className="flex items-center gap-3">
+            <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+            <span className="font-medium">{saveProgress}</span>
+          </div>
+        </div>
+      )}
 
       <ConfirmDeleteModal
         isOpen={showDeleteModal}
