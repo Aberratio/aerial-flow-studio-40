@@ -495,12 +495,16 @@ const EditChallenge = () => {
           day_number: i + 1,
           title: day.title,
           description: day.description,
+          is_rest_day: day.isRestDay || false,
           duration_seconds: durationSeconds,
         })
         .select()
         .single();
 
-      if (dayError) throw new Error(`Failed to insert day ${i + 1}: ${dayError.message}`);
+      if (dayError) {
+        console.error(`Failed to insert training day ${i + 1}:`, dayError);
+        throw new Error(`Failed to insert day ${i + 1}: ${dayError.message}`);
+      }
 
       // Save exercises for this day
       if (day.exercises && day.exercises.length > 0) {

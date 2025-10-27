@@ -177,6 +177,15 @@ const CreateChallengeModal = ({
       return;
     }
 
+    if (trainingDays.length === 0) {
+      toast({
+        title: "Brakujące dni treningowe",
+        description: "Musisz dodać przynajmniej 1 dzień treningowy.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -226,17 +235,27 @@ const CreateChallengeModal = ({
       setChallengeId(result.data.id);
 
       // Save achievements and training days
-      await saveAchievementsAndTrainingDays(result.data.id);
+      try {
+        await saveAchievementsAndTrainingDays(result.data.id);
+      } catch (saveError: any) {
+        console.error("Error saving achievements/training days:", saveError);
+        toast({
+          title: "Błąd zapisywania dni treningowych",
+          description: `Szczegóły: ${saveError.message || "Sprawdź konsolę dla więcej informacji."}`,
+          variant: "destructive",
+        });
+        throw saveError;
+      }
 
       toast({
         title: "Szkic zapisany",
         description: "Wyzwanie zostało pomyślnie zapisane jako szkic.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving challenge:", error);
       toast({
         title: "Błąd",
-        description: "Nie udało się zapisać szkicu wyzwania.",
+        description: error.message || "Nie udało się zapisać szkicu wyzwania.",
         variant: "destructive",
       });
     } finally {

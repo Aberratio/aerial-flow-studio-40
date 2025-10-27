@@ -251,6 +251,7 @@ export type Database = {
           description: string | null
           duration_seconds: number | null
           id: string
+          is_rest_day: boolean | null
           title: string | null
         }
         Insert: {
@@ -260,6 +261,7 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           id?: string
+          is_rest_day?: boolean | null
           title?: string | null
         }
         Update: {
@@ -269,6 +271,7 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           id?: string
+          is_rest_day?: boolean | null
           title?: string | null
         }
         Relationships: [
