@@ -290,10 +290,13 @@ export type Database = {
           end_date: string | null
           id: string
           image_url: string | null
+          is_new: boolean | null
           level: number | null
           premium: boolean
           price_pln: number | null
           price_usd: number | null
+          series_name: string | null
+          series_order: number | null
           start_date: string | null
           status: string
           title: string
@@ -308,10 +311,13 @@ export type Database = {
           end_date?: string | null
           id?: string
           image_url?: string | null
+          is_new?: boolean | null
           level?: number | null
           premium?: boolean
           price_pln?: number | null
           price_usd?: number | null
+          series_name?: string | null
+          series_order?: number | null
           start_date?: string | null
           status?: string
           title: string
@@ -326,10 +332,13 @@ export type Database = {
           end_date?: string | null
           id?: string
           image_url?: string | null
+          is_new?: boolean | null
           level?: number | null
           premium?: boolean
           price_pln?: number | null
           price_usd?: number | null
+          series_name?: string | null
+          series_order?: number | null
           start_date?: string | null
           status?: string
           title?: string
@@ -2356,6 +2365,7 @@ export type Database = {
         Args: { p_challenge_id: string; p_user_id: string }
         Returns: undefined
       }
+      unmark_old_challenges: { Args: never; Returns: undefined }
       update_user_login_tracking: {
         Args: { user_id: string }
         Returns: undefined
