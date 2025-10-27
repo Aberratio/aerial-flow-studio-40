@@ -237,10 +237,6 @@ const AerialJourney = () => {
 
   // Show inline sport selection for users without selected sports
   if (!loading && !isAdminMode && userSelectedSports.length === 0 && user) {
-    // Initialize temp selection on first render
-    if (tempSelectedSports.length === 0 && userSelectedSports.length === 0) {
-      setTempSelectedSports([]);
-    }
     return (
       <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
