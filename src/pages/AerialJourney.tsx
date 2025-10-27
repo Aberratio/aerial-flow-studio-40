@@ -46,6 +46,7 @@ const AerialJourney = () => {
   const { isAdmin } = useUserRole();
   const [availableSports, setAvailableSports] = useState<SportCategory[]>([]);
   const [userSelectedSports, setUserSelectedSports] = useState<string[]>([]);
+  const [tempSelectedSports, setTempSelectedSports] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAdminMode, setIsAdminMode] = useState(false);
   const [showSportSelectionModal, setShowSportSelectionModal] = useState(false);
@@ -236,6 +237,10 @@ const AerialJourney = () => {
 
   // Show inline sport selection for users without selected sports
   if (!loading && !isAdminMode && userSelectedSports.length === 0 && user) {
+    // Initialize temp selection on first render
+    if (tempSelectedSports.length === 0 && userSelectedSports.length === 0) {
+      setTempSelectedSports([]);
+    }
     return (
       <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -267,7 +272,7 @@ const AerialJourney = () => {
                     {availableSports
                       .filter(sport => sport.is_published)
                       .map((sport) => {
-                        const isSelected = userSelectedSports.includes(sport.id);
+                        const isSelected = tempSelectedSports.includes(sport.id);
                         return (
                           <Card
                             key={sport.id}
@@ -277,7 +282,7 @@ const AerialJourney = () => {
                                 : "bg-white/5 border-white/10 hover:border-purple-400/30"
                             }`}
                             onClick={() => {
-                              setUserSelectedSports(prev =>
+                              setTempSelectedSports(prev =>
                                 prev.includes(sport.id)
                                   ? prev.filter(id => id !== sport.id)
                                   : [...prev, sport.id]
@@ -303,7 +308,7 @@ const AerialJourney = () => {
                   <div className="flex justify-center">
                     <Button
                       onClick={async () => {
-                        if (userSelectedSports.length === 0) {
+                        if (tempSelectedSports.length === 0) {
                           toast.error("Wybierz przynajmniej jeden sport");
                           return;
                         }
@@ -311,23 +316,24 @@ const AerialJourney = () => {
                         try {
                           const { error } = await supabase
                             .from("profiles")
-                            .update({ sports: userSelectedSports })
+                            .update({ sports: tempSelectedSports })
                             .eq("id", user.id);
 
                           if (error) throw error;
 
                           toast.success("Sporty zapisane!");
+                          setUserSelectedSports(tempSelectedSports);
                           fetchAvailableSports();
                         } catch (error) {
                           console.error("Error saving sports:", error);
                           toast.error("Nie udało się zapisać sportów");
                         }
                       }}
-                      disabled={userSelectedSports.length === 0}
+                      disabled={tempSelectedSports.length === 0}
                       size="lg"
                       className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
                     >
-                      Potwierdź wybór ({userSelectedSports.length})
+                      Potwierdź wybór ({tempSelectedSports.length})
                     </Button>
                   </div>
                 </>
