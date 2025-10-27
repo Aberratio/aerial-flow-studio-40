@@ -272,14 +272,17 @@ const Challenges = () => {
         active.push(challenge);
       }
 
-      // Group by series or standalone
-      if (challenge.series_name) {
-        if (!series[challenge.series_name]) {
-          series[challenge.series_name] = [];
+      // Only add to series/standalone if NOT active (to avoid duplication)
+      if (challenge.status !== 'active') {
+        // Group by series or standalone
+        if (challenge.series_name) {
+          if (!series[challenge.series_name]) {
+            series[challenge.series_name] = [];
+          }
+          series[challenge.series_name].push(challenge);
+        } else {
+          standalone.push(challenge);
         }
-        series[challenge.series_name].push(challenge);
-      } else {
-        standalone.push(challenge);
       }
     });
 
