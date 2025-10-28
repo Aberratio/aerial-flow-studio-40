@@ -74,7 +74,7 @@ const TopHeader: React.FC = () => {
             onClick={() => navigate('/library')}
             className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
           >
-            <BookOpen className="w-4 h-4 mr-2" />
+            <BookOpen className={cn("w-4 h-4", !isMobile && "mr-2")} />
             {!isMobile && <span>Biblioteka</span>}
           </Button>
           {isAdmin && (

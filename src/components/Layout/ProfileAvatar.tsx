@@ -60,11 +60,11 @@ const ProfileAvatar: React.FC = () => {
         <DropdownMenuContent align="end" className="w-48 bg-background/95 backdrop-blur-sm border-white/10">
           <DropdownMenuItem onClick={() => navigate('/profile')} className="cursor-pointer">
             <User className="w-4 h-4 mr-2" />
-            Profile
+            Profil
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setIsSettingsOpen(true)} className="cursor-pointer">
             <Settings className="w-4 h-4 mr-2" />
-            Settings
+            Ustawienia
           </DropdownMenuItem>
           <DropdownMenuSeparator className="bg-white/10" />
           <DropdownMenuItem 
@@ -72,7 +72,7 @@ const ProfileAvatar: React.FC = () => {
             className="cursor-pointer text-destructive focus:text-destructive"
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Log Out
+            Wyloguj
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -85,15 +85,15 @@ const ProfileAvatar: React.FC = () => {
       <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
         <AlertDialogContent className="bg-background/95 backdrop-blur-sm border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
+            <AlertDialogTitle>Potwierdź wylogowanie</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to log out?
+              Czy na pewno chcesz się wylogować?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Anuluj</AlertDialogCancel>
             <AlertDialogAction onClick={handleLogout} className="bg-destructive hover:bg-destructive/90">
-              Log Out
+              Wyloguj
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
