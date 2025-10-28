@@ -565,12 +565,12 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                     : "bg-gray-900/30 border-gray-600/20 opacity-60"
                 }`}
               >
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
+                <CardContent className="p-4 md:p-6">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4 mb-4">
+                    <div className="flex items-center gap-3 md:gap-4">
                       {/* Level Badge */}
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${
+                        className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center font-bold text-base md:text-lg flex-shrink-0 ${
                           isCompleted
                             ? "bg-gradient-to-r from-green-400 to-emerald-400 text-black"
                             : isUnlocked
@@ -579,22 +579,22 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                         }`}
                       >
                         {isCompleted ? (
-                          <Crown className="w-6 h-6" />
+                          <Crown className="w-5 h-5 md:w-6 md:h-6" />
                         ) : (
                           level.level_number
                         )}
                       </div>
 
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <h3
-                          className={`font-semibold text-lg ${
+                          className={`font-semibold text-base md:text-lg ${
                             isUnlocked ? "text-white" : "text-gray-500"
                           }`}
                         >
                           {level.level_name}
                         </h3>
                         {isUnlocked && (
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs md:text-sm text-muted-foreground">
                             {level.figures.length} dostępnych figur
                           </p>
                         )}
@@ -603,27 +603,27 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
                     {/* Status Indicator */}
                     {isUnlocked ? (
-                      <div className="text-right">
+                      <div className="flex items-center justify-end md:text-right ml-auto">
                         {isCompleted ? (
                           <div className="flex items-center gap-2 text-green-400">
-                            <CheckCircle className="w-5 h-5" />
-                            <span className="text-sm font-medium">
+                            <CheckCircle className="w-4 h-4 md:w-5 md:h-5" />
+                            <span className="text-xs md:text-sm font-medium">
                               Ukończone
                             </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-blue-400">
-                            <Circle className="w-5 h-5" />
-                            <span className="text-sm font-medium">
+                            <Circle className="w-4 h-4 md:w-5 md:h-5" />
+                            <span className="text-xs md:text-sm font-medium whitespace-nowrap">
                               {progress}% ukończone
                             </span>
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2 text-gray-500">
-                        <Lock className="w-5 h-5" />
-                        <span className="text-sm">Zablokowane</span>
+                      <div className="flex items-center gap-2 text-gray-500 ml-auto">
+                        <Lock className="w-4 h-4 md:w-5 md:h-5" />
+                        <span className="text-xs md:text-sm">Zablokowane</span>
                       </div>
                     )}
                   </div>
