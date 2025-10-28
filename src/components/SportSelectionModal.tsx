@@ -156,19 +156,19 @@ const SportSelectionModal = ({
           </div>
         )}
 
-        <DialogFooter>
+        <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
           <Button
             variant="outline"
             onClick={onClose}
             disabled={saving}
-            className="border-white/10"
+            className="border-white/10 w-full sm:w-auto"
           >
             Anuluj
           </Button>
           <Button
             onClick={handleSave}
             disabled={selectedSports.length === 0 || saving}
-            className="bg-gradient-to-r from-purple-500 to-pink-500"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 w-full sm:w-auto"
           >
             {saving ? "Zapisywanie..." : `Potwierdź wybór (${selectedSports.length})`}
           </Button>

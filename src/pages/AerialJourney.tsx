@@ -241,7 +241,7 @@ const AerialJourney = () => {
       <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
           <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent leading-tight pb-2">
               Witaj w Twojej Podróży!
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground">
@@ -360,8 +360,8 @@ const AerialJourney = () => {
           )}
         </div>
 
-        <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+        <div className="text-center mb-6 md:mb-8">
+          <h1 className="text-2xl md:text-5xl lg:text-6xl font-bold mb-2 md:mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent leading-tight pb-2">
             Twoja Podróż
           </h1>
         </div>
