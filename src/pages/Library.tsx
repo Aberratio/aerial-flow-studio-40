@@ -15,6 +15,8 @@ import {
   ChevronDown,
   ChevronUp,
   Video,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -62,6 +64,8 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { LibraryGridView } from "@/components/Library/LibraryGridView";
+import { LibraryListView } from "@/components/Library/LibraryListView";
 
 const Library = () => {
   const { user } = useAuth();
@@ -105,6 +109,7 @@ const Library = () => {
   const [userProfile, setUserProfile] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const EXERCISES_PER_PAGE = 40;
 
@@ -259,7 +264,25 @@ const Library = () => {
     fetchUserProfile();
     loadFiltersFromLocalStorage();
     loadSearchFromLocalStorage();
+    loadViewModeFromLocalStorage();
   }, [user]);
+
+  // Save view mode to localStorage
+  useEffect(() => {
+    localStorage.setItem("libraryViewMode", viewMode);
+  }, [viewMode]);
+
+  // Load view mode from localStorage
+  const loadViewModeFromLocalStorage = () => {
+    try {
+      const savedViewMode = localStorage.getItem("libraryViewMode");
+      if (savedViewMode && (savedViewMode === "grid" || savedViewMode === "list")) {
+        setViewMode(savedViewMode);
+      }
+    } catch (error) {
+      console.error("Error loading view mode from localStorage:", error);
+    }
+  };
 
   // Save filters to localStorage whenever they change
   useEffect(() => {
@@ -1761,159 +1784,82 @@ const Library = () => {
           )}
         </div>
 
-        {/* Results summary */}
+        {/* Results summary and view toggle */}
         {filteredFigures.length > 0 && (
-          <div className="mb-4 text-white/60 text-sm">
-            Pokazano {startIndex + 1}-
-            {Math.min(endIndex, filteredFigures.length)} z{" "}
-            {filteredFigures.length} ćwiczeń
+          <div className="mb-4 flex items-center justify-between">
+            <div className="text-white/60 text-sm">
+              Pokazano {startIndex + 1}-
+              {Math.min(endIndex, filteredFigures.length)} z{" "}
+              {filteredFigures.length} ćwiczeń
+            </div>
+            <div className="flex gap-1 bg-white/5 rounded-lg p-1">
+              <Button
+                size="sm"
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                className={`h-8 w-8 p-0 ${
+                  viewMode === "grid"
+                    ? "bg-white/10 text-white"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+                onClick={() => setViewMode("grid")}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                className={`h-8 w-8 p-0 ${
+                  viewMode === "list"
+                    ? "bg-white/10 text-white"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+                onClick={() => setViewMode("list")}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         )}
 
-        {/* Exercise Grid */}
-        <div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          data-results-section
-        >
-          {paginatedFigures.map((figure) => (
-            <Card
-              key={figure.id}
-              className="bg-white/5 border-white/10 hover:bg-white/10 transition-all duration-300 cursor-pointer group overflow-hidden"
-              onClick={() => handleFigureClick(figure)}
-            >
-              <CardContent className="p-0">
-                <div className="relative aspect-square overflow-hidden">
-                  {figure.image_url ? (
-                    <img
-                      src={figure.image_url}
-                      alt={figure.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                      <span className="text-6xl">🤸</span>
-                    </div>
-                  )}
-
-                  {/* Premium badge */}
-                  {figure.premium && (
-                    <div className="absolute top-3 right-3 z-10">
-                      <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-black px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg">
-                        <Crown className="w-3 h-3" />
-                        PRO
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Status icon */}
-                  {getStatusIcon(figure.progress_status) && (
-                    <div className="absolute top-3 left-3 z-10 bg-black/50 backdrop-blur-sm rounded-full p-1.5">
-                      {getStatusIcon(figure.progress_status)}
-                    </div>
-                  )}
-
-                  {/* Video indicator */}
-                  {figure.video_url && (
-                    <div className="absolute bottom-3 right-3 z-10">
-                      <div className="bg-black/70 backdrop-blur-sm text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
-                        <Video className="w-3 h-3" />
-                        Wideo
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Gradient overlay for better text readability */}
-                  <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/60 to-transparent" />
-
-                  {/* Exercise type badge */}
-                  <div className="absolute bottom-3 left-3 z-10">
-                    <div
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        figure.type === "single_figure"
-                          ? "bg-blue-500/90 text-white"
-                          : "bg-purple-500/90 text-white"
-                      }`}
-                    >
-                      {figure.type === "single_figure" ? "Figure" : "Kombo"}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-4">
-                  {/* Header with title and edit buttons */}
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-white font-semibold text-base leading-tight mb-2 line-clamp-2">
-                        {figure.name}
-                      </h3>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          className={`${getDifficultyColor(
-                            figure.difficulty_level
-                          )} text-xs border font-medium`}
-                        >
-                          {figure.difficulty_level}
-                        </Badge>
-                        <span className="text-white/60 text-xs capitalize">
-                          {figure.category}
-                        </span>
-                      </div>
-                    </div>
-
-                    {canModifyFigure(figure) && (
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ml-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-white/20 rounded-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setEditingFigure(figure);
-                            setShowCreateExercise(true);
-                          }}
-                        >
-                          <Edit className="w-4 h-4 text-blue-400" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 hover:bg-white/20 rounded-full"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setDeleteModal({
-                              isOpen: true,
-                              figure: figure,
-                            });
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4 text-red-400" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Tags section */}
-                  {figure.tags && figure.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {figure.tags.slice(0, 3).map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-2 py-1 bg-white/10 text-white/80 rounded-md hover:bg-white/20 transition-colors"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                      {figure.tags.length > 3 && (
-                        <span className="text-xs px-2 py-1 bg-white/10 text-white/60 rounded-md">
-                          +{figure.tags.length - 3}
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Exercise Grid or List */}
+        <div data-results-section>
+          {viewMode === "grid" ? (
+            <LibraryGridView
+              figures={paginatedFigures}
+              onFigureClick={handleFigureClick}
+              canModifyFigure={canModifyFigure}
+              getDifficultyColor={getDifficultyColor}
+              getStatusIcon={getStatusIcon}
+              onEdit={(figure) => {
+                setEditingFigure(figure);
+                setShowCreateExercise(true);
+              }}
+              onDelete={(figure) => {
+                setDeleteModal({
+                  isOpen: true,
+                  figure: figure,
+                });
+              }}
+            />
+          ) : (
+            <LibraryListView
+              figures={paginatedFigures}
+              onFigureClick={handleFigureClick}
+              canModifyFigure={canModifyFigure}
+              getDifficultyColor={getDifficultyColor}
+              getStatusIcon={getStatusIcon}
+              onEdit={(figure) => {
+                setEditingFigure(figure);
+                setShowCreateExercise(true);
+              }}
+              onDelete={(figure) => {
+                setDeleteModal({
+                  isOpen: true,
+                  figure: figure,
+                });
+              }}
+            />
+          )}
         </div>
 
         {/* Pagination */}
