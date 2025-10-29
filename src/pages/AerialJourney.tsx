@@ -368,18 +368,18 @@ const AerialJourney = () => {
 
         {/* Available Sports */}
         <Card className="glass-effect border-white/10">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between">
+          <CardHeader className="pb-3 md:pb-4 px-4 md:px-6 pt-4 md:pt-6">
+            <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-4">
               <div className="flex-1">
-                <CardTitle className="text-white flex items-center mb-2">
+                <CardTitle className="text-white flex flex-wrap items-center gap-2 mb-2 text-lg md:text-2xl">
                   Odkrywaj umiejętności według sportu
                   {isAdmin && isAdminMode && (
-                    <Badge className="ml-2 bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
+                    <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30 text-xs">
                       Widok admina
                     </Badge>
                   )}
                 </CardTitle>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-xs md:text-sm">
                   {isAdmin && isAdminMode
                     ? "Wszystkie sporty (opublikowane i wersje robocze). Użyj przełączników, aby publikować/odpublikować sporty."
                     : "Kliknij na dowolny sport, aby zobaczyć pełne drzewo umiejętności i swoją progresję"}
@@ -390,7 +390,7 @@ const AerialJourney = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowSportSelectionModal(true)}
-                  className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
+                  className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10 w-full md:w-auto text-sm"
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Edytuj sporty
