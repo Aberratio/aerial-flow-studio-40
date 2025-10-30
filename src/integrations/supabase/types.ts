@@ -358,6 +358,36 @@ export type Database = {
           },
         ]
       }
+      figure_difficulty_levels: {
+        Row: {
+          color_class: string | null
+          created_at: string
+          id: string
+          key: string
+          name_pl: string
+          order_index: number
+          updated_at: string
+        }
+        Insert: {
+          color_class?: string | null
+          created_at?: string
+          id?: string
+          key: string
+          name_pl: string
+          order_index: number
+          updated_at?: string
+        }
+        Update: {
+          color_class?: string | null
+          created_at?: string
+          id?: string
+          key?: string
+          name_pl?: string
+          order_index?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       figure_experts: {
         Row: {
           added_by: string
@@ -405,6 +435,13 @@ export type Database = {
             referencedRelation: "figures"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "figure_experts_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
+            referencedColumns: ["id"]
+          },
         ]
       }
       figure_progress: {
@@ -443,7 +480,41 @@ export type Database = {
             referencedRelation: "figures"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "figure_progress_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      figure_types: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          name_pl: string
+          order_index: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          name_pl: string
+          order_index: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          name_pl?: string
+          order_index?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       figures: {
         Row: {
@@ -458,6 +529,7 @@ export type Database = {
           instructions: string | null
           name: string
           premium: boolean
+          sport_category_id: string | null
           synonyms: string[] | null
           tags: string[] | null
           type: string | null
@@ -476,6 +548,7 @@ export type Database = {
           instructions?: string | null
           name: string
           premium?: boolean
+          sport_category_id?: string | null
           synonyms?: string[] | null
           tags?: string[] | null
           type?: string | null
@@ -494,6 +567,7 @@ export type Database = {
           instructions?: string | null
           name?: string
           premium?: boolean
+          sport_category_id?: string | null
           synonyms?: string[] | null
           tags?: string[] | null
           type?: string | null
@@ -506,6 +580,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figures_sport_category_id_fkey"
+            columns: ["sport_category_id"]
+            isOneToOne: false
+            referencedRelation: "sport_categories"
             referencedColumns: ["id"]
           },
         ]
@@ -664,6 +745,13 @@ export type Database = {
             columns: ["figure_id"]
             isOneToOne: false
             referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "level_figures_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
             referencedColumns: ["id"]
           },
           {
@@ -835,6 +923,13 @@ export type Database = {
             columns: ["figure_id"]
             isOneToOne: false
             referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "posts_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
             referencedColumns: ["id"]
           },
           {
@@ -1017,6 +1112,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "progress_tracking_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "progress_tracking_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -1024,6 +1126,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      restore_ctd_stage: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          day_number: number
+          description: string | null
+          duration_seconds: number | null
+          id: string
+          is_rest_day: boolean | null
+          title: string | null
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          day_number?: number
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_rest_day?: boolean | null
+          title?: string | null
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          day_number?: number
+          description?: string | null
+          duration_seconds?: number | null
+          id?: string
+          is_rest_day?: boolean | null
+          title?: string | null
+        }
+        Relationships: []
+      }
+      restore_tde_stage: {
+        Row: {
+          audio_url: string | null
+          completion_mode: string | null
+          created_at: string
+          figure_id: string
+          hold_time_seconds: number | null
+          id: string
+          notes: string | null
+          order_index: number
+          reps: number | null
+          rest_time_seconds: number | null
+          sets: number | null
+          training_day_id: string
+          video_url: string | null
+        }
+        Insert: {
+          audio_url?: string | null
+          completion_mode?: string | null
+          created_at?: string
+          figure_id: string
+          hold_time_seconds?: number | null
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps?: number | null
+          rest_time_seconds?: number | null
+          sets?: number | null
+          training_day_id: string
+          video_url?: string | null
+        }
+        Update: {
+          audio_url?: string | null
+          completion_mode?: string | null
+          created_at?: string
+          figure_id?: string
+          hold_time_seconds?: number | null
+          id?: string
+          notes?: string | null
+          order_index?: number
+          reps?: number | null
+          rest_time_seconds?: number | null
+          sets?: number | null
+          training_day_id?: string
+          video_url?: string | null
+        }
+        Relationships: []
       }
       saved_posts: {
         Row: {
@@ -1319,6 +1502,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "training_day_exercises_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "training_day_exercises_training_day_id_fkey"
             columns: ["training_day_id"]
             isOneToOne: false
@@ -1545,6 +1735,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "training_library_exercises_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "training_library_exercises_training_id_fkey"
             columns: ["training_id"]
             isOneToOne: false
@@ -1644,6 +1841,13 @@ export type Database = {
             columns: ["figure_id"]
             isOneToOne: false
             referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_session_figures_figure_id_fkey"
+            columns: ["figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
             referencedColumns: ["id"]
           },
           {
@@ -2273,7 +2477,49 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      figures_with_translations: {
+        Row: {
+          category: string | null
+          category_key: string | null
+          category_name_pl: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          difficulty_color_class: string | null
+          difficulty_level: string | null
+          difficulty_name_pl: string | null
+          difficulty_order: number | null
+          hold_time_seconds: number | null
+          id: string | null
+          image_url: string | null
+          instructions: string | null
+          name: string | null
+          premium: boolean | null
+          sport_category_id: string | null
+          synonyms: string[] | null
+          tags: string[] | null
+          type: string | null
+          type_name_pl: string | null
+          updated_at: string | null
+          video_url: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "figures_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figures_sport_category_id_fkey"
+            columns: ["sport_category_id"]
+            isOneToOne: false
+            referencedRelation: "sport_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_points_to_user: {

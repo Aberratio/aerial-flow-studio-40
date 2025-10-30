@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { getDifficultyLabel, getFigureTypeLabel, getDifficultyColorClass } from "@/lib/figureUtils";
 import {
   ArrowLeft,
   Play,
@@ -400,18 +401,7 @@ const ExerciseDetail = () => {
   };
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty?.toLowerCase()) {
-      case "beginner":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "intermediate":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      case "advanced":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      case "expert":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
+    return getDifficultyColorClass(difficulty);
   };
 
   const getStatusIcon = (status: string) => {
@@ -540,7 +530,7 @@ const ExerciseDetail = () => {
                         exercise.difficulty_level
                       )}`}
                     >
-                      {exercise.difficulty_level}
+                      {getDifficultyLabel(exercise.difficulty_level)}
                     </Badge>
                   )}
                 </div>
@@ -556,7 +546,7 @@ const ExerciseDetail = () => {
                   <div className="flex items-center text-muted-foreground">
                     <Target className="w-4 h-4 mr-2" />
                     <span className="text-sm">
-                      Trudność: {exercise.difficulty_level}
+                      Trudność: {getDifficultyLabel(exercise.difficulty_level)}
                     </span>
                   </div>
                   {exercise.category && (
@@ -955,7 +945,7 @@ const ExerciseDetail = () => {
                   <Badge
                     className={getDifficultyColor(exercise.difficulty_level)}
                   >
-                    {exercise.difficulty_level}
+                    {getDifficultyLabel(exercise.difficulty_level)}
                   </Badge>
                 )}
                 {exercise.category && (
@@ -1208,7 +1198,7 @@ const ExerciseDetail = () => {
                               prerequisite.difficulty_level
                             )}`}
                           >
-                            {prerequisite.difficulty_level}
+                            {getDifficultyLabel(prerequisite.difficulty_level)}
                           </Badge>
                         )}
                       </div>
@@ -1262,7 +1252,7 @@ const ExerciseDetail = () => {
                               similar.difficulty_level
                             )}`}
                           >
-                            {similar.difficulty_level}
+                            {getDifficultyLabel(similar.difficulty_level)}
                           </Badge>
                         )}
                       </div>

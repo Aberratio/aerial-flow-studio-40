@@ -22,6 +22,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { DIFFICULTY_LEVELS, FIGURE_TYPES } from "@/types/figures";
+import { getDifficultyLabel, getFigureTypeLabel, getDifficultyColorClass } from "@/lib/figureUtils";
 import {
   Select,
   SelectContent,
@@ -114,8 +116,8 @@ const Library = () => {
   const EXERCISES_PER_PAGE = 40;
 
   const categories = ["all", "silks", "hoop", "pole", "hammock"];
-  const levels = ["all", "beginner", "intermediate", "advanced", "expert"];
-  const types = ["all", "single_figure", "combo"];
+  const levels = ["all", "beginner", "intermediate", "advanced"];
+  const types = ["all", "single_figure", "combo", "warm_up", "stretching"];
   const statuses = ["all", "completed", "for_later", "failed", "not_tried"];
   const contentTypes = ["all", "free", "premium"];
   const videoTypes = ["all", "with_video", "without_video"];
@@ -473,18 +475,7 @@ const Library = () => {
   ]);
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Beginner":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "Intermediate":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      case "Advanced":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      case "Expert":
-        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
+    return getDifficultyColorClass(difficulty);
   };
 
   const getStatusIcon = (status: string) => {
@@ -686,8 +677,7 @@ const Library = () => {
                           : selectedLevels.includes("all")
                           ? "Wszystkie poziomy"
                           : selectedLevels.length === 1
-                          ? selectedLevels[0].charAt(0).toUpperCase() +
-                            selectedLevels[0].slice(1)
+                          ? getDifficultyLabel(selectedLevels[0])
                           : `${selectedLevels.length} poziomy`}
                       </span>
                       <div className="flex items-center gap-1">
@@ -745,9 +735,9 @@ const Library = () => {
                           />
                           <label
                             htmlFor={level}
-                            className="text-white capitalize"
+                            className="text-white"
                           >
-                            {level}
+                            {getDifficultyLabel(level)}
                           </label>
                         </div>
                       ))}
@@ -768,13 +758,7 @@ const Library = () => {
                           : selectedTypes.includes("all")
                           ? "Wszystkie typy"
                           : selectedTypes.length === 1
-                          ? selectedTypes[0]
-                              .replace("_", " ")
-                              .split(" ")
-                              .map(
-                                (w) => w.charAt(0).toUpperCase() + w.slice(1)
-                              )
-                              .join(" ")
+                          ? getFigureTypeLabel(selectedTypes[0])
                           : `${selectedTypes.length} typy`}
                       </span>
                       <div className="flex items-center gap-1">
@@ -829,9 +813,9 @@ const Library = () => {
                           />
                           <label
                             htmlFor={type}
-                            className="text-white capitalize"
+                            className="text-white"
                           >
-                            {type.replace("_", " ")}
+                            {getFigureTypeLabel(type)}
                           </label>
                         </div>
                       ))}

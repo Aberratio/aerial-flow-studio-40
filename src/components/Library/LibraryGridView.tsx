@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Crown, Video, CheckCircle, Bookmark, AlertCircle, Edit, Trash2 } from "lucide-react";
 import { LazyImage } from "@/components/LazyImage";
+import { getDifficultyLabel, getFigureTypeLabel } from "@/lib/figureUtils";
 
 interface LibraryGridViewProps {
   figures: any[];
@@ -83,10 +84,12 @@ export const LibraryGridView: React.FC<LibraryGridViewProps> = ({
                   className={`px-1.5 md:px-2 py-0.5 md:py-1 rounded-full text-xs font-medium ${
                     figure.type === "single_figure"
                       ? "bg-blue-500/90 text-white"
-                      : "bg-purple-500/90 text-white"
+                      : figure.type === "combo"
+                      ? "bg-purple-500/90 text-white"
+                      : "bg-orange-500/90 text-white"
                   }`}
                 >
-                  {figure.type === "single_figure" ? "Figure" : "Kombo"}
+                  {getFigureTypeLabel(figure.type)}
                 </div>
               </div>
             </div>
@@ -104,7 +107,7 @@ export const LibraryGridView: React.FC<LibraryGridViewProps> = ({
                         figure.difficulty_level
                       )} text-xs border font-medium`}
                     >
-                      {figure.difficulty_level}
+                      {getDifficultyLabel(figure.difficulty_level)}
                     </Badge>
                     <span className="text-white/60 text-xs capitalize">
                       {figure.category}

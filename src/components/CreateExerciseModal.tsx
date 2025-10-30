@@ -1,30 +1,18 @@
 import React, { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Upload, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { useUserRole } from "@/hooks/useUserRole";
-import { useSimilarExercises } from "@/hooks/useSimilarExercises";
+import { X, Upload, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { SimilarExercisesManager } from "@/components/SimilarExercisesManager";
+import { useUserRole } from "@/hooks/useUserRole";
+import { DIFFICULTY_LEVELS, FIGURE_TYPES } from "@/types/figures";
 
 interface CreateExerciseModalProps {
   isOpen: boolean;
@@ -371,10 +359,9 @@ export const CreateExerciseModal = ({
                   <SelectValue placeholder="Wybierz poziom trudności" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
-                  <SelectItem value="Expert">Expert</SelectItem>
+                  <SelectItem value="beginner">Początkujący</SelectItem>
+                  <SelectItem value="intermediate">Średniozaawansowany</SelectItem>
+                  <SelectItem value="advanced">Zaawansowany</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -456,13 +443,13 @@ export const CreateExerciseModal = ({
               <SelectContent>
                 {isTrainingSpecial ? (
                   <>
-                    <SelectItem value="warm_up">Warm Up</SelectItem>
-                    <SelectItem value="stretching">Stretching</SelectItem>
+                    <SelectItem value="warm_up">Rozgrzewka</SelectItem>
+                    <SelectItem value="stretching">Rozciąganie</SelectItem>
                   </>
                 ) : (
                   <>
-                    <SelectItem value="single figure">Single Figure</SelectItem>
-                    <SelectItem value="combo">Combo</SelectItem>
+                    <SelectItem value="single_figure">Pojedyncza figura</SelectItem>
+                    <SelectItem value="combo">Kombo</SelectItem>
                   </>
                 )}
               </SelectContent>

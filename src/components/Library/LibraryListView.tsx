@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LazyImage } from "@/components/LazyImage";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getDifficultyLabel, getFigureTypeLabel } from "@/lib/figureUtils";
 
 interface LibraryListViewProps {
   figures: any[];
@@ -93,7 +94,7 @@ export const LibraryListView: React.FC<LibraryListViewProps> = ({
                         figure.difficulty_level
                       )} text-xs border font-medium`}
                     >
-                      {figure.difficulty_level}
+                      {getDifficultyLabel(figure.difficulty_level)}
                     </Badge>
                     <span className="text-white/60 text-xs capitalize">
                       {figure.category}
@@ -102,10 +103,12 @@ export const LibraryListView: React.FC<LibraryListViewProps> = ({
                       className={`px-1.5 py-0.5 rounded-full text-xs font-medium ${
                         figure.type === "single_figure"
                           ? "bg-blue-500/20 text-blue-300"
-                          : "bg-purple-500/20 text-purple-300"
+                          : figure.type === "combo"
+                          ? "bg-purple-500/20 text-purple-300"
+                          : "bg-orange-500/20 text-orange-300"
                       }`}
                     >
-                      {figure.type === "single_figure" ? "Figure" : "Kombo"}
+                      {getFigureTypeLabel(figure.type)}
                     </div>
                     {figure.video_url && (
                       <div className="flex items-center gap-1 text-white/60">

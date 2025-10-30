@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { getDifficultyLabel, getDifficultyColorClass } from '@/lib/figureUtils';
 
 interface Exercise {
   id: string;
@@ -58,10 +59,10 @@ export const ExerciseSearchModal: React.FC<ExerciseSearchModalProps> = ({
   ];
 
   const difficulties = [
-    { value: 'all', label: 'All Levels' },
-    { value: 'Beginner', label: 'Beginner' },
-    { value: 'Intermediate', label: 'Intermediate' },
-    { value: 'Advanced', label: 'Advanced' }
+    { value: 'all', label: 'Wszystkie poziomy' },
+    { value: 'beginner', label: 'Początkujący' },
+    { value: 'intermediate', label: 'Średniozaawansowany' },
+    { value: 'advanced', label: 'Zaawansowany' }
   ];
 
   useEffect(() => {
@@ -130,12 +131,7 @@ export const ExerciseSearchModal: React.FC<ExerciseSearchModalProps> = ({
   };
 
   const getDifficultyColor = (difficulty?: string) => {
-    switch (difficulty) {
-      case 'Beginner': return 'bg-green-500/20 text-green-400';
-      case 'Intermediate': return 'bg-yellow-500/20 text-yellow-400';
-      case 'Advanced': return 'bg-red-500/20 text-red-400';
-      default: return 'bg-gray-500/20 text-gray-400';
-    }
+    return getDifficultyColorClass(difficulty);
   };
 
   const handleExerciseSelect = (exercise: Exercise) => {
@@ -234,7 +230,7 @@ export const ExerciseSearchModal: React.FC<ExerciseSearchModalProps> = ({
                               <h3 className="font-semibold text-white">{exercise.name}</h3>
                               {exercise.difficulty_level && (
                                 <Badge className={getDifficultyColor(exercise.difficulty_level)}>
-                                  {exercise.difficulty_level}
+                                  {getDifficultyLabel(exercise.difficulty_level)}
                                 </Badge>
                               )}
                               {isSelected && (
