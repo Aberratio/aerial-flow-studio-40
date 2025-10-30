@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { X, Upload, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { SimilarExercisesManager } from "@/components/SimilarExercisesManager";
