@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { FigureCompletionCelebration } from "./FigureCompletionCelebration";
 
 interface FigurePreviewModalProps {
   figure: {
@@ -22,20 +23,24 @@ interface FigurePreviewModalProps {
     type?: string;
     tags?: string[];
     hold_time_seconds?: number;
+    level_number?: number;
   } | null;
   isOpen: boolean;
   onClose: () => void;
+  onFigureCompleted?: (figureId: string) => void;
 }
 
 export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
   figure,
   isOpen,
   onClose,
+  onFigureCompleted,
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [figureProgress, setFigureProgress] = useState<string>("not_tried");
   const [loading, setLoading] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   // Fetch figure progress
   const fetchFigureProgress = async () => {
@@ -74,7 +79,20 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
       if (error) throw error;
 
       setFigureProgress(newStatus);
-      toast.success(`Figure marked as ${newStatus.replace("_", " ")}`);
+      
+      // If marking as completed, show celebration
+      if (newStatus === "completed") {
+        setShowCelebration(true);
+        
+        // After 3 seconds, hide celebration, close modal, and call callback
+        setTimeout(() => {
+          setShowCelebration(false);
+          onClose();
+          onFigureCompleted?.(figure.id);
+        }, 3000);
+      } else {
+        toast.success(`Figure marked as ${newStatus.replace("_", " ")}`);
+      }
     } catch (error) {
       console.error("Error updating figure status:", error);
       toast.error("Failed to update figure status");
@@ -105,8 +123,14 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-full p-0 bg-black/95 border-white/10">
+    <>
+      <FigureCompletionCelebration
+        isOpen={showCelebration}
+        figureName={figure?.name || ""}
+        pointsEarned={figure?.level_number || 1}
+      />
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-2xl w-full p-0 bg-black/95 border-white/10">
         <div className="relative">
           {/* Image */}
           <div className="w-full aspect-video bg-black/50 flex items-center justify-center">
@@ -190,5 +214,6 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+    </>
   );
 };

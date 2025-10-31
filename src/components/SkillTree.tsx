@@ -300,6 +300,16 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     fetchSportLevelsAndProgress();
   };
 
+  const handleFigureCompleted = async (figureId: string) => {
+    // Modal is already closed by FigurePreviewModal
+    setIsPreviewModalOpen(false);
+    setSelectedFigure(null);
+    
+    // Refresh data to update points immediately
+    await fetchSportLevelsAndProgress();
+    await fetchUserPoints();
+  };
+
   const getFigureProgress = (figureId: string) => {
     return userProgress.find((p) => p.figure_id === figureId);
   };
@@ -813,6 +823,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
             figure={selectedFigure}
             isOpen={isPreviewModalOpen}
             onClose={handleClosePreviewModal}
+            onFigureCompleted={handleFigureCompleted}
           />
         )}
       </div>
