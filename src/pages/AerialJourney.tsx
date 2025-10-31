@@ -68,6 +68,25 @@ const AerialJourney = () => {
 
       if (categoriesError) throw categoriesError;
 
+      // Fetch user challenge participations once before the loop
+      let challengeParticipations: {
+        [challengeId: string]: { participating: boolean; completed: boolean };
+      } = {};
+
+      if (user) {
+        const { data: challengeData } = await supabase
+          .from("challenge_participants")
+          .select("challenge_id, completed")
+          .eq("user_id", user.id);
+
+        challengeData?.forEach((participant) => {
+          challengeParticipations[participant.challenge_id] = {
+            participating: true,
+            completed: participant.completed || false,
+          };
+        });
+      }
+
       // For each sport category, get figure counts and level information
       const sportsArray = await Promise.all(
         (categoriesData || []).map(async (category) => {
@@ -82,7 +101,7 @@ const AerialJourney = () => {
           // Get levels for this category
           const { data: levelsData } = await supabase
             .from("sport_levels")
-            .select("id, level_number, point_limit")
+            .select("id, level_number, point_limit, challenge_id")
             .eq("sport_category", category.key_name)
             .order("level_number", { ascending: true });
 
@@ -131,6 +150,11 @@ const AerialJourney = () => {
                 levelFigures.forEach(() => {
                   userPoints += 1 * level.level_number; // 1 point × level number
                 });
+
+                // Add points from completed challenges in this level
+                if (level.challenge_id && challengeParticipations[level.challenge_id]?.completed) {
+                  userPoints += 3 * level.level_number; // 3 points × level number for completed challenge
+                }
               }
             }
           }
