@@ -656,7 +656,6 @@ const Challenges = () => {
         {/* Active Challenges Section */}
         {activeChallenges.length > 0 && (
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Aktywne teraz</h2>
             {viewMode === "grid" ? (
               <ChallengeGridView>
                 {activeChallenges.map((challenge) =>
