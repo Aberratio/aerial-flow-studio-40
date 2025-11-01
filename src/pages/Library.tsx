@@ -23,7 +23,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { DIFFICULTY_LEVELS, FIGURE_TYPES } from "@/types/figures";
-import { getDifficultyLabel, getFigureTypeLabel, getDifficultyColorClass } from "@/lib/figureUtils";
+import {
+  getDifficultyLabel,
+  getFigureTypeLabel,
+  getDifficultyColorClass,
+} from "@/lib/figureUtils";
 import {
   Select,
   SelectContent,
@@ -278,7 +282,10 @@ const Library = () => {
   const loadViewModeFromLocalStorage = () => {
     try {
       const savedViewMode = localStorage.getItem("libraryViewMode");
-      if (savedViewMode && (savedViewMode === "grid" || savedViewMode === "list")) {
+      if (
+        savedViewMode &&
+        (savedViewMode === "grid" || savedViewMode === "list")
+      ) {
         setViewMode(savedViewMode);
       }
     } catch (error) {
@@ -733,10 +740,7 @@ const Library = () => {
                               }
                             }}
                           />
-                          <label
-                            htmlFor={level}
-                            className="text-white"
-                          >
+                          <label htmlFor={level} className="text-white">
                             {getDifficultyLabel(level)}
                           </label>
                         </div>
@@ -811,10 +815,7 @@ const Library = () => {
                               }
                             }}
                           />
-                          <label
-                            htmlFor={type}
-                            className="text-white"
-                          >
+                          <label htmlFor={type} className="text-white">
                             {getFigureTypeLabel(type)}
                           </label>
                         </div>
@@ -1959,7 +1960,7 @@ const Library = () => {
           <Sheet open={mobileFiltersOpen} onOpenChange={setMobileFiltersOpen}>
             <SheetTrigger asChild>
               <Button
-                className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-purple-600 hover:bg-purple-700 text-white shadow-lg z-50"
+                className="fixed bottom-20 right-4 z-50 rounded-full w-14 h-14 shadow-lg"
                 size="icon"
               >
                 <Filter className="w-6 h-6" />
