@@ -1,10 +1,17 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ChevronLeft, Hand, Volume2, VolumeX, Play, Pause, MoreHorizontal, AlertCircle } from "lucide-react";
+import {
+  Hand,
+  Volume2,
+  VolumeX,
+  Play,
+  Pause,
+  Maximize,
+  Minimize,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -12,19 +19,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useSpeech } from "@/hooks/useSpeech";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { format } from "date-fns";
 
 interface Exercise {
   id: string;
@@ -70,7 +70,9 @@ const ChallengeDayTimer = () => {
   const [currentSegmentIndex, setCurrentSegmentIndex] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [audioMode, setAudioMode] = useState<"sound" | "no_sound" | "minimal_sound">(() => {
+  const [audioMode, setAudioMode] = useState<
+    "sound" | "no_sound" | "minimal_sound"
+  >(() => {
     const saved = localStorage.getItem("challengeTimerAudioMode");
     return (saved as "sound" | "no_sound" | "minimal_sound") || "minimal_sound";
   });
@@ -82,21 +84,29 @@ const ChallengeDayTimer = () => {
   const [preparationTime, setPreparationTime] = useState(10);
   const [isRestDay, setIsRestDay] = useState(false);
   const [trainingDayData, setTrainingDayData] = useState<any>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const { speak } = useSpeech(audioMode === "sound");
-  const { isSupported: isWakeLockSupported, requestWakeLock, releaseWakeLock } = useWakeLock();
+  const {
+    isSupported: isWakeLockSupported,
+    requestWakeLock,
+    releaseWakeLock,
+  } = useWakeLock();
 
   // Create optimistic beeping sound for minimal mode
-  const playBeep = (type: "countdown" | "transition" | "ready" = "countdown") => {
+  const playBeep = (
+    type: "countdown" | "transition" | "ready" = "countdown"
+  ) => {
     if (audioMode !== "minimal_sound") return;
-    
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+    const audioContext = new (window.AudioContext ||
+      (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
-    
+
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
-    
+
     // Different frequencies for different contexts
     if (type === "countdown") {
       oscillator.frequency.value = 1000; // Higher pitched for countdown
@@ -105,13 +115,16 @@ const ChallengeDayTimer = () => {
     } else if (type === "ready") {
       oscillator.frequency.value = 1200; // Highest pitch for get ready
     }
-    
-    oscillator.type = 'sine';
-    
+
+    oscillator.type = "sine";
+
     gainNode.gain.setValueAtTime(0, audioContext.currentTime);
     gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-    
+    gainNode.gain.exponentialRampToValueAtTime(
+      0.01,
+      audioContext.currentTime + 0.2
+    );
+
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.2);
   };
@@ -124,11 +137,12 @@ const ChallengeDayTimer = () => {
         setIsLoading(true);
 
         // Get training day directly since dayId is the training day ID
-        const { data: trainingDayData, error: trainingDayError } = await supabase
-          .from("challenge_training_days")
-          .select("*")
-          .eq("id", dayId)
-          .single();
+        const { data: trainingDayData, error: trainingDayError } =
+          await supabase
+            .from("challenge_training_days")
+            .select("*")
+            .eq("id", dayId)
+            .single();
 
         if (trainingDayError) throw trainingDayError;
         setTrainingDayId(dayId);
@@ -136,14 +150,14 @@ const ChallengeDayTimer = () => {
 
         // Check if user is participant of this challenge
         const { data: participant, error: participantError } = await supabase
-          .from('challenge_participants')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('challenge_id', challengeId)
+          .from("challenge_participants")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("challenge_id", challengeId)
           .single();
 
         if (participantError) throw participantError;
-        
+
         if (!participant) {
           toast({
             title: "Not Available",
@@ -153,19 +167,18 @@ const ChallengeDayTimer = () => {
           return;
         }
 
-        const { data: exercisesData, error: exercisesError } =
-          await supabase
-            .from("training_day_exercises")
-            .select(
-              `
+        const { data: exercisesData, error: exercisesError } = await supabase
+          .from("training_day_exercises")
+          .select(
+            `
               *,
               figure:figures (
                 id, name, image_url
               )
             `
-            )
-            .eq("training_day_id", dayId)
-            .order('order_index');
+          )
+          .eq("training_day_id", dayId)
+          .order("order_index");
 
         if (exercisesError) throw exercisesError;
 
@@ -216,13 +229,15 @@ const ChallengeDayTimer = () => {
           exerciseNotes: exercise.notes,
         });
 
-        if (!(exerciseIndex === exercises.length - 1 && setIndex === sets - 1)) {
+        if (
+          !(exerciseIndex === exercises.length - 1 && setIndex === sets - 1)
+        ) {
           newSegments.push({
             type: "rest",
             exerciseIndex,
             setIndex,
             duration: exercise.rest_time_seconds || 15,
-            exerciseName: "Rest",
+            exerciseName: "Przerwa",
           });
         }
       }
@@ -244,7 +259,7 @@ const ChallengeDayTimer = () => {
             if (prev > 2 && prev < 7) {
               speak((prev - 1).toString());
             } else if (prev === 2) {
-              speak("1... Begin!");
+              speak("1... Rozpocznij!");
             }
           } else if (audioMode === "minimal_sound") {
             // Beep during countdown for get ready phase
@@ -277,9 +292,14 @@ const ChallengeDayTimer = () => {
           if (audioMode === "sound" && prev <= 7 && prev > 1) {
             speak((prev - 2).toString());
           }
-          
+
           // Beeping for minimal sound mode
-          if (audioMode === "minimal_sound" && currentSegmentIndex < segments.length && prev <= 5 && prev > 0) {
+          if (
+            audioMode === "minimal_sound" &&
+            currentSegmentIndex < segments.length &&
+            prev <= 5 &&
+            prev > 0
+          ) {
             const currentSegment = segments[currentSegmentIndex];
             if (currentSegment?.type === "exercise") {
               playBeep("countdown");
@@ -322,7 +342,7 @@ const ChallengeDayTimer = () => {
         speak(`${currentSegment.exerciseName}, ${duration}${notes}`);
       } else {
         const duration = formatTimeNatural(currentSegment.duration);
-        speak(`Rest time, ${duration}`);
+        speak(`Przerwa, ${duration}`);
       }
     }
   }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, segments]);
@@ -331,20 +351,124 @@ const ChallengeDayTimer = () => {
     setHasAnnouncedSegment(false);
   }, [currentSegmentIndex]);
 
+  // Fullscreen API handling
+  useEffect(() => {
+    interface DocumentWithFullscreen extends Document {
+      webkitFullscreenElement?: Element | null;
+      mozFullScreenElement?: Element | null;
+      msFullscreenElement?: Element | null;
+      webkitExitFullscreen?: () => Promise<void>;
+      mozCancelFullScreen?: () => Promise<void>;
+      msExitFullscreen?: () => Promise<void>;
+    }
+
+    interface ElementWithFullscreen extends HTMLElement {
+      webkitRequestFullscreen?: () => Promise<void>;
+      mozRequestFullScreen?: () => Promise<void>;
+      msRequestFullscreen?: () => Promise<void>;
+    }
+
+    const doc = document as DocumentWithFullscreen;
+    const handleFullscreenChange = () => {
+      setIsFullscreen(
+        !!(
+          document.fullscreenElement ||
+          doc.webkitFullscreenElement ||
+          doc.mozFullScreenElement ||
+          doc.msFullscreenElement
+        )
+      );
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("mozfullscreenchange", handleFullscreenChange);
+    document.addEventListener("MSFullscreenChange", handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "mozfullscreenchange",
+        handleFullscreenChange
+      );
+      document.removeEventListener(
+        "MSFullscreenChange",
+        handleFullscreenChange
+      );
+    };
+  }, []);
+
+  const toggleFullscreen = async () => {
+    try {
+      interface DocumentWithFullscreen extends Document {
+        webkitFullscreenElement?: Element | null;
+        mozFullScreenElement?: Element | null;
+        msFullscreenElement?: Element | null;
+        webkitExitFullscreen?: () => Promise<void>;
+        mozCancelFullScreen?: () => Promise<void>;
+        msExitFullscreen?: () => Promise<void>;
+      }
+
+      interface ElementWithFullscreen extends HTMLElement {
+        webkitRequestFullscreen?: () => Promise<void>;
+        mozRequestFullScreen?: () => Promise<void>;
+        msRequestFullscreen?: () => Promise<void>;
+      }
+
+      const doc = document as DocumentWithFullscreen;
+      const element = document.documentElement as ElementWithFullscreen;
+
+      if (
+        !document.fullscreenElement &&
+        !doc.webkitFullscreenElement &&
+        !doc.mozFullScreenElement &&
+        !doc.msFullscreenElement
+      ) {
+        // Enter fullscreen
+        if (element.requestFullscreen) {
+          await element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+          await element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+          await element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+          await element.msRequestFullscreen();
+        }
+      } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        } else if (doc.mozCancelFullScreen) {
+          await doc.mozCancelFullScreen();
+        } else if (doc.msExitFullscreen) {
+          await doc.msExitFullscreen();
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling fullscreen:", error);
+    }
+  };
+
   const formatTimeNatural = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
 
     if (mins === 0) {
-      return `${secs} seconds`;
+      return `${secs} sekund`;
     } else if (mins === 1 && secs === 0) {
-      return "1 minute";
+      return "1 minuta";
     } else if (mins === 1) {
-      return `1 minute and ${secs} seconds`;
+      return `1 minuta i ${secs} sekund`;
     } else if (secs === 0) {
-      return `${mins} minutes`;
+      return `${mins} minut`;
     } else {
-      return `${mins} minutes and ${secs} seconds`;
+      return `${mins} minut i ${secs} sekund`;
     }
   };
 
@@ -373,41 +497,42 @@ const ChallengeDayTimer = () => {
     try {
       // Release wake lock when workout is completed
       releaseWakeLock();
-      
+
       // Complete the challenge day using new progress system
       const { data: trainingDay, error: trainingDayError } = await supabase
-        .from('challenge_training_days')
-        .select('day_number')
-        .eq('id', dayId)
+        .from("challenge_training_days")
+        .select("day_number")
+        .eq("id", dayId)
         .single();
-      
+
       if (trainingDayError) throw trainingDayError;
-      
+
       // Insert progress record
       const { error: progressError } = await supabase
-        .from('challenge_day_progress')
+        .from("challenge_day_progress")
         .upsert({
           user_id: user.id,
           challenge_id: challengeId,
           training_day_id: dayId,
-          status: 'completed',
+          status: "completed",
           changed_status_at: new Date().toISOString(),
           exercises_completed: exercises.length,
-          total_exercises: exercises.length
+          total_exercises: exercises.length,
         });
-      
+
       if (progressError) throw progressError;
-      
+
       // Update participant status to completed if needed
       const { error: participantError } = await supabase
-        .from('challenge_participants')
+        .from("challenge_participants")
         .update({
-          status: 'active'
+          status: "active",
         })
-        .eq('user_id', user.id)
-        .eq('challenge_id', challengeId);
-      
-      if (participantError) console.error('Error updating participant:', participantError);
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId);
+
+      if (participantError)
+        console.error("Error updating participant:", participantError);
       toast({
         title: "Trening ukończony!",
         description:
@@ -418,19 +543,20 @@ const ChallengeDayTimer = () => {
       console.error("Error completing workout:", error);
       toast({
         title: "Error",
-        description: "Failed to mark workout as completed",
+        description: "Nie udało się oznaczyć treningu jako ukończony",
         variant: "destructive",
       });
     }
   };
 
-
   const handlePlayPause = () => {
     if (!isRunning && !isPreparingToStart) {
       // Only show preparation phase for exercises, not rest periods
       const currentSegment = segments[currentSegmentIndex];
-      const shouldPrepare = currentSegment?.type === "exercise" && timeRemaining === currentSegment?.duration;
-      
+      const shouldPrepare =
+        currentSegment?.type === "exercise" &&
+        timeRemaining === currentSegment?.duration;
+
       if (shouldPrepare) {
         setIsPreparingToStart(true);
         setPreparationTime(10);
@@ -489,6 +615,16 @@ const ChallengeDayTimer = () => {
   const getCurrentSegment = () => segments[currentSegmentIndex];
   const getNextSegment = () => segments[currentSegmentIndex + 1];
 
+  // Get next exercise (skip rest periods)
+  const getNextExercise = () => {
+    for (let i = currentSegmentIndex + 1; i < segments.length; i++) {
+      if (segments[i].type === "exercise") {
+        return segments[i];
+      }
+    }
+    return null;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center overflow-y-auto md:fixed md:inset-0">
@@ -502,7 +638,7 @@ const ChallengeDayTimer = () => {
       <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center overflow-y-auto md:fixed md:inset-0">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-white mb-2">
-            No exercises found
+            Nie znaleziono ćwiczeń
           </h2>
         </div>
       </div>
@@ -510,47 +646,90 @@ const ChallengeDayTimer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 text-white flex flex-col overflow-y-auto">
-      <div className="flex-1 flex flex-col container mx-auto px-4 py-6 max-w-4xl lg:max-w-6xl md:py-6 md:max-w-3xl xl:max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 flex-shrink-0">
+    <div
+      className={`min-h-screen bg-gradient-to-tr from-black to-purple-950/10 text-white flex flex-col ${
+        isFullscreen ? "fixed inset-0 overflow-hidden" : "overflow-y-auto"
+      }`}
+    >
+      {/* Hide AppLayout elements when in fullscreen */}
+      {isFullscreen && (
+        <style>{`
+          header,
+          nav[class*="BottomNavigation"],
+          [class*="TopHeader"] {
+            display: none !important;
+          }
+          main {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+          }
+        `}</style>
+      )}
+      <div
+        className={`flex-1 flex flex-col container mx-auto px-2 sm:px-4 pt-16 sm:pt-20 md:pt-6 py-2 sm:py-3 md:py-6 max-w-4xl lg:max-w-6xl md:max-w-3xl xl:max-w-4xl min-h-0 ${
+          isFullscreen ? "h-screen pt-2" : ""
+        }`}
+      >
+        {/* Header with controls - positioned to be visible below TopHeader */}
+        <div className="flex items-center justify-between mb-1 sm:mb-2 md:mb-6 flex-shrink-0 relative z-50">
           <div></div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 relative z-50">
             <div className="hidden sm:flex items-center gap-2 text-sm text-white/70">
               <span>
                 {currentSegmentIndex + 1} z {segments.length}
               </span>
             </div>
 
+            <Button
+              variant="ghost"
+              onClick={toggleFullscreen}
+              className="text-white hover:bg-white/10 transition-all bg-white/5 min-w-[44px] min-h-[44px] relative z-50"
+              title={isFullscreen ? "Wyjdź z pełnego ekranu" : "Pełny ekran"}
+            >
+              {isFullscreen ? (
+                <Minimize className="w-5 h-5 sm:w-6 sm:h-6" />
+              ) : (
+                <Maximize className="w-5 h-5 sm:w-6 sm:h-6" />
+              )}
+            </Button>
 
             <Button
               variant="ghost"
               onClick={() => {
-                const modes: Array<"sound" | "no_sound" | "minimal_sound"> = ["minimal_sound", "sound", "no_sound"];
+                const modes: Array<"sound" | "no_sound" | "minimal_sound"> = [
+                  "minimal_sound",
+                  "sound",
+                  "no_sound",
+                ];
                 const currentIndex = modes.indexOf(audioMode);
                 const nextMode = modes[(currentIndex + 1) % modes.length];
                 setAudioMode(nextMode);
                 localStorage.setItem("challengeTimerAudioMode", nextMode);
               }}
-              className={`text-white hover:bg-white/10 transition-all ${
-                audioMode === "sound" ? "bg-primary/20 text-primary" : 
-                audioMode === "minimal_sound" ? "bg-yellow-500/20 text-yellow-400" : "bg-white/5"
+              className={`text-white hover:bg-white/10 transition-all min-w-[44px] min-h-[44px] relative z-50 ${
+                audioMode === "sound"
+                  ? "bg-primary/20 text-primary"
+                  : audioMode === "minimal_sound"
+                  ? "bg-yellow-500/20 text-yellow-400"
+                  : "bg-white/5"
               }`}
               title={
-                audioMode === "sound" ? "Full sound mode" :
-                audioMode === "minimal_sound" ? "Minimal sound mode (beeps only)" :
-                "No sound mode"
+                audioMode === "sound"
+                  ? "Tryb dźwięku: Pełny dźwięk - słyszysz pełne komunikaty głosowe"
+                  : audioMode === "minimal_sound"
+                  ? "Tryb dźwięku: Minimalny dźwięk - słyszysz tylko sygnały dźwiękowe"
+                  : "Tryb dźwięku: Wyciszony - brak dźwięków"
               }
             >
               {audioMode === "sound" ? (
-                <Volume2 className="w-5 h-5" />
+                <Volume2 className="w-5 h-5 sm:w-6 sm:h-6" />
               ) : audioMode === "minimal_sound" ? (
-                <div className="w-5 h-5 flex items-center justify-center">
-                  <div className="w-3 h-3 bg-current rounded-full animate-pulse"></div>
+                <div className="w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center">
+                  <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 bg-current rounded-full animate-pulse"></div>
                 </div>
               ) : (
-                <VolumeX className="w-5 h-5" />
+                <VolumeX className="w-5 h-5 sm:w-6 sm:h-6" />
               )}
             </Button>
           </div>
@@ -562,8 +741,29 @@ const ChallengeDayTimer = () => {
             {currentSegmentIndex + 1} z {segments.length}
           </div>
           <div className="relative">
-            <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
-            <div 
+            <Progress
+              value={calculateProgress()}
+              className="w-full h-2 bg-white/10 rounded-full overflow-hidden"
+            />
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
+              style={{ width: `${calculateProgress()}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Progress Bar - Mobile (after exercise image) */}
+        <div
+          className={`mt-2 ${
+            getCurrentSegment().type === "rest" ? "mb-4" : "mb-[100px]"
+          } flex-shrink-0 block md:hidden`}
+        >
+          <div className="relative">
+            <Progress
+              value={calculateProgress()}
+              className="w-full h-1.5 sm:h-2 bg-white/10 rounded-full overflow-hidden"
+            />
+            <div
               className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
               style={{ width: `${calculateProgress()}%` }}
             />
@@ -571,93 +771,100 @@ const ChallengeDayTimer = () => {
         </div>
 
         {/* Current Exercise/Rest Display */}
-        <Card className="glass-effect border-white/10 mb-6 flex-1 flex flex-col bg-gradient-to-b from-white/5 to-transparent max-h-[60vh] md:max-h-none overflow-visible">
-          <CardContent className="p-3 md:p-6 text-center flex-1 flex flex-col justify-center relative overflow-visible">
+        <Card
+          className={`glass-effect border-white/10 mb-1 sm:mb-2 md:mb-6 flex-shrink-0 flex flex-col bg-gradient-to-b from-white/5 to-transparent ${
+            isFullscreen ? "max-h-[calc(100vh-380px)]" : "max-h-[45vh]"
+          } md:max-h-none overflow-visible min-h-0 relative z-0`}
+        >
+          <CardContent className="p-2 sm:p-3 md:p-6 text-center flex flex-col justify-start relative overflow-visible min-h-0 z-0">
             {getCurrentSegment() && (
               <>
                 {getCurrentSegment().type === "exercise" ? (
                   <>
-                    {/* Exercise Image - Maximum Size */}
-                    <div className="mb-2 md:mb-4 flex-1 flex items-center justify-center max-h-[40vh] md:max-h-none">
+                    {/* Exercise Image - Optimized for mobile, smaller to fit everything */}
+                    <div
+                      className={`mb-1 sm:mb-2 md:mb-4 flex-shrink-0 flex items-center justify-center relative z-0 ${
+                        isFullscreen ? "max-h-[22vh]" : "max-h-[22vh]"
+                      } md:max-h-none`}
+                    >
                       {getCurrentSegment().exerciseImage ? (
-                        <div className="relative w-full max-w-md mx-auto">
+                        <div className="relative w-full max-w-md mx-auto z-0">
                           <img
                             src={getCurrentSegment().exerciseImage}
                             alt={getCurrentSegment().exerciseName}
-                            className="w-full aspect-square object-cover rounded-3xl shadow-2xl ring-1 ring-white/20"
+                            className="w-full aspect-square object-cover rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0"
                           />
                           {/* Subtle overlay for better text readability */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-3xl pointer-events-none"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl sm:rounded-3xl pointer-events-none z-0"></div>
                         </div>
                       ) : (
-                        <div className="w-full max-w-md mx-auto aspect-square bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-3xl flex items-center justify-center shadow-2xl ring-1 ring-white/20">
-                          <div className="text-8xl md:text-9xl opacity-60">🏃‍♂️</div>
+                        <div className="w-full max-w-md mx-auto aspect-square bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-2xl ring-1 ring-white/20 relative z-0">
+                          <div className="text-6xl sm:text-8xl md:text-9xl opacity-60">
+                            🏃‍♂️
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Rest Display - Improved layout with next exercise preview */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-2 sm:mb-3">
+                      <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg ring-1 ring-blue-400/30 backdrop-blur-sm flex-shrink-0">
+                        <Hand className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-blue-300" />
+                      </div>
+
+                      {/* Show next exercise info during rest - use getNextExercise to skip rest */}
+                      {getNextExercise() && (
+                        <div className="flex flex-col items-center sm:items-start text-center sm:text-left flex-1 min-w-0">
+                          <div className="text-xs sm:text-sm text-white/70 mb-1">
+                            Następne ćwiczenie:
+                          </div>
+                          <div className="text-base sm:text-lg md:text-xl font-bold text-white truncate w-full">
+                            {getNextExercise().exerciseName}
+                          </div>
+                          <div className="text-xs sm:text-sm text-white/60">
+                            {formatTime(getNextExercise().duration)}
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    {/* Progress Bar - Mobile (after exercise image) */}
-                    <div className="mt-1 mb-4 flex-shrink-0 block md:hidden">
-                      <div className="relative">
-                        <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
-                        <div 
-                          className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
-                          style={{ width: `${calculateProgress()}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Exercise Title */}
-                    <h2 className="text-xl md:text-2xl font-bold text-white mb-2 leading-tight px-4">
-                      {getCurrentSegment().exerciseName}
-                    </h2>
-
-                    {/* Exercise Notes */}
-                    {getCurrentSegment().exerciseNotes && (
-                      <div className="mb-3 px-4">
-                        <p className="text-white/80 text-sm md:text-base bg-white/10 px-3 py-2 rounded-xl border border-white/20 backdrop-blur-sm">
-                          {getCurrentSegment().exerciseNotes}
-                        </p>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    {/* Rest Display - Ultra compact version */}
-                    <div className="mb-1 flex items-center justify-center px-4">
-                      <div className="w-24 h-24 md:w-28 md:h-28 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-xl flex items-center justify-center shadow-lg ring-1 ring-blue-400/30 backdrop-blur-sm">
-                        <Hand className="w-12 h-12 md:w-14 md:h-14 text-blue-300" />
-                      </div>
-                    </div>
-
-                    {/* Progress Bar - Mobile (after rest image) */}
-                    <div className="mb-1 flex-shrink-0 block md:hidden">
-                      <div className="relative">
-                        <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
-                        <div 
-                          className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
-                          style={{ width: `${calculateProgress()}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    <h2 className="text-base md:text-lg font-bold text-blue-300 mb-0">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-300 mb-0 relative z-10">
                       Odpoczynek
                     </h2>
                   </>
                 )}
 
-                {/* Timer Display */}
-                <div className="text-3xl md:text-4xl font-mono font-bold mt-2 mb-2 bg-gradient-to-r from-white via-primary-foreground to-white bg-clip-text text-transparent drop-shadow-lg">
-                  {isPreparingToStart
-                    ? formatTime(preparationTime)
-                    : formatTime(timeRemaining)}
+                {/* Timer Display - With better contrast for visibility on white backgrounds */}
+                <div className="relative mt-1 sm:mt-2 mb-1 sm:mb-2">
+                  <div className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold bg-gradient-to-r from-white via-primary-foreground to-white bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] [text-shadow:_2px_2px_4px_rgba(0,0,0,0.8)]">
+                    {isPreparingToStart
+                      ? formatTime(preparationTime)
+                      : formatTime(timeRemaining)}
+                  </div>
+                  {/* Dark backdrop blur for better contrast */}
+                  <div className="absolute inset-0 -inset-x-2 -inset-y-1 bg-black/40 backdrop-blur-sm rounded-lg -z-10"></div>
                 </div>
 
-                {/* Get Ready Message */}
-                {isPreparingToStart && (
-                  <div className="text-base md:text-lg font-semibold text-yellow-300 mb-1 animate-pulse">
+                {isPreparingToStart ? (
+                  <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1">
                     🚀 Przygotuj się!
+                  </div>
+                ) : (
+                  <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1 mt-[50px]">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3 leading-tight px-2 sm:px-4 z-10">
+                      {getCurrentSegment().exerciseName}
+                    </h2>
+
+                    {/* Exercise Notes */}
+                    {getCurrentSegment().exerciseNotes && (
+                      <div className="mb-2 sm:mb-3 px-2 sm:px-4 bg-black/40">
+                        <p className="text-white/80 text-xs sm:text-sm md:text-basepx-2 sm:px-3 py-1 sm:py-2 rounded-lg sm:rounded-xl border border-white/20 bg-black">
+                          {getCurrentSegment().exerciseNotes}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
               </>
@@ -665,27 +872,69 @@ const ChallengeDayTimer = () => {
           </CardContent>
         </Card>
 
+        {/* Next Up Section - Always show next exercise, not rest */}
+        {getNextExercise() && (
+          <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-md mt-2 mx-2">
+            <CardContent className="p-2 sm:p-3 md:p-4">
+              <h3 className="text-xs sm:text-sm md:text-base font-semibold text-white mb-1.5 sm:mb-2 md:mb-3 flex items-center">
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full mr-1.5 sm:mr-2 animate-pulse"></span>
+                Następne ćwiczenie
+              </h3>
+              <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4">
+                {getNextExercise().exerciseImage ? (
+                  <div className="relative flex-shrink-0">
+                    <img
+                      src={getNextExercise().exerciseImage}
+                      alt={getNextExercise().exerciseName}
+                      className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 object-cover rounded-lg sm:rounded-xl md:rounded-2xl ring-1 ring-white/30 shadow-lg"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-white/10 to-white/5 rounded-lg sm:rounded-xl md:rounded-2xl flex items-center justify-center ring-1 ring-white/20 shadow-lg backdrop-blur-sm flex-shrink-0">
+                    <span className="text-base sm:text-xl md:text-2xl opacity-70">
+                      🏃‍♂️
+                    </span>
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-white text-xs sm:text-sm md:text-base truncate">
+                    {getNextExercise().exerciseName}
+                  </div>
+                  <div className="text-xs sm:text-sm text-white/70 font-medium">
+                    {formatTime(getNextExercise().duration)}
+                  </div>
+                  {getNextExercise().exerciseNotes && (
+                    <div className="text-[10px] sm:text-xs text-primary mt-0.5 sm:mt-1 bg-primary/10 rounded sm:rounded-lg px-1.5 sm:px-2 py-0.5 sm:py-1 border border-primary/20 backdrop-blur-sm truncate">
+                      {getNextExercise().exerciseNotes}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Controls */}
-        <div className="flex flex-col gap-3 items-center justify-center mb-4 flex-shrink-0">
-          {(isRunning || isPreparingToStart) ? (
-            <div className="flex flex-row md:flex-col gap-3 w-full items-center">
+        <div className="mt-4 flex flex-col gap-2 sm:gap-3 items-center justify-center mb-2 sm:mb-3 md:mb-4 flex-shrink-0">
+          {isRunning || isPreparingToStart ? (
+            <div className="flex flex-row md:flex-col gap-2 sm:gap-3 w-full items-center">
               <Button
                 onClick={handlePlayPause}
                 size="lg"
                 variant="primary"
-                className="flex-1 md:w-full md:max-w-xs px-4 md:px-8 py-4 md:py-6 text-lg md:text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
+                className="flex-1 md:w-full md:max-w-xs px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 md:py-6 text-base sm:text-lg md:text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl sm:rounded-2xl hover:scale-105"
               >
-                <Pause className="w-5 h-5 md:w-7 md:h-7 mr-2 md:mr-3" />
+                <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-7 md:h-7 mr-1.5 sm:mr-2 md:mr-3" />
                 {isPreparingToStart ? "Anuluj" : "Pauza"}
               </Button>
-              
+
               <Button
                 onClick={handleSkip}
                 variant="outline"
                 size="lg"
-                className="flex-1 md:w-full md:max-w-xs px-4 md:px-6 py-4 text-lg md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
+                className="flex-1 md:w-full md:max-w-xs px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl sm:rounded-2xl"
               >
-            Pomiń
+                Pomiń
               </Button>
             </div>
           ) : (
@@ -693,66 +942,22 @@ const ChallengeDayTimer = () => {
               onClick={handlePlayPause}
               size="lg"
               variant="primary"
-              className="w-full max-w-xs px-8 py-6 text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
+              className="w-full max-w-xs px-6 sm:px-8 py-4 sm:py-5 md:py-6 text-lg sm:text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl sm:rounded-2xl hover:scale-105"
             >
-              <Play className="w-7 h-7 mr-3" />
+              <Play className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-2 sm:mr-3" />
               Start
             </Button>
           )}
         </div>
-
-        {/* Next Up Section */}
-        {getNextSegment() && (
-          <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-md">
-            <CardContent className="p-4">
-              <h3 className="text-base font-semibold text-white mb-3 flex items-center">
-                <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
-                Następne
-              </h3>
-              <div className="flex items-center space-x-4">
-                {getNextSegment().type === "exercise" &&
-                getNextSegment().exerciseImage ? (
-                  <div className="relative">
-                    <img
-                      src={getNextSegment().exerciseImage}
-                      alt={getNextSegment().exerciseName}
-                      className="w-14 h-14 object-cover rounded-2xl ring-1 ring-white/30 shadow-lg"
-                    />
-                  </div>
-                ) : getNextSegment().type === "rest" ? (
-                  <div className="w-14 h-14 bg-gradient-to-br from-blue-500/30 to-green-500/30 rounded-2xl flex items-center justify-center ring-1 ring-blue-400/30 shadow-lg backdrop-blur-sm">
-                    <Hand className="w-7 h-7 text-blue-300" />
-                  </div>
-                ) : (
-                  <div className="w-14 h-14 bg-gradient-to-br from-white/10 to-white/5 rounded-2xl flex items-center justify-center ring-1 ring-white/20 shadow-lg backdrop-blur-sm">
-                    <span className="text-2xl opacity-70">🏃‍♂️</span>
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-white text-base truncate">
-                    {getNextSegment().exerciseName}
-                  </div>
-                  <div className="text-sm text-white/70 font-medium">
-                    {formatTime(getNextSegment().duration)}
-                  </div>
-                  {getNextSegment().type === "exercise" &&
-                    getNextSegment().exerciseNotes && (
-                      <div className="text-xs text-primary mt-1 bg-primary/10 rounded-lg px-2 py-1 border border-primary/20 backdrop-blur-sm truncate">
-                        {getNextSegment().exerciseNotes}
-                      </div>
-                    )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
 
       {/* Completion Dialog */}
       <Dialog open={isCompleted} onOpenChange={setIsCompleted}>
         <DialogContent className="glass-effect border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Trening ukończony! 🎉</DialogTitle>
+            <DialogTitle className="text-white">
+              Trening ukończony! 🎉
+            </DialogTitle>
             <DialogDescription className="text-muted-foreground">
               Świetna robota! Co chcesz teraz zrobić?
             </DialogDescription>
@@ -782,7 +987,6 @@ const ChallengeDayTimer = () => {
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };
