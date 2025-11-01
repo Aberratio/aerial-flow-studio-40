@@ -815,21 +815,6 @@ const ChallengeDayTimer = () => {
                       <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg ring-1 ring-blue-400/30 backdrop-blur-sm flex-shrink-0">
                         <Hand className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-blue-300" />
                       </div>
-
-                      {/* Show next exercise info during rest - use getNextExercise to skip rest */}
-                      {getNextExercise() && (
-                        <div className="flex flex-col items-center sm:items-start text-center sm:text-left flex-1 min-w-0">
-                          <div className="text-xs sm:text-sm text-white/70 mb-1">
-                            Następne ćwiczenie:
-                          </div>
-                          <div className="text-base sm:text-lg md:text-xl font-bold text-white truncate w-full">
-                            {getNextExercise().exerciseName}
-                          </div>
-                          <div className="text-xs sm:text-sm text-white/60">
-                            {formatTime(getNextExercise().duration)}
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-300 mb-0 relative z-10">
@@ -853,24 +838,22 @@ const ChallengeDayTimer = () => {
                   <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1">
                     🚀 Przygotuj się!
                   </div>
-                ) : (
-                  getCurrentSegment() && (
-                    <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1 mt-[50px]">
-                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3 leading-tight px-2 sm:px-4 z-10">
-                        {getCurrentSegment().exerciseName}
-                      </h2>
+                ) : getCurrentSegment()?.type === "exercise" ? (
+                  <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1 mt-[50px]">
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3 leading-tight px-2 sm:px-4 z-10">
+                      {getCurrentSegment().exerciseName}
+                    </h2>
 
-                      {/* Exercise Notes */}
-                      {getCurrentSegment().exerciseNotes && (
-                        <div className="mb-2 sm:mb-3 px-2 sm:px-4 bg-black/40">
-                          <p className="text-white/80 text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1 sm:py-2 rounded-lg sm:rounded-xl border border-white/20 bg-black">
-                            {getCurrentSegment().exerciseNotes}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )
-                )}
+                    {/* Exercise Notes */}
+                    {getCurrentSegment().exerciseNotes && (
+                      <div className="mb-2 sm:mb-3 px-2 sm:px-4 bg-black/40">
+                        <p className="text-white/80 text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1 sm:py-2 rounded-lg sm:rounded-xl border border-white/20 bg-black">
+                          {getCurrentSegment().exerciseNotes}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
               </>
             )}
           </CardContent>
