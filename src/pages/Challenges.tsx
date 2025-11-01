@@ -130,7 +130,7 @@ const Challenges = () => {
 
       // Get user's participation data if logged in
       let userParticipation: Record<string, string> = {};
-      let userProgress: Record<string, number> = {};
+      const userProgress: Record<string, number> = {};
       let completedCycles: Record<string, number> = {};
 
       if (user) {
@@ -509,11 +509,11 @@ const Challenges = () => {
                   <span className="font-medium">{challenge.userProgress}%</span>
                 </div>
                 <Progress value={challenge.userProgress} className="h-2" />
-                {challenge.completedCycles && challenge.completedCycles > 1 && (
+                {challenge.completedCycles && challenge.completedCycles > 1 ? (
                   <p className="text-xs text-muted-foreground">
                     Ukończone cykle: {challenge.completedCycles}
                   </p>
-                )}
+                ) : null}
               </div>
             )}
 
