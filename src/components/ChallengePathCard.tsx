@@ -1,15 +1,22 @@
-import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
+import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible';
-import { ChevronDown, ChevronUp, Clock, TrendingUp, Lock, Crown } from 'lucide-react';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
+} from "@/components/ui/collapsible";
+import {
+  ChevronDown,
+  ChevronUp,
+  Clock,
+  TrendingUp,
+  Lock,
+  Crown,
+} from "lucide-react";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface Challenge {
   id: string;
@@ -43,20 +50,22 @@ const ChallengePathCard = ({
   const [isOpen, setIsOpen] = useState(false);
 
   // Oblicz ukończone poziomy
-  const completedLevels = challenges.filter(c => c.status === 'completed').length;
+  const completedLevels = challenges.filter(
+    (c) => c.status === "completed"
+  ).length;
   const totalLevels = challenges.length;
   const progressPercentage = Math.round((completedLevels / totalLevels) * 100);
 
   // Sprawdź czy któryś poziom jest aktywny
-  const hasActiveLevel = challenges.some(c => c.status === 'active');
-  const isPremium = challenges.some(c => c.premium);
+  const hasActiveLevel = challenges.some((c) => c.status === "active");
+  const isPremium = challenges.some((c) => c.premium);
   const isNew = false; // TODO: Dodać logikę sprawdzania is_new
 
   // Główne CTA
-  const mainCTAText = hasActiveLevel ? 'Kontynuuj' : 'Rozpocznij';
+  const mainCTAText = hasActiveLevel ? "Kontynuuj" : "Rozpocznij";
 
   // Miniatura pierwszego wyzwania
-  const thumbnail = challenges[0]?.image || '';
+  const thumbnail = challenges[0]?.image || "";
 
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 relative group">
@@ -70,7 +79,9 @@ const ChallengePathCard = ({
                 <Crown className="w-3 h-3 mr-1" />
                 Premium
               </Badge>
-              <p className="text-sm text-muted-foreground">Ta ścieżka wymaga dostępu Premium</p>
+              <p className="text-sm text-muted-foreground">
+                Ta ścieżka wymaga dostępu Premium
+              </p>
             </div>
             <Button variant="default" size="sm">
               Odblokuj Premium
@@ -92,7 +103,6 @@ const ChallengePathCard = ({
             </AspectRatio>
             {isPremium && hasAccess && (
               <Badge variant="default" className="absolute top-2 right-2">
-                <Crown className="w-3 h-3 mr-1" />
                 Premium
               </Badge>
             )}
@@ -133,7 +143,9 @@ const ChallengePathCard = ({
                     strokeWidth="4"
                     fill="none"
                     strokeDasharray={`${2 * Math.PI * 28}`}
-                    strokeDashoffset={`${2 * Math.PI * 28 * (1 - progressPercentage / 100)}`}
+                    strokeDashoffset={`${
+                      2 * Math.PI * 28 * (1 - progressPercentage / 100)
+                    }`}
                     className="text-primary transition-all duration-300"
                   />
                 </svg>
@@ -157,8 +169,9 @@ const ChallengePathCard = ({
               size="sm"
               onClick={() => {
                 const nextChallenge = hasActiveLevel
-                  ? challenges.find(c => c.status === 'active')
-                  : challenges.find(c => c.status === 'not-started') || challenges[0];
+                  ? challenges.find((c) => c.status === "active")
+                  : challenges.find((c) => c.status === "not-started") ||
+                    challenges[0];
                 if (nextChallenge) {
                   onJoinChallenge(nextChallenge.id);
                 }
@@ -194,7 +207,9 @@ const ChallengePathCard = ({
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold">Poziom {challenge.level || index + 1}</span>
+                      <span className="text-xs font-semibold">
+                        Poziom {challenge.level || index + 1}
+                      </span>
                       <Badge variant="outline" className="text-xs">
                         {challenge.difficulty}
                       </Badge>
@@ -204,26 +219,33 @@ const ChallengePathCard = ({
                     </p>
                     <div className="flex items-center gap-2 mt-1">
                       <Clock className="w-3 h-3 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">{challenge.duration} dni</span>
+                      <span className="text-xs text-muted-foreground">
+                        {challenge.duration} dni
+                      </span>
                     </div>
-                    {challenge.status !== 'not-started' && (
-                      <Progress value={challenge.userProgress} className="h-1 mt-1" />
+                    {challenge.status !== "not-started" && (
+                      <Progress
+                        value={challenge.userProgress}
+                        className="h-1 mt-1"
+                      />
                     )}
                   </div>
                   <Button
-                    variant={challenge.status === 'active' ? 'default' : 'outline'}
+                    variant={
+                      challenge.status === "active" ? "default" : "outline"
+                    }
                     size="sm"
                     onClick={() => {
-                      if (challenge.status === 'completed') {
+                      if (challenge.status === "completed") {
                         onChallengeClick(challenge);
                       } else {
                         onJoinChallenge(challenge.id);
                       }
                     }}
                   >
-                    {challenge.status === 'not-started' && 'Start'}
-                    {challenge.status === 'active' && 'Kontynuuj'}
-                    {challenge.status === 'completed' && 'Wyniki'}
+                    {challenge.status === "not-started" && "Start"}
+                    {challenge.status === "active" && "Kontynuuj"}
+                    {challenge.status === "completed" && "Wyniki"}
                   </Button>
                 </div>
               ))}
