@@ -153,7 +153,10 @@ const AerialJourney = () => {
                 });
 
                 // Add points from completed challenges in this level
-                if (level.challenge_id && challengeParticipations[level.challenge_id]?.completed) {
+                if (
+                  level.challenge_id &&
+                  challengeParticipations[level.challenge_id]?.completed
+                ) {
                   userPoints += 3 * level.level_number; // 3 points × level number for completed challenge
                 }
               }
@@ -281,7 +284,7 @@ const AerialJourney = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {availableSports.filter(s => s.is_published).length === 0 ? (
+              {availableSports.filter((s) => s.is_published).length === 0 ? (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
                     Brak dostępnych sportów. Sprawdź ponownie później!
@@ -291,9 +294,11 @@ const AerialJourney = () => {
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4 mb-6">
                     {availableSports
-                      .filter(sport => sport.is_published)
+                      .filter((sport) => sport.is_published)
                       .map((sport) => {
-                        const isSelected = tempSelectedSports.includes(sport.id);
+                        const isSelected = tempSelectedSports.includes(
+                          sport.id
+                        );
                         return (
                           <Card
                             key={sport.id}
@@ -303,15 +308,17 @@ const AerialJourney = () => {
                                 : "bg-white/5 border-white/10 hover:border-purple-400/30"
                             }`}
                             onClick={() => {
-                              setTempSelectedSports(prev =>
+                              setTempSelectedSports((prev) =>
                                 prev.includes(sport.id)
-                                  ? prev.filter(id => id !== sport.id)
+                                  ? prev.filter((id) => id !== sport.id)
                                   : [...prev, sport.id]
                               );
                             }}
                           >
                             <CardContent className="p-4 text-center">
-                              <div className="text-3xl md:text-4xl mb-2">{sport.icon}</div>
+                              <div className="text-3xl md:text-4xl mb-2">
+                                {sport.icon}
+                              </div>
                               <h3 className="font-semibold text-white text-sm md:text-base">
                                 {sport.name}
                               </h3>
@@ -333,7 +340,7 @@ const AerialJourney = () => {
                           toast.error("Wybierz przynajmniej jeden sport");
                           return;
                         }
-                        
+
                         try {
                           const { error } = await supabase
                             .from("profiles")
@@ -531,9 +538,6 @@ const AerialJourney = () => {
                             <div className="flex items-center justify-center mb-3">
                               {(sport.unlockedLevels || 0) > 0 ? (
                                 <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-black font-bold text-sm">
-                                    {sport.unlockedLevels}
-                                  </div>
                                   <span className="text-yellow-400 font-semibold text-sm">
                                     Poziom {sport.unlockedLevels}
                                   </span>
