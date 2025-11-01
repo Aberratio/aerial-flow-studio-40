@@ -1,15 +1,15 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetFooter,
-} from '@/components/ui/sheet';
-import { Filter, X } from 'lucide-react';
+} from "@/components/ui/sheet";
+import { Filter, X } from "lucide-react";
 
 interface TrainingLibraryFiltersProps {
   filters: {
@@ -65,7 +65,7 @@ const TrainingLibraryFilters: React.FC<TrainingLibraryFiltersProps> = ({
   const handlePremiumChange = (value: string) => {
     onFilterChange({
       ...filters,
-      premium: value === 'free' ? false : value === 'premium' ? true : null,
+      premium: value === "free" ? false : value === "premium" ? true : null,
     });
   };
 
@@ -85,10 +85,10 @@ const TrainingLibraryFilters: React.FC<TrainingLibraryFiltersProps> = ({
         <h3 className="font-semibold mb-3 text-foreground">Kategoria</h3>
         <div className="space-y-2">
           {[
-            { value: 'warmup', label: '🔥 Rozgrzewka' },
-            { value: 'exercise', label: '💪 Ćwiczenia' },
-            { value: 'cooldown', label: '🧘 Cooldown' },
-            { value: 'complex', label: '🎯 Kompleksowe' },
+            { value: "warmup", label: "🔥 Rozgrzewka" },
+            { value: "exercise", label: "💪 Ćwiczenia" },
+            { value: "cooldown", label: "🧘 Cooldown" },
+            { value: "complex", label: "🎯 Kompleksowe" },
           ].map((cat) => (
             <div key={cat.value} className="flex items-center space-x-2">
               <Checkbox
@@ -109,7 +109,7 @@ const TrainingLibraryFilters: React.FC<TrainingLibraryFiltersProps> = ({
       <div>
         <h3 className="font-semibold mb-3 text-foreground">Sporty</h3>
         <div className="space-y-2">
-          {['pole', 'hoop', 'silks', 'hammock', 'core'].map((sport) => (
+          {["pole", "hoop", "silks", "hammock", "core"].map((sport) => (
             <div key={sport} className="flex items-center space-x-2">
               <Checkbox
                 id={`sport-${sport}`}
@@ -118,7 +118,10 @@ const TrainingLibraryFilters: React.FC<TrainingLibraryFiltersProps> = ({
                   handleSportChange(sport, checked as boolean)
                 }
               />
-              <Label htmlFor={`sport-${sport}`} className="cursor-pointer capitalize">
+              <Label
+                htmlFor={`sport-${sport}`}
+                className="cursor-pointer capitalize"
+              >
                 {sport}
               </Label>
             </div>
@@ -130,9 +133,9 @@ const TrainingLibraryFilters: React.FC<TrainingLibraryFiltersProps> = ({
         <h3 className="font-semibold mb-3 text-foreground">Trudność</h3>
         <div className="space-y-2">
           {[
-            { value: 'beginner', label: '⭐ Początkujący' },
-            { value: 'intermediate', label: '⭐⭐ Średniozaawansowany' },
-            { value: 'advanced', label: '⭐⭐⭐ Zaawansowany' },
+            { value: "beginner", label: "⭐ Początkujący" },
+            { value: "intermediate", label: "⭐⭐ Średni" },
+            { value: "advanced", label: "⭐⭐⭐ Zaawansowany" },
           ].map((diff) => (
             <div key={diff.value} className="flex items-center space-x-2">
               <Checkbox
@@ -154,9 +157,9 @@ const TrainingLibraryFilters: React.FC<TrainingLibraryFiltersProps> = ({
         <h3 className="font-semibold mb-3 text-foreground">Typ treningu</h3>
         <div className="space-y-2">
           {[
-            { value: 'video', label: '📹 Filmy' },
-            { value: 'figure_set', label: '📝 Zestawy' },
-            { value: 'complex', label: '🎯 Kompleksowe' },
+            { value: "video", label: "📹 Filmy" },
+            { value: "figure_set", label: "📝 Zestawy" },
+            { value: "complex", label: "🎯 Kompleksowe" },
           ].map((type) => (
             <div key={type.value} className="flex items-center space-x-2">
               <Checkbox
@@ -178,23 +181,26 @@ const TrainingLibraryFilters: React.FC<TrainingLibraryFiltersProps> = ({
         <h3 className="font-semibold mb-3 text-foreground">Dostęp</h3>
         <div className="space-y-2">
           {[
-            { value: 'all', label: 'Wszystkie' },
-            { value: 'free', label: 'Darmowe' },
-            { value: 'premium', label: 'Premium' },
+            { value: "all", label: "Wszystkie" },
+            { value: "free", label: "Darmowe" },
+            { value: "premium", label: "Premium" },
           ].map((access) => (
             <div key={access.value} className="flex items-center space-x-2">
               <Checkbox
                 id={`access-${access.value}`}
                 checked={
-                  access.value === 'all'
+                  access.value === "all"
                     ? filters.premium === null
-                    : access.value === 'free'
+                    : access.value === "free"
                     ? filters.premium === false
                     : filters.premium === true
                 }
                 onCheckedChange={() => handlePremiumChange(access.value)}
               />
-              <Label htmlFor={`access-${access.value}`} className="cursor-pointer">
+              <Label
+                htmlFor={`access-${access.value}`}
+                className="cursor-pointer"
+              >
                 {access.label}
               </Label>
             </div>

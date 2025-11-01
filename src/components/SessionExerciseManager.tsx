@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Plus, 
-  Trash2, 
-  Edit, 
-  Save, 
-  X, 
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Plus,
+  Trash2,
+  Edit,
+  Save,
+  X,
   Target,
   Clock,
   RotateCcw,
@@ -20,11 +20,11 @@ import {
   Dumbbell,
   Feather,
   CheckCircle,
-  Timer
-} from 'lucide-react';
-import { ExerciseSearchModal } from './ExerciseSearchModal';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+  Timer,
+} from "lucide-react";
+import { ExerciseSearchModal } from "./ExerciseSearchModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Exercise {
   id: string;
@@ -43,7 +43,7 @@ interface SessionExercise {
   hold_time_seconds: number;
   notes: string;
   order_index: number;
-  completion_mode?: 'time' | 'completion';
+  completion_mode?: "time" | "completion";
 }
 
 interface ExerciseCategories {
@@ -59,18 +59,23 @@ interface SessionExerciseManagerProps {
 
 export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
   sessionId,
-  onExercisesChange
+  onExercisesChange,
 }) => {
   const { toast } = useToast();
   const [exercises, setExercises] = useState<ExerciseCategories>({
     warmup: [],
     training: [],
-    stretching: []
+    stretching: [],
   });
   const [loading, setLoading] = useState(true);
   const [showSearchModal, setShowSearchModal] = useState(false);
-  const [currentCategory, setCurrentCategory] = useState<'warmup' | 'training' | 'stretching'>('training');
-  const [editingIndex, setEditingIndex] = useState<{ category: string; index: number } | null>(null);
+  const [currentCategory, setCurrentCategory] = useState<
+    "warmup" | "training" | "stretching"
+  >("training");
+  const [editingIndex, setEditingIndex] = useState<{
+    category: string;
+    index: number;
+  } | null>(null);
 
   useEffect(() => {
     fetchSessionExercises();
@@ -85,23 +90,25 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
       }
 
       const { data: session, error } = await supabase
-        .from('training_sessions')
-        .select('warmup_exercises, figures, stretching_exercises')
-        .eq('id', sessionId)
+        .from("training_sessions")
+        .select("warmup_exercises, figures, stretching_exercises")
+        .eq("id", sessionId)
         .single();
 
       if (error) throw error;
 
       const categorizedExercises: ExerciseCategories = {
-        warmup: (session?.warmup_exercises as unknown as SessionExercise[]) || [],
+        warmup:
+          (session?.warmup_exercises as unknown as SessionExercise[]) || [],
         training: (session?.figures as unknown as SessionExercise[]) || [],
-        stretching: (session?.stretching_exercises as unknown as SessionExercise[]) || []
+        stretching:
+          (session?.stretching_exercises as unknown as SessionExercise[]) || [],
       };
 
       setExercises(categorizedExercises);
       onExercisesChange(categorizedExercises);
     } catch (error) {
-      console.error('Error fetching session exercises:', error);
+      console.error("Error fetching session exercises:", error);
       toast({
         title: "Error",
         description: "Failed to load session exercises.",
@@ -112,10 +119,16 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
     }
   };
 
-  const handleExerciseSelect = (exercise: Exercise, sets = 1, reps = 1, holdTime = 30) => {
-    const maxOrder = exercises[currentCategory].length > 0 
-      ? Math.max(...exercises[currentCategory].map(e => e.order_index)) 
-      : -1;
+  const handleExerciseSelect = (
+    exercise: Exercise,
+    sets = 1,
+    reps = 1,
+    holdTime = 30
+  ) => {
+    const maxOrder =
+      exercises[currentCategory].length > 0
+        ? Math.max(...exercises[currentCategory].map((e) => e.order_index))
+        : -1;
 
     const newExercise: SessionExercise = {
       id: exercise.id,
@@ -123,14 +136,14 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
       sets,
       reps,
       hold_time_seconds: holdTime,
-      notes: '',
+      notes: "",
       order_index: maxOrder + 1,
-      completion_mode: holdTime === 0 ? 'completion' : 'time'
+      completion_mode: holdTime === 0 ? "completion" : "time",
     };
 
     const updatedExercises = {
       ...exercises,
-      [currentCategory]: [...exercises[currentCategory], newExercise]
+      [currentCategory]: [...exercises[currentCategory], newExercise],
     };
 
     setExercises(updatedExercises);
@@ -142,10 +155,13 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
     });
   };
 
-  const handleRemoveExercise = (category: keyof ExerciseCategories, index: number) => {
+  const handleRemoveExercise = (
+    category: keyof ExerciseCategories,
+    index: number
+  ) => {
     const updatedExercises = {
       ...exercises,
-      [category]: exercises[category].filter((_, i) => i !== index)
+      [category]: exercises[category].filter((_, i) => i !== index),
     };
 
     setExercises(updatedExercises);
@@ -157,12 +173,16 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
     });
   };
 
-  const handleUpdateExercise = (category: keyof ExerciseCategories, index: number, updates: Partial<SessionExercise>) => {
+  const handleUpdateExercise = (
+    category: keyof ExerciseCategories,
+    index: number,
+    updates: Partial<SessionExercise>
+  ) => {
     const updatedExercises = {
       ...exercises,
-      [category]: exercises[category].map((ex, i) => 
+      [category]: exercises[category].map((ex, i) =>
         i === index ? { ...ex, ...updates } : ex
-      )
+      ),
     };
 
     setExercises(updatedExercises);
@@ -175,30 +195,29 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
     });
   };
 
-  const getDifficultyColor = (difficulty?: string) => {
-    switch (difficulty) {
-      case 'Beginner': return 'bg-green-500/20 text-green-400';
-      case 'Intermediate': return 'bg-yellow-500/20 text-yellow-400';
-      case 'Advanced': return 'bg-red-500/20 text-red-400';
-      default: return 'bg-gray-500/20 text-gray-400';
-    }
-  };
-
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'warmup': return <Flame className="w-4 h-4" />;
-      case 'training': return <Dumbbell className="w-4 h-4" />;
-      case 'stretching': return <Feather className="w-4 h-4" />;
-      default: return <Target className="w-4 h-4" />;
+      case "warmup":
+        return <Flame className="w-4 h-4" />;
+      case "training":
+        return <Dumbbell className="w-4 h-4" />;
+      case "stretching":
+        return <Feather className="w-4 h-4" />;
+      default:
+        return <Target className="w-4 h-4" />;
     }
   };
 
   const getCategoryLabel = (category: string) => {
     switch (category) {
-      case 'warmup': return 'Warm Up';
-      case 'training': return 'Training';
-      case 'stretching': return 'Stretching';
-      default: return category;
+      case "warmup":
+        return "Warm Up";
+      case "training":
+        return "Training";
+      case "stretching":
+        return "Stretching";
+      default:
+        return category;
     }
   };
 
@@ -209,9 +228,12 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
       return (
         <div className="text-center py-8 border-2 border-dashed border-white/10 rounded-lg">
           {getCategoryIcon(category)}
-          <h3 className="text-lg font-semibold text-white mb-2 mt-4">No {getCategoryLabel(category)} exercises</h3>
+          <h3 className="text-lg font-semibold text-white mb-2 mt-4">
+            No {getCategoryLabel(category)} exercises
+          </h3>
           <p className="text-muted-foreground mb-4">
-            Add exercises to build your {getCategoryLabel(category).toLowerCase()} routine
+            Add exercises to build your{" "}
+            {getCategoryLabel(category).toLowerCase()} routine
           </p>
           <Button
             onClick={() => {
@@ -232,57 +254,79 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
       <ScrollArea className="h-[300px] pr-4">
         <div className="space-y-3">
           {categoryExercises.map((exercise, index) => (
-            <Card key={`${category}-${index}`} className="bg-white/5 border-white/10">
+            <Card
+              key={`${category}-${index}`}
+              className="bg-white/5 border-white/10"
+            >
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <h4 className="font-semibold text-white">{exercise.name}</h4>
-                      <Badge variant="outline" className="text-xs border-white/20 text-white/70">
+                      <h4 className="font-semibold text-white">
+                        {exercise.name}
+                      </h4>
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-white/20 text-white/70"
+                      >
                         #{index + 1}
                       </Badge>
                     </div>
 
-                    {editingIndex?.category === category && editingIndex?.index === index ? (
+                    {editingIndex?.category === category &&
+                    editingIndex?.index === index ? (
                       <div className="space-y-3 mt-3">
                         <div className="grid grid-cols-4 gap-2">
                           <div>
-                            <Label className="text-white/70 text-xs">Sets</Label>
+                            <Label className="text-white/70 text-xs">
+                              Sets
+                            </Label>
                             <Input
                               type="number"
                               value={exercise.sets}
                               onChange={(e) => {
                                 const updatedExercises = { ...exercises };
-                                updatedExercises[category][index].sets = parseInt(e.target.value) || 1;
+                                updatedExercises[category][index].sets =
+                                  parseInt(e.target.value) || 1;
                                 setExercises(updatedExercises);
                               }}
                               className="h-8 bg-white/5 border-white/10 text-white text-xs"
                             />
                           </div>
                           <div>
-                            <Label className="text-white/70 text-xs">Reps</Label>
+                            <Label className="text-white/70 text-xs">
+                              Reps
+                            </Label>
                             <Input
                               type="number"
                               value={exercise.reps}
                               onChange={(e) => {
                                 const updatedExercises = { ...exercises };
-                                updatedExercises[category][index].reps = parseInt(e.target.value) || 1;
+                                updatedExercises[category][index].reps =
+                                  parseInt(e.target.value) || 1;
                                 setExercises(updatedExercises);
                               }}
                               className="h-8 bg-white/5 border-white/10 text-white text-xs"
                             />
                           </div>
                           <div>
-                            <Label className="text-white/70 text-xs">Hold (s)</Label>
+                            <Label className="text-white/70 text-xs">
+                              Hold (s)
+                            </Label>
                             <Input
                               type="number"
                               value={exercise.hold_time_seconds}
                               onChange={(e) => {
                                 const updatedExercises = { ...exercises };
                                 const holdTime = parseInt(e.target.value) || 0;
-                                updatedExercises[category][index].hold_time_seconds = holdTime;
+                                updatedExercises[category][
+                                  index
+                                ].hold_time_seconds = holdTime;
                                 // Auto-set completion mode based on hold time
-                                updatedExercises[category][index].completion_mode = holdTime === 0 ? 'completion' : 'time';
+                                updatedExercises[category][
+                                  index
+                                ].completion_mode =
+                                  holdTime === 0 ? "completion" : "time";
                                 setExercises(updatedExercises);
                               }}
                               className="h-8 bg-white/5 border-white/10 text-white text-xs"
@@ -291,7 +335,13 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                           <div className="flex gap-1 items-end">
                             <Button
                               size="sm"
-                              onClick={() => handleUpdateExercise(category, index, exercises[category][index])}
+                              onClick={() =>
+                                handleUpdateExercise(
+                                  category,
+                                  index,
+                                  exercises[category][index]
+                                )
+                              }
                               className="h-8 w-8 p-0 bg-green-500/20 text-green-400 hover:bg-green-500/30"
                             >
                               <Save className="w-3 h-3" />
@@ -306,34 +356,46 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                             </Button>
                           </div>
                         </div>
-                        
+
                         {/* Completion Mode Toggle */}
                         <div className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10">
                           <div className="flex items-center gap-2">
-                            {(exercise.completion_mode || 'time') === 'time' ? 
-                              <Timer className="w-4 h-4 text-blue-400" /> : 
+                            {(exercise.completion_mode || "time") === "time" ? (
+                              <Timer className="w-4 h-4 text-blue-400" />
+                            ) : (
                               <CheckCircle className="w-4 h-4 text-green-400" />
-                            }
+                            )}
                             <Label className="text-white/70 text-sm">
-                              {(exercise.completion_mode || 'time') === 'time' ? 'Time-based' : 'Completion-based'}
+                              {(exercise.completion_mode || "time") === "time"
+                                ? "Time-based"
+                                : "Completion-based"}
                             </Label>
                           </div>
                           <Switch
-                            checked={(exercise.completion_mode || 'time') === 'completion'}
+                            checked={
+                              (exercise.completion_mode || "time") ===
+                              "completion"
+                            }
                             onCheckedChange={(checked) => {
                               const updatedExercises = { ...exercises };
-                              updatedExercises[category][index].completion_mode = checked ? 'completion' : 'time';
+                              updatedExercises[category][
+                                index
+                              ].completion_mode = checked
+                                ? "completion"
+                                : "time";
                               if (checked) {
-                                updatedExercises[category][index].hold_time_seconds = 0;
+                                updatedExercises[category][
+                                  index
+                                ].hold_time_seconds = 0;
                               }
                               setExercises(updatedExercises);
                             }}
                           />
                           <span className="text-xs text-white/50">
-                            {(exercise.completion_mode || 'time') === 'completion' 
-                              ? 'Click "Done" to complete' 
-                              : 'Timer-based completion'
-                            }
+                            {(exercise.completion_mode || "time") ===
+                            "completion"
+                              ? 'Click "Done" to complete'
+                              : "Timer-based completion"}
                           </span>
                         </div>
                       </div>
@@ -347,10 +409,13 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                           <Target className="w-3 h-3" />
                           <span>{exercise.reps} reps</span>
                         </div>
-                        {(exercise.completion_mode || 'time') === 'completion' ? (
+                        {(exercise.completion_mode || "time") ===
+                        "completion" ? (
                           <div className="flex items-center gap-1">
                             <CheckCircle className="w-3 h-3 text-green-400" />
-                            <span className="text-green-400">Completion mode</span>
+                            <span className="text-green-400">
+                              Completion mode
+                            </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1">
@@ -399,7 +464,10 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
     );
   }
 
-  const totalExercises = exercises.warmup.length + exercises.training.length + exercises.stretching.length;
+  const totalExercises =
+    exercises.warmup.length +
+    exercises.training.length +
+    exercises.stretching.length;
 
   return (
     <>
@@ -423,7 +491,10 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                 <Dumbbell className="w-4 h-4" />
                 Training ({exercises.training.length})
               </TabsTrigger>
-              <TabsTrigger value="stretching" className="flex items-center gap-2">
+              <TabsTrigger
+                value="stretching"
+                className="flex items-center gap-2"
+              >
                 <Feather className="w-4 h-4" />
                 Stretching ({exercises.stretching.length})
               </TabsTrigger>
@@ -431,10 +502,12 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
 
             <TabsContent value="warmup" className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-white">Warm Up Exercises</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  Warm Up Exercises
+                </h3>
                 <Button
                   onClick={() => {
-                    setCurrentCategory('warmup');
+                    setCurrentCategory("warmup");
                     setShowSearchModal(true);
                   }}
                   className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
@@ -443,15 +516,17 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                   Add Warm Up
                 </Button>
               </div>
-              {renderExerciseList('warmup')}
+              {renderExerciseList("warmup")}
             </TabsContent>
 
             <TabsContent value="training" className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-white">Training Exercises</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  Training Exercises
+                </h3>
                 <Button
                   onClick={() => {
-                    setCurrentCategory('training');
+                    setCurrentCategory("training");
                     setShowSearchModal(true);
                   }}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
@@ -460,15 +535,17 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                   Add Training
                 </Button>
               </div>
-              {renderExerciseList('training')}
+              {renderExerciseList("training")}
             </TabsContent>
 
             <TabsContent value="stretching" className="space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-white">Stretching Exercises</h3>
+                <h3 className="text-lg font-semibold text-white">
+                  Stretching Exercises
+                </h3>
                 <Button
                   onClick={() => {
-                    setCurrentCategory('stretching');
+                    setCurrentCategory("stretching");
                     setShowSearchModal(true);
                   }}
                   className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600"
@@ -477,7 +554,7 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                   Add Stretching
                 </Button>
               </div>
-              {renderExerciseList('stretching')}
+              {renderExerciseList("stretching")}
             </TabsContent>
           </Tabs>
         </CardContent>
@@ -487,7 +564,11 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
         isOpen={showSearchModal}
         onClose={() => setShowSearchModal(false)}
         onExerciseSelect={handleExerciseSelect}
-        selectedExercises={[...exercises.warmup, ...exercises.training, ...exercises.stretching].map(e => e.id)}
+        selectedExercises={[
+          ...exercises.warmup,
+          ...exercises.training,
+          ...exercises.stretching,
+        ].map((e) => e.id)}
       />
     </>
   );

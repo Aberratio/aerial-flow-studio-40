@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -361,7 +372,7 @@ export const CreateExerciseModal = ({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="beginner">Początkujący</SelectItem>
-                  <SelectItem value="intermediate">Średniozaawansowany</SelectItem>
+                  <SelectItem value="intermediate">Średni</SelectItem>
                   <SelectItem value="advanced">Zaawansowany</SelectItem>
                 </SelectContent>
               </Select>
@@ -449,7 +460,9 @@ export const CreateExerciseModal = ({
                   </>
                 ) : (
                   <>
-                    <SelectItem value="single_figure">Pojedyncza figura</SelectItem>
+                    <SelectItem value="single_figure">
+                      Pojedyncza figura
+                    </SelectItem>
                     <SelectItem value="combo">Kombo</SelectItem>
                   </>
                 )}

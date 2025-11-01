@@ -163,10 +163,12 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
           challengeData.challenge_achievements?.map(
             (ca: any) => ca.achievement
           ) || [],
-        training_days: (challengeData.challenge_training_days || []).map((d: any) => ({
-          ...d,
-          is_rest_day: (d.training_day_exercises?.length || 0) === 0,
-        })),
+        training_days: (challengeData.challenge_training_days || []).map(
+          (d: any) => ({
+            ...d,
+            is_rest_day: (d.training_day_exercises?.length || 0) === 0,
+          })
+        ),
         participants_count: participantsCount || 0,
       });
     } catch (error) {
@@ -186,40 +188,28 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
   if (!challenge) return null;
 
-  const calculateDuration = () => {
-    const start = new Date(challenge.start_date);
-    const end = new Date(challenge.end_date);
-    const diffTime = Math.abs(end.getTime() - start.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return `${diffDays} days`;
+  const translateDifficulty = (level: string) => {
+    const translations: Record<string, string> = {
+      beginner: "Początkujący",
+      intermediate: "Średni",
+      advanced: "Zaawansowany",
+    };
+    return translations[level.toLowerCase()] || level;
   };
 
   const getDifficultyFromChallenge = () => {
-    if (challenge.difficulty_level) {
-      return (
-        challenge.difficulty_level.charAt(0).toUpperCase() +
-        challenge.difficulty_level.slice(1)
-      );
-    }
-    return "Intermediate";
-  };
-
-  const getChallengeExercises = () => {
-    const exerciseSet = new Set<string>();
-    challenge.training_days?.forEach((day) => {
-      if (!day.is_rest_day && day.exercises) {
-        day.exercises.forEach((exercise) => {
-          exerciseSet.add(exercise.figure.name);
-        });
-      }
-    });
-    return Array.from(exerciseSet);
+    return translateDifficulty(challenge.difficulty_level || "");
   };
 
   const getUniqueExercisesWithImages = () => {
     const exerciseMap = new Map<
       string,
-      { name: string; image_url?: string; difficulty_level: string; instructions?: string }
+      {
+        name: string;
+        image_url?: string;
+        difficulty_level: string;
+        instructions?: string;
+      }
     >();
 
     challenge.training_days?.forEach((day) => {
@@ -320,24 +310,24 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     try {
       // Reset the user's challenge progress to start over
       const { error: deleteProgressError } = await supabase
-        .from('challenge_day_progress')
+        .from("challenge_day_progress")
         .delete()
-        .eq('user_id', user.id)
-        .eq('challenge_id', challenge.id);
+        .eq("user_id", user.id)
+        .eq("challenge_id", challenge.id);
 
       if (deleteProgressError) throw deleteProgressError;
 
       // Reset participant status
       const { error: updateParticipantError } = await supabase
-        .from('challenge_participants')
+        .from("challenge_participants")
         .update({
           current_day_number: 1,
           last_completed_day: 0,
-          status: 'active',
-          completed: false
+          status: "active",
+          completed: false,
         })
-        .eq('user_id', user.id)
-        .eq('challenge_id', challenge.id);
+        .eq("user_id", user.id)
+        .eq("challenge_id", challenge.id);
 
       if (updateParticipantError) throw updateParticipantError;
 
@@ -456,7 +446,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
           </div>
 
           {/* Compact Stats */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <Card className="glass-effect border-white/10 p-3 text-center">
               <Clock className="w-4 h-4 text-purple-400 mx-auto mb-1" />
               <div className="text-xs text-muted-foreground">Czas trwania</div>
@@ -466,18 +456,12 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             </Card>
 
             <Card className="glass-effect border-white/10 p-3 text-center">
-              <Users className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-              <div className="text-xs text-muted-foreground">Uczestnicy</div>
-              <div className="text-sm text-white font-semibold">
-                {challenge.participants_count?.toLocaleString() || "0"}
-              </div>
-            </Card>
-
-            <Card className="glass-effect border-white/10 p-3 text-center">
               <Trophy className="w-4 h-4 text-purple-400 mx-auto mb-1" />
               <div className="text-xs text-muted-foreground">Trudność</div>
               <Badge
-                className={`${getDifficultyColor(getDifficultyFromChallenge())} text-xs mt-1`}
+                className={`${getDifficultyColor(
+                  getDifficultyFromChallenge()
+                )} text-xs mt-1`}
               >
                 {getDifficultyFromChallenge()}
               </Badge>
@@ -526,109 +510,120 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   {challenge.training_days?.length || 0} dni
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {challenge.training_days?.filter(day => !day.is_rest_day).length || 0} dni treningowych
+                  {challenge.training_days?.filter((day) => !day.is_rest_day)
+                    .length || 0}{" "}
+                  dni treningowych
                 </div>
               </div>
             </div>
           </div>
 
-            {/* Training Overview */}
-            {challenge.training_days && challenge.training_days.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="text-sm font-semibold text-white">
-                  Trening
-                </h3>
+          {/* Training Overview */}
+          {challenge.training_days && challenge.training_days.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-white">Trening</h3>
 
-                {/* Compact Daily Time */}
-                <Card className="glass-effect border-white/10 p-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-purple-400" />
-                      <span className="text-sm text-muted-foreground">
-                        Dzienny czas
-                      </span>
-                    </div>
-                    <div className="text-sm text-white font-semibold">
-                      {(() => {
-                        const { min, max } = calculateDailyDuration();
-                        if (min === max) {
-                          return `${min} min`;
-                        }
-                        return `${min}-${max} min`;
-                      })()}
-                    </div>
+              {/* Compact Daily Time */}
+              <Card className="glass-effect border-white/10 p-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-purple-400" />
+                    <span className="text-sm text-muted-foreground">
+                      Dzienny czas
+                    </span>
                   </div>
-                </Card>
-
-                {/* Exercises Grid */}
-                <div className="space-y-2">
-                  <h4 className="text-sm font-medium text-white">
-                    Ćwiczenia ({getUniqueExercisesWithImages().length})
-                  </h4>
-                  <div className="text-muted-foreground">
+                  <div className="text-sm text-white font-semibold">
                     {(() => {
-                      const exercises = getUniqueExercisesWithImages();
-                      if (exercises.length === 0) {
-                        return (
-                          <p className="text-xs">Brak skonfigurowanych ćwiczeń</p>
-                        );
+                      const { min, max } = calculateDailyDuration();
+                      if (min === max) {
+                        return `${min} min`;
                       }
-                      return (
-                        <div className="grid grid-cols-2 gap-2">
-                          {exercises.slice(0, 6).map((exercise, index) => (
-                            <div
-                              key={index}
-                              className="group cursor-pointer"
-                              onClick={() => handleExerciseClick(exercise)}
-                            >
-                              <div className="flex items-center gap-2 p-2 rounded-lg glass-effect border-white/10 hover:border-white/20 transition-all">
-                                <div className="relative">
-                                  {exercise.image_url ? (
-                                    <>
-                                      <img
-                                        src={exercise.image_url}
-                                        alt={exercise.name}
-                                        className="w-8 h-8 rounded object-cover"
-                                      />
-                                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
-                                        <ZoomIn className="w-3 h-3 text-white" />
-                                      </div>
-                                    </>
-                                  ) : (
-                                    <div className="w-8 h-8 rounded bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
-                                      <Trophy className="w-4 h-4 text-purple-400" />
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-xs font-medium text-white truncate group-hover:text-purple-300 transition-colors">
-                                    {exercise.name}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          {exercises.length > 6 && (
-                            <div className="text-xs text-muted-foreground col-span-2 text-center py-1">
-                              +{exercises.length - 6} więcej ćwiczeń
-                            </div>
-                          )}
-                        </div>
-                      );
+                      return `${min}-${max} min`;
                     })()}
                   </div>
                 </div>
+              </Card>
 
-                {/* Compact Challenge Stats */}
-                <div className="text-xs text-muted-foreground bg-white/5 rounded-lg p-3">
-                  <p>
-                    <span className="font-medium">{challenge.training_days?.length || 0} dni</span> łącznie
-                    • <span className="font-medium">{challenge.training_days?.filter((day) => !day.is_rest_day).length || 0}</span> treningowe
-                    • <span className="font-medium">{challenge.training_days?.filter((day) => day.is_rest_day).length || 0}</span> odpoczynku
-                  </p>
+              {/* Exercises Grid */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-white">
+                  Ćwiczenia ({getUniqueExercisesWithImages().length})
+                </h4>
+                <div className="text-muted-foreground">
+                  {(() => {
+                    const exercises = getUniqueExercisesWithImages();
+                    if (exercises.length === 0) {
+                      return (
+                        <p className="text-xs">Brak skonfigurowanych ćwiczeń</p>
+                      );
+                    }
+                    return (
+                      <div className="grid grid-cols-2 gap-2">
+                        {exercises.slice(0, 6).map((exercise, index) => (
+                          <div
+                            key={index}
+                            className="group cursor-pointer"
+                            onClick={() => handleExerciseClick(exercise)}
+                          >
+                            <div className="flex items-center gap-2 p-2 rounded-lg glass-effect border-white/10 hover:border-white/20 transition-all">
+                              <div className="relative">
+                                {exercise.image_url ? (
+                                  <>
+                                    <img
+                                      src={exercise.image_url}
+                                      alt={exercise.name}
+                                      className="w-8 h-8 rounded object-cover"
+                                    />
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                                      <ZoomIn className="w-3 h-3 text-white" />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="w-8 h-8 rounded bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                                    <Trophy className="w-4 h-4 text-purple-400" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="text-xs font-medium text-white truncate group-hover:text-purple-300 transition-colors">
+                                  {exercise.name}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {exercises.length > 6 && (
+                          <div className="text-xs text-muted-foreground col-span-2 text-center py-1">
+                            +{exercises.length - 6} więcej ćwiczeń
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
-            )}
+
+              {/* Compact Challenge Stats */}
+              <div className="text-xs text-muted-foreground bg-white/5 rounded-lg p-3">
+                <p>
+                  <span className="font-medium">
+                    {challenge.training_days?.length || 0} dni
+                  </span>{" "}
+                  łącznie •{" "}
+                  <span className="font-medium">
+                    {challenge.training_days?.filter((day) => !day.is_rest_day)
+                      .length || 0}
+                  </span>{" "}
+                  treningowe •{" "}
+                  <span className="font-medium">
+                    {challenge.training_days?.filter((day) => day.is_rest_day)
+                      .length || 0}
+                  </span>{" "}
+                  odpoczynku
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
@@ -669,8 +664,11 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                     if (challenge.status === "published") {
                       // Check if it's a "Join Challenge" action (no user participation yet)
                       const challengeStatus = initialChallenge?.status;
-                      
-                      if (challengeStatus === "not-started" || challengeStatus === "available") {
+
+                      if (
+                        challengeStatus === "not-started" ||
+                        challengeStatus === "available"
+                      ) {
                         // User is joining the challenge - replicate the join logic from Challenges page
                         if (!user) return;
 
@@ -682,7 +680,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
                         // Automatically start today
                         const today = new Date();
-                        
+
                         try {
                           const { error, data } = await supabase
                             .from("challenge_participants")
@@ -693,17 +691,20 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                               user_started_at: today.toISOString(),
                             })
                             .select();
-                          
+
                           if (error) throw error;
 
-                          console.log("User joined challenge from modal, now generating calendar...");
-                          
-                          // Check if calendar already exists before generating
-                            // Calendar generation skipped; handled by challenge page
+                          console.log(
+                            "User joined challenge from modal, now generating calendar..."
+                          );
 
+                          // Check if calendar already exists before generating
+                          // Calendar generation skipped; handled by challenge page
 
                           // Small delay to ensure calendar generation completes
-                          await new Promise(resolve => setTimeout(resolve, 500));
+                          await new Promise((resolve) =>
+                            setTimeout(resolve, 500)
+                          );
 
                           onClose();
                           navigate(`/challenges/${challenge.id}`);
@@ -715,7 +716,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                           console.error("Error joining challenge:", error);
                           toast({
                             title: "Błąd",
-                            description: "Nie udało się dołączyć do wyzwania. Spróbuj ponownie.",
+                            description:
+                              "Nie udało się dołączyć do wyzwania. Spróbuj ponownie.",
                             variant: "destructive",
                           });
                         }

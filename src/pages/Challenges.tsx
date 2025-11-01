@@ -247,9 +247,9 @@ const Challenges = () => {
               ? challenge.difficulty_level === "beginner"
                 ? "Początkujący"
                 : challenge.difficulty_level === "intermediate"
-                ? "Średniozaawansowany"
+                ? "Średni"
                 : "Zaawansowany"
-              : "Średniozaawansowany",
+              : "Średni",
             userProgress: userProgress[challenge.id] || 0,
             image:
               challenge.image_url ||
@@ -396,7 +396,7 @@ const Challenges = () => {
     switch (difficulty) {
       case "Początkujący":
         return "bg-green-500/20 text-green-400";
-      case "Średniozaawansowany":
+      case "Średni":
         return "bg-yellow-500/20 text-yellow-400";
       case "Zaawansowany":
         return "bg-red-500/20 text-red-400";

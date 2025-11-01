@@ -1,8 +1,8 @@
 // Figure difficulty levels with Polish translations
 export const DIFFICULTY_LEVELS = {
   beginner: "Początkujący",
-  intermediate: "Średniozaawansowany",
-  advanced: "Zaawansowany"
+  intermediate: "Średni",
+  advanced: "Zaawansowany",
 } as const;
 
 export type DifficultyKey = keyof typeof DIFFICULTY_LEVELS;
@@ -12,7 +12,7 @@ export const FIGURE_TYPES = {
   single_figure: "Pojedyncza figura",
   combo: "Kombo",
   warm_up: "Rozgrzewka",
-  stretching: "Rozciąganie"
+  stretching: "Rozciąganie",
 } as const;
 
 export type FigureTypeKey = keyof typeof FIGURE_TYPES;
