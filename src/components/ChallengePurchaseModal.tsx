@@ -85,11 +85,24 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
     }
   };
 
+  const translateErrorMessage = (message: string) => {
+    const translations: Record<string, string> = {
+      "Invalid or expired redemption code": "Nieprawidłowy lub wygasły kod aktywacyjny",
+      "You have already purchased this challenge": "Masz już dostęp do tego wyzwania",
+      "This redemption code has been used the maximum number of times": "Ten kod został już wykorzystany maksymalną liczbę razy",
+      "This redemption code has expired": "Ten kod wygasł",
+      "Failed to redeem code": "Nie udało się aktywować kodu",
+      "Challenge ID and code are required": "Wymagany jest identyfikator wyzwania i kod",
+      "User not authenticated": "Użytkownik niezalogowany",
+    };
+    return translations[message] || message;
+  };
+
   const handleCodeRedemption = async () => {
     if (!redemptionCode.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a redemption code",
+        title: "Błąd",
+        description: "Wpisz kod aktywacyjny",
         variant: "destructive",
       });
       return;
@@ -107,15 +120,16 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
       if (error) throw error;
 
       toast({
-        title: "Success!",
-        description: data.message || "Challenge unlocked successfully!",
+        title: "Sukces!",
+        description: data.message || "Wyzwanie odblokowane pomyślnie!",
       });
       onPurchaseSuccess?.();
       onClose();
     } catch (error: any) {
+      console.error('Error redeeming code:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to redeem code",
+        title: "Błąd",
+        description: translateErrorMessage(error.message) || "Nie udało się aktywować kodu",
         variant: "destructive",
       });
     } finally {

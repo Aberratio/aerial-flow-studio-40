@@ -15,6 +15,7 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle,
+  Crown,
 } from "lucide-react";
 import {
   Carousel,
@@ -557,7 +558,14 @@ const ChallengePreview = () => {
           {!isParticipant && (
             <div className="text-center">
               <Button
-                onClick={joinChallenge}
+                onClick={async () => {
+                  const isPremiumLocked = challenge?.premium && !hasPremiumAccess && !userPurchases[challenge.id];
+                  if (isPremiumLocked) {
+                    setIsPurchaseModalOpen(true);
+                  } else {
+                    await joinChallenge();
+                  }
+                }}
                 disabled={isJoining}
                 className="bg-gradient-to-r from-primary to-primary-foreground hover:shadow-lg hover:shadow-primary/25 text-white px-8 py-4 text-lg font-bold rounded-2xl shadow-xl transition-all duration-300 hover:scale-105"
               >
@@ -565,6 +573,11 @@ const ChallengePreview = () => {
                   <>
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
                     Dołączanie...
+                  </>
+                ) : (challenge?.premium && !hasPremiumAccess && !userPurchases[challenge.id]) ? (
+                  <>
+                    <Crown className="w-5 h-5 mr-2" />
+                    Wykup wyzwanie
                   </>
                 ) : (
                   <>

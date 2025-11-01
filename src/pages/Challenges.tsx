@@ -23,7 +23,7 @@ import ChallengeFiltersBar from "@/components/ChallengeFiltersBar";
 import ChallengeFiltersSheet from "@/components/ChallengeFiltersSheet";
 import ChallengePathCard from "@/components/ChallengePathCard";
 import ChallengeGridView from "@/components/Challenge/ChallengeGridView";
-import ChallengeListView from "@/components/Challenge/ChallengeListView";
+import { ChallengeListView } from "@/components/Challenge/ChallengeListView";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useChallengeAccess } from "@/hooks/useChallengeAccess";
@@ -457,7 +457,7 @@ const Challenges = () => {
             </div>
 
             {/* Meta - one line with icons */}
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 sm:gap-3 text-sm text-muted-foreground flex-wrap">
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
                 <span>{challenge.duration} dni</span>
@@ -465,11 +465,17 @@ const Challenges = () => {
               {challenge.level && (
                 <div className="flex items-center gap-1">
                   <TrendingUp className="w-4 h-4" />
-                  <span>Poziom {challenge.level}</span>
+                  <span className="hidden sm:inline">Poziom </span>
+                  <span>{challenge.level}</span>
                 </div>
               )}
-              <Badge variant="outline" className={getDifficultyColor(challenge.difficulty)}>
-                {challenge.difficulty}
+              <Badge variant="outline" className={`${getDifficultyColor(challenge.difficulty)} text-xs sm:text-sm`}>
+                <span className="sm:hidden">
+                  {challenge.difficulty === 'Początkujący' ? 'Pocz.' : 
+                   challenge.difficulty === 'Średniozaawansowany' ? 'Śred.' : 
+                   'Zaw.'}
+                </span>
+                <span className="hidden sm:inline">{challenge.difficulty}</span>
               </Badge>
             </div>
 
@@ -498,10 +504,9 @@ const Challenges = () => {
                   className="flex-1"
                   onClick={(e) => {
                     e.stopPropagation();
-                    openChallengeModal(challenge);
-                  }}
-                  disabled={isPremiumLocked}
-                >
+                  openChallengeModal(challenge);
+                }}
+              >
                   Szczegóły
                 </Button>
               )}
@@ -525,7 +530,7 @@ const Challenges = () => {
                   }
                 }}
               >
-                {isPremiumLocked ? "Odblokuj Premium" : getButtonText(challenge.status)}
+              {isPremiumLocked ? "Wykup" : getButtonText(challenge.status)}
               </Button>
             </div>
 
@@ -561,26 +566,7 @@ const Challenges = () => {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              {/* View Toggle - tylko na desktop */}
-              {!isMobile && (
-                <div className="flex items-center gap-1 border rounded-lg p-1">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <LayoutGrid className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                    size="sm"
-                    onClick={() => setViewMode('list')}
-                  >
-                    <List className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-              {canCreateChallenges && (
+            {canCreateChallenges && (
                 <Button
                   onClick={() => setIsCreateModalOpen(true)}
                   variant="default"
@@ -616,6 +602,26 @@ const Challenges = () => {
           />
         )}
 
+        {/* View Toggle - always visible, sticky on mobile */}
+        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3 mb-4 flex justify-end">
+          <div className="flex items-center gap-1 border rounded-lg p-1">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+            >
+              <LayoutGrid className="w-4 h-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
         {/* Active Challenges Section */}
         {activeChallenges.length > 0 && (
           <div className="mb-8">
@@ -625,9 +631,19 @@ const Challenges = () => {
                 {activeChallenges.map(challenge => renderChallengeCard(challenge))}
               </ChallengeGridView>
             ) : (
-              <ChallengeListView>
-                {activeChallenges.map(challenge => renderChallengeCard(challenge))}
-              </ChallengeListView>
+              <ChallengeListView
+                challenges={activeChallenges}
+                onChallengeClick={(challenge) => openChallengeModal(challenge)}
+                onPurchase={(challenge) => {
+                  setChallengeToPurchase(challenge);
+                  setIsPurchaseModalOpen(true);
+                }}
+                onJoinChallenge={handleJoinChallenge}
+                getDifficultyColor={getDifficultyColor}
+                getButtonText={getButtonText}
+                userPurchases={userPurchases}
+                hasPremiumAccess={hasPremiumAccess}
+              />
             )}
           </div>
         )}
@@ -688,9 +704,19 @@ const Challenges = () => {
                     {standaloneChallenges.map(challenge => renderChallengeCard(challenge))}
                   </ChallengeGridView>
                 ) : (
-                  <ChallengeListView>
-                    {standaloneChallenges.map(challenge => renderChallengeCard(challenge))}
-                  </ChallengeListView>
+                  <ChallengeListView
+                    challenges={standaloneChallenges}
+                    onChallengeClick={(challenge) => openChallengeModal(challenge)}
+                    onPurchase={(challenge) => {
+                      setChallengeToPurchase(challenge);
+                      setIsPurchaseModalOpen(true);
+                    }}
+                    onJoinChallenge={handleJoinChallenge}
+                    getDifficultyColor={getDifficultyColor}
+                    getButtonText={getButtonText}
+                    userPurchases={userPurchases}
+                    hasPremiumAccess={hasPremiumAccess}
+                  />
                 )}
               </div>
             )}
