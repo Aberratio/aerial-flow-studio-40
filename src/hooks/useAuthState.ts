@@ -65,13 +65,14 @@ export const useAuthState = () => {
     console.log('AuthContext: Setting up auth state listener');
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      (async () => {
-        try {
-          console.log('AuthContext: Auth state change', _event, session?.user?.id);
-          setSession(session);
+      console.log('AuthContext: Auth state change', _event, session?.user?.id);
+      setSession(session);
+      setIsLoading(false);
 
-          if (session?.user) {
-            // Don't track login here - it's handled in signIn function
+      if (session?.user) {
+        // Defer Supabase calls with setTimeout to prevent deadlock
+        setTimeout(async () => {
+          try {
             const profile = await fetchUserProfile(session.user.id);
 
             if (profile) {
@@ -94,19 +95,16 @@ export const useAuthState = () => {
               };
               setUser(basicUser);
             }
-          } else {
-            console.log('AuthContext: No session, clearing user');
-            setUser(null);
-            // Reset impersonation state when logged out
-            setIsImpersonating(false);
-            setOriginalAdminUser(null);
+          } catch (err) {
+            console.error('AuthContext: Error fetching profile:', err);
           }
-        } catch (err) {
-          console.error('AuthContext: onAuthStateChange error:', err);
-        } finally {
-          setIsLoading(false);
-        }
-      })();
+        }, 0);
+      } else {
+        console.log('AuthContext: No session, clearing user');
+        setUser(null);
+        setIsImpersonating(false);
+        setOriginalAdminUser(null);
+      }
     });
 
     (async () => {
