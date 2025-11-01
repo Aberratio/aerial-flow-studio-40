@@ -49,20 +49,13 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
   onPurchaseSuccess,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [currency, setCurrency] = useState<"usd" | "pln">("usd");
   const [redemptionCode, setRedemptionCode] = useState("");
   const [activeTab, setActiveTab] = useState("purchase");
   const { toast } = useToast();
 
-  const prices = {
-    usd: { 
-      amount: ((challenge.price_usd || 999) / 100).toFixed(2), 
-      symbol: "$" 
-    },
-    pln: { 
-      amount: ((challenge.price_pln || 3999) / 100).toFixed(2), 
-      symbol: "zł" 
-    },
+  const price = {
+    amount: ((challenge.price_pln || 3999) / 100).toFixed(0),
+    symbol: 'zł'
   };
 
   const handlePurchase = async () => {
@@ -71,7 +64,7 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
       const { data, error } = await supabase.functions.invoke("purchase-challenge", {
         body: {
           challengeId: challenge.id,
-          currency: currency,
+          currency: 'pln',
         },
       });
 
@@ -180,26 +173,11 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currency" className="text-white">
-                    Waluta
-                  </Label>
-                  <Select value={currency} onValueChange={(value: "usd" | "pln") => setCurrency(value)}>
-                    <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="usd">USD ($)</SelectItem>
-                      <SelectItem value="pln">PLN (zł)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
                 <div className="bg-white/5 rounded-lg p-4 border border-white/10">
                   <div className="flex items-center justify-between">
                     <span className="text-white/70">Cena:</span>
                     <span className="text-2xl font-bold text-white">
-                      {prices[currency].symbol}{prices[currency].amount}
+                      {price.amount} {price.symbol}
                     </span>
                   </div>
                 </div>

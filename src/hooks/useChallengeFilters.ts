@@ -15,7 +15,7 @@ interface ChallengeFiltersState {
 
 export const useChallengeFilters = () => {
   const [filters, setFilters] = useState<ChallengeFiltersState>({
-    status: ['active'], // Domyślnie zaznacz "Aktywne"
+    status: [], // Pusta domyślnie - zostanie ustawiona przez initializeFilters
     access: [],
     levelGroups: [],
     durations: [],
@@ -47,6 +47,15 @@ export const useChallengeFilters = () => {
       levelGroups: [],
       durations: [],
     });
+  };
+
+  const initializeFilters = (hasActiveChallenges: boolean) => {
+    if (hasActiveChallenges && filters.status.length === 0) {
+      setFilters(prev => ({
+        ...prev,
+        status: ['active']
+      }));
+    }
   };
 
   const activeFilterCount = useMemo(() => {
@@ -147,6 +156,7 @@ export const useChallengeFilters = () => {
     sortBy,
     toggleFilter,
     clearFilters,
+    initializeFilters,
     setSortBy,
     activeFilterCount,
     applyFilters,

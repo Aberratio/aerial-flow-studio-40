@@ -40,7 +40,7 @@ const ChallengeFiltersBar = ({
 }: ChallengeFiltersBarProps) => {
   const statusOptions: { value: FilterStatus; label: string }[] = [
     { value: 'active', label: 'Aktywne' },
-    { value: 'not_started', label: 'Nie rozpoczęte' },
+    { value: 'not_started', label: 'Nierozpoczęte' },
     { value: 'completed', label: 'Ukończone' },
   ];
 
@@ -71,7 +71,7 @@ const ChallengeFiltersBar = ({
   return (
     <div className="space-y-4 mb-6">
       {/* Filter Chips */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 min-h-[40px] items-center">
         {/* Status Chips */}
         <div className="flex flex-wrap gap-2">
           <span className="text-sm text-muted-foreground self-center">Status:</span>
@@ -132,18 +132,16 @@ const ChallengeFiltersBar = ({
           ))}
         </div>
 
-        {/* Clear Button */}
-        {activeFilterCount > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onClearFilters}
-            className="ml-auto"
-          >
-            <X className="w-4 h-4 mr-1" />
-            Wyczyść ({activeFilterCount})
-          </Button>
-        )}
+        {/* Clear Button - zawsze renderowany ale ukryty */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClearFilters}
+          className={activeFilterCount === 0 ? "ml-auto opacity-0 pointer-events-none" : "ml-auto opacity-100 transition-opacity"}
+        >
+          <X className="w-4 h-4 mr-1" />
+          Wyczyść ({activeFilterCount})
+        </Button>
       </div>
 
       {/* Sort Dropdown */}

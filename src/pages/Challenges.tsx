@@ -6,6 +6,9 @@ import {
   Crown,
   TrendingUp,
   Lock,
+  Filter,
+  LayoutGrid,
+  List,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,12 +20,16 @@ import ChallengePreviewModal from "@/components/ChallengePreviewModal";
 import CreateChallengeModal from "@/components/CreateChallengeModal";
 import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
 import ChallengeFiltersBar from "@/components/ChallengeFiltersBar";
+import ChallengeFiltersSheet from "@/components/ChallengeFiltersSheet";
 import ChallengePathCard from "@/components/ChallengePathCard";
+import ChallengeGridView from "@/components/Challenge/ChallengeGridView";
+import ChallengeListView from "@/components/Challenge/ChallengeListView";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useChallengeAccess } from "@/hooks/useChallengeAccess";
 import { useChallengeFilters } from "@/hooks/useChallengeFilters";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
@@ -62,6 +69,9 @@ const Challenges = () => {
   const [challengeToPurchase, setChallengeToPurchase] = useState<Challenge | null>(null);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const isMobile = useIsMobile();
 
   const {
     canCreateChallenges,
@@ -78,6 +88,7 @@ const Challenges = () => {
     sortBy,
     toggleFilter,
     clearFilters,
+    initializeFilters,
     setSortBy,
     activeFilterCount,
     applyFilters,
@@ -247,6 +258,10 @@ const Challenges = () => {
         }) || [];
 
       setChallenges(transformedData);
+      
+      // Initialize filters - tylko jeśli użytkownik ma aktywne wyzwania
+      const hasActive = transformedData.some(c => c.status === 'active');
+      initializeFilters(hasActive);
     } catch (error) {
       console.error("Error fetching challenges:", error);
     } finally {
@@ -400,30 +415,13 @@ const Challenges = () => {
         key={challenge.id}
         className="overflow-hidden hover:shadow-xl transition-all duration-300 relative group"
       >
-        {/* Premium Overlay */}
+        {/* Premium Badge - mały, bez blura */}
         {isPremiumLocked && (
-          <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center">
-            <div className="text-center space-y-4">
-              <Lock className="w-12 h-12 mx-auto text-primary" />
-              <div>
-                <Badge variant="default" className="mb-2">
-                  <Crown className="w-3 h-3 mr-1" />
-                  Premium
-                </Badge>
-                <p className="text-sm text-muted-foreground">To wyzwanie wymaga dostępu Premium</p>
-              </div>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setChallengeToPurchase(challenge);
-                  setIsPurchaseModalOpen(true);
-                }}
-              >
-                Odblokuj Premium
-              </Button>
-            </div>
+          <div className="absolute top-2 right-2 z-10">
+            <Badge variant="default" className="bg-yellow-500/90 backdrop-blur-sm">
+              <Crown className="w-3 h-3 mr-1" />
+              Premium
+            </Badge>
           </div>
         )}
 
@@ -435,7 +433,7 @@ const Challenges = () => {
                 src={challenge.image}
                 alt={challenge.title}
                 className="object-cover w-full h-full cursor-pointer"
-                onClick={() => !isPremiumLocked && openChallengeModal(challenge)}
+                onClick={() => openChallengeModal(challenge)}
               />
             </AspectRatio>
             {/* Only 1 badge - Priority: Premium > New */}
@@ -562,35 +560,75 @@ const Challenges = () => {
                 Przekrocz swoje granice ze strukturalnym treningiem
               </p>
             </div>
-            {canCreateChallenges && (
-              <Button
-                onClick={() => setIsCreateModalOpen(true)}
-                variant="default"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Stwórz wyzwanie
-              </Button>
-            )}
+            <div className="flex items-center gap-2">
+              {/* View Toggle - tylko na desktop */}
+              {!isMobile && (
+                <div className="flex items-center gap-1 border rounded-lg p-1">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                  >
+                    <LayoutGrid className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="w-4 h-4" />
+                  </Button>
+                </div>
+              )}
+              {canCreateChallenges && (
+                <Button
+                  onClick={() => setIsCreateModalOpen(true)}
+                  variant="default"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Stwórz wyzwanie
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Filters Bar */}
-        <ChallengeFiltersBar
-          filters={filters}
-          sortBy={sortBy}
-          activeFilterCount={activeFilterCount}
-          onToggleFilter={toggleFilter}
-          onClearFilters={clearFilters}
-          onSortChange={setSortBy}
-        />
+        {/* Filters - Desktop Bar, Mobile Sheet */}
+        {!isMobile ? (
+          <ChallengeFiltersBar
+            filters={filters}
+            sortBy={sortBy}
+            activeFilterCount={activeFilterCount}
+            onToggleFilter={toggleFilter}
+            onClearFilters={clearFilters}
+            onSortChange={setSortBy}
+          />
+        ) : (
+          <ChallengeFiltersSheet
+            filters={filters}
+            sortBy={sortBy}
+            activeFilterCount={activeFilterCount}
+            onToggleFilter={toggleFilter}
+            onClearFilters={clearFilters}
+            onSortChange={setSortBy}
+            isOpen={isFilterOpen}
+            onOpenChange={setIsFilterOpen}
+          />
+        )}
 
         {/* Active Challenges Section */}
         {activeChallenges.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Aktywne teraz</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              {activeChallenges.map(challenge => renderChallengeCard(challenge))}
-            </div>
+            {viewMode === 'grid' || isMobile ? (
+              <ChallengeGridView>
+                {activeChallenges.map(challenge => renderChallengeCard(challenge))}
+              </ChallengeGridView>
+            ) : (
+              <ChallengeListView>
+                {activeChallenges.map(challenge => renderChallengeCard(challenge))}
+              </ChallengeListView>
+            )}
           </div>
         )}
 
@@ -645,12 +683,34 @@ const Challenges = () => {
                 {Object.keys(seriesChallenges).length > 0 && (
                   <h2 className="text-xl font-semibold">Pozostałe wyzwania</h2>
                 )}
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {standaloneChallenges.map(challenge => renderChallengeCard(challenge))}
-                </div>
+                {viewMode === 'grid' || isMobile ? (
+                  <ChallengeGridView>
+                    {standaloneChallenges.map(challenge => renderChallengeCard(challenge))}
+                  </ChallengeGridView>
+                ) : (
+                  <ChallengeListView>
+                    {standaloneChallenges.map(challenge => renderChallengeCard(challenge))}
+                  </ChallengeListView>
+                )}
               </div>
             )}
           </div>
+        )}
+
+        {/* Mobile Filter Button - floating */}
+        {isMobile && (
+          <Button
+            className="fixed bottom-20 right-4 z-50 rounded-full w-14 h-14 shadow-lg"
+            size="icon"
+            onClick={() => setIsFilterOpen(true)}
+          >
+            <Filter className="w-6 h-6" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
         )}
       </div>
 
