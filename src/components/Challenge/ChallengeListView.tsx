@@ -168,11 +168,11 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                         className="h-1.5"
                       />
                       {challenge.completedCycles &&
-                        challenge.completedCycles > 1 && (
-                          <p className="text-xs text-white/50 mt-1">
-                            Cykle: {challenge.completedCycles}
-                          </p>
-                        )}
+                      challenge.completedCycles > 1 ? (
+                        <p className="text-xs text-white/50 mt-1">
+                          Cykle: {challenge.completedCycles}
+                        </p>
+                      ) : null}
                     </div>
                   )}
                 </div>
