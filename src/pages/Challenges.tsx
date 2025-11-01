@@ -92,7 +92,6 @@ const Challenges = () => {
     sortBy,
     toggleFilter,
     clearFilters,
-    initializeFilters,
     setSortBy,
     activeFilterCount,
     applyFilters,
@@ -268,10 +267,6 @@ const Challenges = () => {
         }) || [];
 
       setChallenges(transformedData);
-
-      // Initialize filters - tylko jeśli użytkownik ma aktywne wyzwania
-      const hasActive = transformedData.some((c) => c.status === "active");
-      initializeFilters(hasActive);
     } catch (error) {
       console.error("Error fetching challenges:", error);
     } finally {
