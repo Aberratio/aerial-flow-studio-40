@@ -622,25 +622,41 @@ const Challenges = () => {
           />
         )}
 
-        {/* View Toggle - always visible, sticky on mobile */}
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3 mb-4 flex justify-end">
-          <div className="flex items-center gap-1 border rounded-lg p-1">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-            >
-              <LayoutGrid className="w-4 h-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-            >
-              <List className="w-4 h-4" />
-            </Button>
+        {/* Results summary and view toggle */}
+        {filteredAndSortedChallenges.length > 0 && (
+          <div className="mb-4 flex items-center justify-between">
+            <div className="text-white/60 text-sm">
+              Pokazano {filteredAndSortedChallenges.length} z{" "}
+              {challenges.length} wyzwań
+            </div>
+            <div className="flex gap-1 bg-white/5 rounded-lg p-1">
+              <Button
+                size="sm"
+                variant={viewMode === "grid" ? "secondary" : "ghost"}
+                className={`h-8 w-8 p-0 ${
+                  viewMode === "grid"
+                    ? "bg-white/10 text-white"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+                onClick={() => setViewMode("grid")}
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant={viewMode === "list" ? "secondary" : "ghost"}
+                className={`h-8 w-8 p-0 ${
+                  viewMode === "list"
+                    ? "bg-white/10 text-white"
+                    : "text-white/60 hover:text-white hover:bg-white/5"
+                }`}
+                onClick={() => setViewMode("list")}
+              >
+                <List className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Active Challenges Section */}
         {activeChallenges.length > 0 && (
