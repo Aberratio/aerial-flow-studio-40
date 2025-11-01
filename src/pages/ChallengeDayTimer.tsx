@@ -656,6 +656,7 @@ const ChallengeDayTimer = () => {
         <style>{`
           header,
           nav[class*="BottomNavigation"],
+          nav.fixed.bottom-0,
           [class*="TopHeader"] {
             display: none !important;
           }
