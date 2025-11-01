@@ -355,7 +355,7 @@ const ChallengeDayTimer = () => {
       setIsCompleted(true);
       setIsRunning(false);
       if (audioMode === "sound") {
-        speak("Workout completed! Great job!");
+        speak("Trening ukończony! Świetna robota!");
       }
       return;
     }
@@ -409,9 +409,9 @@ const ChallengeDayTimer = () => {
       
       if (participantError) console.error('Error updating participant:', participantError);
       toast({
-        title: "Workout Completed!",
+        title: "Trening ukończony!",
         description:
-          "Great job! This training day has been marked as completed.",
+          "Świetna robota! Dzień treningowy został oznaczony jako ukończony.",
       });
       navigate(`/challenges/${challengeId}`);
     } catch (error) {
@@ -519,7 +519,7 @@ const ChallengeDayTimer = () => {
           <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 text-sm text-white/70">
               <span>
-                {currentSegmentIndex + 1} / {segments.length}
+                {currentSegmentIndex + 1} z {segments.length}
               </span>
             </div>
 
@@ -559,7 +559,7 @@ const ChallengeDayTimer = () => {
         {/* Progress Bar - Desktop */}
         <div className="mb-4 flex-shrink-0 hidden md:block">
           <div className="text-sm text-white/70 mb-2 font-medium">
-            {currentSegmentIndex + 1} of {segments.length}
+            {currentSegmentIndex + 1} z {segments.length}
           </div>
           <div className="relative">
             <Progress value={calculateProgress()} className="w-full h-2 bg-white/10 rounded-full overflow-hidden" />
@@ -642,7 +642,7 @@ const ChallengeDayTimer = () => {
                     </div>
 
                     <h2 className="text-base md:text-lg font-bold text-blue-300 mb-0">
-                      Rest Time
+                      Odpoczynek
                     </h2>
                   </>
                 )}
@@ -657,7 +657,7 @@ const ChallengeDayTimer = () => {
                 {/* Get Ready Message */}
                 {isPreparingToStart && (
                   <div className="text-base md:text-lg font-semibold text-yellow-300 mb-1 animate-pulse">
-                    🚀 Get Ready!
+                    🚀 Przygotuj się!
                   </div>
                 )}
               </>
@@ -676,7 +676,7 @@ const ChallengeDayTimer = () => {
                 className="flex-1 md:w-full md:max-w-xs px-4 md:px-8 py-4 md:py-6 text-lg md:text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-105"
               >
                 <Pause className="w-5 h-5 md:w-7 md:h-7 mr-2 md:mr-3" />
-                {isPreparingToStart ? "Cancel" : "Pause"}
+                {isPreparingToStart ? "Anuluj" : "Pauza"}
               </Button>
               
               <Button
@@ -685,7 +685,7 @@ const ChallengeDayTimer = () => {
                 size="lg"
                 className="flex-1 md:w-full md:max-w-xs px-4 md:px-6 py-4 text-lg md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
               >
-                Skip
+            Pomiń
               </Button>
             </div>
           ) : (
@@ -707,7 +707,7 @@ const ChallengeDayTimer = () => {
             <CardContent className="p-4">
               <h3 className="text-base font-semibold text-white mb-3 flex items-center">
                 <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
-                Up Next
+                Następne
               </h3>
               <div className="flex items-center space-x-4">
                 {getNextSegment().type === "exercise" &&
@@ -752,9 +752,9 @@ const ChallengeDayTimer = () => {
       <Dialog open={isCompleted} onOpenChange={setIsCompleted}>
         <DialogContent className="glass-effect border-white/10">
           <DialogHeader>
-            <DialogTitle className="text-white">Workout Completed! 🎉</DialogTitle>
+            <DialogTitle className="text-white">Trening ukończony! 🎉</DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Great job on completing today's workout! What would you like to do?
+              Świetna robota! Co chcesz teraz zrobić?
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col sm:flex-row gap-3 mt-6">
@@ -763,7 +763,7 @@ const ChallengeDayTimer = () => {
               className="flex-1"
               variant="default"
             >
-              Mark as Completed
+              Oznacz jako ukończone
             </Button>
             <Button
               onClick={() => {
@@ -777,7 +777,7 @@ const ChallengeDayTimer = () => {
               variant="outline"
               className="flex-1"
             >
-              Restart Timer
+              Rozpocznij od nowa
             </Button>
           </div>
         </DialogContent>

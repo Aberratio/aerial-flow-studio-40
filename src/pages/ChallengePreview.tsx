@@ -97,6 +97,15 @@ const ChallengePreview = () => {
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
 
+  const translateDifficulty = (level: string) => {
+    const translations: Record<string, string> = {
+      'beginner': 'Początkujący',
+      'intermediate': 'Średniozaawansowany',
+      'advanced': 'Zaawansowany'
+    };
+    return translations[level.toLowerCase()] || level;
+  };
+
   // Use the challenge calendar hook
   const {
     calendarDays,
@@ -512,7 +521,7 @@ const ChallengePreview = () => {
                   variant="outline"
                   className={getDifficultyColor(challenge.difficulty_level)}
                 >
-                  {challenge.difficulty_level}
+                  {translateDifficulty(challenge.difficulty_level)}
                 </Badge>
               )}
             </div>
@@ -785,12 +794,12 @@ const ChallengePreview = () => {
                                     {expandedDays.has(trainingDay.day_number) ? (
                                       <>
                                         <ChevronUp className="w-4 h-4" />
-                                        Show Less
+                                        Pokaż mniej
                                       </>
                                     ) : (
                                       <>
                                         <ChevronDown className="w-4 h-4" />
-                                        Show More ({exercises.length - 4} more exercises)
+                                        Pokaż więcej ({exercises.length - 4} więcej ćwiczeń)
                                       </>
                                     )}
                                   </button>

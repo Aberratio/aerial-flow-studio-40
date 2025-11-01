@@ -608,7 +608,14 @@ const EditChallenge = () => {
     value: string | Date | boolean | Exercise[]
   ) => {
     const updated = [...trainingDays];
-    updated[index] = { ...updated[index], [field]: value };
+    const updatedDay = { ...updated[index], [field]: value };
+    
+    // If setting isRestDay to true, clear exercises
+    if (field === 'isRestDay' && value === true) {
+      updatedDay.exercises = [];
+    }
+    
+    updated[index] = updatedDay;
     setTrainingDays(updated);
   };
 
