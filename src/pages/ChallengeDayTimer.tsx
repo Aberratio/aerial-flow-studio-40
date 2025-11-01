@@ -753,22 +753,24 @@ const ChallengeDayTimer = () => {
         </div>
 
         {/* Progress Bar - Mobile (after exercise image) */}
-        <div
-          className={`mt-2 ${
-            getCurrentSegment().type === "rest" ? "mb-4" : "mb-[100px]"
-          } flex-shrink-0 block md:hidden`}
-        >
-          <div className="relative">
-            <Progress
-              value={calculateProgress()}
-              className="w-full h-1.5 sm:h-2 bg-white/10 rounded-full overflow-hidden"
-            />
-            <div
-              className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
-              style={{ width: `${calculateProgress()}%` }}
-            />
+        {getCurrentSegment() && (
+          <div
+            className={`mt-2 ${
+              getCurrentSegment()?.type === "rest" ? "mb-4" : "mb-[100px]"
+            } flex-shrink-0 block md:hidden`}
+          >
+            <div className="relative">
+              <Progress
+                value={calculateProgress()}
+                className="w-full h-1.5 sm:h-2 bg-white/10 rounded-full overflow-hidden"
+              />
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-primary/80 to-primary rounded-full transition-all duration-300"
+                style={{ width: `${calculateProgress()}%` }}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Current Exercise/Rest Display */}
         <Card
@@ -852,20 +854,22 @@ const ChallengeDayTimer = () => {
                     🚀 Przygotuj się!
                   </div>
                 ) : (
-                  <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1 mt-[50px]">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3 leading-tight px-2 sm:px-4 z-10">
-                      {getCurrentSegment().exerciseName}
-                    </h2>
+                  getCurrentSegment() && (
+                    <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1 mt-[50px]">
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3 leading-tight px-2 sm:px-4 z-10">
+                        {getCurrentSegment().exerciseName}
+                      </h2>
 
-                    {/* Exercise Notes */}
-                    {getCurrentSegment().exerciseNotes && (
-                      <div className="mb-2 sm:mb-3 px-2 sm:px-4 bg-black/40">
-                        <p className="text-white/80 text-xs sm:text-sm md:text-basepx-2 sm:px-3 py-1 sm:py-2 rounded-lg sm:rounded-xl border border-white/20 bg-black">
-                          {getCurrentSegment().exerciseNotes}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                      {/* Exercise Notes */}
+                      {getCurrentSegment().exerciseNotes && (
+                        <div className="mb-2 sm:mb-3 px-2 sm:px-4 bg-black/40">
+                          <p className="text-white/80 text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1 sm:py-2 rounded-lg sm:rounded-xl border border-white/20 bg-black">
+                            {getCurrentSegment().exerciseNotes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )
                 )}
               </>
             )}
