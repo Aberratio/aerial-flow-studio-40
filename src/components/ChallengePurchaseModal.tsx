@@ -55,18 +55,21 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
 
   const price = {
     amount: ((challenge.price_pln || 3999) / 100).toFixed(0),
-    symbol: 'zł'
+    symbol: "zł",
   };
 
   const handlePurchase = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("purchase-challenge", {
-        body: {
-          challengeId: challenge.id,
-          currency: 'pln',
-        },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "purchase-challenge",
+        {
+          body: {
+            challengeId: challenge.id,
+            currency: "pln",
+          },
+        }
+      );
 
       if (error) throw error;
 
@@ -74,10 +77,14 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
         window.open(data.url, "_blank");
         onClose();
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to start purchase process";
       toast({
         title: "Error",
-        description: error.message || "Failed to start purchase process",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -87,13 +94,20 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
 
   const translateErrorMessage = (message: string) => {
     const translations: Record<string, string> = {
-      "Invalid or expired redemption code": "Nieprawidłowy lub wygasły kod aktywacyjny",
-      "You have already purchased this challenge": "Masz już dostęp do tego wyzwania",
-      "This redemption code has been used the maximum number of times": "Ten kod został już wykorzystany maksymalną liczbę razy",
+      "Invalid or expired redemption code":
+        "Nieprawidłowy lub wygasły kod aktywacyjny",
+      "You have already purchased this challenge":
+        "Masz już dostęp do tego wyzwania",
+      "This redemption code has been used the maximum number of times":
+        "Ten kod został już wykorzystany maksymalną liczbę razy",
       "This redemption code has expired": "Ten kod wygasł",
       "Failed to redeem code": "Nie udało się aktywować kodu",
-      "Challenge ID and code are required": "Wymagany jest identyfikator wyzwania i kod",
+      "Failed to create purchase record": "Nie udało się zapisać zakupu",
+      "Challenge ID and code are required":
+        "Wymagany jest identyfikator wyzwania i kod",
       "User not authenticated": "Użytkownik niezalogowany",
+      "Edge Function returned a non-2xx status code":
+        "Błąd serwera. Spróbuj ponownie.",
     };
     return translations[message] || message;
   };
@@ -110,26 +124,73 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
 
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("redeem-challenge-code", {
-        body: {
-          challengeId: challenge.id,
-          code: redemptionCode.trim(),
-        },
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "redeem-challenge-code",
+        {
+          body: {
+            challengeId: challenge.id,
+            code: redemptionCode.trim(),
+          },
+        }
+      );
 
-      if (error) throw error;
+      // Check if there's an error from Supabase client
+      if (error) {
+        // Try to extract error message from data if available
+        let errorMessage = error.message;
 
+        // If data exists and has error field, use that (Edge Function returned error in response body)
+        if (data && typeof data === "object" && "error" in data && data.error) {
+          errorMessage = data.error;
+        }
+
+        // Log full error for debugging
+        console.error("Error redeeming code:", {
+          error,
+          data,
+          errorMessage,
+          fullError: JSON.stringify(error, null, 2),
+        });
+
+        throw new Error(errorMessage || "Nie udało się aktywować kodu");
+      }
+
+      // Check if data contains error (Edge Function returned error in success response)
+      if (data && typeof data === "object" && "error" in data && data.error) {
+        console.error("Edge Function returned error in data:", data);
+        throw new Error(data.error);
+      }
+
+      // Success case
       toast({
         title: "Sukces!",
-        description: data.message || "Wyzwanie odblokowane pomyślnie!",
+        description: data?.message || "Wyzwanie odblokowane pomyślnie!",
       });
       onPurchaseSuccess?.();
       onClose();
-    } catch (error: any) {
-      console.error('Error redeeming code:', error);
+    } catch (error: unknown) {
+      console.error("Error redeeming code - catch block:", error);
+      let errorMessage = "Nie udało się aktywować kodu";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      } else if (
+        error &&
+        typeof error === "object" &&
+        "error" in error &&
+        typeof error.error === "string"
+      ) {
+        errorMessage = error.error;
+      } else if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof error.message === "string"
+      ) {
+        errorMessage = error.message;
+      }
       toast({
         title: "Błąd",
-        description: translateErrorMessage(error.message) || "Nie udało się aktywować kodu",
+        description: translateErrorMessage(errorMessage),
         variant: "destructive",
       });
     } finally {
@@ -154,7 +215,10 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
               {challenge.title}
-              <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-400">
+              <Badge
+                variant="secondary"
+                className="bg-yellow-500/20 text-yellow-400"
+              >
                 Premium
               </Badge>
             </CardTitle>
@@ -168,11 +232,17 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-white/10">
-            <TabsTrigger value="purchase" className="text-white data-[state=active]:bg-white/20">
+            <TabsTrigger
+              value="purchase"
+              className="text-white data-[state=active]:bg-white/20"
+            >
               <CreditCard className="w-4 h-4 mr-2" />
               Kup
             </TabsTrigger>
-            <TabsTrigger value="code" className="text-white data-[state=active]:bg-white/20">
+            <TabsTrigger
+              value="code"
+              className="text-white data-[state=active]:bg-white/20"
+            >
               <Gift className="w-4 h-4 mr-2" />
               Użyj kodu
             </TabsTrigger>
@@ -181,7 +251,9 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
           <TabsContent value="purchase" className="space-y-6 mt-6">
             <Card className="bg-white/5 border-white/10">
               <CardHeader>
-                <CardTitle className="text-white text-lg">Kup wyzwanie</CardTitle>
+                <CardTitle className="text-white text-lg">
+                  Kup wyzwanie
+                </CardTitle>
                 <CardDescription className="text-white/70">
                   Uzyskaj dożywotni dostęp do tego wyzwania premium
                 </CardDescription>
@@ -222,7 +294,8 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
               <CardHeader>
                 <CardTitle className="text-white text-lg">Użyj kodu</CardTitle>
                 <CardDescription className="text-white/70">
-                  Masz kod aktywacyjny? Wpisz go poniżej, aby odblokować to wyzwanie
+                  Masz kod aktywacyjny? Wpisz go poniżej, aby odblokować to
+                  wyzwanie
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -233,7 +306,9 @@ const ChallengePurchaseModal: React.FC<ChallengePurchaseModalProps> = ({
                   <Input
                     id="code"
                     value={redemptionCode}
-                    onChange={(e) => setRedemptionCode(e.target.value.toUpperCase())}
+                    onChange={(e) =>
+                      setRedemptionCode(e.target.value.toUpperCase())
+                    }
                     placeholder="Wpisz swój kod tutaj"
                     className="bg-white/10 border-white/20 text-white placeholder-white/50"
                   />
