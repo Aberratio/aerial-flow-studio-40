@@ -862,7 +862,7 @@ const ChallengeDayTimer = () => {
 
         {/* Next Up Section - Always show next exercise, not rest */}
         {getNextExercise() && (
-          <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-md mt-2 mx-2">
+          <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-md mt-6 mx-2">
             <CardContent className="p-2 sm:p-3 md:p-4">
               <h3 className="text-xs sm:text-sm md:text-base font-semibold text-white mb-1.5 sm:mb-2 md:mb-3 flex items-center">
                 <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-primary rounded-full mr-1.5 sm:mr-2 animate-pulse"></span>
