@@ -24,6 +24,7 @@ import { FigurePreviewModal } from "@/components/FigurePreviewModal";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
+import BreadcrumbNavigation from "@/components/Layout/BreadcrumbNavigation";
 
 interface Figure {
   id: string;
@@ -545,6 +546,15 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   return (
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
+        {/* Breadcrumb Navigation */}
+        <BreadcrumbNavigation 
+          items={[
+            { label: 'Podróż', path: '/aerial-journey' },
+            { label: sportName }
+          ]}
+          className="mb-6"
+        />
+        
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
             Podróż {sportName}

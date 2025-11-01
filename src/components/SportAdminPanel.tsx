@@ -601,32 +601,23 @@ const SportAdminPanel = ({ sportKey }: SportAdminPanelProps) => {
 
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/aerial-journey')}
-              className="text-white hover:bg-white/10 p-2"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center gap-3">
-                {sportCategory.icon && <span className="text-4xl">{sportCategory.icon}</span>}
-                {sportCategory.name}
-                <Badge 
-                  className={`ml-2 ${
-                    sportCategory.is_published 
-                      ? "bg-green-500/20 text-green-400 border-green-400/30" 
-                      : "bg-orange-500/20 text-orange-400 border-orange-400/30"
-                  }`}
-                >
-                  {sportCategory.is_published ? "Published" : "Draft"}
-                </Badge>
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Manage sport information and skill levels
-              </p>
-            </div>
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-white flex items-center gap-3">
+              {sportCategory.icon && <span className="text-4xl">{sportCategory.icon}</span>}
+              {sportCategory.name}
+              <Badge 
+                className={`ml-2 ${
+                  sportCategory.is_published 
+                    ? "bg-green-500/20 text-green-400 border-green-400/30" 
+                    : "bg-orange-500/20 text-orange-400 border-orange-400/30"
+                }`}
+              >
+                {sportCategory.is_published ? "Published" : "Draft"}
+              </Badge>
+            </h1>
+            <p className="text-muted-foreground mt-1">
+              Manage sport information and skill levels
+            </p>
           </div>
         </div>
 

@@ -24,11 +24,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children }) => {
       
       {/* Main Content */}
       <main className={`flex-1 ${isImpersonating ? 'pt-2' : ''} ${isMobile ? 'pb-20' : 'pb-4'}`}>
-        {/* Back Button Container */}
-        <div className="max-w-screen-xl mx-auto px-4 pt-4">
-          <BackButton />
-        </div>
-        
         {children}
       </main>
 
