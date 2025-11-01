@@ -1984,10 +1984,7 @@ const Library = () => {
                 )}
               </Button>
             </SheetTrigger>
-            <SheetContent
-              side="bottom"
-              className="h-[80vh] bg-slate-900/95 border-white/20"
-            >
+            <SheetContent side="bottom" className="h-[80vh] overflow-y-auto">
               <SheetHeader>
                 <SheetTitle className="text-white">Filter Exercises</SheetTitle>
               </SheetHeader>
