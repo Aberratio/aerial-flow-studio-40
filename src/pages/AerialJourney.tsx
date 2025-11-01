@@ -103,6 +103,7 @@ const AerialJourney = () => {
             .from("sport_levels")
             .select("id, level_number, point_limit, challenge_id")
             .eq("sport_category", category.key_name)
+            .eq("status", "published")
             .order("level_number", { ascending: true });
 
           const totalLevels = levelsData?.length || 0;
