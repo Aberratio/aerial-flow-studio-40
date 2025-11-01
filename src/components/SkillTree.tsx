@@ -1,21 +1,14 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Switch } from "@/components/ui/switch";
 import {
-  ArrowLeft,
   Lock,
   CheckCircle,
   Circle,
   Crown,
-  Eye,
-  ExternalLink,
-  EyeOff,
   Bookmark,
   AlertCircle,
-  CircleMinus,
   Trophy,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -305,7 +298,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     // Modal is already closed by FigurePreviewModal
     setIsPreviewModalOpen(false);
     setSelectedFigure(null);
-    
+
     // Refresh data to update points immediately
     await fetchSportLevelsAndProgress();
     await fetchUserPoints();
@@ -344,82 +337,6 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     return challengeCompleted ? 100 : Math.round(figureProgress);
   };
 
-  // Update figure progress status
-  const updateFigureStatus = async (
-    figureId: string,
-    status: string,
-    event: React.MouseEvent
-  ) => {
-    event.stopPropagation();
-    if (!user) return;
-
-    // Check if figure requires premium access
-    const figure = sportLevels
-      .flatMap((level) => level.figures)
-      .find((f) => f.id === figureId);
-    if (figure && !canAccessFigure(figure)) {
-      toast({
-        title: "Premium Required",
-        description:
-          "This exercise requires a premium subscription to track progress.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      setUpdatingStatus(figureId);
-
-      const { data, error } = await supabase
-        .from("figure_progress")
-        .upsert(
-          {
-            user_id: user.id,
-            figure_id: figureId,
-            status: status,
-            updated_at: new Date().toISOString(),
-          },
-          {
-            onConflict: "user_id,figure_id",
-          }
-        )
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Update local state
-      setUserProgress((prev) => {
-        const existing = prev.find((p) => p.figure_id === figureId);
-        if (existing) {
-          return prev.map((p) =>
-            p.figure_id === figureId ? { ...p, status } : p
-          );
-        } else {
-          return [...prev, { figure_id: figureId, status }];
-        }
-      });
-
-      // Refresh user points immediately with fresh data
-      const participations = await fetchUserChallengeParticipations();
-      await fetchUserPoints(participations);
-
-      toast({
-        title: "Status updated!",
-        description: `Exercise marked as ${status.replace("_", " ")}.`,
-      });
-    } catch (error) {
-      console.error("Error updating figure status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update exercise status. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
-
   // Check if figure requires premium access
   const requiresPremiumAccess = (figure: Figure) => {
     // Check if figure is marked as premium (you might need to add this field to the Figure interface and database)
@@ -433,41 +350,6 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const canAccessFigure = (figure: Figure) => {
     if (!requiresPremiumAccess(figure)) return true;
     return hasPremiumAccess;
-  };
-
-  // Leave challenge function
-  const handleLeaveChallenge = async (challengeId: string) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from("challenge_participants")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("challenge_id", challengeId);
-
-      if (error) throw error;
-
-      // Update local state
-      const newParticipations = { ...userChallengeParticipations };
-      delete newParticipations[challengeId];
-      setUserChallengeParticipations(newParticipations);
-
-      // Refresh points
-      await fetchUserPoints(newParticipations);
-
-      toast({
-        title: "Challenge left",
-        description: "You've left the challenge.",
-      });
-    } catch (error) {
-      console.error("Error leaving challenge:", error);
-      toast({
-        title: "Error",
-        description: "Failed to leave challenge.",
-        variant: "destructive",
-      });
-    }
   };
 
   // Join challenge function
@@ -547,26 +429,18 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Breadcrumb Navigation */}
-        <BreadcrumbNavigation 
+        <BreadcrumbNavigation
           items={[
-            { label: 'Podróż', path: '/aerial-journey' },
-            { label: sportName }
+            { label: "Podróż", path: "/aerial-journey" },
+            { label: sportName },
           ]}
           className="mb-6"
         />
-        
+
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
             Podróż {sportName}
           </h1>
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 flex items-center justify-center text-black font-bold text-xl">
-              {userPoints}
-            </div>
-            <span className="ml-3 text-yellow-400 font-semibold">
-              Całkowite punkty
-            </span>
-          </div>
         </div>
 
         {/* Simplified Level Grid */}

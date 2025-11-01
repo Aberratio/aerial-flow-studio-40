@@ -2,9 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { ArrowLeft, Eye, EyeOff, Settings, BookOpen, Edit } from "lucide-react";
+import { Eye, EyeOff, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -69,7 +68,7 @@ const AerialJourney = () => {
       if (categoriesError) throw categoriesError;
 
       // Fetch user challenge participations once before the loop
-      let challengeParticipations: {
+      const challengeParticipations: {
         [challengeId: string]: { participating: boolean; completed: boolean };
       } = {};
 
@@ -381,13 +380,13 @@ const AerialJourney = () => {
 
           {isAdmin && (
             <div className="flex items-center gap-3 bg-black/20 rounded-lg px-4 py-2 border border-white/10">
-              <span className="text-sm text-white">User Mode</span>
+              <span className="text-sm text-white">Tryb użytkownika</span>
               <Switch
                 checked={isAdminMode}
                 onCheckedChange={setIsAdminMode}
                 className="data-[state=checked]:bg-yellow-500"
               />
-              <span className="text-sm text-white">Admin Mode</span>
+              <span className="text-sm text-white">Tryb administratora</span>
             </div>
           )}
         </div>
