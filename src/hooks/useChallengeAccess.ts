@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useSubscriptionStatus } from './useSubscriptionStatus';
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useSubscriptionStatus } from "./useSubscriptionStatus";
 
 export const useChallengeAccess = (challengeId?: string) => {
-  const [userPurchases, setUserPurchases] = useState<Record<string, boolean>>({});
+  const [userPurchases, setUserPurchases] = useState<Record<string, boolean>>(
+    {}
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { hasPremiumAccess } = useSubscriptionStatus();
@@ -28,9 +30,9 @@ export const useChallengeAccess = (challengeId?: string) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase
-        .from('user_challenge_purchases')
-        .select('challenge_id')
-        .eq('user_id', user.id);
+        .from("user_challenge_purchases")
+        .select("challenge_id")
+        .eq("user_id", user.id);
 
       if (error) throw error;
 
@@ -41,7 +43,7 @@ export const useChallengeAccess = (challengeId?: string) => {
 
       setUserPurchases(purchasesMap);
     } catch (error) {
-      console.error('Error fetching user purchases:', error);
+      console.error("Error fetching user purchases:", error);
       setUserPurchases({});
     } finally {
       setIsLoading(false);
@@ -56,9 +58,9 @@ export const useChallengeAccess = (challengeId?: string) => {
     return await checkChallengeAccess(cId);
   };
 
-  const refreshPurchases = () => {
-    fetchUserPurchases();
-  };
+  const refreshPurchases = useCallback(async () => {
+    await fetchUserPurchases();
+  }, [user]);
 
   return {
     userPurchases,

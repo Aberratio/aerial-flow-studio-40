@@ -120,6 +120,17 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     }
   }, [isOpen, initialChallenge]);
 
+  // Refresh purchases when purchase modal closes to ensure UI updates
+  useEffect(() => {
+    if (!isPurchaseModalOpen) {
+      // Small delay to ensure purchase was saved in database
+      const timeoutId = setTimeout(() => {
+        refreshPurchases();
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isPurchaseModalOpen]);
+
   const fetchChallengeDetails = async (challengeId: string) => {
     setIsLoading(true);
     try {
@@ -830,8 +841,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
             price_usd: challenge.price_usd,
             price_pln: challenge.price_pln,
           }}
-          onPurchaseSuccess={() => {
-            refreshPurchases();
+          onPurchaseSuccess={async () => {
+            await refreshPurchases();
             setIsPurchaseModalOpen(false);
           }}
         />
