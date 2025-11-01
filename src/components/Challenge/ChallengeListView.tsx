@@ -2,7 +2,14 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Crown, Clock, TrendingUp, MoreVertical, Eye, Play } from "lucide-react";
+import {
+  Crown,
+  Clock,
+  TrendingUp,
+  MoreVertical,
+  Eye,
+  Play,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
   DropdownMenu,
@@ -68,8 +75,11 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
   return (
     <div className="space-y-3">
       {challenges.map((challenge) => {
-        const isPremiumLocked = challenge.premium && !hasPremiumAccess && !userPurchases[challenge.id];
-        
+        const isPremiumLocked =
+          challenge.premium &&
+          !hasPremiumAccess &&
+          !userPurchases[challenge.id];
+
         return (
           <Card
             key={challenge.id}
@@ -114,7 +124,7 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                     <p className="text-xs text-white/60 line-clamp-1 mb-2">
                       {challenge.description}
                     </p>
-                    
+
                     {/* Meta - jedna linia z kompaktnymi info */}
                     <div className="flex items-center gap-2 flex-wrap text-xs mb-2">
                       <div className="flex items-center gap-1 text-white/60">
@@ -128,16 +138,18 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                           <span>{challenge.level}</span>
                         </div>
                       )}
-                      <Badge 
-                        variant="outline" 
-                        className={`${getDifficultyColor(challenge.difficulty)} text-xs`}
+                      <Badge
+                        variant="outline"
+                        className={`${getDifficultyColor(
+                          challenge.difficulty
+                        )} text-xs`}
                       >
                         <span className="sm:hidden">
-                          {challenge.difficulty === 'Początkujący' ? 'Pocz.' : 
-                           challenge.difficulty === 'Średniozaawansowany' ? 'Śred.' : 
-                           'Zaw.'}
+                          {challenge.difficulty}
                         </span>
-                        <span className="hidden sm:inline">{challenge.difficulty}</span>
+                        <span className="hidden sm:inline">
+                          {challenge.difficulty}
+                        </span>
                       </Badge>
                     </div>
                   </div>
@@ -147,14 +159,20 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                     <div className="mt-2">
                       <div className="flex justify-between text-xs mb-1">
                         <span className="text-white/60">Postęp</span>
-                        <span className="text-white/80">{challenge.userProgress}%</span>
+                        <span className="text-white/80">
+                          {challenge.userProgress}%
+                        </span>
                       </div>
-                      <Progress value={challenge.userProgress} className="h-1.5" />
-                      {challenge.completedCycles && challenge.completedCycles > 1 && (
-                        <p className="text-xs text-white/50 mt-1">
-                          Cykle: {challenge.completedCycles}
-                        </p>
-                      )}
+                      <Progress
+                        value={challenge.userProgress}
+                        className="h-1.5"
+                      />
+                      {challenge.completedCycles &&
+                        challenge.completedCycles > 1 && (
+                          <p className="text-xs text-white/50 mt-1">
+                            Cykle: {challenge.completedCycles}
+                          </p>
+                        )}
                     </div>
                   )}
                 </div>
@@ -164,9 +182,9 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                   {!isMobile ? (
                     <>
                       {!challenge.userParticipating && (
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
+                        <Button
+                          size="sm"
+                          variant="outline"
                           onClick={(e) => {
                             e.stopPropagation();
                             onChallengeClick(challenge);
@@ -177,8 +195,8 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                           Szczegóły
                         </Button>
                       )}
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         onClick={async (e) => {
                           e.stopPropagation();
                           if (isPremiumLocked) {
@@ -195,7 +213,9 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                       >
                         {isPremiumLocked && <Crown className="w-3 h-3 mr-1" />}
                         {!isPremiumLocked && <Play className="w-3 h-3 mr-1" />}
-                        {isPremiumLocked ? "Wykup" : getButtonText(challenge.status)}
+                        {isPremiumLocked
+                          ? "Wykup"
+                          : getButtonText(challenge.status)}
                       </Button>
                     </>
                   ) : (
@@ -210,7 +230,10 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                           <MoreVertical className="w-4 h-4 text-white/60" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-slate-900/95 border-white/20">
+                      <DropdownMenuContent
+                        align="end"
+                        className="bg-slate-900/95 border-white/20"
+                      >
                         {!challenge.userParticipating && (
                           <DropdownMenuItem
                             onClick={(e) => {
@@ -236,10 +259,20 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                               await onJoinChallenge(challenge.id);
                             }
                           }}
-                          className={isPremiumLocked ? "text-yellow-400" : "text-green-400"}
+                          className={
+                            isPremiumLocked
+                              ? "text-yellow-400"
+                              : "text-green-400"
+                          }
                         >
-                          {isPremiumLocked ? <Crown className="w-4 h-4 mr-2" /> : <Play className="w-4 h-4 mr-2" />}
-                          {isPremiumLocked ? "Wykup" : getButtonText(challenge.status)}
+                          {isPremiumLocked ? (
+                            <Crown className="w-4 h-4 mr-2" />
+                          ) : (
+                            <Play className="w-4 h-4 mr-2" />
+                          )}
+                          {isPremiumLocked
+                            ? "Wykup"
+                            : getButtonText(challenge.status)}
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>

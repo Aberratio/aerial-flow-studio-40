@@ -62,11 +62,14 @@ interface Challenge {
 
 const Challenges = () => {
   const navigate = useNavigate();
-  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
+    null
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
-  const [challengeToPurchase, setChallengeToPurchase] = useState<Challenge | null>(null);
+  const [challengeToPurchase, setChallengeToPurchase] =
+    useState<Challenge | null>(null);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -79,7 +82,8 @@ const Challenges = () => {
     isLoading: roleLoading,
   } = useUserRole();
   const { hasPremiumAccess } = useSubscriptionStatus();
-  const { userPurchases, refreshPurchases, checkChallengeAccess } = useChallengeAccess();
+  const { userPurchases, refreshPurchases, checkChallengeAccess } =
+    useChallengeAccess();
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -113,7 +117,9 @@ const Challenges = () => {
       // If not admin, show published challenges + own drafts for trainers
       if (!isAdmin) {
         if (canCreateChallenges && user) {
-          challengeQuery = challengeQuery.or(`status.eq.published,and(status.eq.draft,created_by.eq.${user.id})`);
+          challengeQuery = challengeQuery.or(
+            `status.eq.published,and(status.eq.draft,created_by.eq.${user.id})`
+          );
         } else {
           challengeQuery = challengeQuery.eq("status", "published");
         }
@@ -132,7 +138,7 @@ const Challenges = () => {
           .from("challenge_participants")
           .select("challenge_id, status, user_started_at")
           .eq("user_id", user.id);
-        
+
         userParticipation =
           participationData?.reduce((acc, p) => {
             acc[p.challenge_id] = p.status;
@@ -142,7 +148,7 @@ const Challenges = () => {
         // Get user's progress data for challenges they're participating in
         const participatingChallengeIds =
           participationData?.map((p) => p.challenge_id) || [];
-        
+
         if (participatingChallengeIds.length > 0) {
           const { data: progressData } = await supabase
             .from("challenge_day_progress")
@@ -165,7 +171,7 @@ const Challenges = () => {
 
           const challengeCompletedDays =
             progressData?.reduce((acc, progress) => {
-              if (progress.status === 'completed') {
+              if (progress.status === "completed") {
                 acc[progress.challenge_id] =
                   (acc[progress.challenge_id] || 0) + 1;
               }
@@ -173,20 +179,24 @@ const Challenges = () => {
             }, {} as Record<string, number>) || {};
 
           // Calculate completed cycles (max attempt_number for completed challenges)
-          completedCycles = progressData?.reduce((acc, progress) => {
-            if (progress.status === 'completed') {
-              acc[progress.challenge_id] = Math.max(
-                acc[progress.challenge_id] || 0,
-                progress.attempt_number || 1
-              );
-            }
-            return acc;
-          }, {} as Record<string, number>) || {};
+          completedCycles =
+            progressData?.reduce((acc, progress) => {
+              if (progress.status === "completed") {
+                acc[progress.challenge_id] = Math.max(
+                  acc[progress.challenge_id] || 0,
+                  progress.attempt_number || 1
+                );
+              }
+              return acc;
+            }, {} as Record<string, number>) || {};
 
           participatingChallengeIds.forEach((challengeId) => {
             const completedDays = challengeCompletedDays[challengeId] || 0;
             const totalDays = challengeTotalDays[challengeId] || 1;
-            userProgress[challengeId] = Math.min(100, Math.round((completedDays / totalDays) * 100));
+            userProgress[challengeId] = Math.min(
+              100,
+              Math.round((completedDays / totalDays) * 100)
+            );
           });
         }
       }
@@ -197,7 +207,7 @@ const Challenges = () => {
         .from("challenge_participants")
         .select("challenge_id")
         .in("challenge_id", challengeIds);
-      
+
       const participantCounts =
         participantData?.reduce((acc, p) => {
           acc[p.challenge_id] = (acc[p.challenge_id] || 0) + 1;
@@ -234,12 +244,12 @@ const Challenges = () => {
             duration: 28, // Default 28 days
             participants: participantCounts[challenge.id] || 0,
             difficulty: challenge.difficulty_level
-              ? challenge.difficulty_level === 'beginner'
-                ? 'Początkujący'
-                : challenge.difficulty_level === 'intermediate'
-                ? 'Średniozaawansowany'
-                : 'Zaawansowany'
-              : 'Średniozaawansowany',
+              ? challenge.difficulty_level === "beginner"
+                ? "Początkujący"
+                : challenge.difficulty_level === "intermediate"
+                ? "Średniozaawansowany"
+                : "Zaawansowany"
+              : "Średniozaawansowany",
             userProgress: userProgress[challenge.id] || 0,
             image:
               challenge.image_url ||
@@ -253,14 +263,14 @@ const Challenges = () => {
             completedCycles: completedCycles[challenge.id] || 0,
             start_date: challenge.start_date,
             end_date: challenge.end_date,
-            category: 'General',
+            category: "General",
           };
         }) || [];
 
       setChallenges(transformedData);
-      
+
       // Initialize filters - tylko jeśli użytkownik ma aktywne wyzwania
-      const hasActive = transformedData.some(c => c.status === 'active');
+      const hasActive = transformedData.some((c) => c.status === "active");
       initializeFilters(hasActive);
     } catch (error) {
       console.error("Error fetching challenges:", error);
@@ -276,42 +286,45 @@ const Challenges = () => {
   }, [challenges, filters, sortBy]);
 
   // Group challenges by series
-  const { seriesChallenges, standaloneChallenges, activeChallenges } = useMemo(() => {
-    const series: Record<string, Challenge[]> = {};
-    const standalone: Challenge[] = [];
-    const active: Challenge[] = [];
+  const { seriesChallenges, standaloneChallenges, activeChallenges } =
+    useMemo(() => {
+      const series: Record<string, Challenge[]> = {};
+      const standalone: Challenge[] = [];
+      const active: Challenge[] = [];
 
-    filteredAndSortedChallenges.forEach(challenge => {
-      // Collect active challenges
-      if (challenge.status === 'active') {
-        active.push(challenge);
-      }
-
-      // Only add to series/standalone if NOT active (to avoid duplication)
-      if (challenge.status !== 'active') {
-        // Group by series or standalone
-        if (challenge.series_name) {
-          if (!series[challenge.series_name]) {
-            series[challenge.series_name] = [];
-          }
-          series[challenge.series_name].push(challenge);
-        } else {
-          standalone.push(challenge);
+      filteredAndSortedChallenges.forEach((challenge) => {
+        // Collect active challenges
+        if (challenge.status === "active") {
+          active.push(challenge);
         }
-      }
-    });
 
-    // Sort challenges within each series by series_order
-    Object.keys(series).forEach(seriesName => {
-      series[seriesName].sort((a, b) => (a.series_order || 0) - (b.series_order || 0));
-    });
+        // Only add to series/standalone if NOT active (to avoid duplication)
+        if (challenge.status !== "active") {
+          // Group by series or standalone
+          if (challenge.series_name) {
+            if (!series[challenge.series_name]) {
+              series[challenge.series_name] = [];
+            }
+            series[challenge.series_name].push(challenge);
+          } else {
+            standalone.push(challenge);
+          }
+        }
+      });
 
-    return {
-      seriesChallenges: series,
-      standaloneChallenges: standalone,
-      activeChallenges: active.slice(0, 3), // Max 3 active challenges
-    };
-  }, [filteredAndSortedChallenges]);
+      // Sort challenges within each series by series_order
+      Object.keys(series).forEach((seriesName) => {
+        series[seriesName].sort(
+          (a, b) => (a.series_order || 0) - (b.series_order || 0)
+        );
+      });
+
+      return {
+        seriesChallenges: series,
+        standaloneChallenges: standalone,
+        activeChallenges: active.slice(0, 3), // Max 3 active challenges
+      };
+    }, [filteredAndSortedChallenges]);
 
   const openChallengeModal = (challenge: Challenge) => {
     setSelectedChallenge(challenge);
@@ -351,11 +364,11 @@ const Challenges = () => {
           user_started_at: new Date().toISOString(),
         })
         .select();
-      
+
       if (error) throw error;
 
       // Small delay to ensure data is saved
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (data && data.length > 0) {
         navigate(`/challenges/${data[0].challenge_id}`);
@@ -406,9 +419,10 @@ const Challenges = () => {
   };
 
   const renderChallengeCard = (challenge: Challenge) => {
-    const isPremiumLocked = challenge.premium && !hasPremiumAccess && !userPurchases[challenge.id];
+    const isPremiumLocked =
+      challenge.premium && !hasPremiumAccess && !userPurchases[challenge.id];
     const showBadge = challenge.premium || challenge.is_new;
-    const badgeType = challenge.premium ? 'premium' : 'new';
+    const badgeType = challenge.premium ? "premium" : "new";
 
     return (
       <Card
@@ -418,7 +432,10 @@ const Challenges = () => {
         {/* Premium Badge - mały, bez blura */}
         {isPremiumLocked && (
           <div className="absolute top-2 right-2 z-10">
-            <Badge variant="default" className="bg-yellow-500/90 backdrop-blur-sm">
+            <Badge
+              variant="default"
+              className="bg-yellow-500/90 backdrop-blur-sm"
+            >
               <Crown className="w-3 h-3 mr-1" />
               Premium
             </Badge>
@@ -439,11 +456,11 @@ const Challenges = () => {
             {/* Only 1 badge - Priority: Premium > New */}
             {showBadge && (
               <Badge
-                variant={badgeType === 'premium' ? 'default' : 'secondary'}
+                variant={badgeType === "premium" ? "default" : "secondary"}
                 className="absolute top-2 right-2"
               >
-                {badgeType === 'premium' && <Crown className="w-3 h-3 mr-1" />}
-                {badgeType === 'premium' ? 'Premium' : 'Nowe'}
+                {badgeType === "premium" && <Crown className="w-3 h-3 mr-1" />}
+                {badgeType === "premium" ? "Premium" : "Nowe"}
               </Badge>
             )}
           </div>
@@ -452,8 +469,12 @@ const Challenges = () => {
           <div className="p-4 space-y-3">
             {/* Title & Description */}
             <div>
-              <h3 className="text-lg font-semibold mb-1 line-clamp-1">{challenge.title}</h3>
-              <p className="text-sm text-muted-foreground line-clamp-1">{challenge.description}</p>
+              <h3 className="text-lg font-semibold mb-1 line-clamp-1">
+                {challenge.title}
+              </h3>
+              <p className="text-sm text-muted-foreground line-clamp-1">
+                {challenge.description}
+              </p>
             </div>
 
             {/* Meta - one line with icons */}
@@ -469,12 +490,13 @@ const Challenges = () => {
                   <span>{challenge.level}</span>
                 </div>
               )}
-              <Badge variant="outline" className={`${getDifficultyColor(challenge.difficulty)} text-xs sm:text-sm`}>
-                <span className="sm:hidden">
-                  {challenge.difficulty === 'Początkujący' ? 'Pocz.' : 
-                   challenge.difficulty === 'Średniozaawansowany' ? 'Śred.' : 
-                   'Zaw.'}
-                </span>
+              <Badge
+                variant="outline"
+                className={`${getDifficultyColor(
+                  challenge.difficulty
+                )} text-xs sm:text-sm`}
+              >
+                <span className="sm:hidden">{challenge.difficulty}</span>
                 <span className="hidden sm:inline">{challenge.difficulty}</span>
               </Badge>
             </div>
@@ -504,16 +526,16 @@ const Challenges = () => {
                   className="flex-1"
                   onClick={(e) => {
                     e.stopPropagation();
-                  openChallengeModal(challenge);
-                }}
-              >
+                    openChallengeModal(challenge);
+                  }}
+                >
                   Szczegóły
                 </Button>
               )}
               <Button
                 variant="default"
                 size="sm"
-                className={challenge.userParticipating ? 'w-full' : 'flex-1'}
+                className={challenge.userParticipating ? "w-full" : "flex-1"}
                 onClick={async (e) => {
                   e.stopPropagation();
                   if (isPremiumLocked) {
@@ -530,7 +552,7 @@ const Challenges = () => {
                   }
                 }}
               >
-              {isPremiumLocked ? "Wykup" : getButtonText(challenge.status)}
+                {isPremiumLocked ? "Wykup" : getButtonText(challenge.status)}
               </Button>
             </div>
 
@@ -558,15 +580,13 @@ const Challenges = () => {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-                Wyzwania
-              </h1>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2">Wyzwania</h1>
               <p className="text-muted-foreground text-sm sm:text-base">
                 Przekrocz swoje granice ze strukturalnym treningiem
               </p>
             </div>
             <div className="flex items-center gap-2">
-            {canCreateChallenges && (
+              {canCreateChallenges && (
                 <Button
                   onClick={() => setIsCreateModalOpen(true)}
                   variant="default"
@@ -606,16 +626,16 @@ const Challenges = () => {
         <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-sm py-3 mb-4 flex justify-end">
           <div className="flex items-center gap-1 border rounded-lg p-1">
             <Button
-              variant={viewMode === 'grid' ? 'default' : 'ghost'}
+              variant={viewMode === "grid" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setViewMode('grid')}
+              onClick={() => setViewMode("grid")}
             >
               <LayoutGrid className="w-4 h-4" />
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'ghost'}
+              variant={viewMode === "list" ? "default" : "ghost"}
               size="sm"
-              onClick={() => setViewMode('list')}
+              onClick={() => setViewMode("list")}
             >
               <List className="w-4 h-4" />
             </Button>
@@ -626,9 +646,11 @@ const Challenges = () => {
         {activeChallenges.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Aktywne teraz</h2>
-            {viewMode === 'grid' ? (
+            {viewMode === "grid" ? (
               <ChallengeGridView>
-                {activeChallenges.map(challenge => renderChallengeCard(challenge))}
+                {activeChallenges.map((challenge) =>
+                  renderChallengeCard(challenge)
+                )}
               </ChallengeGridView>
             ) : (
               <ChallengeListView
@@ -679,16 +701,23 @@ const Challenges = () => {
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold">Ścieżki</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {Object.entries(seriesChallenges).map(([seriesName, seriesList]) => (
-                    <ChallengePathCard
-                      key={seriesName}
-                      seriesName={seriesName}
-                      challenges={seriesList}
-                      onChallengeClick={openChallengeModal}
-                      onJoinChallenge={handleJoinChallenge}
-                      hasAccess={hasPremiumAccess || seriesList.every(c => !c.premium || userPurchases[c.id])}
-                    />
-                  ))}
+                  {Object.entries(seriesChallenges).map(
+                    ([seriesName, seriesList]) => (
+                      <ChallengePathCard
+                        key={seriesName}
+                        seriesName={seriesName}
+                        challenges={seriesList}
+                        onChallengeClick={openChallengeModal}
+                        onJoinChallenge={handleJoinChallenge}
+                        hasAccess={
+                          hasPremiumAccess ||
+                          seriesList.every(
+                            (c) => !c.premium || userPurchases[c.id]
+                          )
+                        }
+                      />
+                    )
+                  )}
                 </div>
               </div>
             )}
@@ -699,14 +728,18 @@ const Challenges = () => {
                 {Object.keys(seriesChallenges).length > 0 && (
                   <h2 className="text-xl font-semibold">Pozostałe wyzwania</h2>
                 )}
-            {viewMode === 'grid' ? (
-              <ChallengeGridView>
-                    {standaloneChallenges.map(challenge => renderChallengeCard(challenge))}
+                {viewMode === "grid" ? (
+                  <ChallengeGridView>
+                    {standaloneChallenges.map((challenge) =>
+                      renderChallengeCard(challenge)
+                    )}
                   </ChallengeGridView>
                 ) : (
                   <ChallengeListView
                     challenges={standaloneChallenges}
-                    onChallengeClick={(challenge) => openChallengeModal(challenge)}
+                    onChallengeClick={(challenge) =>
+                      openChallengeModal(challenge)
+                    }
                     onPurchase={(challenge) => {
                       setChallengeToPurchase(challenge);
                       setIsPurchaseModalOpen(true);
@@ -745,7 +778,7 @@ const Challenges = () => {
         challenge={selectedChallenge}
         isOpen={isModalOpen}
         onClose={closeChallengeModal}
-        ctaMessage={getButtonText(selectedChallenge?.status || '')}
+        ctaMessage={getButtonText(selectedChallenge?.status || "")}
       />
 
       <CreateChallengeModal
