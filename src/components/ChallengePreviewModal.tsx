@@ -1,18 +1,8 @@
 import React, { useState, useEffect } from "react";
-import {
-  Calendar,
-  Trophy,
-  Users,
-  Clock,
-  ChevronRight,
-  X,
-  Play,
-  ZoomIn,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Trophy, ChevronRight, Clock, ZoomIn, Crown, Star } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
@@ -22,9 +12,12 @@ import {
 import { ChallengeDetailsModal } from "@/components/ChallengeDetailsModal";
 import ExerciseImageModal from "@/components/ExerciseImageModal";
 import RetakeChallengeModal from "@/components/RetakeChallengeModal";
+import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useChallengeAccess } from "@/hooks/useChallengeAccess";
+import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useNavigate } from "react-router-dom";
 import { Edit2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -41,6 +34,8 @@ interface Challenge {
   created_by: string;
   image_url?: string;
   premium?: boolean;
+  price_usd?: number;
+  price_pln?: number;
   achievements?: Array<{
     id: string;
     name: string;
@@ -110,8 +105,12 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRetaking, setIsRetaking] = useState(false);
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const { user } = useAuth();
   const { canCreateChallenges } = useUserRole();
+  const { checkChallengeAccess, userPurchases, refreshPurchases } =
+    useChallengeAccess();
+  const { hasPremiumAccess } = useSubscriptionStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -297,7 +296,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
       challengeStatus === "completed" ||
       challengeStatus === "failed"
     ) {
-      return "Retake Challenge";
+      return "Powtórz wyzwanie";
     }
 
     return ctaMessage;
@@ -674,8 +673,13 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
                         // Check if challenge is premium and user has access
                         if (challenge.premium) {
-                          // This would need access to the checkChallengeAccess function
-                          // For now, we'll navigate and let the challenge page handle it
+                          const hasAccess = await checkChallengeAccess(
+                            challenge.id
+                          );
+                          if (!hasAccess) {
+                            setIsPurchaseModalOpen(true);
+                            return;
+                          }
                         }
 
                         // Automatically start today
@@ -726,11 +730,26 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                         onClose();
                         navigate(`/challenges/${challenge.id}`);
                       }
+                    } else if (
+                      challenge.premium &&
+                      !hasPremiumAccess &&
+                      !userPurchases[challenge.id]
+                    ) {
+                      // If challenge is premium and user doesn't have access, open purchase modal
+                      setIsPurchaseModalOpen(true);
                     }
                   }}
                   disabled={challenge.status !== "published"}
                 >
-                  {getButtonText(challenge.status)}
+                  {challenge.premium &&
+                  !hasPremiumAccess &&
+                  !userPurchases[challenge.id] ? (
+                    <>
+                      Wykup wyzwanie <Crown className="w-4 h-4 mr-2" />
+                    </>
+                  ) : (
+                    <>{getButtonText(challenge.status)}</>
+                  )}
                 </Button>
               );
             })()}
@@ -797,6 +816,26 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
           setSelectedExercise(null);
         }}
       />
+
+      {/* Challenge Purchase Modal */}
+      {challenge && (
+        <ChallengePurchaseModal
+          isOpen={isPurchaseModalOpen}
+          onClose={() => setIsPurchaseModalOpen(false)}
+          challenge={{
+            id: challenge.id,
+            title: challenge.title,
+            description: challenge.description,
+            image: challenge.image_url,
+            price_usd: challenge.price_usd,
+            price_pln: challenge.price_pln,
+          }}
+          onPurchaseSuccess={() => {
+            refreshPurchases();
+            setIsPurchaseModalOpen(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 };
