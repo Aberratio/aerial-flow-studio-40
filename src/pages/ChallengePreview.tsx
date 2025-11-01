@@ -464,6 +464,9 @@ const ChallengePreview = () => {
       : `0:${secs.toString().padStart(2, "0")}`;
   };
 
+  // Calculate premium lock status for security
+  const isPremiumLocked = challenge?.premium && !hasPremiumAccess && !userPurchases[challenge.id];
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
@@ -556,16 +559,15 @@ const ChallengePreview = () => {
 
           {/* Join Button for non-participants */}
           {!isParticipant && (
-            <div className="text-center">
-              <Button
-                onClick={async () => {
-                  const isPremiumLocked = challenge?.premium && !hasPremiumAccess && !userPurchases[challenge.id];
-                  if (isPremiumLocked) {
-                    setIsPurchaseModalOpen(true);
-                  } else {
-                    await joinChallenge();
-                  }
-                }}
+              <div className="text-center">
+                <Button
+                  onClick={async () => {
+                    if (isPremiumLocked) {
+                      setIsPurchaseModalOpen(true);
+                    } else {
+                      await joinChallenge();
+                    }
+                  }}
                 disabled={isJoining}
                 className="bg-gradient-to-r from-primary to-primary-foreground hover:shadow-lg hover:shadow-primary/25 text-white px-8 py-4 text-lg font-bold rounded-2xl shadow-xl transition-all duration-300 hover:scale-105"
               >

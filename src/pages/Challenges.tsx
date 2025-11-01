@@ -626,7 +626,7 @@ const Challenges = () => {
         {activeChallenges.length > 0 && (
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Aktywne teraz</h2>
-            {viewMode === 'grid' || isMobile ? (
+            {viewMode === 'grid' ? (
               <ChallengeGridView>
                 {activeChallenges.map(challenge => renderChallengeCard(challenge))}
               </ChallengeGridView>
@@ -699,8 +699,8 @@ const Challenges = () => {
                 {Object.keys(seriesChallenges).length > 0 && (
                   <h2 className="text-xl font-semibold">Pozostałe wyzwania</h2>
                 )}
-                {viewMode === 'grid' || isMobile ? (
-                  <ChallengeGridView>
+            {viewMode === 'grid' ? (
+              <ChallengeGridView>
                     {standaloneChallenges.map(challenge => renderChallengeCard(challenge))}
                   </ChallengeGridView>
                 ) : (
