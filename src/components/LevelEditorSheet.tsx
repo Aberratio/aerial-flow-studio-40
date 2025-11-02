@@ -14,7 +14,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ChevronDown, Crown, Plus, X, GripVertical } from "lucide-react";
+import { ChevronDown, Crown, Plus, X, GripVertical, RotateCcw } from "lucide-react";
+import { getDifficultyColorClass } from "@/lib/figureUtils";
 
 interface SportLevel {
   id: string;
@@ -31,8 +32,16 @@ interface Figure {
   name: string;
   difficulty_level?: string;
   category?: string;
+  type?: string;
   image_url?: string;
   sport_category_id?: string;
+  premium?: boolean;
+  created_at?: string;
+}
+
+interface FigureType {
+  key: string;
+  name_pl: string;
 }
 
 interface Challenge {
@@ -60,6 +69,8 @@ interface LevelEditorSheetProps {
 
 export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onSave }: LevelEditorSheetProps) {
   const { user } = useAuth();
+  const FILTERS_STORAGE_KEY = `level-editor-filters-${sportKey}`;
+  
   const [activeTab, setActiveTab] = useState("info");
   
   // Level info state
@@ -73,14 +84,53 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
   const [allFigures, setAllFigures] = useState<Figure[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [selectedFigures, setSelectedFigures] = useState<LevelFigureParams[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<FigureType[]>([]);
+  const [availableTypes, setAvailableTypes] = useState<FigureType[]>([]);
+  const [currentSportCategoryId, setCurrentSportCategoryId] = useState<string | null>(null);
   
-  // Filters
+  // Filters - load from localStorage
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
   const [sportFilter, setSportFilter] = useState<string>("current");
+  const [premiumFilter, setPremiumFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("name");
+  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
   
   const [isSaving, setIsSaving] = useState(false);
+
+  // Load filters from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(FILTERS_STORAGE_KEY);
+    if (saved) {
+      try {
+        const filters = JSON.parse(saved);
+        setSearchQuery(filters.searchQuery || "");
+        setCategoryFilter(filters.categoryFilter || "all");
+        setDifficultyFilter(filters.difficultyFilter || "all");
+        setSportFilter(filters.sportFilter || "current");
+        setPremiumFilter(filters.premiumFilter || "all");
+        setTypeFilter(filters.typeFilter || "all");
+        setSortBy(filters.sortBy || "name");
+      } catch (e) {
+        console.error("Error loading filters:", e);
+      }
+    }
+  }, [sportKey]);
+
+  // Save filters to localStorage on change
+  useEffect(() => {
+    localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify({
+      searchQuery,
+      categoryFilter,
+      difficultyFilter,
+      sportFilter,
+      premiumFilter,
+      typeFilter,
+      sortBy,
+    }));
+  }, [searchQuery, categoryFilter, difficultyFilter, sportFilter, premiumFilter, typeFilter, sortBy, FILTERS_STORAGE_KEY]);
 
   useEffect(() => {
     if (isOpen) {
@@ -95,9 +145,12 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
   const fetchData = async () => {
     try {
-      const [figuresRes, challengesRes] = await Promise.all([
+      const [figuresRes, challengesRes, sportCategoryRes, sportCategoriesRes, typesRes] = await Promise.all([
         supabase.from("figures").select("*").order("name"),
-        supabase.from("challenges").select("id, title").eq("status", "published").order("title")
+        supabase.from("challenges").select("id, title").eq("status", "published").order("title"),
+        supabase.from("sport_categories").select("id, key_name").eq("key_name", sportKey).single(),
+        supabase.from("sport_categories").select("key_name, name").order("name"),
+        supabase.from("figure_types").select("key, name_pl").order("order_index")
       ]);
 
       if (figuresRes.error) throw figuresRes.error;
@@ -105,6 +158,15 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
       setAllFigures(figuresRes.data || []);
       setChallenges(challengesRes.data || []);
+      setCurrentSportCategoryId(sportCategoryRes.data?.id || null);
+      
+      // Map sport categories to FigureType format
+      const sportCats: FigureType[] = (sportCategoriesRes.data || []).map(sc => ({
+        key: sc.key_name,
+        name_pl: sc.name
+      }));
+      setAvailableCategories(sportCats);
+      setAvailableTypes(typesRes.data || []);
     } catch (error) {
       console.error("Błąd pobierania danych:", error);
       toast.error("Nie udało się pobrać danych");
@@ -157,16 +219,15 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
   };
 
   const getFilteredFigures = () => {
-    return allFigures.filter((fig) => {
+    let filtered = allFigures.filter((fig) => {
       // Search
       if (searchQuery && !fig.name.toLowerCase().includes(searchQuery.toLowerCase())) {
         return false;
       }
 
-      // Sport filter
-      if (sportFilter === "current") {
-        const sportCategory = allFigures.find(f => f.sport_category_id)?.sport_category_id;
-        if (fig.sport_category_id && sportCategory && fig.sport_category_id !== sportCategory) {
+      // Sport filter - show current sport OR universal figures (sport_category_id = null)
+      if (sportFilter === "current" && currentSportCategoryId) {
+        if (fig.sport_category_id && fig.sport_category_id !== currentSportCategoryId) {
           return false;
         }
       }
@@ -176,13 +237,56 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
         return false;
       }
 
-      // Difficulty filter
-      if (difficultyFilter !== "all" && fig.difficulty_level !== difficultyFilter) {
+      // Difficulty filter (case-insensitive)
+      if (difficultyFilter !== "all" && 
+          fig.difficulty_level?.toLowerCase() !== difficultyFilter.toLowerCase()) {
+        return false;
+      }
+
+      // Premium filter
+      if (premiumFilter === "premium" && !fig.premium) {
+        return false;
+      }
+      if (premiumFilter === "free" && fig.premium) {
+        return false;
+      }
+
+      // Type filter
+      if (typeFilter !== "all" && fig.type !== typeFilter) {
         return false;
       }
 
       return true;
     });
+
+    // Sort
+    const sorted = [...filtered].sort((a, b) => {
+      if (sortBy === "name") {
+        return a.name.localeCompare(b.name, 'pl');
+      }
+      if (sortBy === "difficulty") {
+        const order: Record<string, number> = { beginner: 1, intermediate: 2, advanced: 3 };
+        return (order[a.difficulty_level?.toLowerCase() || ""] || 0) - 
+               (order[b.difficulty_level?.toLowerCase() || ""] || 0);
+      }
+      if (sortBy === "recent") {
+        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+      }
+      return 0;
+    });
+
+    return sorted;
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setCategoryFilter("all");
+    setDifficultyFilter("all");
+    setSportFilter("current");
+    setPremiumFilter("all");
+    setTypeFilter("all");
+    setSortBy("name");
+    toast.info("Zresetowano filtry");
   };
 
   const addFigure = (figureId: string) => {
@@ -414,42 +518,117 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
               <div className="grid lg:grid-cols-2 gap-6 h-full px-6 pb-6">
                 {/* Left: Available figures */}
                 <div className="space-y-4 flex flex-col overflow-hidden">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Dostępne Figurki</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Dostępne Figurki</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Znaleziono: {availableFigures.length}
+                    </p>
+                  </div>
                     
-                    <div className="space-y-3">
-                      <Input
-                        placeholder="Szukaj figurek..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
+                  <div className="space-y-3">
+                    <Input
+                      placeholder="Szukaj figurek..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
 
-                      <div className="grid grid-cols-2 gap-2">
-                        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Kategoria" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Wszystkie Kategorie</SelectItem>
-                            <SelectItem value="strength">Siła</SelectItem>
-                            <SelectItem value="flexibility">Elastyczność</SelectItem>
-                            <SelectItem value="balance">Równowaga</SelectItem>
-                          </SelectContent>
-                        </Select>
+                    <Collapsible open={!filtersCollapsed} onOpenChange={(open) => setFiltersCollapsed(!open)}>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="outline" className="w-full justify-between" size="sm">
+                          Filtry i Sortowanie
+                          <ChevronDown className={`h-4 w-4 transition-transform ${filtersCollapsed ? "" : "rotate-180"}`} />
+                        </Button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="space-y-3 pt-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Kategoria" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Wszystkie Kategorie</SelectItem>
+                              {availableCategories.map((cat) => (
+                                <SelectItem key={cat.key} value={cat.key}>
+                                  {cat.name_pl}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
 
-                        <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Trudność" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Wszystkie Poziomy</SelectItem>
-                            <SelectItem value="beginner">Początkujący</SelectItem>
-                            <SelectItem value="intermediate">Średniozaawansowany</SelectItem>
-                            <SelectItem value="advanced">Zaawansowany</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                          <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Trudność" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Wszystkie Poziomy</SelectItem>
+                              <SelectItem value="beginner">Początkujący</SelectItem>
+                              <SelectItem value="intermediate">Średniozaawansowany</SelectItem>
+                              <SelectItem value="advanced">Zaawansowany</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <Select value={premiumFilter} onValueChange={setPremiumFilter}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Dostęp" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Wszystkie</SelectItem>
+                              <SelectItem value="premium">Premium</SelectItem>
+                              <SelectItem value="free">Darmowe</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <Select value={typeFilter} onValueChange={setTypeFilter}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Typ" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">Wszystkie Typy</SelectItem>
+                              {availableTypes.map((type) => (
+                                <SelectItem key={type.key} value={type.key}>
+                                  {type.name_pl}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <Select value={sportFilter} onValueChange={setSportFilter}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sport" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="current">Tylko ten sport</SelectItem>
+                              <SelectItem value="all">Wszystkie sporty</SelectItem>
+                            </SelectContent>
+                          </Select>
+
+                          <Select value={sortBy} onValueChange={setSortBy}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Sortuj" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="name">Alfabetycznie</SelectItem>
+                              <SelectItem value="difficulty">Według trudności</SelectItem>
+                              <SelectItem value="recent">Ostatnio dodane</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={resetFilters}
+                          className="w-full"
+                        >
+                          <RotateCcw className="h-4 w-4 mr-2" />
+                          Resetuj filtry
+                        </Button>
+                      </CollapsibleContent>
+                    </Collapsible>
                   </div>
 
                   <ScrollArea className="flex-1">
@@ -466,11 +645,23 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
                             )}
                             <div className="flex-1 min-w-0">
                               <p className="font-medium truncate">{fig.name}</p>
-                              {fig.difficulty_level && (
-                                <Badge variant="outline" className="text-xs mt-1">
-                                  {fig.difficulty_level}
-                                </Badge>
-                              )}
+                              <div className="flex gap-1 mt-1 flex-wrap">
+                                {fig.difficulty_level && (
+                                  <Badge variant="outline" className={`text-xs ${getDifficultyColorClass(fig.difficulty_level)}`}>
+                                    {fig.difficulty_level}
+                                  </Badge>
+                                )}
+                                {fig.premium && (
+                                  <Badge variant="outline" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
+                                    Premium
+                                  </Badge>
+                                )}
+                                {!fig.sport_category_id && (
+                                  <Badge variant="outline" className="text-xs bg-blue-500/20 text-blue-400 border-blue-400/30">
+                                    Uniwersalna
+                                  </Badge>
+                                )}
+                              </div>
                             </div>
                             <Button
                               size="sm"
