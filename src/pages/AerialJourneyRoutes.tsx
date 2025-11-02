@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import AerialJourney from "./AerialJourney";
@@ -32,7 +32,32 @@ const AerialJourneyRoutes = () => {
     }
   };
 
-  // Admin routes - per sport management
+  // Prevent non-admins from accessing preview mode
+  if (mode === "preview" && !isAdmin) {
+    return <Navigate to="/aerial-journey" replace />;
+  }
+
+  // Prevent non-admins from accessing edit mode
+  if (mode === "admin" && !isAdmin) {
+    return <Navigate to="/aerial-journey" replace />;
+  }
+
+  // Admin preview routes - unlocked levels but no edit
+  if (mode === "preview" && category && isAdmin) {
+    const sportData = sportCategories.find(s => s.key_name === category);
+    if (sportData) {
+      return (
+        <SkillTree
+          sportCategory={category}
+          sportName={sportData.name}
+          onBack={() => navigate("/aerial-journey")}
+          adminPreviewMode={true}
+        />
+      );
+    }
+  }
+
+  // Admin edit routes - per sport management
   if (mode === "admin" && category && isAdmin) {
     const sportData = sportCategories.find(s => s.key_name === category);
     if (sportData) {
@@ -49,6 +74,7 @@ const AerialJourneyRoutes = () => {
           sportCategory={category}
           sportName={sportData.name}
           onBack={() => navigate("/aerial-journey")}
+          adminPreviewMode={false}
         />
       );
     }

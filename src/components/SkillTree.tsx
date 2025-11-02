@@ -10,6 +10,7 @@ import {
   Bookmark,
   AlertCircle,
   Trophy,
+  Eye,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,9 +69,10 @@ interface SkillTreeProps {
   sportCategory: string;
   sportName: string;
   onBack?: () => void;
+  adminPreviewMode?: boolean;
 }
 
-const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
+const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false }: SkillTreeProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -337,6 +339,9 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   };
 
   const isLevelUnlocked = (level: SportLevel, index: number) => {
+    // Admin preview mode - all levels unlocked
+    if (adminPreviewMode) return true;
+    
     // First level always unlocked
     if (index === 0) return true;
     
@@ -479,10 +484,17 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
         <BreadcrumbNavigation
           items={[
             { label: "Podróż", path: "/aerial-journey" },
-            { label: sportName },
+            { label: adminPreviewMode ? `${sportName} (Podgląd Admina)` : sportName },
           ]}
           className="mb-6"
         />
+
+        {adminPreviewMode && (
+          <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30 mb-4 w-full justify-center py-2">
+            <Eye className="w-4 h-4 mr-2" />
+            Tryb Podglądu Admina - Wszystkie poziomy odblokowane
+          </Badge>
+        )}
 
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">

@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,6 +11,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SportSelectionModal from "@/components/SportSelectionModal";
+import { getAdminMode, setAdminMode, getModeLabel, type AdminMode } from "@/lib/adminModeUtils";
 
 interface UserJourney {
   id: string;
@@ -47,13 +49,31 @@ const AerialJourney = () => {
   const [userSelectedSports, setUserSelectedSports] = useState<string[]>([]);
   const [tempSelectedSports, setTempSelectedSports] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAdminMode, setIsAdminMode] = useState(false);
+  const [adminMode, setAdminModeState] = useState<AdminMode>('user');
   const [showSportSelectionModal, setShowSportSelectionModal] = useState(false);
 
   useEffect(() => {
     fetchAvailableSports();
     fetchUserProfile();
-  }, [user, navigate]);
+    
+    // Load admin mode from localStorage
+    if (isAdmin) {
+      const savedMode = getAdminMode();
+      setAdminModeState(savedMode);
+    }
+  }, [user, navigate, isAdmin]);
+
+  // Sync admin mode across browser tabs
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'aerial-journey-admin-mode' && e.newValue) {
+        setAdminModeState(e.newValue as AdminMode);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // No need for auto-open modal - we'll show inline selection instead
 
@@ -229,11 +249,19 @@ const AerialJourney = () => {
   };
 
   const handleSkillTreeView = (category: string, name: string) => {
-    if (isAdmin && isAdminMode) {
+    if (isAdmin && adminMode === 'edit') {
       navigate(`/aerial-journey/admin/${category}`);
+    } else if (isAdmin && adminMode === 'preview') {
+      navigate(`/aerial-journey/preview/${category}`);
     } else {
       navigate(`/aerial-journey/sport/${category}`);
     }
+  };
+
+  const handleAdminModeChange = (newMode: AdminMode) => {
+    setAdminModeState(newMode);
+    setAdminMode(newMode);
+    toast.info(`Zmieniono tryb na: ${getModeLabel(newMode)}`);
   };
 
   const handleSportSelectionSuccess = () => {
@@ -243,8 +271,8 @@ const AerialJourney = () => {
 
   // Filter sports based on user role and selected sports
   const filteredSports =
-    isAdmin && isAdminMode
-      ? availableSports // Admins in admin mode see all sports
+    isAdmin && (adminMode === 'edit' || adminMode === 'preview')
+      ? availableSports // Admins in admin/preview mode see all sports
       : availableSports.filter((sport) => {
           // Regular users or admins in user mode see only published sports that they have selected in their profile
           const isPublished = sport.is_published;
@@ -264,7 +292,7 @@ const AerialJourney = () => {
   }
 
   // Show inline sport selection for users without selected sports
-  if (!loading && !isAdminMode && userSelectedSports.length === 0 && user) {
+  if (!loading && adminMode === 'user' && userSelectedSports.length === 0 && user) {
     return (
       <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -380,15 +408,31 @@ const AerialJourney = () => {
           <div></div>
 
           {isAdmin && (
-            <div className="flex items-center gap-3 bg-black/20 rounded-lg px-4 py-2 border border-white/10">
-              <span className="text-sm text-white">Tryb użytkownika</span>
-              <Switch
-                checked={isAdminMode}
-                onCheckedChange={setIsAdminMode}
-                className="data-[state=checked]:bg-yellow-500"
-              />
-              <span className="text-sm text-white">Tryb administratora</span>
-            </div>
+            <Card className="bg-black/20 border-white/10">
+              <CardContent className="p-4">
+                <Label className="text-white mb-3 block font-semibold">Tryb Administratora</Label>
+                <RadioGroup value={adminMode} onValueChange={handleAdminModeChange} className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="user" id="mode-user" />
+                    <Label htmlFor="mode-user" className="text-white cursor-pointer font-normal">
+                      Tryb użytkownika
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="preview" id="mode-preview" />
+                    <Label htmlFor="mode-preview" className="text-white cursor-pointer font-normal">
+                      Podgląd admina (wszystkie poziomy)
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="edit" id="mode-edit" />
+                    <Label htmlFor="mode-edit" className="text-white cursor-pointer font-normal">
+                      Edycja sportu
+                    </Label>
+                  </div>
+                </RadioGroup>
+              </CardContent>
+            </Card>
           )}
         </div>
 
@@ -405,19 +449,26 @@ const AerialJourney = () => {
               <div className="flex-1">
                 <CardTitle className="text-white flex flex-wrap items-center gap-2 mb-2 text-lg md:text-2xl">
                   Odkrywaj umiejętności według sportu
-                  {isAdmin && isAdminMode && (
+                  {isAdmin && adminMode === 'edit' && (
                     <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30 text-xs">
-                      Widok admina
+                      Tryb edycji
+                    </Badge>
+                  )}
+                  {isAdmin && adminMode === 'preview' && (
+                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30 text-xs">
+                      Podgląd admina
                     </Badge>
                   )}
                 </CardTitle>
                 <p className="text-muted-foreground text-xs md:text-sm">
-                  {isAdmin && isAdminMode
-                    ? "Wszystkie sporty (opublikowane i wersje robocze). Użyj przełączników, aby publikować/odpublikować sporty."
+                  {isAdmin && (adminMode === 'edit' || adminMode === 'preview')
+                    ? adminMode === 'edit' 
+                      ? "Wszystkie sporty (opublikowane i wersje robocze). Użyj przełączników, aby publikować/odpublikować sporty."
+                      : "Wszystkie poziomy odblokowane. Możesz przeglądać wszystkie sporty bez ograniczeń."
                     : "Kliknij na dowolny sport, aby zobaczyć pełne drzewo umiejętności i swoją progresję"}
                 </p>
               </div>
-              {!isAdminMode && userSelectedSports.length > 0 && (
+              {adminMode === 'user' && userSelectedSports.length > 0 && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -437,7 +488,7 @@ const AerialJourney = () => {
                   Brak dostępnych sportów
                 </h3>
                 <p className="text-muted-foreground">
-                  {isAdmin && isAdminMode
+                  {isAdmin && (adminMode === 'edit' || adminMode === 'preview')
                     ? "Nie utworzono jeszcze żadnych kategorii sportowych. Użyj przycisku Zarządzaj sportami, aby dodać."
                     : userSelectedSports.length === 0
                     ? "Nie wybrałeś jeszcze żadnych sportów. Użyj modala wyboru sportów, aby dodać."
@@ -463,7 +514,7 @@ const AerialJourney = () => {
                       key={sport.id}
                       className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
                         (sport.unlockedLevels || 0) > 0 ||
-                        (isAdmin && isAdminMode)
+                        (isAdmin && (adminMode === 'edit' || adminMode === 'preview'))
                           ? sport.is_published
                             ? "bg-white/5 border-white/10 hover:border-purple-400/50"
                             : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
@@ -472,39 +523,15 @@ const AerialJourney = () => {
                       onClick={() => {
                         if (
                           (sport.unlockedLevels || 0) > 0 ||
-                          (isAdmin && isAdminMode)
+                          (isAdmin && (adminMode === 'edit' || adminMode === 'preview'))
                         ) {
                           handleSkillTreeView(sport.key_name!, displayName);
                         }
                       }}
                     >
                       <CardContent className="p-4 md:p-6">
-                        {/* Admin Controls */}
-                        {isAdmin && isAdminMode && (
-                          <div className="absolute top-3 right-3 flex items-center space-x-2">
-                            <div className="flex items-center space-x-1 bg-black/50 rounded-lg px-2 py-1">
-                              {sport.is_published ? (
-                                <Eye className="w-3 h-3 text-green-400" />
-                              ) : (
-                                <EyeOff className="w-3 h-3 text-orange-400" />
-                              )}
-                              <Switch
-                                checked={sport.is_published}
-                                onCheckedChange={() =>
-                                  handlePublishToggle(
-                                    sport.id,
-                                    sport.is_published
-                                  )
-                                }
-                                onClick={(e) => e.stopPropagation()}
-                                className="scale-75"
-                              />
-                            </div>
-                          </div>
-                        )}
-
                         {/* Status Badge */}
-                        {isAdmin && isAdminMode && (
+                        {isAdmin && (adminMode === 'edit' || adminMode === 'preview') && (
                           <div className="mb-3">
                             <Badge
                               className={`text-xs ${
