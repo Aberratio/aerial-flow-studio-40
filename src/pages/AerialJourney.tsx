@@ -69,19 +69,20 @@ const AerialJourney = () => {
 
       // Fetch user challenge participations once before the loop
       const challengeParticipations: {
-        [challengeId: string]: { participating: boolean; completed: boolean };
+        [challengeId: string]: { participating: boolean; completed: boolean; status?: string };
       } = {};
 
       if (user) {
         const { data: challengeData } = await supabase
           .from("challenge_participants")
-          .select("challenge_id, completed")
+          .select("challenge_id, completed, status")
           .eq("user_id", user.id);
 
         challengeData?.forEach((participant) => {
           challengeParticipations[participant.challenge_id] = {
             participating: true,
             completed: participant.completed || false,
+            status: participant.status,
           };
         });
       }

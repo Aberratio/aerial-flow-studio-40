@@ -76,7 +76,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
   const [userChallengeParticipations, setUserChallengeParticipations] =
     useState<{
-      [challengeId: string]: { participating: boolean; completed: boolean };
+      [challengeId: string]: { participating: boolean; completed: boolean; status?: string };
     }>({});
 
   useEffect(() => {
@@ -168,7 +168,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
   };
 
   const fetchUserPoints = async (participations?: {
-    [challengeId: string]: { participating: boolean; completed: boolean };
+    [challengeId: string]: { participating: boolean; completed: boolean; status?: string };
   }) => {
     if (!user) return;
 
@@ -251,18 +251,19 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     try {
       const { data, error } = await supabase
         .from("challenge_participants")
-        .select("challenge_id, completed")
+        .select("challenge_id, completed, status")
         .eq("user_id", user.id);
 
       if (error) throw error;
 
       const participations: {
-        [challengeId: string]: { participating: boolean; completed: boolean };
+        [challengeId: string]: { participating: boolean; completed: boolean; status?: string };
       } = {};
       data?.forEach((participant) => {
         participations[participant.challenge_id] = {
           participating: true,
           completed: participant.completed || false,
+          status: participant.status,
         };
       });
 
@@ -396,7 +397,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
       // Update local state
       const newParticipations = {
         ...userChallengeParticipations,
-        [challengeId]: { participating: true, completed: false },
+        [challengeId]: { participating: true, completed: false, status: 'active' },
       };
       setUserChallengeParticipations(newParticipations);
 
@@ -551,8 +552,11 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                             const challengeParticipation =
                               userChallengeParticipations[level.challenge_id!];
 
-                            // Check if challenge is completed
-                            if (challengeParticipation?.completed === true) {
+                            // 1. Wyzwanie ukończone - sprawdzamy completed lub status='completed'
+                            if (
+                              challengeParticipation?.completed === true || 
+                              challengeParticipation?.status === 'completed'
+                            ) {
                               return (
                                 <div className="flex items-center gap-2">
                                   <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
@@ -563,10 +567,11 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                               );
                             }
 
-                            // Only show Continue if participating and NOT completed
+                            // 2. Wyzwanie w trakcie - uczestniczy, NIE jest ukończone, i status='active'
                             if (
                               challengeParticipation?.participating &&
-                              !challengeParticipation?.completed
+                              !challengeParticipation?.completed &&
+                              challengeParticipation?.status === 'active'
                             ) {
                               return (
                                 <Button
@@ -579,12 +584,12 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                   }
                                   className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10"
                                 >
-                                  Kontynuuj
+                                  Kontynuuj wyzwanie
                                 </Button>
                               );
                             }
 
-                            // Show Join button only if not participating at all
+                            // 3. Nierozpoczęte - brak participacji lub status !== 'active'
                             if (!challengeParticipation?.participating) {
                               return (
                                 <Button
@@ -599,7 +604,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                 >
                                   {joiningChallenge === level.challenge_id
                                     ? "Dołączanie..."
-                                    : "Dołącz do wyzwania"}
+                                    : "Rozpocznij wyzwanie"}
                                 </Button>
                               );
                             }
