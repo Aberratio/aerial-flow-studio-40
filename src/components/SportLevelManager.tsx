@@ -48,6 +48,11 @@ interface LevelFigure {
   level_id: string;
   figure_id: string;
   order_index: number;
+  is_boss?: boolean;
+  boss_description?: string;
+  hold_time_seconds?: number;
+  reps?: number;
+  notes?: string;
   figure: Figure;
 }
 
@@ -261,6 +266,11 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
         level_id: item.level_id,
         figure_id: item.figure_id,
         order_index: item.order_index,
+        is_boss: item.is_boss,
+        boss_description: item.boss_description,
+        hold_time_seconds: item.hold_time_seconds,
+        reps: item.reps,
+        notes: item.notes,
         figure: item.figures
       })) || [];
 

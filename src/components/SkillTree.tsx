@@ -27,6 +27,16 @@ interface Figure {
   image_url: string | null;
   category: string;
   hold_time_seconds?: number;
+  video_url?: string;
+  premium?: boolean;
+  // Level-specific fields
+  level_figure_id?: string;
+  is_boss?: boolean;
+  boss_description?: string;
+  level_hold_time_seconds?: number;
+  level_reps?: number;
+  level_notes?: string;
+  order_index?: number;
 }
 
 interface SportLevel {
@@ -112,14 +122,22 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
             premium
           ),
           level_figures (
+            id,
             figure_id,
             order_index,
+            is_boss,
+            boss_description,
+            hold_time_seconds,
+            reps,
+            notes,
             figures (
               id,
               name,
               description,
               difficulty_level,
               image_url,
+              video_url,
+              premium,
               category,
               hold_time_seconds
             )
@@ -132,7 +150,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
 
       if (levelsError) throw levelsError;
 
-      // Format the data to include figures and challenges directly in each level
+      // Format the data to include figures with level-specific parameters
       const formattedLevels =
         levelsData?.map((level) => ({
           id: level.id,
@@ -144,8 +162,17 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
           challenges: level.challenges,
           figures:
             level.level_figures
-              ?.sort((a, b) => a.order_index - b.order_index)
-              ?.map((lf) => lf.figures)
+              ?.sort((a: any, b: any) => a.order_index - b.order_index)
+              ?.map((lf: any) => ({
+                ...lf.figures,
+                level_figure_id: lf.id,
+                is_boss: lf.is_boss,
+                boss_description: lf.boss_description,
+                level_hold_time_seconds: lf.hold_time_seconds,
+                level_reps: lf.reps,
+                level_notes: lf.notes,
+                order_index: lf.order_index,
+              }))
               ?.filter(Boolean) || [],
         })) || [];
 
@@ -309,8 +336,27 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
     return userProgress.find((p) => p.figure_id === figureId);
   };
 
-  const isLevelUnlocked = (level: SportLevel) => {
-    return userPoints >= level.point_limit;
+  const isLevelUnlocked = (level: SportLevel, index: number) => {
+    // First level always unlocked
+    if (index === 0) return true;
+    
+    // Check points
+    if (userPoints < level.point_limit) return false;
+    
+    // Check if boss of previous level was completed
+    if (index > 0) {
+      const previousLevel = sportLevels[index - 1];
+      const bossFigure = previousLevel.figures.find((f) => f.is_boss);
+      
+      if (bossFigure) {
+        const bossProgress = getFigureProgress(bossFigure.id);
+        if (bossProgress?.status !== "completed") {
+          return false;
+        }
+      }
+    }
+    
+    return true;
   };
 
   const getLevelProgress = (level: SportLevel) => {
@@ -447,7 +493,7 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
         {/* Simplified Level Grid */}
         <div className="space-y-6">
           {sportLevels.map((level, index) => {
-            const isUnlocked = isLevelUnlocked(level);
+            const isUnlocked = isLevelUnlocked(level, index);
             const progress = getLevelProgress(level);
             const isCompleted = progress === 100;
 
@@ -616,11 +662,95 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                     </div>
                   )}
 
+                  {/* Boss Figure - if exists */}
+                  {isUnlocked && level.figures.some((f) => f.is_boss) && (
+                    <div className="mt-4 mb-6">
+                      {level.figures
+                        .filter((f) => f.is_boss)
+                        .map((bossFigure) => {
+                          const figureProgress = getFigureProgress(bossFigure.id);
+                          const canPractice = canAccessFigure(bossFigure);
+                          
+                          return (
+                            <Card
+                              key={bossFigure.id}
+                              className="border-2 border-yellow-500/50 bg-gradient-to-br from-yellow-900/20 to-orange-900/20 cursor-pointer hover:border-yellow-400/70 transition-all"
+                              onClick={() => handleFigureClick(bossFigure, canPractice)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-start gap-4">
+                                  {/* Boss Icon/Image */}
+                                  <div className="relative flex-shrink-0">
+                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-yellow-500/50">
+                                      {bossFigure.image_url ? (
+                                        <img
+                                          src={bossFigure.image_url}
+                                          alt={bossFigure.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full bg-yellow-500/10 flex items-center justify-center text-3xl">
+                                          👑
+                                        </div>
+                                      )}
+                                    </div>
+                                    {/* Boss Badge */}
+                                    <Badge className="absolute -top-2 -right-2 bg-yellow-500 text-black font-bold">
+                                      BOSS
+                                    </Badge>
+                                  </div>
+
+                                  {/* Boss Info */}
+                                  <div className="flex-1">
+                                    <h4 className="text-lg font-bold text-yellow-400 mb-1">
+                                      {bossFigure.name}
+                                    </h4>
+
+                                    {/* Boss Description */}
+                                    {bossFigure.boss_description && (
+                                      <p className="text-sm text-muted-foreground mb-2">
+                                        {bossFigure.boss_description}
+                                      </p>
+                                    )}
+
+                                    {/* Boss Requirements */}
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {bossFigure.level_hold_time_seconds && (
+                                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
+                                          ⏱️ {bossFigure.level_hold_time_seconds}s
+                                        </Badge>
+                                      )}
+                                      {bossFigure.level_reps && (
+                                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30">
+                                          🔁 {bossFigure.level_reps} reps
+                                        </Badge>
+                                      )}
+
+                                      {/* Boss Completion Status */}
+                                      {figureProgress?.status === "completed" ? (
+                                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                          ✅ Ukończone
+                                        </Badge>
+                                      ) : (
+                                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                                          ⚔️ Wymaga zaliczenia
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                    </div>
+                  )}
+
                   {/* Simplified Figure Grid - Only for Unlocked Levels */}
                   {isUnlocked && (
                     <div className="mt-4">
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        {level.figures.slice(0, 8).map((figure) => {
+                        {level.figures.filter(f => !f.is_boss).slice(0, 8).map((figure) => {
                           const figureProgress = getFigureProgress(figure.id);
                           const canPractice =
                             isUnlocked && canAccessFigure(figure);
@@ -667,14 +797,19 @@ const SkillTree = ({ sportCategory, sportName, onBack }: SkillTreeProps) => {
                                 <p className="text-white text-xs font-medium truncate">
                                   {figure.name}
                                 </p>
-                                {figure.category === "core" &&
-                                  figure.hold_time_seconds && (
-                                    <div className="flex items-center gap-1 mt-1">
-                                      <div className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                                        {figure.hold_time_seconds}s
-                                      </div>
+                                <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                  {/* Level-specific hold time has priority */}
+                                  {(figure.level_hold_time_seconds || figure.hold_time_seconds) && (
+                                    <div className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                      {figure.level_hold_time_seconds || figure.hold_time_seconds}s
                                     </div>
                                   )}
+                                  {figure.level_reps && (
+                                    <div className="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                      {figure.level_reps}x
+                                    </div>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           );

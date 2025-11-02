@@ -716,28 +716,43 @@ export type Database = {
       }
       level_figures: {
         Row: {
+          boss_description: string | null
           created_at: string
           created_by: string | null
           figure_id: string
+          hold_time_seconds: number | null
           id: string
+          is_boss: boolean | null
           level_id: string
+          notes: string | null
           order_index: number
+          reps: number | null
         }
         Insert: {
+          boss_description?: string | null
           created_at?: string
           created_by?: string | null
           figure_id: string
+          hold_time_seconds?: number | null
           id?: string
+          is_boss?: boolean | null
           level_id: string
+          notes?: string | null
           order_index?: number
+          reps?: number | null
         }
         Update: {
+          boss_description?: string | null
           created_at?: string
           created_by?: string | null
           figure_id?: string
+          hold_time_seconds?: number | null
           id?: string
+          is_boss?: boolean | null
           level_id?: string
+          notes?: string | null
           order_index?: number
+          reps?: number | null
         }
         Relationships: [
           {

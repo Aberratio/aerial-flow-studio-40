@@ -24,6 +24,12 @@ interface FigurePreviewModalProps {
     tags?: string[];
     hold_time_seconds?: number;
     level_number?: number;
+    // Level-specific fields
+    is_boss?: boolean;
+    boss_description?: string;
+    level_hold_time_seconds?: number;
+    level_reps?: number;
+    level_notes?: string;
   } | null;
   isOpen: boolean;
   onClose: () => void;
@@ -160,19 +166,55 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
               <h2 className="text-2xl font-bold text-white mb-2">
                 {figure.name}
               </h2>
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
                 <Badge className={getDifficultyColor(figure.difficulty_level)}>
                   {figure.difficulty_level || "Nieznany"}
                 </Badge>
-                {figure.category === "core" &&
-                  figure.hold_time_seconds &&
-                  figure.hold_time_seconds > 0 && (
-                    <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
-                      Trzymaj {figure.hold_time_seconds}s
-                    </Badge>
-                  )}
+                
+                {/* Level-specific hold time has priority */}
+                {figure.level_hold_time_seconds && (
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
+                    ⏱️ Trzymaj {figure.level_hold_time_seconds}s
+                  </Badge>
+                )}
+                {!figure.level_hold_time_seconds && figure.hold_time_seconds && figure.hold_time_seconds > 0 && (
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
+                    ⏱️ Trzymaj {figure.hold_time_seconds}s
+                  </Badge>
+                )}
+                
+                {/* Level-specific reps */}
+                {figure.level_reps && (
+                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30">
+                    🔁 {figure.level_reps} powtórzeń
+                  </Badge>
+                )}
               </div>
             </div>
+
+            {/* Level-specific notes */}
+            {figure.level_notes && (
+              <div className="mb-4 p-3 bg-blue-900/20 border border-blue-400/20 rounded-lg">
+                <p className="text-sm text-blue-300">
+                  💡 {figure.level_notes}
+                </p>
+              </div>
+            )}
+
+            {/* Boss indicator */}
+            {figure.is_boss && (
+              <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-400/30 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">👑</span>
+                  <span className="font-bold text-yellow-400">Figurka Boss</span>
+                </div>
+                {figure.boss_description && (
+                  <p className="text-sm text-yellow-200">
+                    {figure.boss_description}
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* Completed Status Button */}
             {user && (
