@@ -380,12 +380,12 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
                 <div className="space-y-2">
                   <Label htmlFor="challenge">Powiązane Wyzwanie</Label>
-                  <Select value={challengeId} onValueChange={setChallengeId}>
+                  <Select value={challengeId || "none"} onValueChange={(val) => setChallengeId(val === "none" ? "" : val)}>
                     <SelectTrigger id="challenge">
                       <SelectValue placeholder="Brak Wyzwania" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Brak Wyzwania</SelectItem>
+                      <SelectItem value="none">Brak Wyzwania</SelectItem>
                       {challenges.map((ch) => (
                         <SelectItem key={ch.id} value={ch.id}>
                           {ch.title}
