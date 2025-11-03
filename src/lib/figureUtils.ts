@@ -1,7 +1,7 @@
 import { DIFFICULTY_LEVELS, FIGURE_TYPES, type SportCategory, type DifficultyKey, type FigureTypeKey } from '@/types/figures';
 
 /**
- * Get Polish label for difficulty level
+ * @deprecated Use useDictionary().getDifficultyLabel() instead
  */
 export const getDifficultyLabel = (key: string | null | undefined): string => {
   if (!key) return '';
@@ -9,7 +9,7 @@ export const getDifficultyLabel = (key: string | null | undefined): string => {
 };
 
 /**
- * Get Polish label for figure type
+ * @deprecated Use useDictionary().getFigureTypeLabel() instead
  */
 export const getFigureTypeLabel = (key: string | null | undefined): string => {
   if (!key) return '';
@@ -17,7 +17,7 @@ export const getFigureTypeLabel = (key: string | null | undefined): string => {
 };
 
 /**
- * Get Polish label for category from sport categories
+ * @deprecated Use useDictionary().getSportCategoryLabel() instead
  */
 export const getCategoryLabel = (categoryKey: string | null | undefined, categories: SportCategory[]): string => {
   if (!categoryKey) return '';
@@ -26,7 +26,7 @@ export const getCategoryLabel = (categoryKey: string | null | undefined, categor
 };
 
 /**
- * Get difficulty color class for badges
+ * @deprecated Use useDictionary().getDifficultyColor() instead
  */
 export const getDifficultyColorClass = (key: string | null | undefined): string => {
   if (!key) return 'bg-gray-500/20 text-gray-400 border-gray-400/30';

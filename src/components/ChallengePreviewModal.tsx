@@ -21,6 +21,7 @@ import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useNavigate } from "react-router-dom";
 import { Edit2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Challenge {
   id: string;
@@ -113,6 +114,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   const { hasPremiumAccess } = useSubscriptionStatus();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { getDifficultyLabel } = useDictionary();
 
   useEffect(() => {
     if (isOpen && initialChallenge) {
@@ -198,17 +200,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
   if (!challenge) return null;
 
-  const translateDifficulty = (level: string) => {
-    const translations: Record<string, string> = {
-      beginner: "Początkujący",
-      intermediate: "Średni",
-      advanced: "Zaawansowany",
-    };
-    return translations[level.toLowerCase()] || level;
-  };
-
   const getDifficultyFromChallenge = () => {
-    return translateDifficulty(challenge.difficulty_level || "");
+    return getDifficultyLabel(challenge.difficulty_level);
   };
 
   const getUniqueExercisesWithImages = () => {

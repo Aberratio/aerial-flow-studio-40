@@ -30,6 +30,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 import ExerciseManagement from "@/components/ExerciseManagement";
 
@@ -99,6 +100,7 @@ const CreateChallengeModal = ({
   const [imageUrl, setImageUrl] = useState<string>("");
   const { toast } = useToast();
   const { user } = useAuth();
+  const { difficultyLevels } = useDictionary();
 
   useEffect(() => {
     if (isOpen) {
@@ -531,9 +533,9 @@ const CreateChallengeModal = ({
               onChange={(e) => setDifficultyLevel(e.target.value)}
               className="w-full p-2 rounded-md border border-input bg-background text-foreground"
             >
-              <option value="beginner">Beginner</option>
-              <option value="intermediate">Intermediate</option>
-              <option value="advanced">Advanced</option>
+              {difficultyLevels.map(level => (
+                <option key={level.key} value={level.key}>{level.name_pl}</option>
+              ))}
             </select>
           </div>
 

@@ -33,6 +33,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Exercise {
   id: string;
@@ -92,6 +93,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   const [notes, setNotes] = useState("");
   const { toast } = useToast();
   const { user } = useAuth();
+  const { getDifficultyColor, getDifficultyLabel } = useDictionary();
 
   useEffect(() => {
     fetchFigures();
@@ -283,19 +285,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         description: "Failed to delete exercise",
         variant: "destructive",
       });
-    }
-  };
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty?.toLowerCase()) {
-      case "beginner":
-        return "bg-green-500/20 text-green-400";
-      case "intermediate":
-        return "bg-yellow-500/20 text-yellow-400";
-      case "advanced":
-        return "bg-red-500/20 text-red-400";
-      default:
-        return "bg-gray-500/20 text-gray-400";
     }
   };
 

@@ -25,6 +25,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface CreateTrainingLibraryModalProps {
   open: boolean;
@@ -39,6 +40,7 @@ export const CreateTrainingLibraryModal = ({
 }: CreateTrainingLibraryModalProps) => {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { difficultyLevels } = useDictionary();
 
   // Step 1: Basic info
   const [title, setTitle] = useState("");
@@ -221,9 +223,9 @@ export const CreateTrainingLibraryModal = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="beginner">Początkujący</SelectItem>
-                    <SelectItem value="intermediate">Średni</SelectItem>
-                    <SelectItem value="advanced">Zaawansowany</SelectItem>
+                    {difficultyLevels.map(level => (
+                      <SelectItem key={level.key} value={level.key}>{level.name_pl}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

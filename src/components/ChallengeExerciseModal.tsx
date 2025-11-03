@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useDictionary } from '@/contexts/DictionaryContext';
 
 interface Exercise {
   id: string;
@@ -51,6 +52,7 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getDifficultyLabel } = useDictionary();
 
   useEffect(() => {
     if (isOpen && user) {
@@ -254,7 +256,7 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
                                 {index + 1}. {exercise.figure.name}
                               </h4>
                               <Badge className="mb-2 text-xs">
-                                {exercise.figure.difficulty_level || 'Intermediate'}
+                                {getDifficultyLabel(exercise.figure.difficulty_level)}
                               </Badge>
                             </div>
                             {isCompleted && (

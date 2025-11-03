@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { FigureCompletionCelebration } from "./FigureCompletionCelebration";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface FigurePreviewModalProps {
   figure: {
@@ -44,6 +45,7 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { getDifficultyColor, getDifficultyLabel } = useDictionary();
   const [figureProgress, setFigureProgress] = useState<string>("not_tried");
   const [loading, setLoading] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -114,19 +116,6 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
   }, [isOpen, figure, user]);
 
   if (!figure) return null;
-
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty?.toLowerCase()) {
-      case "beginner":
-        return "bg-green-500/20 text-green-400 border-green-400/30";
-      case "intermediate":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-400/30";
-      case "advanced":
-        return "bg-red-500/20 text-red-400 border-red-400/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-400/30";
-    }
-  };
 
   return (
     <>

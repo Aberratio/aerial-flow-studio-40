@@ -1,4 +1,6 @@
-// Figure difficulty levels with Polish translations
+/**
+ * @deprecated Use data from DictionaryContext instead
+ */
 export const DIFFICULTY_LEVELS = {
   beginner: "Początkujący",
   intermediate: "Średni",
@@ -7,7 +9,9 @@ export const DIFFICULTY_LEVELS = {
 
 export type DifficultyKey = keyof typeof DIFFICULTY_LEVELS;
 
-// Figure types with Polish translations
+/**
+ * @deprecated Use data from DictionaryContext instead
+ */
 export const FIGURE_TYPES = {
   single_figure: "Pojedyncza figura",
   combo: "Kombo",

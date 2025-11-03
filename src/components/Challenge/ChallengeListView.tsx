@@ -20,6 +20,7 @@ import {
 import { LazyImage } from "@/components/LazyImage";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Challenge {
   id: string;

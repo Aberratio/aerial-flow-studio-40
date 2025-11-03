@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Exercise {
   name: string;
@@ -25,20 +26,9 @@ const ExerciseImageModal: React.FC<ExerciseImageModalProps> = ({
   isOpen,
   onClose,
 }) => {
-  if (!exercise) return null;
+  const { getDifficultyColor, getDifficultyLabel } = useDictionary();
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty.toLowerCase()) {
-      case "beginner":
-        return "bg-green-500/20 text-green-400 border-green-500/30";
-      case "intermediate":
-        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
-      case "advanced":
-        return "bg-red-500/20 text-red-400 border-red-500/30";
-      default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
-    }
-  };
+  if (!exercise) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -49,7 +39,7 @@ const ExerciseImageModal: React.FC<ExerciseImageModalProps> = ({
             <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
               <h2 className="text-lg md:text-2xl font-bold text-white truncate">{exercise.name}</h2>
               <Badge className={`${getDifficultyColor(exercise.difficulty_level)} text-xs flex-shrink-0`}>
-                {exercise.difficulty_level.charAt(0).toUpperCase() + exercise.difficulty_level.slice(1)}
+                {getDifficultyLabel(exercise.difficulty_level)}
               </Badge>
             </div>
             <button

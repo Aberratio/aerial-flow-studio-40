@@ -11,6 +11,7 @@ import { X, Plus, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useDictionary } from '@/contexts/DictionaryContext';
 
 interface CreateTrainingModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { difficultyLevels } = useDictionary();
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -211,9 +213,9 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
                   <SelectValue placeholder="Select difficulty" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Beginner">Beginner</SelectItem>
-                  <SelectItem value="Intermediate">Intermediate</SelectItem>
-                  <SelectItem value="Advanced">Advanced</SelectItem>
+                  {difficultyLevels.map(level => (
+                    <SelectItem key={level.key} value={level.key}>{level.name_pl}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
