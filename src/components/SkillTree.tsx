@@ -27,9 +27,11 @@ interface Figure {
   difficulty_level: string;
   image_url: string | null;
   category: string;
+  type?: string;
   hold_time_seconds?: number;
   video_url?: string;
   premium?: boolean;
+  audio_url?: string;
   // Level-specific fields
   level_figure_id?: string;
   is_boss?: boolean;
@@ -38,6 +40,19 @@ interface Figure {
   level_reps?: number;
   level_notes?: string;
   order_index?: number;
+  // Transitions fields
+  transition_from_figure_id?: string;
+  transition_to_figure_id?: string;
+  transition_from_figure?: {
+    id: string;
+    name: string;
+    image_url?: string;
+  };
+  transition_to_figure?: {
+    id: string;
+    name: string;
+    image_url?: string;
+  };
 }
 
 interface SportLevel {
@@ -139,9 +154,15 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
               difficulty_level,
               image_url,
               video_url,
+              audio_url,
               premium,
               category,
-              hold_time_seconds
+              type,
+              hold_time_seconds,
+              transition_from_figure_id,
+              transition_to_figure_id,
+              transition_from_figure:transition_from_figure_id(id, name, image_url),
+              transition_to_figure:transition_to_figure_id(id, name, image_url)
             )
           )
         `
@@ -760,9 +781,11 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
 
                   {/* Simplified Figure Grid - Only for Unlocked Levels */}
                   {isUnlocked && (
-                    <div className="mt-4">
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                        {level.figures.filter(f => !f.is_boss).slice(0, 8).map((figure) => {
+                    <>
+                      {/* Regular Figures */}
+                      <div className="mt-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                          {level.figures.filter(f => !f.is_boss && f.type !== 'transitions').slice(0, 8).map((figure) => {
                           const figureProgress = getFigureProgress(figure.id);
                           const canPractice =
                             isUnlocked && canAccessFigure(figure);
@@ -827,15 +850,107 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                           );
                         })}
 
-                        {level.figures.length > 8 && (
+                        {level.figures.filter(f => !f.is_boss && f.type !== 'transitions').length > 8 && (
                           <div className="aspect-square rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center">
                             <span className="text-white/60 text-sm font-medium">
-                              +{level.figures.length - 8} more
+                              +{level.figures.filter(f => !f.is_boss && f.type !== 'transitions').length - 8} more
                             </span>
                           </div>
                         )}
                       </div>
                     </div>
+
+                    {/* Transitions Section - Below dashed line */}
+                    {level.figures.some(f => f.type === 'transitions') && (
+                      <div className="mt-6 pt-6 border-t-2 border-dashed border-purple-400/30">
+                        <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                          <span className="text-purple-400">✨</span>
+                          Przejścia między figurami
+                          <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30 ml-2">
+                            Premium
+                          </Badge>
+                        </h4>
+                        
+                        {hasPremiumAccess || adminPreviewMode ? (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {level.figures.filter(f => f.type === 'transitions').map((transition) => {
+                              const figureProgress = getFigureProgress(transition.id);
+                              const canPractice = canAccessFigure(transition);
+                              
+                              return (
+                                <Card
+                                  key={transition.id}
+                                  className="bg-gradient-to-br from-purple-900/20 to-blue-900/20 border-purple-400/30 cursor-pointer hover:border-purple-400/50 transition-all"
+                                  onClick={() => handleFigureClick(transition, canPractice)}
+                                >
+                                  <CardContent className="p-3">
+                                    <div className="flex items-center gap-3">
+                                      {/* From Figure Thumbnail */}
+                                      <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 bg-blue-900/30">
+                                        {transition.transition_from_figure?.image_url && (
+                                          <img 
+                                            src={transition.transition_from_figure.image_url} 
+                                            alt="From"
+                                            className="w-full h-full object-cover"
+                                          />
+                                        )}
+                                      </div>
+                                      
+                                      {/* Arrow */}
+                                      <div className="text-purple-400 text-xl flex-shrink-0">→</div>
+                                      
+                                      {/* To Figure Thumbnail */}
+                                      <div className="w-12 h-12 rounded overflow-hidden flex-shrink-0 bg-green-900/30">
+                                        {transition.transition_to_figure?.image_url && (
+                                          <img 
+                                            src={transition.transition_to_figure.image_url} 
+                                            alt="To"
+                                            className="w-full h-full object-cover"
+                                          />
+                                        )}
+                                      </div>
+                                      
+                                      {/* Progress Indicator */}
+                                      <div className="ml-auto flex-shrink-0">
+                                        {figureProgress?.status === "completed" ? (
+                                          <CheckCircle className="w-5 h-5 text-green-400" />
+                                        ) : (
+                                          <Circle className="w-5 h-5 text-white/40" />
+                                        )}
+                                      </div>
+                                    </div>
+                                    
+                                    <p className="text-white text-sm mt-2 font-medium">
+                                      {transition.name}
+                                    </p>
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <Card className="bg-black/20 border-white/10">
+                            <CardContent className="p-6 text-center">
+                              <Lock className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                              <h5 className="text-white font-semibold mb-2">
+                                Więcej figur dla użytkowników Premium
+                              </h5>
+                              <p className="text-white/60 text-sm mb-4">
+                                Odblokuj {level.figures.filter(f => f.type === 'transitions').length} dodatkowych przejść między figurami
+                              </p>
+                              <Button
+                                onClick={() => navigate("/pricing")}
+                                className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
+                              >
+                                <Crown className="w-4 h-4 mr-2" />
+                                Przejdź na Premium
+                              </Button>
+                            </CardContent>
+                          </Card>
+                        )}
+                      </div>
+                    )}
+                  </>
                   )}
 
                   {/* Locked Level Message */}

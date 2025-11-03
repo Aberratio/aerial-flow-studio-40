@@ -39,9 +39,12 @@ const EditExercise = () => {
     type: "",
     image_url: "",
     video_url: "",
+    audio_url: "",
     tags: [] as string[],
     synonyms: [] as string[],
     premium: false,
+    transition_from_figure_id: "",
+    transition_to_figure_id: "",
   });
   const [tagInput, setTagInput] = useState("");
   const [synonymInput, setSynonymInput] = useState("");
@@ -73,9 +76,12 @@ const EditExercise = () => {
           type: data.type || "",
           image_url: data.image_url || "",
           video_url: data.video_url || "",
+          audio_url: data.audio_url || "",
           tags: data.tags || [],
           synonyms: data.synonyms || [],
           premium: data.premium || false,
+          transition_from_figure_id: data.transition_from_figure_id || "",
+          transition_to_figure_id: data.transition_to_figure_id || "",
         });
       } catch (error: any) {
         console.error("Error fetching exercise:", error);
@@ -154,9 +160,12 @@ const EditExercise = () => {
         type: formData.type || null,
         image_url: imageUrl || null,
         video_url: videoUrl || null,
+        audio_url: formData.audio_url || null,
         tags: formData.tags.length > 0 ? formData.tags : null,
         synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
         premium: formData.premium,
+        transition_from_figure_id: formData.type === 'transitions' ? formData.transition_from_figure_id : null,
+        transition_to_figure_id: formData.type === 'transitions' ? formData.transition_to_figure_id : null,
         updated_at: new Date().toISOString(),
       };
       

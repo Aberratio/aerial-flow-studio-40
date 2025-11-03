@@ -84,7 +84,11 @@ const ExerciseDetail = () => {
       // Fetch exercise
       const { data: exerciseData, error: exerciseError } = await supabase
         .from("figures")
-        .select("*")
+        .select(`
+          *,
+          transition_from_figure:transition_from_figure_id(id, name, image_url),
+          transition_to_figure:transition_to_figure_id(id, name, image_url)
+        `)
         .eq("id", exerciseId)
         .single();
 

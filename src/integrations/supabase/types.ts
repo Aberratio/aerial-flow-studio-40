@@ -518,6 +518,7 @@ export type Database = {
       }
       figures: {
         Row: {
+          audio_url: string | null
           category: string | null
           created_at: string | null
           created_by: string | null
@@ -532,11 +533,14 @@ export type Database = {
           sport_category_id: string | null
           synonyms: string[] | null
           tags: string[] | null
+          transition_from_figure_id: string | null
+          transition_to_figure_id: string | null
           type: string | null
           updated_at: string | null
           video_url: string | null
         }
         Insert: {
+          audio_url?: string | null
           category?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -551,11 +555,14 @@ export type Database = {
           sport_category_id?: string | null
           synonyms?: string[] | null
           tags?: string[] | null
+          transition_from_figure_id?: string | null
+          transition_to_figure_id?: string | null
           type?: string | null
           updated_at?: string | null
           video_url?: string | null
         }
         Update: {
+          audio_url?: string | null
           category?: string | null
           created_at?: string | null
           created_by?: string | null
@@ -570,6 +577,8 @@ export type Database = {
           sport_category_id?: string | null
           synonyms?: string[] | null
           tags?: string[] | null
+          transition_from_figure_id?: string | null
+          transition_to_figure_id?: string | null
           type?: string | null
           updated_at?: string | null
           video_url?: string | null
@@ -587,6 +596,34 @@ export type Database = {
             columns: ["sport_category_id"]
             isOneToOne: false
             referencedRelation: "sport_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figures_transition_from_figure_id_fkey"
+            columns: ["transition_from_figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figures_transition_from_figure_id_fkey"
+            columns: ["transition_from_figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figures_transition_to_figure_id_fkey"
+            columns: ["transition_to_figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "figures_transition_to_figure_id_fkey"
+            columns: ["transition_to_figure_id"]
+            isOneToOne: false
+            referencedRelation: "figures_with_translations"
             referencedColumns: ["id"]
           },
         ]

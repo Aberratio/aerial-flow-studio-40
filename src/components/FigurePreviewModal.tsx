@@ -21,6 +21,7 @@ interface FigurePreviewModalProps {
     image_url?: string;
     description?: string;
     video_url?: string;
+    audio_url?: string;
     type?: string;
     tags?: string[];
     hold_time_seconds?: number;
@@ -31,6 +32,19 @@ interface FigurePreviewModalProps {
     level_hold_time_seconds?: number;
     level_reps?: number;
     level_notes?: string;
+    // Transitions fields
+    transition_from_figure_id?: string;
+    transition_to_figure_id?: string;
+    transition_from_figure?: {
+      id: string;
+      name: string;
+      image_url?: string;
+    };
+    transition_to_figure?: {
+      id: string;
+      name: string;
+      image_url?: string;
+    };
   } | null;
   isOpen: boolean;
   onClose: () => void;
@@ -202,6 +216,77 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
                     {figure.boss_description}
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Transitions Section - Show from/to figures */}
+            {figure.type === 'transitions' && figure.transition_from_figure && figure.transition_to_figure && (
+              <div className="mb-4 p-4 bg-purple-900/20 border border-purple-400/20 rounded-lg">
+                <h3 className="text-lg font-semibold text-white mb-3">Przejście między figurami</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* From Figure */}
+                  <div 
+                    className="p-3 bg-blue-900/20 border border-blue-400/20 rounded-lg cursor-pointer hover:border-blue-400/40 transition-all"
+                    onClick={() => navigate(`/exercise/${figure.transition_from_figure?.id}`)}
+                  >
+                    <div className="text-center mb-2">
+                      <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
+                        Figura Z
+                      </Badge>
+                    </div>
+                    {figure.transition_from_figure.image_url && (
+                      <img 
+                        src={figure.transition_from_figure.image_url} 
+                        alt={figure.transition_from_figure.name}
+                        className="w-full aspect-square object-cover rounded-lg mb-2"
+                      />
+                    )}
+                    <p className="text-white font-medium text-center text-sm">
+                      {figure.transition_from_figure.name}
+                    </p>
+                  </div>
+                  
+                  {/* Arrow */}
+                  <div className="hidden sm:flex items-center justify-center text-purple-400 text-4xl">
+                    →
+                  </div>
+                  
+                  {/* To Figure */}
+                  <div 
+                    className="p-3 bg-green-900/20 border border-green-400/20 rounded-lg cursor-pointer hover:border-green-400/40 transition-all"
+                    onClick={() => navigate(`/exercise/${figure.transition_to_figure?.id}`)}
+                  >
+                    <div className="text-center mb-2">
+                      <Badge className="bg-green-500/20 text-green-400 border-green-400/30">
+                        Figura DO
+                      </Badge>
+                    </div>
+                    {figure.transition_to_figure.image_url && (
+                      <img 
+                        src={figure.transition_to_figure.image_url} 
+                        alt={figure.transition_to_figure.name}
+                        className="w-full aspect-square object-cover rounded-lg mb-2"
+                      />
+                    )}
+                    <p className="text-white font-medium text-center text-sm">
+                      {figure.transition_to_figure.name}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Audio Player */}
+            {figure.audio_url && (
+              <div className="mb-4 p-3 bg-orange-900/20 border border-orange-400/20 rounded-lg">
+                <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+                  🎵 Instrukcje audio
+                </h4>
+                <audio controls className="w-full">
+                  <source src={figure.audio_url} type="audio/mpeg" />
+                  Twoja przeglądarka nie obsługuje odtwarzania audio.
+                </audio>
               </div>
             )}
 

@@ -50,14 +50,26 @@ export const CreateExerciseModal = ({
     type: "",
     image_url: "",
     video_url: "",
+    audio_url: "",
     tags: [] as string[],
     synonyms: [] as string[],
     premium: false,
     hold_time_seconds: 0,
+    transition_from_figure_id: "",
+    transition_to_figure_id: "",
   });
   const [tagInput, setTagInput] = useState("");
   const [synonymInput, setSynonymInput] = useState("");
-  const { isTrainer } = useUserRole();
+  const { isTrainer, isAdmin } = useUserRole();
+  
+  // Transitions state
+  const [searchFromFigure, setSearchFromFigure] = useState("");
+  const [searchToFigure, setSearchToFigure] = useState("");
+  const [fromFigureResults, setFromFigureResults] = useState<any[]>([]);
+  const [toFigureResults, setToFigureResults] = useState<any[]>([]);
+  const [selectedFromFigure, setSelectedFromFigure] = useState<any | null>(null);
+  const [selectedToFigure, setSelectedToFigure] = useState<any | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
 
   // Update form when editing a figure
   useEffect(() => {
@@ -71,10 +83,13 @@ export const CreateExerciseModal = ({
         type: editingFigure.type || "",
         image_url: editingFigure.image_url || "",
         video_url: editingFigure.video_url || "",
+        audio_url: editingFigure.audio_url || "",
         tags: editingFigure.tags || [],
         synonyms: editingFigure.synonyms || [],
         premium: editingFigure.premium || false,
         hold_time_seconds: editingFigure.hold_time_seconds || 0,
+        transition_from_figure_id: editingFigure.transition_from_figure_id || "",
+        transition_to_figure_id: editingFigure.transition_to_figure_id || "",
       });
     } else {
       setFormData({
@@ -86,14 +101,20 @@ export const CreateExerciseModal = ({
         type: "",
         image_url: "",
         video_url: "",
+        audio_url: "",
         tags: [],
         synonyms: [],
         premium: false,
         hold_time_seconds: 0,
+        transition_from_figure_id: "",
+        transition_to_figure_id: "",
       });
     }
     setTagInput("");
     setSynonymInput("");
+    setAudioFile(null);
+    setSelectedFromFigure(null);
+    setSelectedToFigure(null);
   }, [editingFigure, isOpen]);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -101,6 +122,22 @@ export const CreateExerciseModal = ({
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  const searchSingleFigures = async (query: string, setResults: (results: any[]) => void) => {
+    if (!query.trim()) {
+      setResults([]);
+      return;
+    }
+
+    const { data } = await supabase
+      .from("figures")
+      .select("id, name, image_url")
+      .eq("type", "single_figure")
+      .ilike("name", `%${query}%`)
+      .limit(5);
+
+    setResults(data || []);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,9 +155,38 @@ export const CreateExerciseModal = ({
 
     setIsLoading(true);
 
+    // Validate transitions type
+    if (formData.type === 'transitions' && (!formData.transition_from_figure_id || !formData.transition_to_figure_id)) {
+      toast({
+        title: "Wymagane figurki przejścia",
+        description: "Wybierz figurę Z i figurę DO dla typu Przejścia.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       let imageUrl = formData.image_url;
       let videoUrl = formData.video_url;
+      let audioUrl = formData.audio_url;
+
+      // Upload audio if provided
+      if (audioFile) {
+        const audioExt = audioFile.name.split(".").pop();
+        const audioName = `${Date.now()}.${audioExt}`;
+
+        const { error: audioError } = await supabase.storage
+          .from("posts")
+          .upload(`audio/${audioName}`, audioFile);
+
+        if (audioError) throw audioError;
+
+        const { data: audioData } = supabase.storage
+          .from("posts")
+          .getPublicUrl(`audio/${audioName}`);
+
+        audioUrl = audioData.publicUrl;
+      }
 
       // Upload image if provided
       if (imageFile) {
@@ -171,6 +237,7 @@ export const CreateExerciseModal = ({
             type: formData.type || null,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
+            audio_url: audioUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
             synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
             premium: formData.premium,
@@ -178,6 +245,8 @@ export const CreateExerciseModal = ({
               formData.hold_time_seconds > 0
                 ? formData.hold_time_seconds
                 : null,
+            transition_from_figure_id: formData.type === 'transitions' ? formData.transition_from_figure_id : null,
+            transition_to_figure_id: formData.type === 'transitions' ? formData.transition_to_figure_id : null,
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingFigure.id);
@@ -195,6 +264,7 @@ export const CreateExerciseModal = ({
             type: formData.type || null,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
+            audio_url: audioUrl || null,
             tags: formData.tags.length > 0 ? formData.tags : null,
             synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
             premium: formData.premium,
@@ -202,6 +272,8 @@ export const CreateExerciseModal = ({
               formData.hold_time_seconds > 0
                 ? formData.hold_time_seconds
                 : null,
+            transition_from_figure_id: formData.type === 'transitions' ? formData.transition_from_figure_id : null,
+            transition_to_figure_id: formData.type === 'transitions' ? formData.transition_to_figure_id : null,
             created_by: user.id,
           })
           .select()
@@ -242,15 +314,21 @@ export const CreateExerciseModal = ({
         type: "",
         image_url: "",
         video_url: "",
+        audio_url: "",
         tags: [],
         synonyms: [],
         premium: false,
         hold_time_seconds: 0,
+        transition_from_figure_id: "",
+        transition_to_figure_id: "",
       });
       setImageFile(null);
       setVideoFile(null);
+      setAudioFile(null);
       setTagInput("");
       setSynonymInput("");
+      setSelectedFromFigure(null);
+      setSelectedToFigure(null);
 
       if (onExerciseCreated) onExerciseCreated();
       onClose();
@@ -279,6 +357,14 @@ export const CreateExerciseModal = ({
     if (file) {
       setVideoFile(file);
       setFormData((prev) => ({ ...prev, video_url: "" }));
+    }
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAudioFile(file);
+      setFormData((prev) => ({ ...prev, audio_url: "" }));
     }
   };
 
@@ -464,6 +550,9 @@ export const CreateExerciseModal = ({
                       Pojedyncza figura
                     </SelectItem>
                     <SelectItem value="combo">Kombo</SelectItem>
+                    {isAdmin && (
+                      <SelectItem value="transitions">Przejścia</SelectItem>
+                    )}
                   </>
                 )}
               </SelectContent>
@@ -547,6 +636,155 @@ export const CreateExerciseModal = ({
               </div>
             </div>
           </div>
+
+          {/* Audio Upload - For all figures */}
+          <div>
+            <Label htmlFor="audio-upload" className="text-white">
+              Plik audio z instrukcjami (opcjonalnie)
+            </Label>
+            <div className="flex items-center gap-2">
+              <input
+                id="audio-upload"
+                type="file"
+                accept="audio/*"
+                onChange={handleAudioUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => document.getElementById("audio-upload")?.click()}
+                className="border-white/10 text-white hover:bg-white/10"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Prześlij audio
+              </Button>
+              {audioFile && (
+                <span className="text-sm text-white/60">{audioFile.name}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Transitions Section - Only for admin and type === 'transitions' */}
+          {isAdmin && formData.type === 'transitions' && (
+            <div className="space-y-4 p-4 bg-blue-900/20 border border-blue-400/20 rounded-lg">
+              <h3 className="text-white font-semibold">Przejście między figurami</h3>
+              
+              {/* From Figure */}
+              <div>
+                <Label className="text-white">Figura Z *</Label>
+                <Input
+                  placeholder="Szukaj figury początkowej..."
+                  value={searchFromFigure}
+                  onChange={(e) => {
+                    setSearchFromFigure(e.target.value);
+                    searchSingleFigures(e.target.value, setFromFigureResults);
+                  }}
+                  className="bg-white/5 border-white/10 text-white"
+                />
+                
+                {selectedFromFigure && (
+                  <div className="mt-2 flex items-center gap-2 p-2 bg-white/10 rounded">
+                    {selectedFromFigure.image_url && (
+                      <img src={selectedFromFigure.image_url} className="w-10 h-10 rounded object-cover" alt={selectedFromFigure.name} />
+                    )}
+                    <span className="text-white">{selectedFromFigure.name}</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedFromFigure(null);
+                        setFormData(prev => ({ ...prev, transition_from_figure_id: "" }));
+                      }}
+                      className="ml-auto text-white hover:text-red-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+                
+                {fromFigureResults.length > 0 && (
+                  <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                    {fromFigureResults.map(fig => (
+                      <div
+                        key={fig.id}
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded cursor-pointer flex items-center gap-2"
+                        onClick={() => {
+                          setSelectedFromFigure(fig);
+                          setFormData(prev => ({ ...prev, transition_from_figure_id: fig.id }));
+                          setFromFigureResults([]);
+                          setSearchFromFigure("");
+                        }}
+                      >
+                        {fig.image_url && (
+                          <img src={fig.image_url} className="w-8 h-8 rounded object-cover" alt={fig.name} />
+                        )}
+                        <span className="text-white text-sm">{fig.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
+              {/* To Figure */}
+              <div>
+                <Label className="text-white">Figura DO *</Label>
+                <Input
+                  placeholder="Szukaj figury docelowej..."
+                  value={searchToFigure}
+                  onChange={(e) => {
+                    setSearchToFigure(e.target.value);
+                    searchSingleFigures(e.target.value, setToFigureResults);
+                  }}
+                  className="bg-white/5 border-white/10 text-white"
+                />
+                
+                {selectedToFigure && (
+                  <div className="mt-2 flex items-center gap-2 p-2 bg-white/10 rounded">
+                    {selectedToFigure.image_url && (
+                      <img src={selectedToFigure.image_url} className="w-10 h-10 rounded object-cover" alt={selectedToFigure.name} />
+                    )}
+                    <span className="text-white">{selectedToFigure.name}</span>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedToFigure(null);
+                        setFormData(prev => ({ ...prev, transition_to_figure_id: "" }));
+                      }}
+                      className="ml-auto text-white hover:text-red-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+                
+                {toFigureResults.length > 0 && (
+                  <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                    {toFigureResults.map(fig => (
+                      <div
+                        key={fig.id}
+                        className="p-2 bg-white/5 hover:bg-white/10 rounded cursor-pointer flex items-center gap-2"
+                        onClick={() => {
+                          setSelectedToFigure(fig);
+                          setFormData(prev => ({ ...prev, transition_to_figure_id: fig.id }));
+                          setToFigureResults([]);
+                          setSearchToFigure("");
+                        }}
+                      >
+                        {fig.image_url && (
+                          <img src={fig.image_url} className="w-8 h-8 rounded object-cover" alt={fig.name} />
+                        )}
+                        <span className="text-white text-sm">{fig.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {!isTrainer && (
             <>
