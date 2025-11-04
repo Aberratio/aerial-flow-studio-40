@@ -144,23 +144,23 @@ const Training = () => {
                 <Target className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-4">
-                Admin Only
+                Tylko dla administratorów
               </h1>
               <p className="text-muted-foreground text-lg mb-6">
-                Training sessions are currently only accessible to administrators.
+                Sesje treningowe są obecnie dostępne tylko dla administratorów.
               </p>
               <div className="space-y-3 text-left">
                 <div className="flex items-center text-muted-foreground">
                   <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Create and manage training sessions</span>
+                  <span>Twórz i zarządzaj sesjami treningowymi</span>
                 </div>
                 <div className="flex items-center text-muted-foreground">
                   <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Interactive workout guidance</span>
+                  <span>Interaktywne prowadzenie treningów</span>
                 </div>
                 <div className="flex items-center text-muted-foreground">
                   <div className="w-2 h-2 bg-primary rounded-full mr-3"></div>
-                  <span>Progress tracking and analytics</span>
+                  <span>Śledzenie postępów i analityka</span>
                 </div>
               </div>
             </div>
@@ -169,14 +169,14 @@ const Training = () => {
               variant="primary"
               className="mr-4"
             >
-              Go to Home
+              Strona główna
             </Button>
             <Button
               onClick={() => navigate("/library")}
               variant="outline"
               className="border-white/20 text-white hover:bg-white/10"
             >
-              View Library
+              Zobacz bibliotekę
             </Button>
           </div>
         </div>
@@ -191,10 +191,10 @@ const Training = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-                Training Sessions
+                Sesje treningowe
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base">
-                Join or create aerial training sessions
+                Dołącz lub stwórz sesję treningową
               </p>
             </div>
             {user?.role === "trainer" || user?.role === "admin" ? (
@@ -204,7 +204,7 @@ const Training = () => {
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
                 >
                   <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                  Create Session
+                  Utwórz sesję
                 </Button>
                 {isAdmin && (
                   <Button
@@ -213,7 +213,7 @@ const Training = () => {
                     className="border-white/20 text-white hover:bg-white/10"
                   >
                     <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Create Exercise
+                    Utwórz ćwiczenie
                   </Button>
                 )}
               </div>
@@ -230,7 +230,7 @@ const Training = () => {
                 {sessions.length}
               </h3>
               <p className="text-muted-foreground text-xs sm:text-sm">
-                Available Sessions
+                Dostępne sesje
               </p>
             </CardContent>
           </Card>
@@ -239,7 +239,7 @@ const Training = () => {
               <Users className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-green-500" />
               <h3 className="text-lg sm:text-2xl font-bold text-white">{sessions.filter(s => s.published).length}</h3>
               <p className="text-muted-foreground text-xs sm:text-sm">
-                Published Sessions
+                Opublikowane
               </p>
             </CardContent>
           </Card>
@@ -248,7 +248,7 @@ const Training = () => {
               <Clock className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-blue-500" />
               <h3 className="text-lg sm:text-2xl font-bold text-white">45</h3>
               <p className="text-muted-foreground text-xs sm:text-sm">
-                Avg Duration (min)
+                Śr. czas trwania (min)
               </p>
             </CardContent>
           </Card>
@@ -257,7 +257,7 @@ const Training = () => {
               <Heart className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-pink-500" />
               <h3 className="text-lg sm:text-2xl font-bold text-white">12</h3>
               <p className="text-muted-foreground text-xs sm:text-sm">
-                Completed
+                Ukończone
               </p>
             </CardContent>
           </Card>
@@ -286,7 +286,7 @@ const Training = () => {
                 
                 {!session.published && (
                   <Badge className="absolute top-2 left-16 bg-orange-500/20 text-orange-400 text-xs">
-                    Draft
+                    Wersja robocza
                   </Badge>
                 )}
 
@@ -326,7 +326,7 @@ const Training = () => {
                 <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4">
                   <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
                     <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    {session.duration_minutes || 45} minutes
+                    {session.duration_minutes || 45} minut
                   </div>
                   {session.playlist && (
                     <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
@@ -340,7 +340,7 @@ const Training = () => {
                   {session.warmup_exercises && session.warmup_exercises.length > 0 && (
                     <div>
                       <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                        Warm-up ({session.warmup_exercises.length} exercises)
+                        Rozgrzewka ({session.warmup_exercises.length} ćwiczeń)
                       </h4>
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {session.warmup_exercises.map((item: any) => 
@@ -352,7 +352,7 @@ const Training = () => {
                   {session.figures && session.figures.length > 0 && (
                     <div>
                       <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                        Figures ({session.figures.length} exercises)
+                        Figury ({session.figures.length} ćwiczeń)
                       </h4>
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {session.figures.map((item: any) => 
@@ -364,7 +364,7 @@ const Training = () => {
                   {session.stretching_exercises && session.stretching_exercises.length > 0 && (
                     <div>
                       <h4 className="text-xs sm:text-sm font-semibold text-white mb-1">
-                        Stretching ({session.stretching_exercises.length} exercises)
+                        Rozciąganie ({session.stretching_exercises.length} ćwiczeń)
                       </h4>
                       <p className="text-xs text-muted-foreground line-clamp-2">
                         {session.stretching_exercises.map((item: any) => 
@@ -381,7 +381,7 @@ const Training = () => {
                   onClick={() => handleSessionClick(session)}
                 >
                   <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                  View Details
+                  Zobacz szczegóły
                 </Button>
               </CardContent>
             </Card>
@@ -415,8 +415,8 @@ const Training = () => {
         onExerciseCreated={() => {
           setShowCreateExercise(false);
           toast({
-            title: "Exercise Created",
-            description: "Special exercise has been created successfully.",
+            title: "Utworzono ćwiczenie",
+            description: "Specjalne ćwiczenie zostało pomyślnie utworzone.",
           });
         }}
         isTrainingSpecial={true}

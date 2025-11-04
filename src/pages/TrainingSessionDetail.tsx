@@ -77,8 +77,8 @@ const TrainingSessionDetail = () => {
 
         if (!sessionData) {
           toast({
-            title: "Session Not Found",
-            description: "The training session you're looking for doesn't exist.",
+            title: "Nie znaleziono sesji",
+            description: "Sesja treningowa, której szukasz, nie istnieje.",
             variant: "destructive",
           });
           navigate('/training');
@@ -88,8 +88,8 @@ const TrainingSessionDetail = () => {
         // Check if user has access to this session
         if (!sessionData.published && sessionData.user_id !== user?.id && !isAdmin) {
           toast({
-            title: "Access Denied",
-            description: "This training session is not published or you don't have access to it.",
+            title: "Brak dostępu",
+            description: "Ta sesja treningowa nie jest opublikowana lub nie masz do niej dostępu.",
             variant: "destructive",
           });
           navigate('/training');
@@ -156,8 +156,8 @@ const TrainingSessionDetail = () => {
       } catch (error) {
         console.error('Error fetching session:', error);
         toast({
-          title: "Error",
-          description: "Failed to load training session.",
+          title: "Błąd",
+          description: "Nie udało się załadować sesji treningowej.",
           variant: "destructive",
         });
         navigate('/training');
@@ -203,7 +203,7 @@ const TrainingSessionDetail = () => {
             </div>
             {title}
             <Badge variant="outline" className="ml-auto text-white/70 border-white/20">
-              {exerciseArray.length} exercises
+              {exerciseArray.length} ćwiczeń
             </Badge>
           </CardTitle>
         </CardHeader>
@@ -233,9 +233,9 @@ const TrainingSessionDetail = () => {
                     </div>
                     {typeof exercise === 'object' && exercise.sets && (
                       <div className="text-xs text-white/60 truncate">
-                        {exercise.sets} sets × {exercise.reps} reps
+                        {exercise.sets} serie × {exercise.reps} powt.
                         {exercise.hold_time_seconds && exercise.hold_time_seconds > 0 && ` (${exercise.hold_time_seconds}s)`}
-                        {(exercise.completion_mode === 'completion' || exercise.hold_time_seconds === 0) && ' (Completion)'}
+                        {(exercise.completion_mode === 'completion' || exercise.hold_time_seconds === 0) && ' (Na wykonania)'}
                       </div>
                     )}
                   </div>
@@ -262,7 +262,7 @@ const TrainingSessionDetail = () => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-muted-foreground">Loading training session...</p>
+          <p className="text-muted-foreground">Ładowanie sesji treningowej...</p>
         </div>
       </div>
     );
@@ -299,7 +299,7 @@ const TrainingSessionDetail = () => {
                   </Badge>
                   {!session.published && (
                     <Badge className="bg-orange-500/20 text-orange-400 text-xs">
-                      Draft
+                      Wersja robocza
                     </Badge>
                   )}
                 </div>
@@ -317,8 +317,8 @@ const TrainingSessionDetail = () => {
                 className="border-white/20 text-white hover:bg-white/10 text-xs sm:text-sm"
               >
                 <Edit className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Edit Session</span>
-                <span className="sm:hidden">Edit</span>
+                <span className="hidden sm:inline">Edytuj sesję</span>
+                <span className="sm:hidden">Edytuj</span>
               </Button>
             )}
             <Button
@@ -327,7 +327,7 @@ const TrainingSessionDetail = () => {
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 text-xs sm:text-sm"
             >
               <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">Start Training</span>
+              <span className="hidden sm:inline">Rozpocznij trening</span>
               <span className="sm:hidden">Start</span>
             </Button>
           </div>
@@ -353,7 +353,7 @@ const TrainingSessionDetail = () => {
                     </div>
                     <div className="flex items-center">
                       <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-                      <span className="text-xs sm:text-sm">{totalExercises} exercises</span>
+                      <span className="text-xs sm:text-sm">{totalExercises} ćwiczeń</span>
                     </div>
                   </div>
                   {session.playlist && (
@@ -370,21 +370,21 @@ const TrainingSessionDetail = () => {
             <div className="space-y-4 sm:space-y-6">
               {renderExerciseList(
                 session.warmup_exercises, 
-                "Warm-up Exercises", 
+                "Ćwiczenia rozgrzewkowe", 
                 <Zap className="w-4 h-4" />, 
                 "bg-yellow-500"
               )}
               
               {renderExerciseList(
                 session.figures, 
-                "Training Figures", 
+                "Figury treningowe", 
                 <Target className="w-4 h-4" />, 
                 "bg-purple-500"
               )}
               
               {renderExerciseList(
                 session.stretching_exercises, 
-                "Stretching Exercises", 
+                "Rozciąganie", 
                 <Heart className="w-4 h-4" />, 
                 "bg-pink-500"
               )}
@@ -396,13 +396,13 @@ const TrainingSessionDetail = () => {
             {/* Quick Stats */}
             <Card className="glass-effect border-white/10">
               <CardHeader className="pb-3 sm:pb-4">
-                <CardTitle className="text-white text-lg">Session Overview</CardTitle>
+                <CardTitle className="text-white text-lg">Podsumowanie sesji</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Clock className="w-4 h-4 text-blue-400" />
-                    <span className="text-muted-foreground text-sm">Duration</span>
+                    <span className="text-muted-foreground text-sm">Czas trwania</span>
                   </div>
                   <span className="text-white font-medium text-sm">{session.duration_minutes} min</span>
                 </div>
@@ -410,7 +410,7 @@ const TrainingSessionDetail = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Target className="w-4 h-4 text-purple-400" />
-                    <span className="text-muted-foreground text-sm">Total Exercises</span>
+                    <span className="text-muted-foreground text-sm">Łącznie ćwiczeń</span>
                   </div>
                   <span className="text-white font-medium text-sm">{totalExercises}</span>
                 </div>
@@ -418,7 +418,7 @@ const TrainingSessionDetail = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Star className="w-4 h-4 text-yellow-400" />
-                    <span className="text-muted-foreground text-sm">Difficulty</span>
+                    <span className="text-muted-foreground text-sm">Trudność</span>
                   </div>
                   <span className="text-white font-medium text-sm">{session.difficulty_level}</span>
                 </div>
@@ -427,7 +427,7 @@ const TrainingSessionDetail = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <Music className="w-4 h-4 text-green-400" />
-                      <span className="text-muted-foreground text-sm">Playlist</span>
+                      <span className="text-muted-foreground text-sm">Playlista</span>
                     </div>
                     <span className="text-white font-medium text-sm truncate max-w-32">{session.playlist}</span>
                   </div>
@@ -443,7 +443,7 @@ const TrainingSessionDetail = () => {
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600 text-sm sm:text-base"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  Start Training Session
+                  Rozpocznij sesję treningową
                 </Button>
                 
                 {(user?.id === session.user_id || isAdmin) && (
@@ -453,7 +453,7 @@ const TrainingSessionDetail = () => {
                     className="w-full border-white/20 text-white hover:bg-white/10 text-sm sm:text-base"
                   >
                     <Edit className="w-4 h-4 mr-2" />
-                    Edit Session
+                    Edytuj sesję
                   </Button>
                 )}
                 

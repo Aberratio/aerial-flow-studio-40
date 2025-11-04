@@ -52,7 +52,7 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center text-white">
               <Clock className="w-5 h-5 mr-2 text-primary" />
-              <span>{session.duration_minutes || 45} minutes</span>
+              <span>{session.duration_minutes || 45} minut</span>
             </div>
             {session.playlist && (
               <div className="flex items-center text-white">
@@ -75,7 +75,7 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
               <div className="bg-white/5 p-4 rounded-lg">
                 <div className="flex items-center mb-2">
                   <Zap className="w-5 h-5 mr-2 text-yellow-500" />
-                  <h3 className="font-semibold text-white">Warm-up</h3>
+                  <h3 className="font-semibold text-white">Rozgrzewka</h3>
                 </div>
                  <div className="grid grid-cols-1 gap-2">
                    {session.warmup_exercises.map((item: any, index: number) => (
@@ -99,12 +99,12 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
                          <div className="text-white text-sm font-medium truncate">
                            {typeof item === 'string' ? item : item.figure?.name || item.name || 'Exercise'}
                          </div>
-                         {typeof item === 'object' && item.sets && (
-                           <div className="text-xs text-white/60">
-                             {item.sets} sets × {item.reps} reps
-                             {item.hold_time_seconds && ` (${item.hold_time_seconds}s hold)`}
-                           </div>
-                         )}
+                          {typeof item === 'object' && item.sets && (
+                            <div className="text-xs text-white/60">
+                              {item.sets} serie × {item.reps} powt.
+                              {item.hold_time_seconds && ` (${item.hold_time_seconds}s przytrzymanie)`}
+                            </div>
+                          )}
                        </div>
                      </div>
                    ))}
@@ -116,7 +116,7 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
               <div className="bg-white/5 p-4 rounded-lg">
                 <div className="flex items-center mb-2">
                   <Target className="w-5 h-5 mr-2 text-purple-500" />
-                  <h3 className="font-semibold text-white">Figures & Combos</h3>
+                  <h3 className="font-semibold text-white">Figury i kombo</h3>
                 </div>
                  <div className="grid grid-cols-1 gap-2">
                    {session.figures.map((item: any, index: number) => (
@@ -140,12 +140,12 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
                          <div className="text-white text-sm font-medium truncate">
                            {typeof item === 'string' ? item : item.figure?.name || item.name || 'Exercise'}
                          </div>
-                         {typeof item === 'object' && item.sets && (
-                           <div className="text-xs text-white/60">
-                             {item.sets} sets × {item.reps} reps
-                             {item.hold_time_seconds && ` (${item.hold_time_seconds}s hold)`}
-                           </div>
-                         )}
+                          {typeof item === 'object' && item.sets && (
+                            <div className="text-xs text-white/60">
+                              {item.sets} serie × {item.reps} powt.
+                              {item.hold_time_seconds && ` (${item.hold_time_seconds}s przytrzymanie)`}
+                            </div>
+                          )}
                        </div>
                      </div>
                    ))}
@@ -157,7 +157,7 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
               <div className="bg-white/5 p-4 rounded-lg">
                 <div className="flex items-center mb-2">
                   <Heart className="w-5 h-5 mr-2 text-pink-500" />
-                  <h3 className="font-semibold text-white">Stretching</h3>
+                  <h3 className="font-semibold text-white">Rozciąganie</h3>
                 </div>
                  <div className="grid grid-cols-1 gap-2">
                    {session.stretching_exercises.map((item: any, index: number) => (
@@ -181,12 +181,12 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
                          <div className="text-white text-sm font-medium truncate">
                            {typeof item === 'string' ? item : item.figure?.name || item.name || 'Exercise'}
                          </div>
-                         {typeof item === 'object' && item.sets && (
-                           <div className="text-xs text-white/60">
-                             {item.sets} sets × {item.reps} reps
-                             {item.hold_time_seconds && ` (${item.hold_time_seconds}s hold)`}
-                           </div>
-                         )}
+                          {typeof item === 'object' && item.sets && (
+                            <div className="text-xs text-white/60">
+                              {item.sets} serie × {item.reps} powt.
+                              {item.hold_time_seconds && ` (${item.hold_time_seconds}s przytrzymanie)`}
+                            </div>
+                          )}
                        </div>
                      </div>
                    ))}
@@ -198,14 +198,14 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3">
             <Button variant="outline" onClick={onClose}>
-              Close
+              Zamknij
             </Button>
             <Button 
               onClick={() => onStartTraining(session.id)}
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
             >
               <Play className="w-4 h-4 mr-2" />
-              Start Training
+              Rozpocznij trening
             </Button>
           </div>
         </div>

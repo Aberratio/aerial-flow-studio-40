@@ -118,8 +118,8 @@ const TrainingExerciseSession = () => {
 
         if (!data) {
           toast({
-            title: "Session Not Found",
-            description: "The training session you're looking for doesn't exist.",
+            title: "Nie znaleziono sesji",
+            description: "Sesja treningowa, której szukasz, nie istnieje.",
             variant: "destructive",
           });
           navigate('/training');
@@ -129,8 +129,8 @@ const TrainingExerciseSession = () => {
         // Check if user has access to this session
         if (!data.published && data.user_id !== user?.id && !isAdmin) {
           toast({
-            title: "Access Denied",
-            description: "This training session is not published or you don't have access to it.",
+            title: "Brak dostępu",
+            description: "Ta sesja treningowa nie jest opublikowana lub nie masz do niej dostępu.",
             variant: "destructive",
           });
           navigate('/training');
@@ -151,8 +151,8 @@ const TrainingExerciseSession = () => {
       } catch (error) {
         console.error('Error fetching session:', error);
         toast({
-          title: "Error",
-          description: "Failed to load training session.",
+          title: "Błąd",
+          description: "Nie udało się załadować sesji treningowej.",
           variant: "destructive",
         });
         navigate('/training');
@@ -428,7 +428,7 @@ const TrainingExerciseSession = () => {
       setIsCompleted(true);
       setIsRunning(false);
       if (audioMode === "sound") {
-        speak("Training completed! Great job!");
+        speak("Trening ukończony! Świetna robota!");
       }
       return;
     }
@@ -450,7 +450,7 @@ const TrainingExerciseSession = () => {
         setIsPreparingToStart(true);
         setPreparationTime(10);
         if (audioMode === "sound") {
-          speak("Get ready!");
+          speak("Przygotuj się!");
         }
       } else {
         // Resume directly without preparation for rest or paused exercises
@@ -488,7 +488,7 @@ const TrainingExerciseSession = () => {
       setIsCompleted(true);
       setIsRunning(false);
       if (audioMode === "sound") {
-        speak("Training completed! Great job!");
+        speak("Trening ukończony! Świetna robota!");
       }
     }
   };

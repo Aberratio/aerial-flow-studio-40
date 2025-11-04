@@ -161,7 +161,7 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
       <DialogContent className="glass-effect border-white/10 max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">
-            {editingSession ? 'Edit Training Session' : 'Create Training Session'}
+            {editingSession ? 'Edytuj sesję treningową' : 'Utwórz sesję treningową'}
           </DialogTitle>
         </DialogHeader>
         
@@ -169,18 +169,18 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
           {/* Basic Info */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="title" className="text-white">Session Title</Label>
+              <Label htmlFor="title" className="text-white">Tytuł sesji</Label>
               <Input
                 id="title"
                 value={formData.title}
                 onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter session title"
+                placeholder="Wpisz tytuł sesji"
                 className="bg-white/5 border-white/10 text-white"
                 required
               />
             </div>
             <div>
-              <Label htmlFor="duration" className="text-white">Duration (minutes)</Label>
+              <Label htmlFor="duration" className="text-white">Czas trwania (minuty)</Label>
               <Input
                 id="duration"
                 type="number"
@@ -194,12 +194,12 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
 
           {/* Description */}
           <div>
-            <Label htmlFor="description" className="text-white">Description</Label>
+            <Label htmlFor="description" className="text-white">Opis</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-              placeholder="Describe your training session..."
+              placeholder="Opisz sesję treningową..."
               className="bg-white/5 border-white/10 text-white"
               rows={3}
             />
@@ -207,10 +207,10 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="difficulty" className="text-white">Difficulty Level</Label>
+              <Label htmlFor="difficulty" className="text-white">Poziom trudności</Label>
               <Select value={formData.difficulty_level} onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty_level: value }))}>
                 <SelectTrigger className="bg-white/5 border-white/10 text-white">
-                  <SelectValue placeholder="Select difficulty" />
+                  <SelectValue placeholder="Wybierz poziom" />
                 </SelectTrigger>
                 <SelectContent>
                   {difficultyLevels.map(level => (
@@ -220,12 +220,12 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
               </Select>
             </div>
             <div>
-              <Label htmlFor="playlist" className="text-white">Recommended Playlist</Label>
+              <Label htmlFor="playlist" className="text-white">Rekomendowana playlista</Label>
               <Input
                 id="playlist"
                 value={formData.playlist}
                 onChange={(e) => setFormData(prev => ({ ...prev, playlist: e.target.value }))}
-                placeholder="Playlist name or link"
+                placeholder="Nazwa playlisty lub link"
                 className="bg-white/5 border-white/10 text-white"
               />
             </div>
@@ -239,18 +239,18 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
               onCheckedChange={(checked) => setFormData(prev => ({ ...prev, published: checked }))}
             />
             <Label htmlFor="published" className="text-white">
-              Publish session (make it visible to users)
+              Opublikuj sesję (widoczna dla użytkowników)
             </Label>
           </div>
 
           {/* Warm-up Section */}
           <div>
-            <Label className="text-white mb-2 block">Warm-up Exercises</Label>
+            <Label className="text-white mb-2 block">Ćwiczenia rozgrzewkowe</Label>
             <div className="flex gap-2 mb-2">
               <Input
                 value={currentWarmup}
                 onChange={(e) => setCurrentWarmup(e.target.value)}
-                placeholder="Add warm-up exercise"
+                placeholder="Dodaj ćwiczenie rozgrzewkowe"
                 className="bg-white/5 border-white/10 text-white flex-1"
                 onKeyPress={(e) => e.key === 'Enter' && addItem('warmup_exercises', currentWarmup)}
               />
@@ -279,12 +279,12 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
 
           {/* Figures Section */}
           <div>
-            <Label className="text-white mb-2 block">Figures & Combos</Label>
+            <Label className="text-white mb-2 block">Figury i kombo</Label>
             <div className="flex gap-2 mb-2">
               <Input
                 value={currentFigure}
                 onChange={(e) => setCurrentFigure(e.target.value)}
-                placeholder="Add figure or combo"
+                placeholder="Dodaj figurę lub kombo"
                 className="bg-white/5 border-white/10 text-white flex-1"
                 onKeyPress={(e) => e.key === 'Enter' && addItem('figures', currentFigure)}
               />
@@ -313,12 +313,12 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
 
           {/* Stretching Section */}
           <div>
-            <Label className="text-white mb-2 block">Stretching Routine</Label>
+            <Label className="text-white mb-2 block">Rozciąganie</Label>
             <div className="flex gap-2 mb-2">
               <Input
                 value={currentStretch}
                 onChange={(e) => setCurrentStretch(e.target.value)}
-                placeholder="Add stretching exercise"
+                placeholder="Dodaj ćwiczenie rozciągające"
                 className="bg-white/5 border-white/10 text-white flex-1"
                 onKeyPress={(e) => e.key === 'Enter' && addItem('stretching_exercises', currentStretch)}
               />
@@ -347,7 +347,7 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
 
           {/* Thumbnail URL */}
           <div>
-            <Label htmlFor="thumbnail" className="text-white">Thumbnail URL (optional)</Label>
+            <Label htmlFor="thumbnail" className="text-white">URL miniatury (opcjonalne)</Label>
             <Input
               id="thumbnail"
               value={formData.thumbnail_url}
@@ -360,7 +360,7 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              Anuluj
             </Button>
             <Button
               onClick={handleSubmit}
@@ -370,10 +370,10 @@ export const CreateTrainingModal: React.FC<CreateTrainingModalProps> = ({
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {editingSession ? 'Updating...' : 'Creating...'}
+                  {editingSession ? 'Aktualizowanie...' : 'Tworzenie...'}
                 </>
               ) : (
-                editingSession ? 'Update Session' : 'Create Session'
+                editingSession ? 'Zaktualizuj sesję' : 'Utwórz sesję'
               )}
             </Button>
           </div>
