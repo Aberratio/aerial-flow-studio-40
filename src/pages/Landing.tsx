@@ -181,9 +181,7 @@ const Landing = () => {
             <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
               <div className="space-y-4 sm:space-y-6">
                 <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight">
-                  <span className="gradient-text-subtle block">
-                    Kiedy ostatnio coś było dla Ciebie?
-                  </span>
+                  <span className="gradient-text-subtle block">Kanapa poczeka, wpadnij do nas na trening!</span>
                 </h1>
                 <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">Trenujesz aerial? A może po prostu lubisz wyzwania sportowe? Rozpisane treningi? Wspierającą i motywującą społeczność? Wszystko w Twoim rytmie, ze świetnymi trenerkami i jasnymi instrukcjami czeka na Ciebie w Iguanie!</p>
               </div>
