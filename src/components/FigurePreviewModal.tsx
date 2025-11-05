@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, CheckCircle, ExternalLink } from "lucide-react";
+import { X, CheckCircle, ExternalLink, Timer } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { FigureCompletionCelebration } from "./FigureCompletionCelebration";
 import { useDictionary } from "@/contexts/DictionaryContext";
+import { FigureHoldTimer } from "./FigureHoldTimer";
 
 interface FigurePreviewModalProps {
   figure: {
@@ -63,6 +64,7 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
   const [figureProgress, setFigureProgress] = useState<string>("not_tried");
   const [loading, setLoading] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [showTimer, setShowTimer] = useState(false);
 
   // Fetch figure progress
   const fetchFigureProgress = async () => {
@@ -126,6 +128,7 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
   useEffect(() => {
     if (isOpen && figure) {
       fetchFigureProgress();
+      setShowTimer(false); // Reset timer when modal opens
     }
   }, [isOpen, figure, user]);
 
@@ -216,6 +219,39 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
                     {figure.boss_description}
                   </p>
                 )}
+              </div>
+            )}
+
+            {/* Timer Section - Show if hold time exists */}
+            {(figure.level_hold_time_seconds || figure.hold_time_seconds) && !showTimer && (
+              <div className="mb-4">
+                <Button
+                  onClick={() => setShowTimer(true)}
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
+                >
+                  <Timer className="w-4 h-4 mr-2" />
+                  🎯 Rozpocznij Timer ({figure.level_hold_time_seconds || figure.hold_time_seconds}s)
+                </Button>
+              </div>
+            )}
+
+            {/* Timer UI - Show when activated */}
+            {showTimer && (
+              <div className="mb-4">
+                <FigureHoldTimer
+                  holdTimeSeconds={figure.level_hold_time_seconds || figure.hold_time_seconds || 0}
+                  onComplete={() => {
+                    toast.success("Świetna robota! 🎉");
+                    setShowTimer(false);
+                  }}
+                />
+                <Button
+                  variant="ghost"
+                  onClick={() => setShowTimer(false)}
+                  className="w-full mt-2 text-sm"
+                >
+                  Zamknij timer
+                </Button>
               </div>
             )}
 
