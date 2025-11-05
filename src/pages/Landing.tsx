@@ -1,29 +1,8 @@
 import { useState, lazy, Suspense } from "react";
-import {
-  Zap,
-  Users,
-  Trophy,
-  BookOpen,
-  ArrowRight,
-  Crown,
-  Check,
-  Download,
-  Target,
-  TrendingUp,
-  Award,
-  Calendar,
-  Sparkles,
-  Instagram,
-} from "lucide-react";
+import { Zap, Users, Trophy, BookOpen, ArrowRight, Crown, Check, Download, Target, TrendingUp, Award, Calendar, Sparkles, Instagram } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import AuthModal from "@/components/Auth/AuthModal";
 import CookiesBanner from "@/components/CookiesBanner";
 import { LazyImage } from "@/components/LazyImage";
@@ -42,17 +21,12 @@ import { LoadingProgressBar } from "@/components/LoadingProgressBar";
 import { SocialProof } from "@/components/SocialProof";
 
 // Lazy load heavy components
-const GallerySection = lazy(() =>
-  import("@/components/GallerySection").then((module) => ({
-    default: module.GallerySection,
-  }))
-);
-const InstagramFeedSection = lazy(() =>
-  import("@/components/InstagramFeedSection").then((module) => ({
-    default: module.InstagramFeedSection,
-  }))
-);
-
+const GallerySection = lazy(() => import("@/components/GallerySection").then(module => ({
+  default: module.GallerySection
+})));
+const InstagramFeedSection = lazy(() => import("@/components/InstagramFeedSection").then(module => ({
+  default: module.InstagramFeedSection
+})));
 interface PricingPlan {
   id: string;
   plan_key: string;
@@ -62,23 +36,32 @@ interface PricingPlan {
   is_popular: boolean;
   features: PricingFeature[];
 }
-
 interface PricingFeature {
   feature_key: string;
   is_included: boolean;
   feature_text: string;
 }
-
 const Landing = () => {
-  const { data: sections, isLoading: sectionsLoading } = useLandingSections();
-  const { data: landingData, isLoading: dataLoading } = useLandingData();
-  const { data: stats } = useLandingStats();
+  const {
+    data: sections,
+    isLoading: sectionsLoading
+  } = useLandingSections();
+  const {
+    data: landingData,
+    isLoading: dataLoading
+  } = useLandingData();
+  const {
+    data: stats
+  } = useLandingStats();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
-  const { isInstallable, isInstalled, isIOSDevice, installPWA } =
-    usePWAInstall();
+  const {
+    isInstallable,
+    isInstalled,
+    isIOSDevice,
+    installPWA
+  } = usePWAInstall();
   const [showIOSInstructions, setShowIOSInstructions] = useState(false);
-
   const getFeatureText = (featureKey: string): string => {
     const featureTextMap: Record<string, string> = {
       unlimited_library: "Naucz się 200+ figur z instrukcjami krok po kroku",
@@ -98,11 +81,10 @@ const Landing = () => {
       custom_training_sessions: "Personalizowane sesje treningowe",
       training_sessions: "Sesje treningowe",
       challenges_access: "Dostęp do wyzwań",
-      exclusive_content: "Ekskluzywne treści",
+      exclusive_content: "Ekskluzywne treści"
     };
     return featureTextMap[featureKey] || featureKey.replace(/_/g, " ");
   };
-
   const getFeatureIcon = (featureKey: string) => {
     const iconMap: Record<string, React.ReactNode> = {
       unlimited_library: <BookOpen className="w-5 h-5" />,
@@ -113,44 +95,33 @@ const Landing = () => {
       unlimited_challenges: <Zap className="w-5 h-5" />,
       expert_coaching: <Target className="w-5 h-5" />,
       advanced_analytics: <Award className="w-5 h-5" />,
-      priority_support: <Sparkles className="w-5 h-5" />,
+      priority_support: <Sparkles className="w-5 h-5" />
     };
     return iconMap[featureKey] || <Check className="w-5 h-5" />;
   };
 
   // Updated features with benefit-focused copy
-  const features = [
-    {
-      icon: <BookOpen className="w-12 h-12 text-primary" />,
-      title: "Biblioteka 200+ Figur",
-      description:
-        "Naucz się 200+ figur z wideo instrukcjami krok po kroku i szczegółowymi wskazówkami",
-    },
-    {
-      icon: <Target className="w-12 h-12 text-primary" />,
-      title: "Wizualne Śledzenie Postępów",
-      description:
-        "Śledź swoje postępy z wizualną analityką i obserwuj swoją poprawę w czasie",
-    },
-    {
-      icon: <Trophy className="w-12 h-12 text-primary" />,
-      title: "28-dniowe Wyzwania",
-      description:
-        "Dołącz do strukturalnych 28-dniowych wyzwań, zachowaj motywację i osiągnij cele",
-    },
-    {
-      icon: <Users className="w-12 h-12 text-primary" />,
-      title: "Globalna Społeczność",
-      description:
-        "Łącz się z innymi sportowcami, dziel się postępami i inspiruj",
-    },
-  ];
-
+  const features = [{
+    icon: <BookOpen className="w-12 h-12 text-primary" />,
+    title: "Biblioteka 200+ Figur",
+    description: "Naucz się 200+ figur z wideo instrukcjami krok po kroku i szczegółowymi wskazówkami"
+  }, {
+    icon: <Target className="w-12 h-12 text-primary" />,
+    title: "Wizualne Śledzenie Postępów",
+    description: "Śledź swoje postępy z wizualną analityką i obserwuj swoją poprawę w czasie"
+  }, {
+    icon: <Trophy className="w-12 h-12 text-primary" />,
+    title: "28-dniowe Wyzwania",
+    description: "Dołącz do strukturalnych 28-dniowych wyzwań, zachowaj motywację i osiągnij cele"
+  }, {
+    icon: <Users className="w-12 h-12 text-primary" />,
+    title: "Globalna Społeczność",
+    description: "Łącz się z innymi sportowcami, dziel się postępami i inspiruj"
+  }];
   const openAuth = (mode: "login" | "register") => {
     setAuthMode(mode);
     setAuthModalOpen(true);
   };
-
   const handleInstallClick = () => {
     if (isIOSDevice) {
       setShowIOSInstructions(true);
@@ -158,58 +129,45 @@ const Landing = () => {
       installPWA();
     }
   };
-
   const heroImage = landingData?.sections?.hero?.image_url || "";
-  const absChallengesImage =
-    landingData?.sections?.abs_challenges?.image_url || "";
-  const showAbsChallenges =
-    landingData?.sections?.abs_challenges?.is_active || false;
+  const absChallengesImage = landingData?.sections?.abs_challenges?.image_url || "";
+  const showAbsChallenges = landingData?.sections?.abs_challenges?.is_active || false;
   const pricingPlans = landingData?.pricing || [];
-
   const isLoading = sectionsLoading || dataLoading;
-
-  return (
-    <div className="min-h-screen relative overflow-hidden">
+  return <div className="min-h-screen relative overflow-hidden">
       {/* Loading Progress Bar */}
       <LoadingProgressBar isLoading={isLoading} />
 
       {/* Animated Background - Reduced particles */}
       <div className="fixed inset-0 -z-10 parallax-bg">
-        <div
-          className="hero-particle"
-          style={{ width: "100px", height: "100px", top: "15%", left: "10%" }}
-        ></div>
-        <div
-          className="hero-particle-tropical"
-          style={{ width: "120px", height: "120px", top: "65%", right: "15%" }}
-        ></div>
+        <div className="hero-particle" style={{
+        width: "100px",
+        height: "100px",
+        top: "15%",
+        left: "10%"
+      }}></div>
+        <div className="hero-particle-tropical" style={{
+        width: "120px",
+        height: "120px",
+        top: "65%",
+        right: "15%"
+      }}></div>
       </div>
 
       {/* Header */}
       <header className="fixed top-0 w-full z-50 glass-effect border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex justify-between items-center">
           <div className="flex items-center space-x-2 sm:space-x-3">
-            <img
-              src={IguanaLogo}
-              alt="IguanaFlow Logo"
-              className="w-6 h-6 sm:w-8 sm:h-8"
-            />
+            <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-6 h-6 sm:w-8 sm:h-8" />
             <span className="text-lg sm:text-xl font-bold gradient-text">
               IguanaFlow
             </span>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => openAuth("login")}
-              className="text-xs sm:text-sm"
-            >
+            <Button variant="ghost" onClick={() => openAuth("login")} className="text-xs sm:text-sm">
               Zaloguj się
             </Button>
-            <Button
-              onClick={() => openAuth("register")}
-              className="text-xs sm:text-sm"
-            >
+            <Button onClick={() => openAuth("register")} className="text-xs sm:text-sm">
               Rozpocznij
             </Button>
           </div>
@@ -227,33 +185,18 @@ const Landing = () => {
                     Kiedy ostatnio coś było dla Ciebie?
                   </span>
                 </h1>
-                <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">
-                  Aerial i praca z ciałem. Zero przypadków: poziom, energia i
-                  nastrój ustalają plan, a progres przychodzi naturalnie. Ego
-                  zapraszamy innym wejściem.
-                </p>
+                <p className="text-base sm:text-lg lg:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0">Trenujesz aerial? A może po prostu lubisz wyzwania sportowe? Rozpisane treningi? Wspierającą i motywującą społeczność? Wszystko w Twoim rytmie, ze świetnymi trenerkami i jasnymi instrukcjami czeka na Ciebie w Iguanie!</p>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start">
-                <Button
-                  onClick={() => openAuth("register")}
-                  size="lg"
-                  className="text-sm sm:text-base group"
-                >
+                <Button onClick={() => openAuth("register")} size="lg" className="text-sm sm:text-base group">
                   Wchodzę w to
                   <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
-                {(isInstallable || isIOSDevice) && !isInstalled && (
-                  <Button
-                    onClick={handleInstallClick}
-                    size="lg"
-                    variant="outline"
-                    className="text-sm sm:text-base border-primary/50 hover:bg-primary/10"
-                  >
+                {(isInstallable || isIOSDevice) && !isInstalled && <Button onClick={handleInstallClick} size="lg" variant="outline" className="text-sm sm:text-base border-primary/50 hover:bg-primary/10">
                     <Download className="mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     {isIOSDevice ? "Pobierz aplikację" : "Pobierz aplikację"}
-                  </Button>
-                )}
+                  </Button>}
               </div>
 
               {/* Social Proof */}
@@ -292,28 +235,14 @@ const Landing = () => {
 
             {/* Hero Image */}
             <div className="relative order-first lg:order-last">
-              {heroImage ? (
-                <LazyImage
-                  src={heroImage}
-                  alt="Aerial athlete performing"
-                  className="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover mx-auto shadow-2xl"
-                  skeletonClassName="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] mx-auto"
-                />
-              ) : (
-                <div className="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] bg-white/10 mx-auto animate-pulse" />
-              )}
+              {heroImage ? <LazyImage src={heroImage} alt="Aerial athlete performing" className="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] object-cover mx-auto shadow-2xl" skeletonClassName="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] mx-auto" /> : <div className="rounded-2xl w-[400px] h-[600px] sm:w-[450px] sm:h-[650px] lg:w-[500px] lg:h-[700px] bg-white/10 mx-auto animate-pulse" />}
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section - Conditionally rendered */}
-      {sections?.features?.is_active && (
-        <LazySection
-          threshold={0.1}
-          rootMargin="300px"
-          fallback={<FeaturesSkeleton />}
-        >
+      {sections?.features?.is_active && <LazySection threshold={0.1} rootMargin="300px" fallback={<FeaturesSkeleton />}>
           <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
@@ -330,11 +259,7 @@ const Landing = () => {
               </div>
 
               <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-                {features.map((feature, index) => (
-                  <Card
-                    key={index}
-                    className="glass-effect border-white/10 card-hover-effect"
-                  >
+                {features.map((feature, index) => <Card key={index} className="glass-effect border-white/10 card-hover-effect">
                     <CardContent className="p-6 flex flex-col items-center justify-center">
                       <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
                         {feature.icon}
@@ -346,17 +271,14 @@ const Landing = () => {
                         {feature.description}
                       </p>
                     </CardContent>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
             </div>
           </section>
-        </LazySection>
-      )}
+        </LazySection>}
 
       {/* Abs Challenges Section */}
-      {showAbsChallenges && absChallengesImage && (
-        <LazySection threshold={0.1} rootMargin="300px">
+      {showAbsChallenges && absChallengesImage && <LazySection threshold={0.1} rootMargin="300px">
           <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
             <div className="max-w-7xl mx-auto">
               <Card className="glass-effect-intense overflow-hidden">
@@ -382,23 +304,16 @@ const Landing = () => {
                     </Button>
                   </div>
                   <div className="relative h-64 sm:h-80 lg:h-auto">
-                    <LazyImage
-                      src={absChallengesImage}
-                      alt="28-Day Abs Challenge"
-                      className="w-full h-full object-cover"
-                      skeletonClassName="w-full h-full"
-                    />
+                    <LazyImage src={absChallengesImage} alt="28-Day Abs Challenge" className="w-full h-full object-cover" skeletonClassName="w-full h-full" />
                   </div>
                 </div>
               </Card>
             </div>
           </section>
-        </LazySection>
-      )}
+        </LazySection>}
 
       {/* Gallery Section - Conditionally rendered */}
-      {sections?.gallery?.is_active && (
-        <LazySection threshold={0.1} rootMargin="300px">
+      {sections?.gallery?.is_active && <LazySection threshold={0.1} rootMargin="300px">
           <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
@@ -410,45 +325,24 @@ const Landing = () => {
                   trenerek) wymiata na kole!
                 </p>
               </div>
-              <Suspense
-                fallback={
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                    {[...Array(12)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="aspect-[4/5] bg-white/10 rounded-2xl animate-pulse"
-                      ></div>
-                    ))}
-                  </div>
-                }
-              >
+              <Suspense fallback={<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    {[...Array(12)].map((_, i) => <div key={i} className="aspect-[4/5] bg-white/10 rounded-2xl animate-pulse"></div>)}
+                  </div>}>
                 <GallerySection />
               </Suspense>
             </div>
           </section>
-        </LazySection>
-      )}
+        </LazySection>}
 
       {/* Instagram Feed Section - Conditionally rendered */}
-      {sections?.instagram_feed?.is_active && (
-        <LazySection threshold={0.1} rootMargin="300px">
-          <Suspense
-            fallback={
-              <div className="h-96 w-full bg-white/5 rounded-2xl animate-pulse" />
-            }
-          >
+      {sections?.instagram_feed?.is_active && <LazySection threshold={0.1} rootMargin="300px">
+          <Suspense fallback={<div className="h-96 w-full bg-white/5 rounded-2xl animate-pulse" />}>
             <InstagramFeedSection />
           </Suspense>
-        </LazySection>
-      )}
+        </LazySection>}
 
       {/* Pricing Section - Conditionally rendered */}
-      {sections?.pricing?.is_active && (
-        <LazySection
-          threshold={0.1}
-          rootMargin="300px"
-          fallback={<PricingSkeleton />}
-        >
+      {sections?.pricing?.is_active && <LazySection threshold={0.1} rootMargin="300px" fallback={<PricingSkeleton />}>
           <section className="px-4 sm:px-6 py-12 sm:py-20 relative z-10">
             <div className="max-w-7xl mx-auto">
               <div className="text-center mb-12 sm:mb-16">
@@ -468,33 +362,19 @@ const Landing = () => {
               <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl -z-10" />
 
               <div className="grid md:grid-cols-2 gap-6 sm:gap-8 max-w-5xl mx-auto">
-                {pricingPlans.map((plan) => (
-                  <Card
-                    key={plan.id}
-                    className={`relative overflow-hidden transition-all duration-300 ${
-                      plan.is_popular
-                        ? "border-primary/50 shadow-lg shadow-primary/20 scale-105"
-                        : "border-white/10 hover:border-primary/30"
-                    } glass-effect hover:shadow-2xl`}
-                  >
+                {pricingPlans.map(plan => <Card key={plan.id} className={`relative overflow-hidden transition-all duration-300 ${plan.is_popular ? "border-primary/50 shadow-lg shadow-primary/20 scale-105" : "border-white/10 hover:border-primary/30"} glass-effect hover:shadow-2xl`}>
                     {/* Popular Badge - Animated */}
-                    {plan.is_popular && (
-                      <div className="absolute top-0 right-0 bg-gradient-to-r from-primary via-purple-500 to-primary text-white px-6 py-1.5 text-sm font-semibold animate-pulse">
+                    {plan.is_popular && <div className="absolute top-0 right-0 bg-gradient-to-r from-primary via-purple-500 to-primary text-white px-6 py-1.5 text-sm font-semibold animate-pulse">
                         <Sparkles className="inline w-4 h-4 mr-1" />
                         Najpopularniejszy
-                      </div>
-                    )}
+                      </div>}
 
                     {/* Decorative gradient orb */}
-                    {plan.is_popular && (
-                      <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />
-                    )}
+                    {plan.is_popular && <div className="absolute -top-20 -right-20 w-40 h-40 bg-primary/20 rounded-full blur-3xl" />}
 
                     <CardHeader className="pt-8 sm:pt-12 relative z-10">
                       <CardTitle className="text-2xl sm:text-3xl flex items-center gap-2">
-                        {plan.is_popular && (
-                          <Crown className="w-6 h-6 text-primary" />
-                        )}
+                        {plan.is_popular && <Crown className="w-6 h-6 text-primary" />}
                         {plan.name}
                       </CardTitle>
                       <CardDescription className="text-sm sm:text-base mt-2">
@@ -503,82 +383,47 @@ const Landing = () => {
 
                       {/* Price Display - Enhanced */}
                       <div className="mt-6 flex items-baseline gap-2">
-                        <span
-                          className={`text-5xl sm:text-6xl font-extrabold ${
-                            plan.is_popular
-                              ? "gradient-text-subtle"
-                              : "text-foreground"
-                          }`}
-                        >
+                        <span className={`text-5xl sm:text-6xl font-extrabold ${plan.is_popular ? "gradient-text-subtle" : "text-foreground"}`}>
                           {plan.price.split("/")[0]}
                         </span>
-                        {plan.price.includes("/") && (
-                          <span className="text-lg text-muted-foreground">
+                        {plan.price.includes("/") && <span className="text-lg text-muted-foreground">
                             /{plan.price.split("/")[1]}
-                          </span>
-                        )}
+                          </span>}
                       </div>
                     </CardHeader>
 
                     <CardContent className="relative z-10">
                       {/* Features List - With Icons */}
                       <ul className="space-y-4 mb-8">
-                        {plan.pricing_plan_features?.map((feature, idx) => (
-                          <li
-                            key={idx}
-                            className="flex items-start gap-3 text-sm sm:text-base group"
-                          >
-                            <div
-                              className={`flex-shrink-0 mt-0.5 ${
-                                plan.is_popular
-                                  ? "text-primary"
-                                  : "text-muted-foreground"
-                              } group-hover:text-primary transition-colors`}
-                            >
+                        {plan.pricing_plan_features?.map((feature, idx) => <li key={idx} className="flex items-start gap-3 text-sm sm:text-base group">
+                            <div className={`flex-shrink-0 mt-0.5 ${plan.is_popular ? "text-primary" : "text-muted-foreground"} group-hover:text-primary transition-colors`}>
                               {getFeatureIcon(feature.feature_key)}
                             </div>
                             <span className="text-muted-foreground group-hover:text-foreground transition-colors">
                               {getFeatureText(feature.feature_key)}
                             </span>
-                          </li>
-                        ))}
+                          </li>)}
                       </ul>
 
                       {/* CTA Button - Enhanced */}
-                      <Button
-                        onClick={() => openAuth("register")}
-                        className={`w-full text-sm sm:text-base group relative overflow-hidden ${
-                          plan.is_popular
-                            ? "bg-gradient-to-r from-primary to-purple-600 hover:shadow-lg hover:shadow-primary/50"
-                            : ""
-                        }`}
-                        variant={plan.is_popular ? "default" : "outline"}
-                        size="lg"
-                      >
-                        {plan.plan_key === "free"
-                          ? "Zacznij za darmo"
-                          : "Zdobądź Premium"}
+                      <Button onClick={() => openAuth("register")} className={`w-full text-sm sm:text-base group relative overflow-hidden ${plan.is_popular ? "bg-gradient-to-r from-primary to-purple-600 hover:shadow-lg hover:shadow-primary/50" : ""}`} variant={plan.is_popular ? "default" : "outline"} size="lg">
+                        {plan.plan_key === "free" ? "Zacznij za darmo" : "Zdobądź Premium"}
                         <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                       </Button>
 
                       {/* Subtle note for premium plan */}
-                      {plan.is_popular && (
-                        <p className="text-xs text-center text-muted-foreground mt-3">
+                      {plan.is_popular && <p className="text-xs text-center text-muted-foreground mt-3">
                           Anuluj kiedykolwiek • Bez karty kredytowej
-                        </p>
-                      )}
+                        </p>}
                     </CardContent>
-                  </Card>
-                ))}
+                  </Card>)}
               </div>
             </div>
           </section>
-        </LazySection>
-      )}
+        </LazySection>}
 
       {/* CTA Section */}
-      {sections?.cta?.is_active && (
-        <section className="px-4 sm:px-6 py-16 sm:py-24 relative z-10">
+      {sections?.cta?.is_active && <section className="px-4 sm:px-6 py-16 sm:py-24 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <Card className="glass-effect-intense border-primary/20">
               <CardContent className="p-8 sm:p-12">
@@ -591,19 +436,14 @@ const Landing = () => {
                   Dołącz do sportowców, którzy już doskonalą swoje umiejętności
                   z IguanaFlow.
                 </p>
-                <Button
-                  onClick={() => openAuth("register")}
-                  size="lg"
-                  className="text-sm sm:text-base group"
-                >
+                <Button onClick={() => openAuth("register")} size="lg" className="text-sm sm:text-base group">
                   Zacznij za darmo
                   <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </CardContent>
             </Card>
           </div>
-        </section>
-      )}
+        </section>}
 
       {/* Footer */}
       <footer className="border-t border-white/10 bg-background/50 backdrop-blur-lg relative z-10">
@@ -611,11 +451,7 @@ const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <img
-                  src={IguanaLogo}
-                  alt="IguanaFlow Logo"
-                  className="w-6 h-6"
-                />
+                <img src={IguanaLogo} alt="IguanaFlow Logo" className="w-6 h-6" />
                 <span className="text-lg font-bold gradient-text">
                   IguanaFlow
                 </span>
@@ -628,26 +464,17 @@ const Landing = () => {
               <h3 className="font-semibold mb-4">Firma</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <Link
-                    to="/about-us"
-                    className="hover:text-foreground transition-colors"
-                  >
+                  <Link to="/about-us" className="hover:text-foreground transition-colors">
                     O nas
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    to="/privacy-policy"
-                    className="hover:text-foreground transition-colors"
-                  >
+                  <Link to="/privacy-policy" className="hover:text-foreground transition-colors">
                     Polityka prywatności
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    to="/terms-of-use"
-                    className="hover:text-foreground transition-colors"
-                  >
+                  <Link to="/terms-of-use" className="hover:text-foreground transition-colors">
                     Regulamin
                   </Link>
                 </li>
@@ -657,12 +484,7 @@ const Landing = () => {
               <h3 className="font-semibold mb-4">Obserwuj nas</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <a
-                    href="https://instagram.com/iguana.flow"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-foreground transition-colors flex items-center gap-2 group"
-                  >
+                  <a href="https://instagram.com/iguana.flow" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors flex items-center gap-2 group">
                     <Instagram className="w-4 h-4 group-hover:scale-110 transition-transform" />
                     @iguana.flow
                   </a>
@@ -670,10 +492,7 @@ const Landing = () => {
               </ul>
               <div className="mt-4">
                 <h3 className="font-semibold mb-2">Kontakt</h3>
-                <a
-                  href="mailto:contact@iguanaflow.com"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
+                <a href="mailto:contact@iguanaflow.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
                   contact@iguanaflow.com
                 </a>
               </div>
@@ -686,20 +505,9 @@ const Landing = () => {
       </footer>
 
       {/* Modals */}
-      <AuthModal
-        open={authModalOpen}
-        onOpenChange={setAuthModalOpen}
-        mode={authMode}
-        onModeChange={setAuthMode}
-      />
+      <AuthModal open={authModalOpen} onOpenChange={setAuthModalOpen} mode={authMode} onModeChange={setAuthMode} />
       <CookiesBanner />
-      <PWAInstallInstructions
-        open={showIOSInstructions}
-        onOpenChange={setShowIOSInstructions}
-        isIOSDevice={isIOSDevice}
-      />
-    </div>
-  );
+      <PWAInstallInstructions open={showIOSInstructions} onOpenChange={setShowIOSInstructions} isIOSDevice={isIOSDevice} />
+    </div>;
 };
-
 export default Landing;
