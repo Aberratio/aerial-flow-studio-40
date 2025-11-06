@@ -61,6 +61,7 @@ interface SportLevel {
   level_number: number;
   level_name: string;
   point_limit: number;
+  description?: string;
   figures: Figure[];
   challenge_id?: string;
   challenges?: Challenge;
@@ -129,6 +130,7 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
           level_number,
           level_name,
           point_limit,
+          description,
           challenge_id,
           challenges (
             id,
@@ -181,6 +183,7 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
           level_number: level.level_number,
           level_name: level.level_name,
           point_limit: level.point_limit,
+          description: level.description,
           challenge_id: level.challenge_id,
           challenges: level.challenges,
           figures:
@@ -567,6 +570,11 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                         >
                           {level.level_name}
                         </h3>
+                        {level.description && isUnlocked && (
+                          <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                            {level.description}
+                          </p>
+                        )}
                         {isUnlocked && (
                           <p className="text-xs md:text-sm text-muted-foreground">
                             {level.figures.length} dostępnych figur
@@ -695,94 +703,9 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                     </div>
                   )}
 
-                  {/* Boss Figure - if exists */}
-                  {isUnlocked && level.figures.some((f) => f.is_boss) && (
-                    <div className="mt-4 mb-6">
-                      {level.figures
-                        .filter((f) => f.is_boss)
-                        .map((bossFigure) => {
-                          const figureProgress = getFigureProgress(bossFigure.id);
-                          const canPractice = canAccessFigure(bossFigure);
-                          
-                          return (
-                            <Card
-                              key={bossFigure.id}
-                              className="border-2 border-yellow-500/50 bg-gradient-to-br from-yellow-900/20 to-orange-900/20 cursor-pointer hover:border-yellow-400/70 transition-all"
-                              onClick={() => handleFigureClick(bossFigure, canPractice)}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-4">
-                                  {/* Boss Icon/Image */}
-                                  <div className="relative flex-shrink-0">
-                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-yellow-500/50">
-                                      {bossFigure.image_url ? (
-                                        <img
-                                          src={bossFigure.image_url}
-                                          alt={bossFigure.name}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="w-full h-full bg-yellow-500/10 flex items-center justify-center text-3xl">
-                                          👑
-                                        </div>
-                                      )}
-                                    </div>
-                                    {/* Boss Badge */}
-                                    <Badge className="absolute -top-2 -right-2 bg-yellow-500 text-black font-bold">
-                                      BOSS
-                                    </Badge>
-                                  </div>
-
-                                  {/* Boss Info */}
-                                  <div className="flex-1">
-                                    <h4 className="text-lg font-bold text-yellow-400 mb-1">
-                                      {bossFigure.name}
-                                    </h4>
-
-                                    {/* Boss Description */}
-                                    {bossFigure.boss_description && (
-                                      <p className="text-sm text-muted-foreground mb-2">
-                                        {bossFigure.boss_description}
-                                      </p>
-                                    )}
-
-                                    {/* Boss Requirements */}
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                      {bossFigure.level_hold_time_seconds && (
-                                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
-                                          ⏱️ {bossFigure.level_hold_time_seconds}s
-                                        </Badge>
-                                      )}
-                                      {bossFigure.level_reps && (
-                                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30">
-                                          🔁 {bossFigure.level_reps} reps
-                                        </Badge>
-                                      )}
-
-                                      {/* Boss Completion Status */}
-                                      {figureProgress?.status === "completed" ? (
-                                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                          ✅ Ukończone
-                                        </Badge>
-                                      ) : (
-                                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                                          ⚔️ Wymaga zaliczenia
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                    </div>
-                  )}
-
-                  {/* Simplified Figure Grid - Only for Unlocked Levels */}
+                  {/* Regular Figures */}
                   {isUnlocked && (
                     <>
-                      {/* Regular Figures */}
                       <div className="mt-4">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                           {level.figures.filter(f => !f.is_boss && f.type !== 'transitions').slice(0, 8).map((figure) => {
@@ -951,6 +874,90 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                       </div>
                     )}
                   </>
+                  )}
+
+                  {/* Boss Figure - wyświetlana na samym dole */}
+                  {isUnlocked && level.figures.some((f) => f.is_boss) && (
+                    <div className="mt-6">
+                      {level.figures
+                        .filter((f) => f.is_boss)
+                        .map((bossFigure) => {
+                          const figureProgress = getFigureProgress(bossFigure.id);
+                          const canPractice = canAccessFigure(bossFigure);
+                          
+                          return (
+                            <Card
+                              key={bossFigure.id}
+                              className="border-2 border-yellow-500/50 bg-gradient-to-br from-yellow-900/20 to-orange-900/20 cursor-pointer hover:border-yellow-400/70 transition-all"
+                              onClick={() => handleFigureClick(bossFigure, canPractice)}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-start gap-4">
+                                  {/* Boss Icon/Image */}
+                                  <div className="relative flex-shrink-0">
+                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-yellow-500/50">
+                                      {bossFigure.image_url ? (
+                                        <img
+                                          src={bossFigure.image_url}
+                                          alt={bossFigure.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full bg-yellow-500/10 flex items-center justify-center text-3xl">
+                                          👑
+                                        </div>
+                                      )}
+                                    </div>
+                                    {/* Boss Badge */}
+                                    <Badge className="absolute -top-2 -right-2 bg-yellow-500 text-black font-bold">
+                                      BOSS
+                                    </Badge>
+                                  </div>
+
+                                  {/* Boss Info */}
+                                  <div className="flex-1">
+                                    <h4 className="text-lg font-bold text-yellow-400 mb-1">
+                                      {bossFigure.name}
+                                    </h4>
+
+                                    {/* Boss Description */}
+                                    {bossFigure.boss_description && (
+                                      <p className="text-sm text-muted-foreground mb-2">
+                                        {bossFigure.boss_description}
+                                      </p>
+                                    )}
+
+                                    {/* Boss Requirements */}
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                      {bossFigure.level_hold_time_seconds && (
+                                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
+                                          ⏱️ {bossFigure.level_hold_time_seconds}s
+                                        </Badge>
+                                      )}
+                                      {bossFigure.level_reps && (
+                                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30">
+                                          🔁 {bossFigure.level_reps} reps
+                                        </Badge>
+                                      )}
+
+                                      {/* Boss Completion Status */}
+                                      {figureProgress?.status === "completed" ? (
+                                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                                          ✅ Ukończone
+                                        </Badge>
+                                      ) : (
+                                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
+                                          ⚔️ Wymaga zaliczenia
+                                        </Badge>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                    </div>
                   )}
 
                   {/* Locked Level Message */}

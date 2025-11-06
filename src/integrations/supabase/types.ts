@@ -1382,6 +1382,7 @@ export type Database = {
           challenge_id: string | null
           created_at: string
           created_by: string | null
+          description: string | null
           id: string
           level_name: string
           level_number: number
@@ -1394,6 +1395,7 @@ export type Database = {
           challenge_id?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           id?: string
           level_name: string
           level_number: number
@@ -1406,6 +1408,7 @@ export type Database = {
           challenge_id?: string | null
           created_at?: string
           created_by?: string | null
+          description?: string | null
           id?: string
           level_name?: string
           level_number?: number

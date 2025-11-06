@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,6 +19,7 @@ interface SportLevel {
   level_number: number;
   level_name: string;
   point_limit: number;
+  description?: string;
   created_at: string;
   figure_count: number;
   challenge_id?: string;
@@ -80,6 +82,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [levelName, setLevelName] = useState('');
   const [levelNumber, setLevelNumber] = useState<number>(0);
   const [pointLimit, setPointLimit] = useState<number>(0);
+  const [levelDescription, setLevelDescription] = useState('');
   const [selectedChallenge, setSelectedChallenge] = useState<string>('none');
   const [selectedStatus, setSelectedStatus] = useState<'draft' | 'published'>('draft');
   const [selectedFigures, setSelectedFigures] = useState<string[]>([]);
@@ -92,6 +95,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [editLevelName, setEditLevelName] = useState('');
   const [editLevelNumber, setEditLevelNumber] = useState<number>(0);
   const [editPointLimit, setEditPointLimit] = useState<number>(0);
+  const [editLevelDescription, setEditLevelDescription] = useState('');
   const [editSelectedChallenge, setEditSelectedChallenge] = useState<string>('none');
   const [editSelectedStatus, setEditSelectedStatus] = useState<'draft' | 'published'>('draft');
   
@@ -292,6 +296,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
           sport_category: selectedSport,
           level_number: levelNumber,
           level_name: levelName.trim(),
+          description: levelDescription.trim() || null,
           point_limit: pointLimit,
           challenge_id: selectedChallenge === 'none' ? null : selectedChallenge || null,
           status: selectedStatus,
@@ -305,6 +310,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
       setLevelName('');
       setLevelNumber(0);
       setPointLimit(0);
+      setLevelDescription('');
       setSelectedChallenge('none');
       setSelectedStatus('draft');
       fetchLevelsForSport();
@@ -336,6 +342,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     setEditLevelName(level.level_name);
     setEditLevelNumber(level.level_number);
     setEditPointLimit(level.point_limit);
+    setEditLevelDescription(level.description || '');
     setEditSelectedChallenge(level.challenge_id || 'none');
     setEditSelectedStatus(level.status);
     setIsEditLevelOpen(true);
@@ -350,6 +357,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
         .update({
           level_name: editLevelName.trim(),
           level_number: editLevelNumber,
+          description: editLevelDescription.trim() || null,
           point_limit: editPointLimit,
           challenge_id: editSelectedChallenge === 'none' ? null : editSelectedChallenge || null,
           status: editSelectedStatus
@@ -582,6 +590,17 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                       />
                     </div>
                     <div>
+                      <Label htmlFor="levelDescription" className="text-white">Opis poziomu (opcjonalny)</Label>
+                      <Textarea
+                        id="levelDescription"
+                        value={levelDescription}
+                        onChange={(e) => setLevelDescription(e.target.value)}
+                        placeholder="Opisz czego użytkownicy nauczą się na tym poziomie..."
+                        className="bg-white/5 border-white/10 text-white min-h-[80px]"
+                        rows={3}
+                      />
+                    </div>
+                    <div>
                       <Label htmlFor="selectedChallenge" className="text-white">Associated Challenge (Optional)</Label>
                       <Select value={selectedChallenge} onValueChange={setSelectedChallenge}>
                         <SelectTrigger className="bg-white/5 border-white/10 text-white">
@@ -739,6 +758,17 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                 onChange={(e) => setEditLevelName(e.target.value)}
                 placeholder="e.g., Beginner, Intermediate, Advanced"
                 className="bg-white/5 border-white/10 text-white"
+              />
+            </div>
+            <div>
+              <Label htmlFor="editLevelDescription" className="text-white">Opis poziomu (opcjonalny)</Label>
+              <Textarea
+                id="editLevelDescription"
+                value={editLevelDescription}
+                onChange={(e) => setEditLevelDescription(e.target.value)}
+                placeholder="Opisz czego użytkownicy nauczą się na tym poziomie..."
+                className="bg-white/5 border-white/10 text-white min-h-[80px]"
+                rows={3}
               />
             </div>
             <div>
