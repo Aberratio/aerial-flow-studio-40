@@ -1073,8 +1073,6 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                         )}
                       </div>
                     )}
-                </>
-              )}
             </CardContent>
           </Card>
         );

@@ -8,10 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Edit, Trash2, Save, X, Users, Search, Filter } from "lucide-react";
+import { Plus, Edit, Trash2, Save, X, Users, Search, Filter, Award } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  points: number;
+}
 
 interface SportLevel {
   id: string;
@@ -74,8 +82,11 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const [isCreateLevelOpen, setIsCreateLevelOpen] = useState(false);
   const [isEditFiguresOpen, setIsEditFiguresOpen] = useState(false);
   const [isEditLevelOpen, setIsEditLevelOpen] = useState(false);
+  const [isEditAchievementsOpen, setIsEditAchievementsOpen] = useState(false);
   const [selectedLevel, setSelectedLevel] = useState<SportLevel | null>(null);
   const [levelFigures, setLevelFigures] = useState<LevelFigure[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Form states
@@ -114,6 +125,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     fetchFigures();
     fetchChallenges();
     fetchSportCategories();
+    fetchAchievements();
   }, [user]);
 
   const fetchSportCategories = async () => {
@@ -495,6 +507,84 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
     });
   };
 
+  const fetchAchievements = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('achievements')
+        .select('id, name, description, icon, points')
+        .order('points');
+
+      if (error) throw error;
+      setAchievements(data || []);
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+      toast.error('Failed to fetch achievements');
+    }
+  };
+
+  const fetchLevelAchievements = async (levelId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('sport_level_achievements')
+        .select('achievement_id')
+        .eq('sport_level_id', levelId);
+
+      if (error) throw error;
+      setSelectedAchievements(data?.map(item => item.achievement_id) || []);
+    } catch (error) {
+      console.error('Error fetching level achievements:', error);
+      toast.error('Failed to fetch level achievements');
+    }
+  };
+
+  const openEditAchievements = async (level: SportLevel) => {
+    setSelectedLevel(level);
+    await fetchLevelAchievements(level.id);
+    setIsEditAchievementsOpen(true);
+  };
+
+  const saveLevelAchievements = async () => {
+    if (!selectedLevel || !user) return;
+
+    try {
+      // First, delete existing associations
+      await supabase
+        .from('sport_level_achievements')
+        .delete()
+        .eq('sport_level_id', selectedLevel.id);
+
+      // Then, insert new associations
+      if (selectedAchievements.length > 0) {
+        const achievementData = selectedAchievements.map(achievementId => ({
+          sport_level_id: selectedLevel.id,
+          achievement_id: achievementId,
+          created_by: user.id
+        }));
+
+        const { error } = await supabase
+          .from('sport_level_achievements')
+          .insert(achievementData);
+
+        if (error) throw error;
+      }
+
+      toast.success('Level achievements updated successfully');
+      setIsEditAchievementsOpen(false);
+      fetchLevelsForSport();
+    } catch (error) {
+      console.error('Error saving level achievements:', error);
+      toast.error('Failed to save level achievements');
+    }
+  };
+
+  const handleAchievementToggle = (achievementId: string) => {
+    setSelectedAchievements(prev => 
+      prev.includes(achievementId)
+        ? prev.filter(id => id !== achievementId)
+        : [...prev, achievementId]
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -705,6 +795,15 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                       >
                         <Users className="w-4 h-4 mr-1" />
                         Manage Figures ({level.figure_count})
+                      </Button>
+                      <Button
+                        onClick={() => openEditAchievements(level)}
+                        variant="outline"
+                        size="sm"
+                        className="border-yellow-400/30 text-yellow-400 hover:bg-yellow-400/10"
+                      >
+                        <Award className="w-4 h-4 mr-1" />
+                        Odznaki
                       </Button>
                       <Button
                         onClick={() => deleteLevel(level.id)}
@@ -1102,6 +1201,97 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                 className="bg-primary hover:bg-primary/90 text-primary-foreground"
               >
                 Save Hold Time
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Achievements Dialog */}
+      <Dialog open={isEditAchievementsOpen} onOpenChange={setIsEditAchievementsOpen}>
+        <DialogContent className="max-w-2xl bg-gray-900 border-white/10 max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Award className="w-5 h-5 text-yellow-400" />
+              Zarządzaj odznakami dla {selectedLevel?.level_name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Wybierz odznaki, które użytkownik otrzyma po ukończeniu wszystkich figurek na tym poziomie.
+            </p>
+            
+            {selectedAchievements.length > 0 && (
+              <div className="p-3 bg-yellow-900/20 border border-yellow-400/20 rounded-lg">
+                <p className="text-sm text-yellow-400 font-medium mb-2">
+                  Wybrane odznaki: {selectedAchievements.length}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedAchievements.map(achievementId => {
+                    const achievement = achievements.find(a => a.id === achievementId);
+                    if (!achievement) return null;
+                    return (
+                      <Badge key={achievement.id} className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
+                        {achievement.icon} {achievement.name} (+{achievement.points} pts)
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label className="text-white">Dostępne odznaki</Label>
+              {achievements.map(achievement => (
+                <div
+                  key={achievement.id}
+                  className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                    selectedAchievements.includes(achievement.id)
+                      ? 'bg-yellow-500/10 border-yellow-400/30 hover:bg-yellow-500/15'
+                      : 'bg-white/5 border-white/10 hover:bg-white/10'
+                  }`}
+                  onClick={() => handleAchievementToggle(achievement.id)}
+                >
+                  <Checkbox
+                    checked={selectedAchievements.includes(achievement.id)}
+                    onCheckedChange={() => handleAchievementToggle(achievement.id)}
+                    className="border-white/20"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xl">{achievement.icon}</span>
+                      <p className="font-medium text-white">{achievement.name}</p>
+                      <Badge className="ml-auto bg-purple-500/20 text-purple-400 border-purple-400/30">
+                        +{achievement.points} pts
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{achievement.description}</p>
+                  </div>
+                </div>
+              ))}
+              
+              {achievements.length === 0 && (
+                <div className="text-center py-8">
+                  <Award className="w-12 h-12 text-muted-foreground mx-auto mb-3 opacity-50" />
+                  <p className="text-muted-foreground">Brak dostępnych odznak</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Najpierw utwórz odznaki w panelu zarządzania osiągnięciami
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-2 pt-4 border-t border-white/10">
+              <Button onClick={saveLevelAchievements} className="flex-1 bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30 border-yellow-400/30">
+                <Save className="w-4 h-4 mr-2" />
+                Zapisz odznaki
+              </Button>
+              <Button 
+                onClick={() => setIsEditAchievementsOpen(false)} 
+                variant="outline"
+                className="border-white/10"
+              >
+                Anuluj
               </Button>
             </div>
           </div>
