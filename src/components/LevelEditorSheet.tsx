@@ -57,6 +57,8 @@ interface LevelFigureParams {
   hold_time_seconds?: number;
   reps?: number;
   notes?: string;
+  sublevel?: number;
+  sublevel_description?: string;
 }
 
 interface LevelEditorSheetProps {
@@ -199,6 +201,8 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
         hold_time_seconds: lf.hold_time_seconds || undefined,
         reps: lf.reps || undefined,
         notes: lf.notes || undefined,
+        sublevel: lf.sublevel || 1,
+        sublevel_description: lf.sublevel_description || undefined,
       }));
 
       setSelectedFigures(figureParams);
@@ -299,6 +303,7 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
       figure_id: figureId,
       order_index: selectedFigures.length,
       is_boss: false,
+      sublevel: 1, // Default sublevel
     };
 
     setSelectedFigures([...selectedFigures, newFigure]);
@@ -398,6 +403,8 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
             hold_time_seconds: fig.hold_time_seconds || null,
             reps: fig.reps || null,
             notes: fig.notes || null,
+            sublevel: fig.sublevel || 1,
+            sublevel_description: fig.sublevel_description || null,
             created_by: user?.id,
           }));
 
@@ -805,6 +812,47 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
                                       }
                                       rows={2}
                                     />
+                                  </div>
+
+                                  <div className="pt-4 border-t space-y-4">
+                                    <h4 className="text-sm font-semibold">Subpoziom</h4>
+                                    <div className="grid grid-cols-2 gap-3">
+                                      <div className="space-y-2">
+                                        <Label>Numer Subpoziomu</Label>
+                                        <Input
+                                          type="number"
+                                          min="1"
+                                          placeholder="1"
+                                          value={figParam.sublevel || 1}
+                                          onChange={(e) =>
+                                            updateFigureParams(figParam.figure_id, {
+                                              sublevel: e.target.value ? parseInt(e.target.value) : 1,
+                                            })
+                                          }
+                                        />
+                                      </div>
+                                      <div className="space-y-2">
+                                        <Label className="text-xs text-muted-foreground">Grupuj figurki</Label>
+                                        <p className="text-xs text-muted-foreground">
+                                          Figurki z tym samym numerem będą zgrupowane
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                      <Label>Opis Subpoziomu (opcjonalnie)</Label>
+                                      <Textarea
+                                        placeholder="np. Rozgrzewka - podstawy"
+                                        value={figParam.sublevel_description || ""}
+                                        onChange={(e) =>
+                                          updateFigureParams(figParam.figure_id, { sublevel_description: e.target.value })
+                                        }
+                                        rows={2}
+                                      />
+                                      <p className="text-xs text-muted-foreground">
+                                        Opis będzie wyświetlony raz na początku subpoziomu
+                                      </p>
+                                    </div>
                                   </div>
                                 </CollapsibleContent>
                               </Collapsible>

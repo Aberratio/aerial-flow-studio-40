@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, CheckCircle, ExternalLink, Timer } from "lucide-react";
+import { X, CheckCircle, ExternalLink, Timer, Play, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { FigureCompletionCelebration } from "./FigureCompletionCelebration";
 import { useDictionary } from "@/contexts/DictionaryContext";
 import { FigureHoldTimer } from "./FigureHoldTimer";
+import { CreatePostModal } from "./CreatePostModal";
 
 interface FigurePreviewModalProps {
   figure: {
@@ -65,6 +66,8 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showTimer, setShowTimer] = useState(false);
+  const [showFullscreenVideo, setShowFullscreenVideo] = useState(false);
+  const [showCreatePost, setShowCreatePost] = useState(false);
 
   // Fetch figure progress
   const fetchFigureProgress = async () => {
@@ -129,8 +132,14 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
     if (isOpen && figure) {
       fetchFigureProgress();
       setShowTimer(false); // Reset timer when modal opens
+      setShowFullscreenVideo(false); // Reset video when modal opens
     }
   }, [isOpen, figure, user]);
+
+  const canAddOwnVersion = () => {
+    // Only if NOT a 'core' exercise
+    return figure?.type !== 'core';
+  };
 
   if (!figure) return null;
 
@@ -144,19 +153,32 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl w-full p-0 bg-black/95 border-white/10">
         <div className="relative">
-          {/* Image */}
-          <div className="w-full aspect-video bg-black/50 flex items-center justify-center">
+          {/* Image/Video Display with Play Button */}
+          <div className="relative w-full min-h-[400px] bg-black/50 flex items-center justify-center">
             {figure.image_url ? (
-              <img
-                src={figure.image_url}
-                alt={figure.name}
-                className="w-full h-full object-cover"
-              />
+              <>
+                <img
+                  src={figure.image_url}
+                  alt={figure.name}
+                  className="w-full h-full object-contain"
+                />
+                {/* Play button overlay if video exists */}
+                {figure.video_url && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center bg-black/40 hover:bg-black/60 cursor-pointer transition-all group"
+                    onClick={() => setShowFullscreenVideo(true)}
+                  >
+                    <div className="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Play className="w-10 h-10 text-white ml-1" fill="white" />
+                    </div>
+                  </div>
+                )}
+              </>
             ) : figure.video_url ? (
               <video
                 src={figure.video_url}
                 controls
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             ) : (
               <div className="text-center text-gray-400">
@@ -326,6 +348,19 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
               </div>
             )}
 
+            {/* Add Own Version Button */}
+            {canAddOwnVersion() && user && (
+              <div className="mb-4">
+                <Button
+                  onClick={() => setShowCreatePost(true)}
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Dodaj swoją wersję tego ćwiczenia
+                </Button>
+              </div>
+            )}
+
             {/* Completed Status Button */}
             {user && (
               <div className="mb-6">
@@ -366,6 +401,38 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
         </div>
       </DialogContent>
     </Dialog>
+
+    {/* Fullscreen Video Dialog */}
+    <Dialog open={showFullscreenVideo} onOpenChange={setShowFullscreenVideo}>
+      <DialogContent className="max-w-7xl w-full h-[90vh] bg-black/95 p-0 border-white/10">
+        <video 
+          src={figure?.video_url} 
+          controls 
+          autoPlay 
+          playsInline
+          webkit-playsinline="true"
+          className="w-full h-full" 
+        />
+      </DialogContent>
+    </Dialog>
+
+    {/* Create Post Modal */}
+    {showCreatePost && figure && (
+      <CreatePostModal
+        isOpen={showCreatePost}
+        onClose={() => setShowCreatePost(false)}
+        onPostCreated={() => {
+          setShowCreatePost(false);
+          toast.success("Post utworzony! Twoja wersja ćwiczenia została opublikowana.");
+        }}
+        preselectedFigure={{
+          id: figure.id,
+          name: figure.name,
+          difficulty_level: figure.difficulty_level,
+          image_url: figure.image_url || undefined
+        }}
+      />
+    )}
     </>
   );
 };

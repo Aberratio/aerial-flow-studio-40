@@ -764,6 +764,8 @@ export type Database = {
           notes: string | null
           order_index: number
           reps: number | null
+          sublevel: number
+          sublevel_description: string | null
         }
         Insert: {
           boss_description?: string | null
@@ -777,6 +779,8 @@ export type Database = {
           notes?: string | null
           order_index?: number
           reps?: number | null
+          sublevel?: number
+          sublevel_description?: string | null
         }
         Update: {
           boss_description?: string | null
@@ -790,6 +794,8 @@ export type Database = {
           notes?: string | null
           order_index?: number
           reps?: number | null
+          sublevel?: number
+          sublevel_description?: string | null
         }
         Relationships: [
           {
@@ -1376,6 +1382,52 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      sport_level_achievements: {
+        Row: {
+          achievement_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          sport_level_id: string
+        }
+        Insert: {
+          achievement_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          sport_level_id: string
+        }
+        Update: {
+          achievement_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          sport_level_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_level_achievements_achievement_id_fkey"
+            columns: ["achievement_id"]
+            isOneToOne: false
+            referencedRelation: "achievements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sport_level_achievements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sport_level_achievements_sport_level_id_fkey"
+            columns: ["sport_level_id"]
+            isOneToOne: false
+            referencedRelation: "sport_levels"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sport_levels: {
         Row: {
@@ -2596,6 +2648,10 @@ export type Database = {
       }
       award_challenge_completion_points: {
         Args: { p_challenge_id: string; p_user_id: string }
+        Returns: undefined
+      }
+      award_sport_level_achievements: {
+        Args: { p_sport_level_id: string; p_user_id: string }
         Returns: undefined
       }
       can_view_user_content: {

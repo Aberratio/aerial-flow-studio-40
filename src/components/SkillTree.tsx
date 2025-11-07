@@ -40,6 +40,8 @@ interface Figure {
   level_reps?: number;
   level_notes?: string;
   order_index?: number;
+  sublevel?: number;
+  sublevel_description?: string;
   // Transitions fields
   transition_from_figure_id?: string;
   transition_to_figure_id?: string;
@@ -65,6 +67,14 @@ interface SportLevel {
   figures: Figure[];
   challenge_id?: string;
   challenges?: Challenge;
+  achievements?: Achievement[];
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  icon: string;
+  points: number;
 }
 
 interface Challenge {
@@ -120,7 +130,7 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
     if (!user) return;
 
     try {
-      // Fetch sport levels with their figures and challenges
+      // Fetch sport levels with their figures, challenges, and achievements
       const { data: levelsData, error: levelsError } = await supabase
         .from("sport_levels")
         .select(
@@ -149,6 +159,8 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
             hold_time_seconds,
             reps,
             notes,
+            sublevel,
+            sublevel_description,
             figures (
               id,
               name,
@@ -175,6 +187,30 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
 
       if (levelsError) throw levelsError;
 
+      // Fetch achievements for levels
+      const levelIds = levelsData?.map(l => l.id) || [];
+      const { data: achievementsData } = await supabase
+        .from("sport_level_achievements")
+        .select(`
+          sport_level_id,
+          achievements (
+            id,
+            name,
+            icon,
+            points
+          )
+        `)
+        .in('sport_level_id', levelIds);
+
+      // Map achievements to levels
+      const achievementsByLevel: { [key: string]: Achievement[] } = {};
+      achievementsData?.forEach(sla => {
+        if (!achievementsByLevel[sla.sport_level_id]) {
+          achievementsByLevel[sla.sport_level_id] = [];
+        }
+        achievementsByLevel[sla.sport_level_id].push(sla.achievements as Achievement);
+      });
+
       // Format the data to include figures with level-specific parameters
       const formattedLevels =
         levelsData?.map((level) => ({
@@ -186,6 +222,7 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
           description: level.description,
           challenge_id: level.challenge_id,
           challenges: level.challenges,
+          achievements: achievementsByLevel[level.id] || [],
           figures:
             level.level_figures
               ?.sort((a: any, b: any) => a.order_index - b.order_index)
@@ -198,6 +235,8 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                 level_reps: lf.reps,
                 level_notes: lf.notes,
                 order_index: lf.order_index,
+                sublevel: lf.sublevel || 1,
+                sublevel_description: lf.sublevel_description,
               }))
               ?.filter(Boolean) || [],
         })) || [];
@@ -356,6 +395,37 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
     // Refresh data to update points immediately
     await fetchSportLevelsAndProgress();
     await fetchUserPoints();
+    
+    // Check and award level achievements
+    await checkAndAwardLevelAchievements();
+  };
+
+  // Check if all figures in a level are completed and award achievements
+  const checkAndAwardLevelAchievements = async () => {
+    if (!user) return;
+
+    for (const level of sportLevels) {
+      const progress = getLevelProgress(level);
+      
+      // Level is 100% complete
+      if (progress === 100 && level.achievements && level.achievements.length > 0) {
+        try {
+          const { error } = await supabase.rpc('award_sport_level_achievements', {
+            p_user_id: user.id,
+            p_sport_level_id: level.id
+          });
+          
+          if (!error) {
+            toast({
+              title: "🎉 Gratulacje!",
+              description: `Ukończyłeś poziom ${level.level_name} i zdobyłeś odznaki!`,
+            });
+          }
+        } catch (error) {
+          console.error('Error awarding achievements:', error);
+        }
+      }
+    }
   };
 
   const getFigureProgress = (figureId: string) => {
@@ -426,6 +496,24 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
   const canAccessFigure = (figure: Figure) => {
     if (!requiresPremiumAccess(figure)) return true;
     return hasPremiumAccess;
+  };
+
+  // Check if user can access a sublevel
+  const canAccessSublevel = (level: SportLevel, sublevel: number) => {
+    if (adminPreviewMode) return true; // Admin can access all sublevels
+    if (sublevel === 1) return true; // First sublevel always accessible
+    
+    // Check if all figures from previous sublevel are completed
+    const previousSublevelFigures = level.figures.filter(f => 
+      f.sublevel === sublevel - 1 && !f.is_boss
+    );
+    
+    const allCompleted = previousSublevelFigures.every(fig => {
+      const progress = getFigureProgress(fig.id);
+      return progress?.status === 'completed';
+    });
+    
+    return allCompleted;
   };
 
   // Join challenge function
@@ -703,88 +791,200 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                     </div>
                   )}
 
-                  {/* Regular Figures */}
-                  {isUnlocked && (
-                    <>
-                      <div className="mt-4">
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                          {level.figures.filter(f => !f.is_boss && f.type !== 'transitions').slice(0, 8).map((figure) => {
-                          const figureProgress = getFigureProgress(figure.id);
-                          const canPractice =
-                            isUnlocked && canAccessFigure(figure);
-
-                          return (
-                            <div
-                              key={figure.id}
-                              className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
-                                canPractice ? "hover:scale-105" : "opacity-60"
-                              }`}
-                              onClick={() =>
-                                handleFigureClick(figure, canPractice)
-                              }
-                            >
-                              {figure.image_url ? (
-                                <img
-                                  src={figure.image_url}
-                                  alt={figure.name}
-                                  className="w-full h-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-white/5 flex items-center justify-center">
-                                  <span className="text-2xl">🤸</span>
-                                </div>
-                              )}
-
-                              {/* Status Overlay */}
-                              <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                                {figureProgress?.status === "completed" ? (
-                                  <CheckCircle className="w-8 h-8 text-green-400" />
-                                ) : figureProgress?.status === "for_later" ? (
-                                  <Bookmark className="w-6 h-6 text-blue-400" />
-                                ) : figureProgress?.status === "failed" ? (
-                                  <AlertCircle className="w-6 h-6 text-red-400" />
-                                ) : canPractice ? (
-                                  <Circle className="w-6 h-6 text-white/60" />
-                                ) : (
-                                  <Lock className="w-6 h-6 text-gray-400" />
-                                )}
-                              </div>
-
-                              {/* Figure Name and Hold Time */}
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-                                <p className="text-white text-xs font-medium truncate">
-                                  {figure.name}
-                                </p>
-                                <div className="flex items-center gap-1 mt-1 flex-wrap">
-                                  {/* Level-specific hold time has priority */}
-                                  {(figure.level_hold_time_seconds || figure.hold_time_seconds) && (
-                                    <div className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                                      {figure.level_hold_time_seconds || figure.hold_time_seconds}s
-                                    </div>
-                                  )}
-                                  {figure.level_reps && (
-                                    <div className="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
-                                      {figure.level_reps}x
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-
-                        {level.figures.filter(f => !f.is_boss && f.type !== 'transitions').length > 8 && (
-                          <div className="aspect-square rounded-lg border-2 border-dashed border-white/20 flex items-center justify-center">
-                            <span className="text-white/60 text-sm font-medium">
-                              +{level.figures.filter(f => !f.is_boss && f.type !== 'transitions').length - 8} more
-                            </span>
-                          </div>
-                        )}
+                  {/* Achievements Section for Level */}
+                  {level.achievements && level.achievements.length > 0 && isUnlocked && (
+                    <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-400/20 rounded-lg">
+                      <h4 className="text-yellow-400 font-medium mb-2 flex items-center gap-2">
+                        🏆 Odznaki za ukończenie:
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {level.achievements.map(achievement => (
+                          <Badge key={achievement.id} className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
+                            {achievement.icon} {achievement.name} (+{achievement.points} pts)
+                          </Badge>
+                        ))}
                       </div>
                     </div>
+                  )}
 
-                    {/* Transitions Section - Below dashed line */}
-                    {level.figures.some(f => f.type === 'transitions') && (
+                  {/* Regular Figures - Grouped by Sublevel */}
+                  {isUnlocked && (
+                    <>
+                      {/* Group figures by sublevel */}
+                      {Object.entries(
+                        level.figures
+                          .filter(f => !f.is_boss && f.type !== 'transitions')
+                          .reduce((acc, fig) => {
+                            const sublevelKey = fig.sublevel || 1;
+                            if (!acc[sublevelKey]) acc[sublevelKey] = [];
+                            acc[sublevelKey].push(fig);
+                            return acc;
+                          }, {} as { [key: number]: Figure[] })
+                      )
+                      .sort(([a], [b]) => Number(a) - Number(b))
+                      .map(([sublevelStr, figures], idx) => {
+                        const sublevelNum = Number(sublevelStr);
+                        const canAccess = canAccessSublevel(level, sublevelNum);
+                        const firstFigure = figures[0];
+                        
+                        return (
+                          <div key={sublevelStr}>
+                            {/* Separator between sublevels (not before first) */}
+                            {idx > 0 && (
+                              <div className="my-4 border-t-2 border-dashed border-purple-400/30" />
+                            )}
+                            
+                            {/* Sublevel Header */}
+                            {sublevelNum > 1 && (
+                              <div className="mb-3">
+                                <div className="flex items-center gap-2">
+                                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30">
+                                    Podpoziom {sublevelStr}
+                                  </Badge>
+                                  {!canAccess && (
+                                    <Badge className="bg-orange-500/20 text-orange-400 border-orange-400/30">
+                                      <Lock className="w-3 h-3 mr-1" />
+                                      Zablokowane
+                                    </Badge>
+                                  )}
+                                </div>
+                                {firstFigure?.sublevel_description && canAccess && (
+                                  <p className="text-sm text-muted-foreground mt-1 ml-1">
+                                    {firstFigure.sublevel_description}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                            
+                            {/* Grid with figures */}
+                            <div className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 ${
+                              !canAccess ? 'opacity-50 pointer-events-none' : ''
+                            }`}>
+                              {figures.map((figure) => {
+                                const figureProgress = getFigureProgress(figure.id);
+                                const canPractice = isUnlocked && canAccessFigure(figure) && canAccess;
+
+                                return (
+                                  <div
+                                    key={figure.id}
+                                    className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
+                                      canPractice ? "hover:scale-105" : "opacity-60"
+                                    }`}
+                                    onClick={() =>
+                                      handleFigureClick(figure, canPractice)
+                                    }
+                                  >
+                                    {figure.image_url ? (
+                                      <img
+                                        src={figure.image_url}
+                                        alt={figure.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-white/5 flex items-center justify-center">
+                                        <span className="text-2xl">🤸</span>
+                                      </div>
+                                    )}
+
+                                    {/* Status Overlay */}
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                      {figureProgress?.status === "completed" ? (
+                                        <CheckCircle className="w-8 h-8 text-green-400" />
+                                      ) : figureProgress?.status === "for_later" ? (
+                                        <Bookmark className="w-6 h-6 text-blue-400" />
+                                      ) : figureProgress?.status === "failed" ? (
+                                        <AlertCircle className="w-6 h-6 text-red-400" />
+                                      ) : canPractice ? (
+                                        <Circle className="w-6 h-6 text-white/60" />
+                                      ) : (
+                                        <Lock className="w-6 h-6 text-gray-400" />
+                                      )}
+                                    </div>
+
+                                    {/* Figure Name and Hold Time */}
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+                                      <p className="text-white text-xs font-medium truncate">
+                                        {figure.name}
+                                      </p>
+                                      <div className="flex items-center gap-1 mt-1 flex-wrap">
+                                        {(figure.level_hold_time_seconds || figure.hold_time_seconds) && (
+                                          <div className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                            {figure.level_hold_time_seconds || figure.hold_time_seconds}s
+                                          </div>
+                                        )}
+                                        {figure.level_reps && (
+                                          <div className="bg-purple-500 text-white text-xs px-2 py-0.5 rounded-full font-bold">
+                                            {figure.level_reps}x
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+
+                  {/* Boss Figures - Below regular figures */}
+                  {isUnlocked && level.figures.some(f => f.is_boss) && (
+                    <div className="mt-6 pt-6 border-t-2 border-dashed border-yellow-400/30">
+                      <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
+                        <Crown className="w-5 h-5 text-yellow-400" />
+                        Figurka Boss
+                      </h4>
+                      {level.figures.filter(f => f.is_boss).map((bossFigure) => {
+                        const figureProgress = getFigureProgress(bossFigure.id);
+                        const canPractice = isUnlocked && canAccessFigure(bossFigure);
+                        
+                        return (
+                          <Card 
+                            key={bossFigure.id}
+                            className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border-yellow-400/30 cursor-pointer hover:border-yellow-400/50 transition-all"
+                            onClick={() => handleFigureClick(bossFigure, canPractice)}
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-4">
+                                {bossFigure.image_url && (
+                                  <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                                    <img 
+                                      src={bossFigure.image_url} 
+                                      alt={bossFigure.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <h5 className="text-lg font-bold text-yellow-400 mb-1 flex items-center gap-2">
+                                    <Crown className="w-5 h-5" />
+                                    {bossFigure.name}
+                                  </h5>
+                                  {bossFigure.boss_description && (
+                                    <p className="text-sm text-yellow-200">
+                                      {bossFigure.boss_description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex-shrink-0">
+                                  {figureProgress?.status === "completed" ? (
+                                    <CheckCircle className="w-8 h-8 text-green-400" />
+                                  ) : (
+                                    <Circle className="w-8 h-8 text-white/40" />
+                                  )}
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Transitions Section - After boss */}
+                  {level.figures.some(f => f.type === 'transitions') && isUnlocked && (
                       <div className="mt-6 pt-6 border-t-2 border-dashed border-purple-400/30">
                         <h4 className="text-white font-semibold mb-3 flex items-center gap-2">
                           <span className="text-purple-400">✨</span>
@@ -873,120 +1073,26 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                         )}
                       </div>
                     )}
-                  </>
-                  )}
-
-                  {/* Boss Figure - wyświetlana na samym dole */}
-                  {isUnlocked && level.figures.some((f) => f.is_boss) && (
-                    <div className="mt-6">
-                      {level.figures
-                        .filter((f) => f.is_boss)
-                        .map((bossFigure) => {
-                          const figureProgress = getFigureProgress(bossFigure.id);
-                          const canPractice = canAccessFigure(bossFigure);
-                          
-                          return (
-                            <Card
-                              key={bossFigure.id}
-                              className="border-2 border-yellow-500/50 bg-gradient-to-br from-yellow-900/20 to-orange-900/20 cursor-pointer hover:border-yellow-400/70 transition-all"
-                              onClick={() => handleFigureClick(bossFigure, canPractice)}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-4">
-                                  {/* Boss Icon/Image */}
-                                  <div className="relative flex-shrink-0">
-                                    <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-yellow-500/50">
-                                      {bossFigure.image_url ? (
-                                        <img
-                                          src={bossFigure.image_url}
-                                          alt={bossFigure.name}
-                                          className="w-full h-full object-cover"
-                                        />
-                                      ) : (
-                                        <div className="w-full h-full bg-yellow-500/10 flex items-center justify-center text-3xl">
-                                          👑
-                                        </div>
-                                      )}
-                                    </div>
-                                    {/* Boss Badge */}
-                                    <Badge className="absolute -top-2 -right-2 bg-yellow-500 text-black font-bold">
-                                      BOSS
-                                    </Badge>
-                                  </div>
-
-                                  {/* Boss Info */}
-                                  <div className="flex-1">
-                                    <h4 className="text-lg font-bold text-yellow-400 mb-1">
-                                      {bossFigure.name}
-                                    </h4>
-
-                                    {/* Boss Description */}
-                                    {bossFigure.boss_description && (
-                                      <p className="text-sm text-muted-foreground mb-2">
-                                        {bossFigure.boss_description}
-                                      </p>
-                                    )}
-
-                                    {/* Boss Requirements */}
-                                    <div className="flex flex-wrap gap-2 mt-2">
-                                      {bossFigure.level_hold_time_seconds && (
-                                        <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
-                                          ⏱️ {bossFigure.level_hold_time_seconds}s
-                                        </Badge>
-                                      )}
-                                      {bossFigure.level_reps && (
-                                        <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30">
-                                          🔁 {bossFigure.level_reps} reps
-                                        </Badge>
-                                      )}
-
-                                      {/* Boss Completion Status */}
-                                      {figureProgress?.status === "completed" ? (
-                                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                                          ✅ Ukończone
-                                        </Badge>
-                                      ) : (
-                                        <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                                          ⚔️ Wymaga zaliczenia
-                                        </Badge>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          );
-                        })}
-                    </div>
-                  )}
-
-                  {/* Locked Level Message */}
-                  {!isUnlocked && (
-                    <div className="text-center py-4">
-                      <p className="text-gray-500 text-sm">
-                        Zdobądź jeszcze {level.point_limit - userPoints}{" "}
-                        punktów, aby odblokować ten poziom
-                      </p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        {/* Figure Preview Modal */}
-        {selectedFigure && (
-          <FigurePreviewModal
-            figure={selectedFigure}
-            isOpen={isPreviewModalOpen}
-            onClose={handleClosePreviewModal}
-            onFigureCompleted={handleFigureCompleted}
-          />
-        )}
-      </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
-  );
+
+    {/* Figure Preview Modal */}
+    {selectedFigure && (
+      <FigurePreviewModal
+        figure={selectedFigure}
+        isOpen={isPreviewModalOpen}
+        onClose={handleClosePreviewModal}
+        onFigureCompleted={handleFigureCompleted}
+      />
+    )}
+  </div>
+</div>
+);
 };
 
 export default SkillTree;
