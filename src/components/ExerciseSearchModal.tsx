@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getDifficultyLabel, getDifficultyColorClass } from "@/lib/figureUtils";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Exercise {
   id: string;
@@ -54,6 +55,7 @@ export const ExerciseSearchModal: React.FC<ExerciseSearchModalProps> = ({
   selectedExercises,
 }) => {
   const { toast } = useToast();
+  const { getFigureTypeLabel } = useDictionary();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,11 +69,11 @@ export const ExerciseSearchModal: React.FC<ExerciseSearchModalProps> = ({
   }>({});
 
   const categories = [
-    { value: "all", label: "All Categories" },
+    { value: "all", label: "Wszystkie kategorie" },
     { value: "aerial_silk", label: "Aerial Silk" },
     { value: "aerial_hoop", label: "Aerial Hoop" },
-    { value: "warm_up", label: "Warm-up" },
-    { value: "stretching", label: "Stretching" },
+    { value: "warm_up", label: getFigureTypeLabel("warm_up") },
+    { value: "stretching", label: getFigureTypeLabel("stretching") },
     { value: "conditioning", label: "Conditioning" },
     { value: "flow", label: "Flow" },
   ];

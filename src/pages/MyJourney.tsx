@@ -6,6 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
 import { useFigureProgress } from '@/hooks/useFigureProgress';
 import { useNavigate } from 'react-router-dom';
+import { useDictionary } from '@/contexts/DictionaryContext';
+
 const MyJourney = () => {
   const {
     figureProgress,
@@ -13,6 +15,7 @@ const MyJourney = () => {
     getFiguresByStatus
   } = useFigureProgress();
   const navigate = useNavigate();
+  const { getDifficultyLabel } = useDictionary();
   const [activeStatus, setActiveStatus] = useState('all');
   const statusConfig = {
     completed: {
@@ -139,7 +142,7 @@ const MyJourney = () => {
                     <div className="p-4">
                       <h3 className="text-white font-semibold mb-1 line-clamp-1">{figure.name}</h3>
                       {figure.difficulty_level && <Badge variant="outline" className="text-xs border-white/20 text-muted-foreground">
-                          {figure.difficulty_level}
+                          {getDifficultyLabel(figure.difficulty_level)}
                         </Badge>}
                       {figure.category && <div className="text-xs text-muted-foreground mt-1">{figure.category}</div>}
                     </div>

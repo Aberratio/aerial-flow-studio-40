@@ -25,6 +25,7 @@ import {
 import { ExerciseSearchModal } from "./ExerciseSearchModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Exercise {
   id: string;
@@ -62,6 +63,7 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
   onExercisesChange,
 }) => {
   const { toast } = useToast();
+  const { getFigureTypeLabel } = useDictionary();
   const [exercises, setExercises] = useState<ExerciseCategories>({
     warmup: [],
     training: [],
@@ -211,11 +213,11 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
   const getCategoryLabel = (category: string) => {
     switch (category) {
       case "warmup":
-        return "Warm Up";
+        return getFigureTypeLabel("warm_up");
       case "training":
-        return "Training";
+        return "Trening";
       case "stretching":
-        return "Stretching";
+        return getFigureTypeLabel("stretching");
       default:
         return category;
     }
@@ -485,25 +487,25 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
             <TabsList className="grid w-full grid-cols-3 mb-6">
               <TabsTrigger value="warmup" className="flex items-center gap-2">
                 <Flame className="w-4 h-4" />
-                Warm Up ({exercises.warmup.length})
+                {getCategoryLabel("warmup")} ({exercises.warmup.length})
               </TabsTrigger>
               <TabsTrigger value="training" className="flex items-center gap-2">
                 <Dumbbell className="w-4 h-4" />
-                Training ({exercises.training.length})
+                {getCategoryLabel("training")} ({exercises.training.length})
               </TabsTrigger>
               <TabsTrigger
                 value="stretching"
                 className="flex items-center gap-2"
               >
                 <Feather className="w-4 h-4" />
-                Stretching ({exercises.stretching.length})
+                {getCategoryLabel("stretching")} ({exercises.stretching.length})
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="warmup" className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-white">
-                  Warm Up Exercises
+                  Ćwiczenia {getCategoryLabel("warmup")}
                 </h3>
                 <Button
                   onClick={() => {
@@ -513,7 +515,7 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                   className="bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Warm Up
+                  Dodaj {getCategoryLabel("warmup")}
                 </Button>
               </div>
               {renderExerciseList("warmup")}
@@ -522,7 +524,7 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
             <TabsContent value="training" className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-white">
-                  Training Exercises
+                  Ćwiczenia {getCategoryLabel("training")}
                 </h3>
                 <Button
                   onClick={() => {
@@ -532,7 +534,7 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Training
+                  Dodaj {getCategoryLabel("training")}
                 </Button>
               </div>
               {renderExerciseList("training")}
@@ -541,7 +543,7 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
             <TabsContent value="stretching" className="space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold text-white">
-                  Stretching Exercises
+                  Ćwiczenia {getCategoryLabel("stretching")}
                 </h3>
                 <Button
                   onClick={() => {
@@ -551,7 +553,7 @@ export const SessionExerciseManager: React.FC<SessionExerciseManagerProps> = ({
                   className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Stretching
+                  Dodaj {getCategoryLabel("stretching")}
                 </Button>
               </div>
               {renderExerciseList("stretching")}

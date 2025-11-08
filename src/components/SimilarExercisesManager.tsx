@@ -42,7 +42,7 @@ export const SimilarExercisesManager = ({
 }: SimilarExercisesManagerProps) => {
   const { similarExercises, addSimilarExercise, removeSimilarExercise } =
     useSimilarExercises(figureId);
-  const { getDifficultyLabel } = useDictionary();
+  const { getDifficultyLabel, getFigureTypeLabel } = useDictionary();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -364,8 +364,12 @@ export const SimilarExercisesManager = ({
                     <SelectItem value="pole">Pole</SelectItem>
                     <SelectItem value="hammock">Hammock</SelectItem>
                     <SelectItem value="core">Core</SelectItem>
-                    <SelectItem value="warm_up">Warm Up</SelectItem>
-                    <SelectItem value="stretching">Stretching</SelectItem>
+                    <SelectItem value="warm_up">
+                      {getFigureTypeLabel("warm_up")}
+                    </SelectItem>
+                    <SelectItem value="stretching">
+                      {getFigureTypeLabel("stretching")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -406,10 +410,18 @@ export const SimilarExercisesManager = ({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Types</SelectItem>
-                    <SelectItem value="single figure">Single Figure</SelectItem>
-                    <SelectItem value="combo">Combo</SelectItem>
-                    <SelectItem value="warm_up">Warm Up</SelectItem>
-                    <SelectItem value="stretching">Stretching</SelectItem>
+                    <SelectItem value="single_figure">
+                      {getFigureTypeLabel("single_figure")}
+                    </SelectItem>
+                    <SelectItem value="combo">
+                      {getFigureTypeLabel("combo")}
+                    </SelectItem>
+                    <SelectItem value="warm_up">
+                      {getFigureTypeLabel("warm_up")}
+                    </SelectItem>
+                    <SelectItem value="stretching">
+                      {getFigureTypeLabel("stretching")}
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

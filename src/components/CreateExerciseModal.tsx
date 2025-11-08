@@ -25,6 +25,7 @@ import { Badge } from "@/components/ui/badge";
 import { SimilarExercisesManager } from "@/components/SimilarExercisesManager";
 import { useUserRole } from "@/hooks/useUserRole";
 import { DIFFICULTY_LEVELS, FIGURE_TYPES } from "@/types/figures";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface CreateExerciseModalProps {
   isOpen: boolean;
@@ -61,6 +62,7 @@ export const CreateExerciseModal = ({
   const [tagInput, setTagInput] = useState("");
   const [synonymInput, setSynonymInput] = useState("");
   const { isTrainer, isAdmin } = useUserRole();
+  const { getFigureTypeLabel } = useDictionary();
   
   // Transitions state
   const [searchFromFigure, setSearchFromFigure] = useState("");
@@ -481,8 +483,8 @@ export const CreateExerciseModal = ({
                 <SelectContent>
                   {isTrainingSpecial ? (
                     <>
-                      <SelectItem value="warm_up">Warm Up</SelectItem>
-                      <SelectItem value="stretching">Stretching</SelectItem>
+                      <SelectItem value="warm_up">{getFigureTypeLabel("warm_up")}</SelectItem>
+                      <SelectItem value="stretching">{getFigureTypeLabel("stretching")}</SelectItem>
                     </>
                   ) : (
                     <>
@@ -541,15 +543,15 @@ export const CreateExerciseModal = ({
               <SelectContent>
                 {isTrainingSpecial ? (
                   <>
-                    <SelectItem value="warm_up">Rozgrzewka</SelectItem>
-                    <SelectItem value="stretching">Rozciąganie</SelectItem>
+                    <SelectItem value="warm_up">{getFigureTypeLabel("warm_up")}</SelectItem>
+                    <SelectItem value="stretching">{getFigureTypeLabel("stretching")}</SelectItem>
                   </>
                 ) : (
                   <>
                     <SelectItem value="single_figure">
-                      Pojedyncza figura
+                      {getFigureTypeLabel("single_figure")}
                     </SelectItem>
-                    <SelectItem value="combo">Kombo</SelectItem>
+                    <SelectItem value="combo">{getFigureTypeLabel("combo")}</SelectItem>
                     {isAdmin && (
                       <SelectItem value="transitions">Przejścia</SelectItem>
                     )}
