@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import BreadcrumbNavigation from "@/components/Layout/BreadcrumbNavigation";
+import { cn } from "@/lib/utils";
 
 interface Figure {
   id: string;
@@ -960,8 +961,11 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                         return (
                           <Card 
                             key={bossFigure.id}
-                            className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border-yellow-400/30 cursor-pointer hover:border-yellow-400/50 transition-all"
-                            onClick={() => handleFigureClick(bossFigure, canPractice)}
+                            className={cn(
+                              "bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border-yellow-400/30 transition-all",
+                              canPractice ? "cursor-pointer hover:border-yellow-400/50" : "opacity-50 cursor-not-allowed"
+                            )}
+                            onClick={() => canPractice && handleFigureClick(bossFigure, canPractice)}
                           >
                             <CardContent className="p-3 sm:p-4">
                               <div className="flex items-start gap-3 sm:gap-4">
@@ -970,7 +974,10 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                                     <img 
                                       src={bossFigure.image_url} 
                                       alt={bossFigure.name}
-                                      className="w-full h-full object-cover"
+                                      className={cn(
+                                        "w-full h-full object-cover",
+                                        !bossAccessible && "grayscale"
+                                      )}
                                     />
                                   </div>
                                 )}
@@ -983,12 +990,6 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                                     <p className="text-xs sm:text-sm text-yellow-200 line-clamp-2">
                                       {bossFigure.boss_description}
                                     </p>
-                                  )}
-                                  {!bossAccessible && (
-                                    <Badge className="mt-2 bg-orange-500/20 text-orange-400 border-orange-400/30 text-xs">
-                                      <Lock className="w-3 h-3 mr-1" />
-                                      Ukończ wszystkie ćwiczenia
-                                    </Badge>
                                   )}
                                 </div>
                                 <div className="flex-shrink-0">
