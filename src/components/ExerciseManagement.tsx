@@ -323,7 +323,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                       exercise.figure?.difficulty_level || ""
                     )}
                   >
-                    {exercise.figure?.difficulty_level}
+                    {getDifficultyLabel(exercise.figure?.difficulty_level)}
                   </Badge>
                 </div>
                 {canEdit && (
@@ -439,7 +439,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                             figure.difficulty_level
                           )}
                         >
-                          {figure.difficulty_level}
+                          {getDifficultyLabel(figure.difficulty_level)}
                         </Badge>
                       </div>
                     </SelectItem>

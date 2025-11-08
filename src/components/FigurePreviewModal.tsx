@@ -196,7 +196,7 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
               </h2>
               <div className="flex items-center gap-1.5 flex-wrap">
                 <Badge className={cn(getDifficultyColor(figure.difficulty_level), "text-xs")}>
-                  {figure.difficulty_level || "Nieznany"}
+                  {getDifficultyLabel(figure.difficulty_level) || "Nieznany"}
                 </Badge>
                 
                 {figure.level_hold_time_seconds && (

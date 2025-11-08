@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ChevronDown, Crown, Plus, X, GripVertical, RotateCcw } from "lucide-react";
 import { getDifficultyColorClass } from "@/lib/figureUtils";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface SportLevel {
   id: string;
@@ -71,6 +72,7 @@ interface LevelEditorSheetProps {
 
 export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onSave }: LevelEditorSheetProps) {
   const { user } = useAuth();
+  const { getDifficultyLabel } = useDictionary();
   const FILTERS_STORAGE_KEY = `level-editor-filters-${sportKey}`;
   
   const [activeTab, setActiveTab] = useState("info");
@@ -655,7 +657,7 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
                               <div className="flex gap-1 mt-1 flex-wrap">
                                 {fig.difficulty_level && (
                                   <Badge variant="outline" className={`text-xs ${getDifficultyColorClass(fig.difficulty_level)}`}>
-                                    {fig.difficulty_level}
+                                    {getDifficultyLabel(fig.difficulty_level)}
                                   </Badge>
                                 )}
                                 {fig.premium && (
@@ -719,7 +721,7 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
                                   </CardTitle>
                                   {fig.difficulty_level && (
                                     <Badge variant="outline" className="text-xs mt-1">
-                                      {fig.difficulty_level}
+                                      {getDifficultyLabel(fig.difficulty_level)}
                                     </Badge>
                                   )}
                                 </div>

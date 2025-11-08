@@ -72,6 +72,7 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
 }) => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { getDifficultyLabel } = useDictionary();
 
   return (
     <div className="space-y-3">
@@ -146,10 +147,10 @@ export const ChallengeListView: React.FC<ChallengeListViewProps> = ({
                         )} text-xs`}
                       >
                         <span className="sm:hidden">
-                          {challenge.difficulty}
+                          {getDifficultyLabel(challenge.difficulty)}
                         </span>
                         <span className="hidden sm:inline">
-                          {challenge.difficulty}
+                          {getDifficultyLabel(challenge.difficulty)}
                         </span>
                       </Badge>
                     </div>

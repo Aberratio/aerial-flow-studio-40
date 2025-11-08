@@ -32,6 +32,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Challenge {
   id: string;
@@ -86,6 +87,8 @@ const Challenges = () => {
     useChallengeAccess();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getDifficultyLabel, getDifficultyColor: getDifficultyColorFromDict } =
+    useDictionary();
 
   const {
     filters,
@@ -242,13 +245,7 @@ const Challenges = () => {
             price_pln: challenge.price_pln,
             duration: 28, // Default 28 days
             participants: participantCounts[challenge.id] || 0,
-            difficulty: challenge.difficulty_level
-              ? challenge.difficulty_level === "beginner"
-                ? "Początkujący"
-                : challenge.difficulty_level === "intermediate"
-                ? "Średni"
-                : "Zaawansowany"
-              : "Średni",
+            difficulty: challenge.difficulty_level || "intermediate",
             userProgress: userProgress[challenge.id] || 0,
             image:
               challenge.image_url ||
@@ -388,16 +385,7 @@ const Challenges = () => {
   };
 
   const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case "Początkujący":
-        return "bg-green-500/20 text-green-400";
-      case "Średni":
-        return "bg-yellow-500/20 text-yellow-400";
-      case "Zaawansowany":
-        return "bg-red-500/20 text-red-400";
-      default:
-        return "bg-gray-500/20 text-gray-400";
-    }
+    return getDifficultyColorFromDict(difficulty);
   };
 
   const getButtonText = (status: string) => {
@@ -491,8 +479,12 @@ const Challenges = () => {
                   challenge.difficulty
                 )} text-xs sm:text-sm`}
               >
-                <span className="sm:hidden">{challenge.difficulty}</span>
-                <span className="hidden sm:inline">{challenge.difficulty}</span>
+                <span className="sm:hidden">
+                  {getDifficultyLabel(challenge.difficulty)}
+                </span>
+                <span className="hidden sm:inline">
+                  {getDifficultyLabel(challenge.difficulty)}
+                </span>
               </Badge>
             </div>
 

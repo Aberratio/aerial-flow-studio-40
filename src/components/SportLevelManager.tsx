@@ -12,6 +12,7 @@ import { Plus, Edit, Trash2, Save, X, Users, Search, Filter, Award } from "lucid
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Achievement {
   id: string;
@@ -74,6 +75,7 @@ interface SportLevelManagerProps {
 
 const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
   const { user } = useAuth();
+  const { getDifficultyLabel, getDifficultyColor } = useDictionary();
   const [levels, setLevels] = useState<SportLevel[]>([]);
   const [figures, setFigures] = useState<Figure[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
@@ -1006,7 +1008,7 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-green-300 truncate">{figure.name}</p>
                           <div className="flex items-center gap-2">
-                            <p className="text-xs text-green-400/70">{figure.difficulty_level}</p>
+                            <p className="text-xs text-green-400/70">{getDifficultyLabel(figure.difficulty_level)}</p>
                             {figure.category === "core" && figure.hold_time_seconds && figure.hold_time_seconds > 0 && (
                               <span className="text-xs text-blue-300">• {figure.hold_time_seconds}s</span>
                             )}
@@ -1105,13 +1107,9 @@ const SportLevelManager = ({ onClose }: SportLevelManagerProps) => {
                         <div className="flex items-center gap-2 flex-wrap">
                           <Badge 
                             variant="outline" 
-                            className={`text-xs px-2 py-1 ${
-                              figure.difficulty_level === 'Beginner' ? 'border-green-400/50 text-green-300' :
-                              figure.difficulty_level === 'Intermediate' ? 'border-yellow-400/50 text-yellow-300' :
-                              'border-red-400/50 text-red-300'
-                            }`}
+                            className={`text-xs px-2 py-1 ${getDifficultyColor(figure.difficulty_level)}`}
                           >
-                            {figure.difficulty_level}
+                            {getDifficultyLabel(figure.difficulty_level)}
                           </Badge>
                           
                           {figure.category === "core" && figure.hold_time_seconds && figure.hold_time_seconds > 0 && (

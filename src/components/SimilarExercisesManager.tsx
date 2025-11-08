@@ -4,26 +4,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
-import { 
-  Plus, 
-  X, 
-  Search, 
-  Filter, 
-  ChevronDown, 
+import {
+  Plus,
+  X,
+  Search,
+  Filter,
+  ChevronDown,
   ChevronUp,
   Star,
-  Crown
+  Crown,
 } from "lucide-react";
 import { useSimilarExercises } from "@/hooks/useSimilarExercises";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface SimilarExercisesManagerProps {
   figureId: string;
@@ -36,8 +37,12 @@ interface SearchFilters {
   premium: string;
 }
 
-export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerProps) => {
-  const { similarExercises, addSimilarExercise, removeSimilarExercise } = useSimilarExercises(figureId);
+export const SimilarExercisesManager = ({
+  figureId,
+}: SimilarExercisesManagerProps) => {
+  const { similarExercises, addSimilarExercise, removeSimilarExercise } =
+    useSimilarExercises(figureId);
+  const { getDifficultyLabel } = useDictionary();
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -47,7 +52,7 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
     category: "all",
     difficulty: "all",
     type: "all",
-    premium: "all"
+    premium: "all",
   });
   const { toast } = useToast();
 
@@ -55,9 +60,9 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
   useEffect(() => {
     const fetchCurrentExercise = async () => {
       const { data } = await supabase
-        .from('figures')
-        .select('*')
-        .eq('id', figureId)
+        .from("figures")
+        .select("*")
+        .eq("id", figureId)
         .single();
       setCurrentExercise(data);
     };
@@ -67,7 +72,10 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
   // Debounced search
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchQuery.length >= 2 || Object.values(filters).some(f => f !== "all")) {
+      if (
+        searchQuery.length >= 2 ||
+        Object.values(filters).some((f) => f !== "all")
+      ) {
         searchExercises();
       } else {
         setSearchResults([]);
@@ -81,8 +89,9 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
     setIsSearching(true);
     try {
       let query = supabase
-        .from('figures')
-        .select(`
+        .from("figures")
+        .select(
+          `
           id, 
           name, 
           description,
@@ -93,8 +102,9 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
           premium, 
           tags,
           synonyms
-        `)
-        .neq('id', figureId);
+        `
+        )
+        .neq("id", figureId);
 
       // Text search across multiple fields
       if (searchQuery.length >= 2) {
@@ -107,16 +117,16 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
 
       // Apply filters
       if (filters.category !== "all") {
-        query = query.eq('category', filters.category);
+        query = query.eq("category", filters.category);
       }
       if (filters.difficulty !== "all") {
-        query = query.eq('difficulty_level', filters.difficulty);
+        query = query.eq("difficulty_level", filters.difficulty);
       }
       if (filters.type !== "all") {
-        query = query.eq('type', filters.type);
+        query = query.eq("type", filters.type);
       }
       if (filters.premium !== "all") {
-        query = query.eq('premium', filters.premium === "premium");
+        query = query.eq("premium", filters.premium === "premium");
       }
 
       const { data, error } = await query.limit(20);
@@ -124,28 +134,31 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
       if (error) throw error;
 
       // Filter out exercises that are already similar
-      const similarIds = similarExercises.map(ex => ex.id);
-      const filtered = data?.filter(ex => !similarIds.includes(ex.id)) || [];
-      
+      const similarIds = similarExercises.map((ex) => ex.id);
+      const filtered = data?.filter((ex) => !similarIds.includes(ex.id)) || [];
+
       // Sort by relevance (same category/difficulty first)
       const sorted = filtered.sort((a, b) => {
-        let scoreA = 0, scoreB = 0;
-        
+        let scoreA = 0,
+          scoreB = 0;
+
         if (currentExercise) {
           if (a.category === currentExercise.category) scoreA += 3;
           if (b.category === currentExercise.category) scoreB += 3;
-          if (a.difficulty_level === currentExercise.difficulty_level) scoreA += 2;
-          if (b.difficulty_level === currentExercise.difficulty_level) scoreB += 2;
+          if (a.difficulty_level === currentExercise.difficulty_level)
+            scoreA += 2;
+          if (b.difficulty_level === currentExercise.difficulty_level)
+            scoreB += 2;
           if (a.type === currentExercise.type) scoreA += 1;
           if (b.type === currentExercise.type) scoreB += 1;
         }
-        
+
         return scoreB - scoreA;
       });
-      
+
       setSearchResults(sorted);
     } catch (error) {
-      console.error('Error searching exercises:', error);
+      console.error("Error searching exercises:", error);
       toast({
         title: "Search Error",
         description: "Failed to search exercises. Please try again.",
@@ -164,9 +177,9 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
         description: "Similar exercise added successfully.",
       });
       // Remove from search results
-      setSearchResults(prev => prev.filter(ex => ex.id !== exerciseId));
+      setSearchResults((prev) => prev.filter((ex) => ex.id !== exerciseId));
     } catch (error) {
-      console.error('Error adding similar exercise:', error);
+      console.error("Error adding similar exercise:", error);
       toast({
         title: "Error",
         description: "Failed to add similar exercise.",
@@ -183,9 +196,9 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
         description: "Similar exercise removed successfully.",
       });
     } catch (error) {
-      console.error('Error removing similar exercise:', error);
+      console.error("Error removing similar exercise:", error);
       toast({
-        title: "Error", 
+        title: "Error",
         description: "Failed to remove similar exercise.",
         variant: "destructive",
       });
@@ -195,9 +208,9 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
   const clearAllFilters = () => {
     setFilters({
       category: "all",
-      difficulty: "all", 
+      difficulty: "all",
       type: "all",
-      premium: "all"
+      premium: "all",
     });
     setSearchQuery("");
   };
@@ -206,12 +219,15 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
     if (!currentExercise) return 0;
     let score = 0;
     if (exercise.category === currentExercise.category) score += 3;
-    if (exercise.difficulty_level === currentExercise.difficulty_level) score += 2;
+    if (exercise.difficulty_level === currentExercise.difficulty_level)
+      score += 2;
     if (exercise.type === currentExercise.type) score += 1;
     return score;
   };
 
-  const activeFiltersCount = Object.values(filters).filter(f => f !== "all").length;
+  const activeFiltersCount = Object.values(filters).filter(
+    (f) => f !== "all"
+  ).length;
 
   return (
     <div className="space-y-4">
@@ -224,7 +240,7 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
                 Similar Exercises ({similarExercises.length})
               </Label>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {similarExercises.map((exercise) => (
                 <div
@@ -246,7 +262,7 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
                       <div className="flex items-center space-x-1 mt-1">
                         {exercise.difficulty_level && (
                           <Badge variant="secondary" className="text-xs">
-                            {exercise.difficulty_level}
+                            {getDifficultyLabel(exercise.difficulty_level)}
                           </Badge>
                         )}
                         {exercise.premium && (
@@ -329,8 +345,15 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
           {showFilters && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-accent/10 rounded-lg border border-border/30">
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Category</Label>
-                <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({...prev, category: value}))}>
+                <Label className="text-xs text-muted-foreground">
+                  Category
+                </Label>
+                <Select
+                  value={filters.category}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, category: value }))
+                  }
+                >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
@@ -348,16 +371,23 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
               </div>
 
               <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Difficulty</Label>
-                <Select value={filters.difficulty} onValueChange={(value) => setFilters(prev => ({...prev, difficulty: value}))}>
+                <Label className="text-xs text-muted-foreground">
+                  Difficulty
+                </Label>
+                <Select
+                  value={filters.difficulty}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, difficulty: value }))
+                  }
+                >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Levels</SelectItem>
-                    <SelectItem value="Beginner">Beginner</SelectItem>
-                    <SelectItem value="Intermediate">Intermediate</SelectItem>
-                    <SelectItem value="Advanced">Advanced</SelectItem>
+                    <SelectItem value="Beginner">Początkujący</SelectItem>
+                    <SelectItem value="Intermediate">Średni</SelectItem>
+                    <SelectItem value="Advanced">Zaawansowany</SelectItem>
                     <SelectItem value="Expert">Expert</SelectItem>
                   </SelectContent>
                 </Select>
@@ -365,7 +395,12 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
 
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Type</Label>
-                <Select value={filters.type} onValueChange={(value) => setFilters(prev => ({...prev, type: value}))}>
+                <Select
+                  value={filters.type}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, type: value }))
+                  }
+                >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
@@ -381,7 +416,12 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
 
               <div className="space-y-1">
                 <Label className="text-xs text-muted-foreground">Access</Label>
-                <Select value={filters.premium} onValueChange={(value) => setFilters(prev => ({...prev, premium: value}))}>
+                <Select
+                  value={filters.premium}
+                  onValueChange={(value) =>
+                    setFilters((prev) => ({ ...prev, premium: value }))
+                  }
+                >
                   <SelectTrigger className="h-8 text-xs">
                     <SelectValue />
                   </SelectTrigger>
@@ -409,7 +449,7 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
                   </div>
                 )}
               </div>
-              
+
               <div className="max-h-64 overflow-y-auto space-y-2">
                 {searchResults.map((exercise) => {
                   const relevanceScore = getRelevanceScore(exercise);
@@ -435,7 +475,10 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
                             {relevanceScore > 0 && (
                               <div className="flex items-center">
                                 {[...Array(relevanceScore)].map((_, i) => (
-                                  <Star key={i} className="w-3 h-3 text-yellow-500 fill-current" />
+                                  <Star
+                                    key={i}
+                                    className="w-3 h-3 text-yellow-500 fill-current"
+                                  />
                                 ))}
                               </div>
                             )}
@@ -447,13 +490,16 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
                           )}
                           <div className="flex items-center space-x-1 mt-2">
                             {exercise.category && (
-                              <Badge variant="outline" className="text-xs capitalize">
+                              <Badge
+                                variant="outline"
+                                className="text-xs capitalize"
+                              >
                                 {exercise.category}
                               </Badge>
                             )}
                             {exercise.difficulty_level && (
                               <Badge variant="secondary" className="text-xs">
-                                {exercise.difficulty_level}
+                                {getDifficultyLabel(exercise.difficulty_level)}
                               </Badge>
                             )}
                             {exercise.premium && (
@@ -481,53 +527,68 @@ export const SimilarExercisesManager = ({ figureId }: SimilarExercisesManagerPro
           )}
 
           {/* No Results Message */}
-          {(searchQuery.length >= 2 || activeFiltersCount > 0) && searchResults.length === 0 && !isSearching && (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground text-sm">
-                No exercises found matching your criteria
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={clearAllFilters}
-                className="mt-2"
-              >
-                Clear all filters
-              </Button>
-            </div>
-          )}
+          {(searchQuery.length >= 2 || activeFiltersCount > 0) &&
+            searchResults.length === 0 &&
+            !isSearching && (
+              <div className="text-center py-6">
+                <p className="text-muted-foreground text-sm">
+                  No exercises found matching your criteria
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="mt-2"
+                >
+                  Clear all filters
+                </Button>
+              </div>
+            )}
 
           {/* Smart Suggestions */}
-          {searchQuery.length === 0 && activeFiltersCount === 0 && currentExercise && (
-            <div className="text-center py-4">
-              <p className="text-muted-foreground text-sm mb-2">
-                Try searching for exercises similar to <strong>{currentExercise.name}</strong>
-              </p>
-              <div className="flex justify-center space-x-2 text-xs">
-                {currentExercise.category && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFilters(prev => ({...prev, category: currentExercise.category}))}
-                  >
-                    {currentExercise.category}
-                  </Button>
-                )}
-                {currentExercise.difficulty_level && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setFilters(prev => ({...prev, difficulty: currentExercise.difficulty_level}))}
-                  >
-                    {currentExercise.difficulty_level}
-                  </Button>
-                )}
+          {searchQuery.length === 0 &&
+            activeFiltersCount === 0 &&
+            currentExercise && (
+              <div className="text-center py-4">
+                <p className="text-muted-foreground text-sm mb-2">
+                  Try searching for exercises similar to{" "}
+                  <strong>{currentExercise.name}</strong>
+                </p>
+                <div className="flex justify-center space-x-2 text-xs">
+                  {currentExercise.category && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          category: currentExercise.category,
+                        }))
+                      }
+                    >
+                      {currentExercise.category}
+                    </Button>
+                  )}
+                  {currentExercise.difficulty_level && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setFilters((prev) => ({
+                          ...prev,
+                          difficulty: currentExercise.difficulty_level,
+                        }))
+                      }
+                    >
+                      {currentExercise.difficulty_level}
+                    </Button>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </CardContent>
       </Card>
     </div>

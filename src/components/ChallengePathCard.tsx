@@ -17,6 +17,7 @@ import {
   Crown,
 } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Challenge {
   id: string;
@@ -48,6 +49,7 @@ const ChallengePathCard = ({
   hasAccess,
 }: ChallengePathCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { getDifficultyLabel } = useDictionary();
 
   // Oblicz ukończone poziomy
   const completedLevels = challenges.filter(
@@ -211,7 +213,7 @@ const ChallengePathCard = ({
                         Poziom {challenge.level || index + 1}
                       </span>
                       <Badge variant="outline" className="text-xs">
-                        {challenge.difficulty}
+                        {getDifficultyLabel(challenge.difficulty)}
                       </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-1">

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Music, Target, Zap, Heart, Play } from 'lucide-react';
+import { useDictionary } from '@/contexts/DictionaryContext';
 
 interface TrainingDetailsModalProps {
   session: any;
@@ -19,14 +20,7 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
 }) => {
   if (!session) return null;
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Beginner': return 'bg-green-500';
-      case 'Intermediate': return 'bg-yellow-500';
-      case 'Advanced': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
+  const { getDifficultyLabel, getDifficultyColor } = useDictionary();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -43,8 +37,8 @@ export const TrainingDetailsModal: React.FC<TrainingDetailsModalProps> = ({
               alt={session.title}
               className="w-full h-48 object-cover rounded-lg"
             />
-            <Badge className={`absolute top-2 right-2 ${getDifficultyColor(session.difficulty_level || 'Beginner')} text-white`}>
-              {session.difficulty_level || 'Beginner'}
+            <Badge className={`absolute top-2 right-2 ${getDifficultyColor(session.difficulty_level || 'beginner')} text-white`}>
+              {getDifficultyLabel(session.difficulty_level) || getDifficultyLabel('beginner')}
             </Badge>
           </div>
 
