@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getDifficultyLabel, getFigureTypeLabel, getDifficultyColorClass } from "@/lib/figureUtils";
+import { getDifficultyLabel, getDifficultyColorClass } from "@/lib/figureUtils";
 import {
   ArrowLeft,
   Play,
@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDictionary } from "@/contexts/DictionaryContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -46,6 +47,7 @@ const ExerciseDetail = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const { isPremium, isTrainer, isAdmin } = useUserRole();
+  const { getSportCategoryLabel, getFigureTypeLabel } = useDictionary();
 
   const [exercise, setExercise] = useState<any>(null);
   const [progress, setProgress] = useState<any>(null);
@@ -84,11 +86,13 @@ const ExerciseDetail = () => {
       // Fetch exercise
       const { data: exerciseData, error: exerciseError } = await supabase
         .from("figures")
-        .select(`
+        .select(
+          `
           *,
           transition_from_figure:transition_from_figure_id(id, name, image_url),
           transition_to_figure:transition_to_figure_id(id, name, image_url)
-        `)
+        `
+        )
         .eq("id", exerciseId)
         .single();
 
@@ -557,7 +561,7 @@ const ExerciseDetail = () => {
                     <div className="flex items-center text-muted-foreground">
                       <BookOpen className="w-4 h-4 mr-2" />
                       <span className="text-sm">
-                        Kategoria: {exercise.category}
+                        Kategoria: {getSportCategoryLabel(exercise.category)}
                       </span>
                     </div>
                   )}
@@ -957,7 +961,7 @@ const ExerciseDetail = () => {
                     variant="outline"
                     className="border-white/20 text-white"
                   >
-                    {exercise.category}
+                    {getSportCategoryLabel(exercise.category)}
                   </Badge>
                 )}
                 {exercise.type && (
@@ -965,7 +969,7 @@ const ExerciseDetail = () => {
                     variant="outline"
                     className="border-white/20 text-white"
                   >
-                    {exercise.type.replace("_", " ")}
+                    {getFigureTypeLabel(exercise.type)}
                   </Badge>
                 )}
               </div>
