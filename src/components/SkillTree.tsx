@@ -498,6 +498,22 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
     return hasPremiumAccess;
   };
 
+  // Check if boss can be accessed (all sublevels completed)
+  const canAccessBoss = (level: SportLevel): boolean => {
+    // Get all non-boss, non-transition figures from all sublevels
+    const allRegularFigures = level.figures.filter(f => !f.is_boss && f.type !== 'transitions');
+    
+    if (allRegularFigures.length === 0) return true; // No requirements
+    
+    // Check if ALL are completed
+    const allCompleted = allRegularFigures.every(fig => {
+      const progress = getFigureProgress(fig.id);
+      return progress?.status === 'completed';
+    });
+    
+    return allCompleted;
+  };
+
   // Check if user can access a sublevel
   const canAccessSublevel = (level: SportLevel, sublevel: number) => {
     if (adminPreviewMode) return true; // Admin can access all sublevels
@@ -938,7 +954,8 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                       </h4>
                       {level.figures.filter(f => f.is_boss).map((bossFigure) => {
                         const figureProgress = getFigureProgress(bossFigure.id);
-                        const canPractice = isUnlocked && canAccessFigure(bossFigure);
+                        const bossAccessible = canAccessBoss(level);
+                        const canPractice = isUnlocked && canAccessFigure(bossFigure) && bossAccessible;
                         
                         return (
                           <Card 
@@ -946,10 +963,10 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                             className="bg-gradient-to-br from-yellow-900/20 to-orange-900/20 border-yellow-400/30 cursor-pointer hover:border-yellow-400/50 transition-all"
                             onClick={() => handleFigureClick(bossFigure, canPractice)}
                           >
-                            <CardContent className="p-4">
-                              <div className="flex items-center gap-4">
+                            <CardContent className="p-3 sm:p-4">
+                              <div className="flex items-start gap-3 sm:gap-4">
                                 {bossFigure.image_url && (
-                                  <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+                                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden flex-shrink-0 bg-black/30">
                                     <img 
                                       src={bossFigure.image_url} 
                                       alt={bossFigure.name}
@@ -957,22 +974,28 @@ const SkillTree = ({ sportCategory, sportName, onBack, adminPreviewMode = false 
                                     />
                                   </div>
                                 )}
-                                <div className="flex-1">
-                                  <h5 className="text-lg font-bold text-yellow-400 mb-1 flex items-center gap-2">
-                                    <Crown className="w-5 h-5" />
-                                    {bossFigure.name}
+                                <div className="flex-1 min-w-0">
+                                  <h5 className="text-base sm:text-lg font-bold text-yellow-400 mb-1 flex items-start gap-2 leading-tight">
+                                    <Crown className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 mt-0.5" />
+                                    <span className="break-words">{bossFigure.name}</span>
                                   </h5>
                                   {bossFigure.boss_description && (
-                                    <p className="text-sm text-yellow-200">
+                                    <p className="text-xs sm:text-sm text-yellow-200 line-clamp-2">
                                       {bossFigure.boss_description}
                                     </p>
+                                  )}
+                                  {!bossAccessible && (
+                                    <Badge className="mt-2 bg-orange-500/20 text-orange-400 border-orange-400/30 text-xs">
+                                      <Lock className="w-3 h-3 mr-1" />
+                                      Ukończ wszystkie ćwiczenia
+                                    </Badge>
                                   )}
                                 </div>
                                 <div className="flex-shrink-0">
                                   {figureProgress?.status === "completed" ? (
-                                    <CheckCircle className="w-8 h-8 text-green-400" />
+                                    <CheckCircle className="w-6 h-6 sm:w-8 sm:h-8 text-green-400" />
                                   ) : (
-                                    <Circle className="w-8 h-8 text-white/40" />
+                                    <Circle className="w-6 h-6 sm:w-8 sm:h-8 text-white/40" />
                                   )}
                                 </div>
                               </div>

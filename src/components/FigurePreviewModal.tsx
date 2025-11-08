@@ -151,10 +151,10 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
         pointsEarned={figure?.level_number || 1}
       />
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-2xl w-full p-0 bg-black/95 border-white/10">
+        <DialogContent className="max-w-2xl w-full p-0 bg-gradient-to-b from-gray-900 to-black border-white/10">
         <div className="relative">
           {/* Image/Video Display with Play Button */}
-          <div className="relative w-full min-h-[400px] bg-black/50 flex items-center justify-center">
+          <div className="relative w-full min-h-[300px] sm:min-h-[400px] bg-black/50 flex items-center justify-center">
             {figure.image_url ? (
               <>
                 <img
@@ -189,77 +189,70 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
           </div>
 
           {/* Content */}
-          <div className="p-6">
-            <div className="mb-4">
-              <h2 className="text-2xl font-bold text-white mb-2">
+          <div className="p-4 sm:p-6 space-y-4">
+            <div className="space-y-2">
+              <h2 className="text-xl sm:text-2xl font-bold text-white leading-tight">
                 {figure.name}
               </h2>
-              <div className="flex items-center gap-2 mb-3 flex-wrap">
-                <Badge className={getDifficultyColor(figure.difficulty_level)}>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Badge className={cn(getDifficultyColor(figure.difficulty_level), "text-xs")}>
                   {figure.difficulty_level || "Nieznany"}
                 </Badge>
                 
-                {/* Level-specific hold time has priority */}
                 {figure.level_hold_time_seconds && (
-                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
-                    ⏱️ Trzymaj {figure.level_hold_time_seconds}s
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30 text-xs">
+                    ⏱️ {figure.level_hold_time_seconds}s
                   </Badge>
                 )}
                 {!figure.level_hold_time_seconds && figure.hold_time_seconds && figure.hold_time_seconds > 0 && (
-                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
-                    ⏱️ Trzymaj {figure.hold_time_seconds}s
+                  <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30 text-xs">
+                    ⏱️ {figure.hold_time_seconds}s
                   </Badge>
                 )}
                 
-                {/* Level-specific reps */}
                 {figure.level_reps && (
-                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30">
-                    🔁 {figure.level_reps} powtórzeń
+                  <Badge className="bg-purple-500/20 text-purple-400 border-purple-400/30 text-xs">
+                    🔁 {figure.level_reps}x
                   </Badge>
                 )}
               </div>
             </div>
 
-            {/* Level-specific notes */}
-            {figure.level_notes && (
-              <div className="mb-4 p-3 bg-blue-900/20 border border-blue-400/20 rounded-lg">
-                <p className="text-sm text-blue-300">
-                  💡 {figure.level_notes}
-                </p>
-              </div>
-            )}
-
-            {/* Boss indicator */}
             {figure.is_boss && (
-              <div className="mb-4 p-3 bg-yellow-900/20 border border-yellow-400/30 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-2xl">👑</span>
-                  <span className="font-bold text-yellow-400">Figurka Boss</span>
+              <div className="p-2.5 bg-yellow-900/20 border border-yellow-400/30 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">👑</span>
+                  <span className="font-semibold text-yellow-400 text-sm">Figurka Boss</span>
                 </div>
                 {figure.boss_description && (
-                  <p className="text-sm text-yellow-200">
+                  <p className="text-xs text-yellow-200 mt-1">
                     {figure.boss_description}
                   </p>
                 )}
               </div>
             )}
 
-            {/* Timer Section - Show if hold time exists */}
-            {(figure.level_hold_time_seconds || figure.hold_time_seconds) && !showTimer && (
-              <div className="mb-4">
-                <Button
-                  onClick={() => setShowTimer(true)}
-                  className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600"
-                >
-                  <Timer className="w-4 h-4 mr-2" />
-                  🎯 Rozpocznij Timer ({figure.level_hold_time_seconds || figure.hold_time_seconds}s)
-                </Button>
+            {figure.level_notes && (
+              <div className="p-2.5 bg-blue-900/20 border border-blue-400/20 rounded-lg">
+                <p className="text-xs text-blue-300">
+                  💡 {figure.level_notes}
+                </p>
               </div>
             )}
 
-            {/* Timer UI - Show when activated */}
+            {(figure.level_hold_time_seconds || figure.hold_time_seconds) && !showTimer && (
+              <Button
+                onClick={() => setShowTimer(true)}
+                size="sm"
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-sm h-9"
+              >
+                <Timer className="w-3.5 h-3.5 mr-2" />
+                Rozpocznij Timer ({figure.level_hold_time_seconds || figure.hold_time_seconds}s)
+              </Button>
+            )}
+
             {showTimer && (
-              <div className="mb-4">
+              <div className="space-y-2 p-3 bg-blue-900/20 border border-blue-400/20 rounded-lg">
                 <FigureHoldTimer
                   holdTimeSeconds={figure.level_hold_time_seconds || figure.hold_time_seconds || 0}
                   onComplete={() => {
@@ -269,65 +262,47 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
                 />
                 <Button
                   variant="ghost"
+                  size="sm"
                   onClick={() => setShowTimer(false)}
-                  className="w-full mt-2 text-sm"
+                  className="w-full text-xs h-7"
                 >
                   Zamknij timer
                 </Button>
               </div>
             )}
 
-            {/* Transitions Section - Show from/to figures */}
             {figure.type === 'transitions' && figure.transition_from_figure && figure.transition_to_figure && (
-              <div className="mb-4 p-4 bg-purple-900/20 border border-purple-400/20 rounded-lg">
-                <h3 className="text-lg font-semibold text-white mb-3">Przejście między figurami</h3>
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* From Figure */}
+              <div className="p-3 bg-purple-900/20 border border-purple-400/20 rounded-lg">
+                <h3 className="text-sm font-semibold text-white mb-2">Przejście</h3>
+                <div className="flex items-center justify-around gap-2">
                   <div 
-                    className="p-3 bg-blue-900/20 border border-blue-400/20 rounded-lg cursor-pointer hover:border-blue-400/40 transition-all"
+                    className="flex-1 text-center cursor-pointer" 
                     onClick={() => navigate(`/exercise/${figure.transition_from_figure?.id}`)}
                   >
-                    <div className="text-center mb-2">
-                      <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30">
-                        Figura Z
-                      </Badge>
-                    </div>
                     {figure.transition_from_figure.image_url && (
                       <img 
                         src={figure.transition_from_figure.image_url} 
-                        alt={figure.transition_from_figure.name}
-                        className="w-full aspect-square object-cover rounded-lg mb-2"
+                        alt="" 
+                        className="w-16 h-16 object-cover rounded-lg mx-auto mb-1"
                       />
                     )}
-                    <p className="text-white font-medium text-center text-sm">
+                    <p className="text-white text-xs font-medium truncate">
                       {figure.transition_from_figure.name}
                     </p>
                   </div>
-                  
-                  {/* Arrow */}
-                  <div className="hidden sm:flex items-center justify-center text-purple-400 text-4xl">
-                    →
-                  </div>
-                  
-                  {/* To Figure */}
+                  <span className="text-purple-400 text-2xl">→</span>
                   <div 
-                    className="p-3 bg-green-900/20 border border-green-400/20 rounded-lg cursor-pointer hover:border-green-400/40 transition-all"
+                    className="flex-1 text-center cursor-pointer" 
                     onClick={() => navigate(`/exercise/${figure.transition_to_figure?.id}`)}
                   >
-                    <div className="text-center mb-2">
-                      <Badge className="bg-green-500/20 text-green-400 border-green-400/30">
-                        Figura DO
-                      </Badge>
-                    </div>
                     {figure.transition_to_figure.image_url && (
                       <img 
                         src={figure.transition_to_figure.image_url} 
-                        alt={figure.transition_to_figure.name}
-                        className="w-full aspect-square object-cover rounded-lg mb-2"
+                        alt="" 
+                        className="w-16 h-16 object-cover rounded-lg mx-auto mb-1"
                       />
                     )}
-                    <p className="text-white font-medium text-center text-sm">
+                    <p className="text-white text-xs font-medium truncate">
                       {figure.transition_to_figure.name}
                     </p>
                   </div>
@@ -335,68 +310,62 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
               </div>
             )}
 
-            {/* Audio Player */}
             {figure.audio_url && (
-              <div className="mb-4 p-3 bg-orange-900/20 border border-orange-400/20 rounded-lg">
-                <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+              <div className="p-2.5 bg-orange-900/20 border border-orange-400/20 rounded-lg">
+                <h4 className="text-white text-xs font-medium mb-1.5 flex items-center gap-1">
                   🎵 Instrukcje audio
                 </h4>
-                <audio controls className="w-full">
+                <audio controls className="w-full h-8">
                   <source src={figure.audio_url} type="audio/mpeg" />
-                  Twoja przeglądarka nie obsługuje odtwarzania audio.
                 </audio>
               </div>
             )}
 
-            {/* Add Own Version Button */}
-            {canAddOwnVersion() && user && (
-              <div className="mb-4">
+            <div className="space-y-2 pt-2">
+              {canAddOwnVersion() && user && (
                 <Button
                   onClick={() => setShowCreatePost(true)}
-                  className="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white"
+                  size="sm"
+                  variant="outline"
+                  className="w-full border-pink-400/30 text-pink-400 hover:bg-pink-400/10 text-sm h-9"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Dodaj swoją wersję tego ćwiczenia
+                  <Plus className="w-3.5 h-3.5 mr-2" />
+                  Dodaj swoją wersję
                 </Button>
-              </div>
-            )}
+              )}
 
-            {/* Completed Status Button */}
-            {user && (
-              <div className="mb-6">
+              {user && (
                 <Button
-                  variant={
-                    figureProgress === "completed" ? "default" : "outline"
-                  }
+                  variant={figureProgress === "completed" ? "default" : "outline"}
                   onClick={() =>
                     updateFigureStatus(
                       figureProgress === "completed" ? "not_tried" : "completed"
                     )
                   }
                   disabled={loading}
+                  size="sm"
                   className={cn(
-                    "w-full flex items-center justify-center gap-2",
+                    "w-full text-sm h-9",
                     figureProgress === "completed"
                       ? "bg-green-600 hover:bg-green-700 text-white"
                       : "border-green-400/30 text-green-400 hover:bg-green-400/10"
                   )}
                 >
-                  <CheckCircle className="w-4 h-4" />
-                  {figureProgress === "completed"
-                    ? "Ukończone!"
-                    : "Zaznacz jako ukończone"}
+                  <CheckCircle className="w-3.5 h-3.5 mr-2" />
+                  {figureProgress === "completed" ? "Ukończone!" : "Zaznacz jako ukończone"}
                 </Button>
-              </div>
-            )}
+              )}
 
-            {/* View Full Exercise Button */}
-            <Button
-              onClick={() => navigate(`/exercise/${figure.id}`)}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Pokaż pełne ćwiczenie
-            </Button>
+              <Button
+                onClick={() => navigate(`/exercise/${figure.id}`)}
+                size="sm"
+                variant="ghost"
+                className="w-full text-purple-400 hover:bg-purple-400/10 text-xs h-8"
+              >
+                <ExternalLink className="w-3 h-3 mr-2" />
+                Pokaż pełne ćwiczenie
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
@@ -404,14 +373,14 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
 
     {/* Fullscreen Video Dialog */}
     <Dialog open={showFullscreenVideo} onOpenChange={setShowFullscreenVideo}>
-      <DialogContent className="max-w-7xl w-full h-[90vh] bg-black/95 p-0 border-white/10">
+      <DialogContent className="max-w-7xl w-full max-h-[90vh] bg-black/95 p-4 flex items-center justify-center border-white/10">
         <video 
           src={figure?.video_url} 
           controls 
           autoPlay 
           playsInline
           webkit-playsinline="true"
-          className="w-full h-full" 
+          className="max-w-full max-h-full object-contain" 
         />
       </DialogContent>
     </Dialog>
