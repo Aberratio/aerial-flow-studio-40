@@ -21,13 +21,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import { SimilarExercisesManager } from "@/components/SimilarExercisesManager";
 import { PrerequisiteExercisesManager } from "@/components/PrerequisiteExercisesManager";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 const EditExercise = () => {
   const { exerciseId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { isTrainer } = useUserRole();
+  const { isTrainer, isAdmin } = useUserRole();
+  const { getDifficultyLabel, getFigureTypeLabel, getSportCategoryLabel } = useDictionary();
 
   const [exercise, setExercise] = useState<any>(null);
   const [formData, setFormData] = useState({
@@ -356,10 +358,9 @@ const EditExercise = () => {
                       <SelectValue placeholder="Select difficulty" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Beginner">Beginner</SelectItem>
-                      <SelectItem value="Intermediate">Intermediate</SelectItem>
-                      <SelectItem value="Advanced">Advanced</SelectItem>
-                      <SelectItem value="Expert">Expert</SelectItem>
+                      <SelectItem value="beginner">{getDifficultyLabel("beginner")}</SelectItem>
+                      <SelectItem value="intermediate">{getDifficultyLabel("intermediate")}</SelectItem>
+                      <SelectItem value="advanced">{getDifficultyLabel("advanced")}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -406,10 +407,13 @@ const EditExercise = () => {
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="single figure">Single Figure</SelectItem>
-                    <SelectItem value="combo">Combo</SelectItem>
-                    <SelectItem value="warm_up">Warm Up</SelectItem>
-                    <SelectItem value="stretching">Stretching</SelectItem>
+                    <SelectItem value="single_figure">{getFigureTypeLabel("single_figure")}</SelectItem>
+                    <SelectItem value="combo">{getFigureTypeLabel("combo")}</SelectItem>
+                    <SelectItem value="warm_up">{getFigureTypeLabel("warm_up")}</SelectItem>
+                    <SelectItem value="stretching">{getFigureTypeLabel("stretching")}</SelectItem>
+                    {isAdmin && (
+                      <SelectItem value="transitions">Przejścia</SelectItem>
+                    )}
                   </SelectContent>
                 </Select>
               </div>

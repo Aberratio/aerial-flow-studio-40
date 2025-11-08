@@ -552,6 +552,8 @@ export const CreateExerciseModal = ({
                       {getFigureTypeLabel("single_figure")}
                     </SelectItem>
                     <SelectItem value="combo">{getFigureTypeLabel("combo")}</SelectItem>
+                    <SelectItem value="warm_up">{getFigureTypeLabel("warm_up")}</SelectItem>
+                    <SelectItem value="stretching">{getFigureTypeLabel("stretching")}</SelectItem>
                     {isAdmin && (
                       <SelectItem value="transitions">Przejścia</SelectItem>
                     )}
@@ -815,122 +817,126 @@ export const CreateExerciseModal = ({
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="description" className="text-white">
-                  Opis (Opcjonalne)
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Krótki opis ćwiczenia"
-                  rows={3}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="instructions" className="text-white">
-                  Instrukcje (Opcjonalne)
-                </Label>
-                <Textarea
-                  id="instructions"
-                  value={formData.instructions}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      instructions: e.target.value,
-                    }))
-                  }
-                  className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                  placeholder="Instrukcje krok po kroku"
-                  rows={4}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="tags" className="text-white">
-                  Tagi (Opcjonalne)
-                </Label>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      id="tags"
-                      value={tagInput}
-                      onChange={(e) => setTagInput(e.target.value)}
-                      onKeyPress={handleKeyPress}
+              {editingFigure && (
+                <>
+                  <div>
+                    <Label htmlFor="description" className="text-white">
+                      Opis (Opcjonalne)
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                      placeholder="Dodaj tag i naciśnij Enter"
+                      placeholder="Krótki opis ćwiczenia"
+                      rows={3}
                     />
-                    <Button
-                      type="button"
-                      onClick={addTag}
-                      variant="outline"
-                      className="border-white/10 text-white hover:bg-white/10"
-                    >
-                      Add
-                    </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="bg-white/10 text-white border-white/20 cursor-pointer"
-                        onClick={() => removeTag(tag)}
-                      >
-                        {tag} ✕
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </div>
 
-              <div>
-                <Label htmlFor="synonyms" className="text-white">
-                  Synonimy (Opcjonalne)
-                </Label>
-                <p className="text-sm text-white/60 mb-2">
-                  Alternatywne nazwy dla tego ćwiczenia
-                </p>
-                <div className="space-y-2">
-                  <div className="flex gap-2">
-                    <Input
-                      id="synonyms"
-                      value={synonymInput}
-                      onChange={(e) => setSynonymInput(e.target.value)}
-                      onKeyPress={handleSynonymKeyPress}
+                  <div>
+                    <Label htmlFor="instructions" className="text-white">
+                      Instrukcje (Opcjonalne)
+                    </Label>
+                    <Textarea
+                      id="instructions"
+                      value={formData.instructions}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          instructions: e.target.value,
+                        }))
+                      }
                       className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
-                      placeholder="Dodaj synonim i naciśnij Enter"
+                      placeholder="Instrukcje krok po kroku"
+                      rows={4}
                     />
-                    <Button
-                      type="button"
-                      onClick={addSynonym}
-                      variant="outline"
-                      className="border-white/10 text-white hover:bg-white/10"
-                    >
-                      Add
-                    </Button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.synonyms.map((synonym, index) => (
-                      <Badge
-                        key={index}
-                        variant="secondary"
-                        className="bg-blue-500/20 text-blue-300 border-blue-500/30 cursor-pointer"
-                        onClick={() => removeSynonym(synonym)}
-                      >
-                        {synonym} ✕
-                      </Badge>
-                    ))}
+
+                  <div>
+                    <Label htmlFor="tags" className="text-white">
+                      Tagi (Opcjonalne)
+                    </Label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          id="tags"
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyPress={handleKeyPress}
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                          placeholder="Dodaj tag i naciśnij Enter"
+                        />
+                        <Button
+                          type="button"
+                          onClick={addTag}
+                          variant="outline"
+                          className="border-white/10 text-white hover:bg-white/10"
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.tags.map((tag, index) => (
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="bg-white/10 text-white border-white/20 cursor-pointer"
+                            onClick={() => removeTag(tag)}
+                          >
+                            {tag} ✕
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+
+                  <div>
+                    <Label htmlFor="synonyms" className="text-white">
+                      Synonimy (Opcjonalne)
+                    </Label>
+                    <p className="text-sm text-white/60 mb-2">
+                      Alternatywne nazwy dla tego ćwiczenia
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input
+                          id="synonyms"
+                          value={synonymInput}
+                          onChange={(e) => setSynonymInput(e.target.value)}
+                          onKeyPress={handleSynonymKeyPress}
+                          className="bg-white/5 border-white/10 text-white placeholder:text-white/60"
+                          placeholder="Dodaj synonim i naciśnij Enter"
+                        />
+                        <Button
+                          type="button"
+                          onClick={addSynonym}
+                          variant="outline"
+                          className="border-white/10 text-white hover:bg-white/10"
+                        >
+                          Add
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {formData.synonyms.map((synonym, index) => (
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="bg-blue-500/20 text-blue-300 border-blue-500/30 cursor-pointer"
+                            onClick={() => removeSynonym(synonym)}
+                          >
+                            {synonym} ✕
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </>
           )}
 
