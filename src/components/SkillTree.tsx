@@ -126,6 +126,7 @@ const SkillTree = ({
         status?: string;
       };
     }>({});
+  const [historyStatePushed, setHistoryStatePushed] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -135,6 +136,33 @@ const SkillTree = ({
     };
     loadData();
   }, [sportCategory, user]);
+
+  // Handle browser back button for modal
+  useEffect(() => {
+    const handlePopState = () => {
+      if (historyStatePushed && isPreviewModalOpen) {
+        setIsPreviewModalOpen(false);
+        setSelectedFigure(null);
+        setHistoryStatePushed(false);
+        fetchSportLevelsAndProgress();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [historyStatePushed, isPreviewModalOpen]);
+
+  // Cleanup history state on unmount
+  useEffect(() => {
+    return () => {
+      if (historyStatePushed) {
+        setHistoryStatePushed(false);
+      }
+    };
+  }, [historyStatePushed]);
 
   const fetchSportLevelsAndProgress = async () => {
     if (!user) return;
@@ -397,6 +425,10 @@ const SkillTree = ({
     if (canPractice && canAccessFigure(figure)) {
       setSelectedFigure(figure);
       setIsPreviewModalOpen(true);
+      
+      // Add history entry for back button handling
+      window.history.pushState({ modalOpen: true }, '', window.location.href);
+      setHistoryStatePushed(true);
     } else if (canPractice && !canAccessFigure(figure)) {
       toast({
         title: "Premium Required",
@@ -407,8 +439,18 @@ const SkillTree = ({
   };
 
   const handleClosePreviewModal = () => {
-    setIsPreviewModalOpen(false);
-    setSelectedFigure(null);
+    if (historyStatePushed) {
+      // User closed modal via UI (X button, etc.)
+      setHistoryStatePushed(false);
+      setIsPreviewModalOpen(false);
+      setSelectedFigure(null);
+      window.history.back();
+    } else {
+      // Modal closed via back button (popstate already handled it)
+      setIsPreviewModalOpen(false);
+      setSelectedFigure(null);
+    }
+    
     // Refresh progress data
     fetchSportLevelsAndProgress();
   };
