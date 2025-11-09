@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['iguana-logo.svg', 'robots.txt'],
       manifest: {
         name: 'IguanaFlow - Master Your Aerial Journey',
