@@ -76,6 +76,7 @@ const Challenges = () => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const isMobile = useIsMobile();
+  const [historyStatePushed, setHistoryStatePushed] = useState(false);
 
   const {
     canCreateChallenges,
@@ -106,6 +107,32 @@ const Challenges = () => {
       fetchChallenges();
     }
   }, [roleLoading, isAdmin, canCreateChallenges, user]);
+
+  // Handle browser back button for modal
+  useEffect(() => {
+    const handlePopState = () => {
+      if (historyStatePushed && isModalOpen) {
+        setIsModalOpen(false);
+        setSelectedChallenge(null);
+        setHistoryStatePushed(false);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [historyStatePushed, isModalOpen]);
+
+  // Cleanup history state on unmount
+  useEffect(() => {
+    return () => {
+      if (historyStatePushed) {
+        setHistoryStatePushed(false);
+      }
+    };
+  }, [historyStatePushed]);
 
   const fetchChallenges = async () => {
     setIsLoading(true);
@@ -321,6 +348,10 @@ const Challenges = () => {
   const openChallengeModal = (challenge: Challenge) => {
     setSelectedChallenge(challenge);
     setIsModalOpen(true);
+    
+    // Add history entry for back button handling
+    window.history.pushState({ modalOpen: true }, '', window.location.href);
+    setHistoryStatePushed(true);
   };
 
   const handleJoinChallenge = async (challengeId: string) => {
@@ -380,8 +411,17 @@ const Challenges = () => {
   };
 
   const closeChallengeModal = () => {
-    setIsModalOpen(false);
-    setSelectedChallenge(null);
+    if (historyStatePushed) {
+      // User closed modal via UI (X button, etc.)
+      setHistoryStatePushed(false);
+      setIsModalOpen(false);
+      setSelectedChallenge(null);
+      window.history.back();
+    } else {
+      // Modal closed via back button (popstate already handled it)
+      setIsModalOpen(false);
+      setSelectedChallenge(null);
+    }
   };
 
   const getDifficultyColor = (difficulty: string) => {
