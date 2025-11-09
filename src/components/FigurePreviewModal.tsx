@@ -62,6 +62,13 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   const { getDifficultyColor, getDifficultyLabel } = useDictionary();
+  
+  // Normalize figure data to handle legacy/corrupted data
+  const normalizedFigure = figure ? {
+    ...figure,
+    difficulty_level: figure.difficulty_level?.toLowerCase() || 'beginner',
+    type: figure.type?.replace(/\s+/g, '_')?.toLowerCase() || 'single_figure',
+  } : null;
   const [figureProgress, setFigureProgress] = useState<string>("not_tried");
   const [loading, setLoading] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
@@ -195,8 +202,8 @@ export const FigurePreviewModal: React.FC<FigurePreviewModalProps> = ({
                 {figure.name}
               </h2>
               <div className="flex items-center gap-1.5 flex-wrap">
-                <Badge className={cn(getDifficultyColor(figure.difficulty_level), "text-xs")}>
-                  {getDifficultyLabel(figure.difficulty_level) || "Nieznany"}
+                <Badge className={cn(getDifficultyColor(normalizedFigure?.difficulty_level), "text-xs")}>
+                  {getDifficultyLabel(normalizedFigure?.difficulty_level) || figure.difficulty_level || "Nieznany"}
                 </Badge>
                 
                 {figure.level_hold_time_seconds && (

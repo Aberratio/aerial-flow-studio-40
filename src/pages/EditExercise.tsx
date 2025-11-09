@@ -153,13 +153,14 @@ const EditExercise = () => {
         videoUrl = videoData.publicUrl;
       }
 
+      // Normalize data before saving to prevent future issues
       const updateData = {
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         instructions: formData.instructions.trim() || null,
-        difficulty_level: formData.difficulty_level || null,
+        difficulty_level: formData.difficulty_level?.toLowerCase() || null,
         category: formData.category || null,
-        type: formData.type || null,
+        type: formData.type?.replace(/\s+/g, '_')?.toLowerCase() || null,
         image_url: imageUrl || null,
         video_url: videoUrl || null,
         audio_url: formData.audio_url || null,

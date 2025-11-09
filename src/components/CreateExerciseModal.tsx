@@ -226,17 +226,22 @@ export const CreateExerciseModal = ({
         videoUrl = videoData.publicUrl;
       }
 
+      // Normalize data before saving to prevent future issues
+      const normalizedData = {
+        name: formData.name.trim(),
+        description: formData.description.trim() || null,
+        instructions: formData.instructions.trim() || null,
+        difficulty_level: formData.difficulty_level?.toLowerCase() || null,
+        category: formData.category || null,
+        type: formData.type?.replace(/\s+/g, '_')?.toLowerCase() || null,
+      };
+
       // Create or update the figure
       if (editingFigure) {
         const { error } = await supabase
           .from("figures")
           .update({
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-            instructions: formData.instructions.trim() || null,
-            difficulty_level: formData.difficulty_level || null,
-            category: formData.category || null,
-            type: formData.type || null,
+            ...normalizedData,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
             audio_url: audioUrl || null,
@@ -258,12 +263,7 @@ export const CreateExerciseModal = ({
         const { data: figureData, error } = await supabase
           .from("figures")
           .insert({
-            name: formData.name.trim(),
-            description: formData.description.trim() || null,
-            instructions: formData.instructions.trim() || null,
-            difficulty_level: formData.difficulty_level || null,
-            category: formData.category || null,
-            type: formData.type || null,
+            ...normalizedData,
             image_url: imageUrl || null,
             video_url: videoUrl || null,
             audio_url: audioUrl || null,

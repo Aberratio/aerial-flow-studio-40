@@ -226,6 +226,7 @@ const SkillTree = ({
       });
 
       // Format the data to include figures with level-specific parameters
+      // Also normalize figure data to handle legacy/corrupted data
       const formattedLevels =
         levelsData?.map((level) => ({
           id: level.id,
@@ -242,6 +243,9 @@ const SkillTree = ({
               ?.sort((a: any, b: any) => a.order_index - b.order_index)
               ?.map((lf: any) => ({
                 ...lf.figures,
+                // Normalize data to prevent rendering errors
+                difficulty_level: lf.figures?.difficulty_level?.toLowerCase() || 'beginner',
+                type: lf.figures?.type?.replace(/\s+/g, '_')?.toLowerCase() || 'single_figure',
                 level_figure_id: lf.id,
                 is_boss: lf.is_boss,
                 boss_description: lf.boss_description,
