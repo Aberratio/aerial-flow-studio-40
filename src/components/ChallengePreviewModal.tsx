@@ -108,7 +108,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   const [isRetaking, setIsRetaking] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const { user } = useAuth();
-  const { canCreateChallenges } = useUserRole();
+  const { canCreateChallenges, isLoading: isRoleLoading } = useUserRole();
   const { checkChallengeAccess, userPurchases, refreshPurchases } =
     useChallengeAccess();
   const { hasPremiumAccess } = useSubscriptionStatus();
@@ -191,11 +191,15 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   };
 
   const canEditChallenge = () => {
-    return (
-      canCreateChallenges &&
-      challenge &&
-      (user?.id === challenge.created_by || user?.role === "admin")
-    );
+    if (!challenge || !user) return false;
+    
+    // Admins can always edit
+    if (user.role === 'admin') return true;
+    
+    // Trainers can edit their own challenges
+    if (canCreateChallenges && user.id === challenge.created_by) return true;
+    
+    return false;
   };
 
   if (!challenge) return null;

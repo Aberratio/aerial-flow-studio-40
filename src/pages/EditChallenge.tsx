@@ -327,7 +327,7 @@ const EditChallenge = () => {
     }
   };
 
-  const validateForm = () => {
+  const validateForm = (isPublishing: boolean = false) => {
     const newErrors: typeof errors = {};
     
     if (!title.trim()) {
@@ -340,8 +340,9 @@ const EditChallenge = () => {
       newErrors.description = "Description is too long (max 1000 characters)";
     }
     
-    if (trainingDays.length === 0) {
-      newErrors.trainingDays = "At least one training day is required";
+    // Training days required ONLY when publishing
+    if (isPublishing && trainingDays.length === 0) {
+      newErrors.trainingDays = "At least one training day is required for publishing";
     }
     
     setErrors(newErrors);
@@ -351,8 +352,8 @@ const EditChallenge = () => {
   const saveChallenge = async () => {
     if (!user || !challenge) return;
 
-    // Validate form
-    if (!validateForm()) {
+    // Validate form - pass isPublished flag to check training days only when publishing
+    if (!validateForm(isPublished)) {
       toast({
         title: "Validation Error",
         description: "Please fix the errors in the form.",
@@ -964,6 +965,14 @@ const EditChallenge = () => {
 
             {/* Training Days Section */}
             <div className="space-y-6">
+              {trainingDays.length === 0 && (
+                <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
+                  <p className="text-sm text-yellow-200">
+                    ⚠️ To wyzwanie nie ma jeszcze dni treningowych. Dodaj je przed publikacją.
+                  </p>
+                </div>
+              )}
+              
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <CalendarDays className="w-6 h-6 text-blue-400" />

@@ -179,14 +179,6 @@ const CreateChallengeModal = ({
       return;
     }
 
-    if (trainingDays.length === 0) {
-      toast({
-        title: "Brakujące dni treningowe",
-        description: "Musisz dodać przynajmniej 1 dzień treningowy.",
-        variant: "destructive",
-      });
-      return;
-    }
 
     setIsLoading(true);
 
@@ -400,50 +392,6 @@ const CreateChallengeModal = ({
     );
   };
 
-  const publishChallenge = async () => {
-    if (!challengeId && !title.trim()) {
-      toast({
-        title: "Najpierw zapisz szkic",
-        description: "Proszę najpierw zapisać jako szkic przed opublikowaniem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Save as draft first if not already saved
-    if (!challengeId) {
-      await saveDraft();
-      if (!challengeId) return; // If save failed, don't proceed
-    }
-
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase
-        .from("challenges")
-        .update({ status: "published" })
-        .eq("id", challengeId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Wyzwanie opublikowane",
-        description: "Wyzwanie zostało pomyślnie opublikowane.",
-      });
-
-      onChallengeCreated();
-      handleClose();
-    } catch (error) {
-      console.error("Error publishing challenge:", error);
-      toast({
-        title: "Error",
-        description: "Failed to publish challenge.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -467,20 +415,9 @@ const CreateChallengeModal = ({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="description">Opis</Label>
-            <Textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Opisz swoje wyzwanie..."
-              rows={4}
-              maxLength={500}
-            />
-          </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image">Zdjęcie wyzwania</Label>
+            <Label htmlFor="image">Zdjęcie wyzwania *</Label>
             <div className="space-y-2">
               <Input
                 id="image"
@@ -514,7 +451,7 @@ const CreateChallengeModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="level">Poziom</Label>
+            <Label htmlFor="level">Poziom *</Label>
             <Input
               id="level"
               type="number"
@@ -526,7 +463,7 @@ const CreateChallengeModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="difficulty">Poziom trudności</Label>
+            <Label htmlFor="difficulty">Poziom trudności *</Label>
             <select
               id="difficulty"
               value={difficultyLevel}
@@ -540,7 +477,7 @@ const CreateChallengeModal = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="type">Typ wyzwania</Label>
+            <Label htmlFor="type">Typ wyzwania *</Label>
             <select
               id="type"
               value={type}
@@ -552,43 +489,6 @@ const CreateChallengeModal = ({
             </select>
           </div>
 
-          {/* Achievements Section */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-purple-400" />
-              <Label className="text-lg font-semibold">
-                Challenge Achievements
-              </Label>
-            </div>
-            <div className="grid grid-cols-1 gap-2 max-h-32 sm:max-h-40 overflow-y-auto border rounded-lg p-3 sm:p-4">
-              {achievements.map((achievement) => (
-                <div
-                  key={achievement.id}
-                  className="flex items-center space-x-2 sm:space-x-3"
-                >
-                  <Checkbox
-                    id={achievement.id}
-                    checked={selectedAchievements.includes(achievement.id)}
-                    onCheckedChange={() => toggleAchievement(achievement.id)}
-                  />
-                  <Label
-                    htmlFor={achievement.id}
-                    className="flex-1 text-xs sm:text-sm cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">{achievement.icon}</span>
-                      <div>
-                        <div className="font-medium">{achievement.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {achievement.points} points
-                        </div>
-                      </div>
-                    </div>
-                  </Label>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* Training Days Section */}
           <div className="space-y-4">
@@ -706,9 +606,9 @@ const CreateChallengeModal = ({
               {trainingDays.length === 0 && (
                 <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                   <CalendarDays className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                  <p>No training days added yet</p>
+                  <p>Brak dodanych dni treningowych</p>
                   <p className="text-sm">
-                    Kliknij "Dodaj dzień", aby utworzyć sesje treningowe
+                    Dni treningowe można dodać później w edycji wyzwania
                   </p>
                 </div>
               )}
@@ -724,28 +624,16 @@ const CreateChallengeModal = ({
               Anuluj
             </Button>
 
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button
-                variant="outline"
-                onClick={saveDraft}
-                disabled={isLoading}
-                className="flex items-center justify-center gap-2 w-full sm:w-auto"
-              >
-                <Save className="w-4 h-4" />
-                <span className="hidden sm:inline">Zapisz szkic</span>
-                <span className="sm:hidden">Szkic</span>
-              </Button>
-
-              <Button
-                onClick={publishChallenge}
-                disabled={isLoading}
-                className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 w-full sm:w-auto"
-              >
-                <Globe className="w-4 h-4" />
-                <span className="hidden sm:inline">Opublikuj wyzwanie</span>
-                <span className="sm:hidden">Opublikuj</span>
-              </Button>
-            </div>
+            <Button
+              variant="outline"
+              onClick={saveDraft}
+              disabled={isLoading}
+              className="flex items-center justify-center gap-2 w-full sm:w-auto"
+            >
+              <Save className="w-4 h-4" />
+              <span className="hidden sm:inline">Zapisz szkic</span>
+              <span className="sm:hidden">Szkic</span>
+            </Button>
           </div>
         </div>
       </DialogContent>
