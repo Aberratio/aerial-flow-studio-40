@@ -67,7 +67,6 @@ export const useAuthState = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       console.log('AuthContext: Auth state change', _event, session?.user?.id);
       setSession(session);
-      setIsLoading(false);
 
       if (session?.user) {
         // Defer Supabase calls with setTimeout to prevent deadlock
@@ -97,6 +96,8 @@ export const useAuthState = () => {
             }
           } catch (err) {
             console.error('AuthContext: Error fetching profile:', err);
+          } finally {
+            setIsLoading(false);
           }
         }, 0);
       } else {
@@ -104,6 +105,7 @@ export const useAuthState = () => {
         setUser(null);
         setIsImpersonating(false);
         setOriginalAdminUser(null);
+        setIsLoading(false);
       }
     });
 

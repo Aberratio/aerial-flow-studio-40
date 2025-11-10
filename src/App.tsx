@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UpdateChecker } from "@/components/UpdateChecker";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { useScrollRestoration } from "@/hooks/useScrollRestoration";
 import AppLayout from "@/components/Layout/AppLayout";
 import Landing from "@/pages/Landing";
 import Feed from "@/pages/Feed";
@@ -119,6 +120,8 @@ const ConditionalLayout: React.FC<{ children: React.ReactNode }> = ({
 };
 
 const AppRoutes = () => {
+  useScrollRestoration();
+  
   return (
     <Routes>
       <Route
@@ -420,19 +423,21 @@ const AppRoutes = () => {
   );
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <UpdateChecker />
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <AppRoutes />
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <UpdateChecker />
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
