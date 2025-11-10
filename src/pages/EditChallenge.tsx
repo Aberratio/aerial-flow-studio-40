@@ -183,6 +183,24 @@ const EditChallenge = () => {
     }
   }, [challengeId]);
 
+  // Validate user access after challenge is loaded
+  useEffect(() => {
+    if (challenge && user) {
+      const canEdit = user.role === 'admin' || 
+                     (user.role === 'trainer' && user.id === challenge.created_by);
+      
+      if (!canEdit) {
+        toast({
+          title: "Access denied",
+          description: "You don't have permission to edit this challenge.",
+          variant: "destructive",
+        });
+        navigate("/challenges");
+      }
+    }
+  }, [challenge, user, navigate, toast]);
+
+
   const fetchChallengeData = async () => {
     try {
       setIsLoadingData(true);
@@ -276,12 +294,16 @@ const EditChallenge = () => {
       setCollapsedDays(allDayIndices);
     } catch (error) {
       console.error("Error fetching challenge:", error);
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      
       toast({
-        title: "Error",
-        description: "Failed to load challenge data.",
+        title: "Error loading challenge",
+        description: error instanceof Error ? error.message : "Failed to load challenge data. Check console for details.",
         variant: "destructive",
       });
-      navigate("/challenges");
+      
+      // Don't redirect immediately - allow user to see the error
+      setChallenge(null);
     } finally {
       setIsLoadingData(false);
     }
