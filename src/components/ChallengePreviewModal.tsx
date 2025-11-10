@@ -15,7 +15,6 @@ import RetakeChallengeModal from "@/components/RetakeChallengeModal";
 import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useUserRole } from "@/hooks/useUserRole";
 import { useChallengeAccess } from "@/hooks/useChallengeAccess";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import { useNavigate } from "react-router-dom";
@@ -108,7 +107,6 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   const [isRetaking, setIsRetaking] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const { user } = useAuth();
-  const { canCreateChallenges, isLoading: isRoleLoading } = useUserRole();
   const { checkChallengeAccess, userPurchases, refreshPurchases } =
     useChallengeAccess();
   const { hasPremiumAccess } = useSubscriptionStatus();
@@ -197,7 +195,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     if (user.role === 'admin') return true;
     
     // Trainers can edit their own challenges
-    if (canCreateChallenges && user.id === challenge.created_by) return true;
+    if (user.role === 'trainer' && user.id === challenge.created_by) return true;
     
     return false;
   };
