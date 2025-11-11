@@ -14,7 +14,8 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ChevronDown, Crown, Plus, X, GripVertical, RotateCcw } from "lucide-react";
+import { ChevronDown, Crown, Plus, X, GripVertical, RotateCcw, Trophy } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { getDifficultyColorClass } from "@/lib/figureUtils";
 import { useDictionary } from "@/contexts/DictionaryContext";
 
@@ -48,6 +49,15 @@ interface FigureType {
 interface Challenge {
   id: string;
   title: string;
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  points: number;
+  rule_type: string;
 }
 
 interface LevelFigureParams {
@@ -91,6 +101,10 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
   const [availableCategories, setAvailableCategories] = useState<FigureType[]>([]);
   const [availableTypes, setAvailableTypes] = useState<FigureType[]>([]);
   const [currentSportCategoryId, setCurrentSportCategoryId] = useState<string | null>(null);
+  
+  // Achievements state
+  const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
+  const [availableAchievements, setAvailableAchievements] = useState<Achievement[]>([]);
   
   // Filters - load from localStorage
   const [searchQuery, setSearchQuery] = useState("");
@@ -149,12 +163,13 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
   const fetchData = async () => {
     try {
-      const [figuresRes, challengesRes, sportCategoryRes, sportCategoriesRes, typesRes] = await Promise.all([
+      const [figuresRes, challengesRes, sportCategoryRes, sportCategoriesRes, typesRes, achievementsRes] = await Promise.all([
         supabase.from("figures").select("*").order("name"),
         supabase.from("challenges").select("id, title").eq("status", "published").order("title"),
         supabase.from("sport_categories").select("id, key_name").eq("key_name", sportKey).single(),
         supabase.from("sport_categories").select("key_name, name").order("name"),
-        supabase.from("figure_types").select("key, name_pl").order("order_index")
+        supabase.from("figure_types").select("key, name_pl").order("order_index"),
+        supabase.from("achievements").select("id, name, description, icon, points, rule_type").eq("rule_type", "sport_level_completion").order("name")
       ]);
 
       if (figuresRes.error) throw figuresRes.error;
@@ -163,6 +178,7 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
       setAllFigures(figuresRes.data || []);
       setChallenges(challengesRes.data || []);
       setCurrentSportCategoryId(sportCategoryRes.data?.id || null);
+      setAvailableAchievements(achievementsRes.data || []);
       
       // Map sport categories to FigureType format
       const sportCats: FigureType[] = (sportCategoriesRes.data || []).map(sc => ({
@@ -208,6 +224,14 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
       }));
 
       setSelectedFigures(figureParams);
+      
+      // Fetch achievements for this level
+      const { data: achievementData } = await supabase
+        .from("sport_level_achievements")
+        .select("achievement_id")
+        .eq("sport_level_id", level.id);
+
+      setSelectedAchievements(achievementData?.map(a => a.achievement_id) || []);
     } catch (error) {
       console.error("Błąd ładowania figurek:", error);
       toast.error("Nie udało się załadować figurek");
@@ -221,6 +245,7 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
     setChallengeId("");
     setStatus("draft");
     setSelectedFigures([]);
+    setSelectedAchievements([]);
     setActiveTab("info");
   };
 
@@ -334,6 +359,16 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
   const getFigureById = (id: string) => allFigures.find(f => f.id === id);
 
+  const toggleAchievement = (achievementId: string) => {
+    setSelectedAchievements(prev => {
+      if (prev.includes(achievementId)) {
+        return prev.filter(id => id !== achievementId);
+      } else {
+        return [...prev, achievementId];
+      }
+    });
+  };
+
   const saveAllChanges = async () => {
     if (!levelName.trim()) {
       toast.error("Nazwa poziomu jest wymagana");
@@ -416,6 +451,28 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
           if (insertError) throw insertError;
         }
+        
+        // Save level achievements
+        // Delete old achievements
+        await supabase
+          .from("sport_level_achievements")
+          .delete()
+          .eq("sport_level_id", levelId);
+
+        // Insert new achievements
+        if (selectedAchievements.length > 0) {
+          const achievementsData = selectedAchievements.map(achievementId => ({
+            sport_level_id: levelId,
+            achievement_id: achievementId,
+            created_by: user?.id,
+          }));
+
+          const { error: achError } = await supabase
+            .from("sport_level_achievements")
+            .insert(achievementsData);
+
+          if (achError) throw achError;
+        }
       }
 
       toast.success(level ? "Zaktualizowano poziom" : "Utworzono poziom");
@@ -447,10 +504,13 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
             <div className="px-6 pt-4">
-              <TabsList className="w-full grid grid-cols-2">
+              <TabsList className="w-full grid grid-cols-3">
                 <TabsTrigger value="info">Informacje o Poziomie</TabsTrigger>
                 <TabsTrigger value="figures">
                   Figurki ({selectedFigures.length})
+                </TabsTrigger>
+                <TabsTrigger value="achievements">
+                  Odznaki ({selectedAchievements.length})
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -871,6 +931,74 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
                     </div>
                   </ScrollArea>
                 </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="achievements" className="flex-1 overflow-auto px-6 pb-6 mt-4">
+              <div className="space-y-4 max-w-4xl">
+                <div className="bg-blue-900/20 border border-blue-400/30 rounded-lg p-4 mb-4">
+                  <h4 className="text-blue-400 font-medium mb-2 flex items-center gap-2">
+                    <Trophy className="w-4 h-4" />
+                    Odznaki za ukończenie poziomu
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Wybierz odznaki, które użytkownik otrzyma po zaliczeniu wszystkich figur w tym poziomie.
+                    Tylko odznaki typu "Sport Level Completion" są dostępne.
+                  </p>
+                </div>
+
+                {availableAchievements.length === 0 ? (
+                  <Card className="bg-white/5 border-white/10 p-8 text-center">
+                    <p className="text-muted-foreground">
+                      Brak dostępnych odznak typu "Sport Level Completion".
+                      <br />
+                      Utwórz odznaki w sekcji Achievement Management.
+                    </p>
+                  </Card>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {availableAchievements.map((achievement) => {
+                      const isSelected = selectedAchievements.includes(achievement.id);
+                      
+                      return (
+                        <Card
+                          key={achievement.id}
+                          className={cn(
+                            "cursor-pointer transition-all",
+                            isSelected
+                              ? "bg-purple-500/20 border-purple-400/50"
+                              : "bg-white/5 border-white/10 hover:border-white/20"
+                          )}
+                          onClick={() => toggleAchievement(achievement.id)}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-3">
+                              <div className="flex-shrink-0">
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={() => toggleAchievement(achievement.id)}
+                                  className="mt-1"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-2xl">{achievement.icon}</span>
+                                  <h4 className="font-medium text-white">{achievement.name}</h4>
+                                </div>
+                                <p className="text-sm text-muted-foreground mb-2">
+                                  {achievement.description}
+                                </p>
+                                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
+                                  +{achievement.points} punktów
+                                </Badge>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </TabsContent>
           </Tabs>

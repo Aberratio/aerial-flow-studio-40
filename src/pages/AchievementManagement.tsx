@@ -192,6 +192,9 @@ const AchievementManagement = () => {
   }, {
     value: 'challenges_completed',
     label: 'Challenges Completed'
+  }, {
+    value: 'sport_level_completion',
+    label: 'Sport Level Completion'
   }];
   if (loading) {
     return <div className="min-h-screen p-6 flex items-center justify-center">
