@@ -198,7 +198,7 @@ const EditChallenge = () => {
         navigate("/challenges");
       }
     }
-  }, [challenge, user, navigate, toast]);
+  }, [challenge, user]);
 
 
   const fetchChallengeData = async () => {
