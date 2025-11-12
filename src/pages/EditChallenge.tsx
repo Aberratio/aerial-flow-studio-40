@@ -1307,36 +1307,6 @@ const EditChallenge = () => {
           </div>
         </div>
 
-        <ConfirmDeleteModal
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={() => navigate("/challenges")}>
-                  Cancel
-                </Button>
-                
-                <Button
-                  variant="destructive"
-                  onClick={() => setShowDeleteModal(true)}
-                  disabled={isLoading || isDeleting}
-                  className="flex items-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete Challenge
-                </Button>
-              </div>
-
-              <Button
-                onClick={saveChallenge}
-                disabled={isLoading}
-                className="flex items-center gap-2 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600"
-              >
-                <Save className="w-4 h-4" />
-                {isLoading ? "Saving..." : "Update Challenge"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Save Progress Indicator */}
       {saveProgress && (
         <div className="fixed bottom-4 right-4 bg-primary text-primary-foreground p-4 rounded-lg shadow-lg z-50">
