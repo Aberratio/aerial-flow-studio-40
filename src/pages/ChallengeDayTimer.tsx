@@ -376,11 +376,28 @@ const ChallengeDayTimer = () => {
     }
   }, [isRunning, isPreparingToStart]);
 
-  // Reset video when segment changes
+  // Reset video when segment changes and auto-play if needed
   useEffect(() => {
     if (!videoRef.current) return;
+    
     videoRef.current.currentTime = 0;
-  }, [currentSegmentIndex]);
+    
+    // Auto-play video for new segment if:
+    // 1. Timer is running (not paused)
+    // 2. Not in preparation phase
+    // 3. Current segment has video to play
+    const currentSegment = segments[currentSegmentIndex];
+    const shouldAutoPlay = 
+      isRunning && 
+      !isPreparingToStart && 
+      currentSegment?.shouldPlayVideo;
+    
+    if (shouldAutoPlay) {
+      videoRef.current.play().catch(err => {
+        console.error("Error auto-playing video on segment change:", err);
+      });
+    }
+  }, [currentSegmentIndex, isRunning, isPreparingToStart, segments]);
 
   // Fullscreen API handling
   useEffect(() => {
