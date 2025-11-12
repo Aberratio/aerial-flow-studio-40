@@ -1569,6 +1569,9 @@ export type Database = {
           rest_time_seconds: number | null
           sets: number | null
           training_day_id: string
+          video_position:
+            | Database["public"]["Enums"]["video_position_type"]
+            | null
           video_url: string | null
         }
         Insert: {
@@ -1585,6 +1588,9 @@ export type Database = {
           rest_time_seconds?: number | null
           sets?: number | null
           training_day_id: string
+          video_position?:
+            | Database["public"]["Enums"]["video_position_type"]
+            | null
           video_url?: string | null
         }
         Update: {
@@ -1601,6 +1607,9 @@ export type Database = {
           rest_time_seconds?: number | null
           sets?: number | null
           training_day_id?: string
+          video_position?:
+            | Database["public"]["Enums"]["video_position_type"]
+            | null
           video_url?: string | null
         }
         Relationships: [
@@ -2740,6 +2749,7 @@ export type Database = {
     }
     Enums: {
       user_role: "free" | "premium" | "trainer" | "admin"
+      video_position_type: "center" | "top" | "bottom" | "left" | "right"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2868,6 +2878,7 @@ export const Constants = {
   public: {
     Enums: {
       user_role: ["free", "premium", "trainer", "admin"],
+      video_position_type: ["center", "top", "bottom", "left", "right"],
     },
   },
 } as const

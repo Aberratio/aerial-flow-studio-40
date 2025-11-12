@@ -34,6 +34,7 @@ interface Exercise {
   rest_time_seconds?: number;
   notes?: string;
   play_video?: boolean;
+  video_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
   figure: {
     id: string;
     name: string;
@@ -55,6 +56,7 @@ interface TimerSegment {
   exerciseNotes?: string;
   shouldPlayVideo?: boolean;
   videoUrl?: string;
+  videoPosition?: string;
 }
 
 const ChallengeDayTimer = () => {
@@ -196,6 +198,7 @@ const ChallengeDayTimer = () => {
             rest_time_seconds: exercise.rest_time_seconds || 15,
             notes: exercise.notes,
             play_video: exercise.play_video,
+            video_position: exercise.video_position,
             figure: exercise.figure,
           })) || [];
 
@@ -235,6 +238,7 @@ const ChallengeDayTimer = () => {
           exerciseNotes: exercise.notes,
           shouldPlayVideo: exercise.play_video && !!exercise.figure.video_url,
           videoUrl: exercise.figure.video_url,
+          videoPosition: exercise.video_position || 'center',
         });
 
         if (
@@ -496,6 +500,17 @@ const ChallengeDayTimer = () => {
       return `${mins} minut`;
     } else {
       return `${mins} minut i ${secs} sekund`;
+    }
+  };
+
+  const getVideoPositionClass = (position?: string): string => {
+    switch (position) {
+      case 'top': return 'object-top';
+      case 'bottom': return 'object-bottom';
+      case 'left': return 'object-left';
+      case 'right': return 'object-right';
+      case 'center':
+      default: return 'object-center';
     }
   };
 
@@ -822,7 +837,7 @@ const ChallengeDayTimer = () => {
                           <video
                             ref={videoRef}
                             src={getCurrentSegment().videoUrl}
-                            className="w-full aspect-square object-cover rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0"
+                            className={`w-full aspect-square object-cover rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0 ${getVideoPositionClass(getCurrentSegment().videoPosition)}`}
                             loop
                             muted
                             playsInline

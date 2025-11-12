@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -48,6 +49,7 @@ interface Exercise {
   audio_url?: string;
   notes?: string;
   play_video?: boolean;
+  video_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
   figure?: {
     id: string;
     name: string;
@@ -96,6 +98,8 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   const [audioUrl, setAudioUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [playVideo, setPlayVideo] = useState<boolean>(true);
+  const [videoPosition, setVideoPosition] = useState<'center' | 'top' | 'bottom' | 'left' | 'right'>('center');
+  const [applyToAllDays, setApplyToAllDays] = useState<boolean>(true);
   const { toast } = useToast();
   const { user } = useAuth();
   const { getDifficultyColor, getDifficultyLabel } = useDictionary();
@@ -150,6 +154,8 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     setAudioUrl("");
     setNotes("");
     setPlayVideo(true);
+    setVideoPosition('center');
+    setApplyToAllDays(true);
     setEditingExercise(null);
   };
 
@@ -169,6 +175,8 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     setAudioUrl(exercise.audio_url || "");
     setNotes(exercise.notes || "");
     setPlayVideo(exercise.play_video ?? true);
+    setVideoPosition(exercise.video_position || 'center');
+    setApplyToAllDays(true);
     setIsAddModalOpen(true);
   };
 
@@ -199,6 +207,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         audio_url: audioUrl || undefined,
         notes: notes || undefined,
         play_video: selectedFigureHasVideo() ? playVideo : undefined,
+        video_position: selectedFigureHasVideo() ? videoPosition : undefined,
         figure: availableFigures.find((f) => f.id === selectedFigure),
       };
 
@@ -230,6 +239,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         audio_url: audioUrl || null,
         notes: notes || null,
         play_video: selectedFigureHasVideo() ? playVideo : null,
+        video_position: selectedFigureHasVideo() ? videoPosition : null,
       };
 
       let result;
@@ -245,6 +255,14 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
           `
           )
           .single();
+
+        // Update all instances of this figure in the challenge if applyToAllDays is checked
+        if (!result.error && applyToAllDays && selectedFigureHasVideo()) {
+          await updateVideoSettingsForAllDays(selectedFigure, {
+            play_video: playVideo,
+            video_position: videoPosition as 'center' | 'top' | 'bottom' | 'left' | 'right',
+          });
+        }
       } else {
         result = await supabase
           .from("training_day_exercises")
@@ -284,6 +302,50 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         description: "Failed to save exercise",
         variant: "destructive",
       });
+    }
+  };
+
+  const updateVideoSettingsForAllDays = async (
+    figureId: string,
+    settings: { play_video: boolean; video_position: 'center' | 'top' | 'bottom' | 'left' | 'right' }
+  ) => {
+    try {
+      // Get challenge_id from current training_day_id
+      const { data: dayData } = await supabase
+        .from("challenge_training_days")
+        .select("challenge_id")
+        .eq("id", trainingDayId)
+        .single();
+
+      if (!dayData) return;
+
+      // Get all training days for this challenge
+      const { data: allDays } = await supabase
+        .from("challenge_training_days")
+        .select("id")
+        .eq("challenge_id", dayData.challenge_id);
+
+      if (!allDays) return;
+
+      const dayIds = allDays.map(d => d.id);
+
+      // Update all exercises with this figure_id in all days of this challenge
+      const { error } = await supabase
+        .from("training_day_exercises")
+        .update(settings)
+        .eq("figure_id", figureId)
+        .in("training_day_id", dayIds);
+
+      if (error) {
+        console.error("Error updating video settings for all days:", error);
+        toast({
+          title: "Partial update",
+          description: "Exercise updated but settings may not have applied to all days.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error in updateVideoSettingsForAllDays:", error);
     }
   };
 
@@ -531,24 +593,100 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
             </div>
 
             {selectedFigureHasVideo() && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={playVideo}
-                    onCheckedChange={setPlayVideo}
-                    id="play-video"
-                  />
-                  <Label htmlFor="play-video" className="cursor-pointer">
-                    <div className="flex items-center gap-2">
-                      <Video className="w-4 h-4" />
-                      <span>Pokaż wideo podczas treningu</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Jeśli włączone, podczas treningu zamiast zdjęcia odtworzy się wideo figury
-                    </p>
-                  </Label>
+              <>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={playVideo}
+                      onCheckedChange={setPlayVideo}
+                      id="play-video"
+                    />
+                    <Label htmlFor="play-video" className="cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Video className="w-4 h-4" />
+                        <span>Pokaż wideo podczas treningu</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Jeśli włączone, podczas treningu zamiast zdjęcia odtworzy się wideo figury
+                      </p>
+                    </Label>
+                  </div>
                 </div>
-              </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="video-position">Pozycja kadrowania video</Label>
+                  <Select
+                    value={videoPosition}
+                    onValueChange={(value: any) => setVideoPosition(value)}
+                  >
+                    <SelectTrigger id="video-position">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="center">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white rounded flex items-center justify-center">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                          </div>
+                          Centrum
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="top">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white rounded flex items-start justify-center">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full mt-0.5" />
+                          </div>
+                          Góra
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="bottom">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white rounded flex items-end justify-center">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full mb-0.5" />
+                          </div>
+                          Dół
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="left">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white rounded flex items-center justify-start">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full ml-0.5" />
+                          </div>
+                          Lewa strona
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="right">
+                        <div className="flex items-center gap-2">
+                          <div className="w-4 h-4 border-2 border-white rounded flex items-center justify-end">
+                            <div className="w-1.5 h-1.5 bg-white rounded-full mr-0.5" />
+                          </div>
+                          Prawa strona
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Określa, która część video jest widoczna gdy jest przycinane do kwadratu
+                  </p>
+                </div>
+
+                <div className="space-y-2 bg-blue-900/20 border border-blue-400/30 rounded-lg p-3">
+                  <div className="flex items-center gap-2">
+                    <Checkbox
+                      id="apply-to-all-days"
+                      checked={applyToAllDays}
+                      onCheckedChange={(checked) => setApplyToAllDays(!!checked)}
+                    />
+                    <Label htmlFor="apply-to-all-days" className="cursor-pointer text-sm font-medium text-blue-300">
+                      Zastosuj ustawienia video do wszystkich dni z tym ćwiczeniem
+                    </Label>
+                  </div>
+                  <p className="text-xs text-blue-200/70 ml-6">
+                    Jeśli zaznaczone, ustawienia "Pokaż wideo" i "Pozycja kadrowania" zostaną 
+                    zastosowane do wszystkich wystąpień tego ćwiczenia w wyzwaniu
+                  </p>
+                </div>
+              </>
             )}
 
             <div className="space-y-2">

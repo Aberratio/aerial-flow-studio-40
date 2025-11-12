@@ -706,7 +706,7 @@ const EditChallenge = () => {
   }
 
   return (
-    <div className="min-h-screen p-6">
+    <div className="min-h-screen p-3 sm:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -718,7 +718,7 @@ const EditChallenge = () => {
           </div>
         </div>
 
-        <div className="bg-black/50 backdrop-blur-lg rounded-lg border border-white/10 p-6">
+        <div className="bg-black/50 backdrop-blur-lg rounded-lg border border-white/10 p-3 sm:p-6">
           <div className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="title">Challenge Title *</Label>
@@ -994,15 +994,17 @@ const EditChallenge = () => {
                   </p>
                 </div>
               )}
-              
-              <div className="flex items-center justify-between">
+
+            {/* Training Days Section */}
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <CalendarDays className="w-6 h-6 text-blue-400" />
+                  <CalendarDays className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
                   <div>
-                    <Label className="text-xl font-bold">
+                    <Label className="text-lg sm:text-xl font-bold">
                       Training Days ({trainingDays.length})
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Design your challenge schedule
                     </p>
                     {errors.trainingDays && (
@@ -1010,7 +1012,7 @@ const EditChallenge = () => {
                     )}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full sm:w-auto">
                   <BulkDayCreator
                     trainingDays={trainingDays}
                     onUpdateDays={setTrainingDays}
@@ -1018,12 +1020,12 @@ const EditChallenge = () => {
                   <Button
                     type="button"
                     variant="default"
-                    size="lg"
+                    size="sm"
                     onClick={addTrainingDay}
-                    className="flex items-center gap-2 bg-primary hover:bg-primary/90"
+                    className="flex items-center gap-2 bg-primary hover:bg-primary/90 flex-1 sm:flex-initial"
                   >
-                    <Plus className="w-5 h-5" />
-                    Add Day
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm">Add Day</span>
                   </Button>
                 </div>
               </div>
@@ -1260,8 +1262,9 @@ const EditChallenge = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
 
-            {/* Redemption Codes Section - only show for premium challenges */}
             {isPremium && challengeId && (
               <RedemptionCodeManagement 
                 challengeId={challengeId}
@@ -1269,7 +1272,42 @@ const EditChallenge = () => {
               />
             )}
 
-            <div className="flex justify-between pt-4">
+            {/* Footer Actions */}
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-white/10 p-3 sm:p-6 mt-6">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => navigate("/challenges")}
+                disabled={isLoading}
+                className="w-full sm:w-auto order-3 sm:order-1"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={saveChallenge}
+                disabled={isLoading}
+                className="w-full sm:flex-1 order-1 sm:order-2"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {isLoading ? (saveProgress || "Saving...") : "Save Changes"}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => setShowDeleteModal(true)}
+                disabled={isLoading}
+                className="w-full sm:w-auto order-2 sm:order-3"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <ConfirmDeleteModal
               <div className="flex gap-2">
                 <Button variant="outline" onClick={() => navigate("/challenges")}>
                   Cancel
