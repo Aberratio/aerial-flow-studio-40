@@ -1564,6 +1564,7 @@ export type Database = {
           id: string
           notes: string | null
           order_index: number
+          play_video: boolean | null
           reps: number | null
           rest_time_seconds: number | null
           sets: number | null
@@ -1579,6 +1580,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_index?: number
+          play_video?: boolean | null
           reps?: number | null
           rest_time_seconds?: number | null
           sets?: number | null
@@ -1594,6 +1596,7 @@ export type Database = {
           id?: string
           notes?: string | null
           order_index?: number
+          play_video?: boolean | null
           reps?: number | null
           rest_time_seconds?: number | null
           sets?: number | null

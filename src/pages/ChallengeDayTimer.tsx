@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Hand,
@@ -33,6 +33,7 @@ interface Exercise {
   hold_time_seconds?: number;
   rest_time_seconds?: number;
   notes?: string;
+  play_video?: boolean;
   figure: {
     id: string;
     name: string;
@@ -40,6 +41,7 @@ interface Exercise {
     category?: string;
     instructions?: string;
     image_url?: string;
+    video_url?: string;
   };
 }
 
@@ -51,6 +53,8 @@ interface TimerSegment {
   exerciseName: string;
   exerciseImage?: string;
   exerciseNotes?: string;
+  shouldPlayVideo?: boolean;
+  videoUrl?: string;
 }
 
 const ChallengeDayTimer = () => {
@@ -85,6 +89,7 @@ const ChallengeDayTimer = () => {
   const [isRestDay, setIsRestDay] = useState(false);
   const [trainingDayData, setTrainingDayData] = useState<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { speak } = useSpeech(audioMode === "sound");
   const {
@@ -173,7 +178,7 @@ const ChallengeDayTimer = () => {
             `
               *,
               figure:figures (
-                id, name, image_url
+                id, name, image_url, video_url
               )
             `
           )
@@ -190,6 +195,7 @@ const ChallengeDayTimer = () => {
             hold_time_seconds: exercise.hold_time_seconds || 30,
             rest_time_seconds: exercise.rest_time_seconds || 15,
             notes: exercise.notes,
+            play_video: exercise.play_video,
             figure: exercise.figure,
           })) || [];
 
@@ -227,6 +233,8 @@ const ChallengeDayTimer = () => {
           exerciseName: exercise.figure.name,
           exerciseImage: exercise.figure.image_url,
           exerciseNotes: exercise.notes,
+          shouldPlayVideo: exercise.play_video && !!exercise.figure.video_url,
+          videoUrl: exercise.figure.video_url,
         });
 
         if (
@@ -349,6 +357,25 @@ const ChallengeDayTimer = () => {
 
   useEffect(() => {
     setHasAnnouncedSegment(false);
+  }, [currentSegmentIndex]);
+
+  // Sync video playback with timer
+  useEffect(() => {
+    if (!videoRef.current) return;
+    
+    if (isRunning && !isPreparingToStart) {
+      videoRef.current.play().catch(err => {
+        console.error("Error playing video:", err);
+      });
+    } else {
+      videoRef.current.pause();
+    }
+  }, [isRunning, isPreparingToStart]);
+
+  // Reset video when segment changes
+  useEffect(() => {
+    if (!videoRef.current) return;
+    videoRef.current.currentTime = 0;
   }, [currentSegmentIndex]);
 
   // Fullscreen API handling
@@ -784,13 +811,25 @@ const ChallengeDayTimer = () => {
               <>
                 {getCurrentSegment().type === "exercise" ? (
                   <>
-                    {/* Exercise Image - Optimized for mobile, smaller to fit everything */}
+                    {/* Exercise Image/Video - Optimized for mobile, smaller to fit everything */}
                     <div
                       className={`mb-1 sm:mb-2 md:mb-4 flex-shrink-0 flex items-center justify-center relative z-0 ${
                         isFullscreen ? "max-h-[22vh]" : "max-h-[22vh]"
                       } md:max-h-none`}
                     >
-                      {getCurrentSegment().exerciseImage ? (
+                      {getCurrentSegment().shouldPlayVideo && getCurrentSegment().videoUrl ? (
+                        <div className="relative w-full max-w-md mx-auto z-0">
+                          <video
+                            ref={videoRef}
+                            src={getCurrentSegment().videoUrl}
+                            className="w-full aspect-square object-cover rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0"
+                            loop
+                            muted
+                            playsInline
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl sm:rounded-3xl pointer-events-none z-0"></div>
+                        </div>
+                      ) : getCurrentSegment().exerciseImage ? (
                         <div className="relative w-full max-w-md mx-auto z-0">
                           <img
                             src={getCurrentSegment().exerciseImage}

@@ -11,6 +11,7 @@ import {
   FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,7 @@ interface Exercise {
   video_url?: string;
   audio_url?: string;
   notes?: string;
+  play_video?: boolean;
   figure?: {
     id: string;
     name: string;
@@ -53,6 +55,7 @@ interface Exercise {
     category: string;
     instructions?: string;
     image_url?: string;
+    video_url?: string;
   };
 }
 
@@ -62,6 +65,7 @@ interface Figure {
   difficulty_level: string;
   category: string;
   image_url?: string;
+  video_url?: string;
   instructions?: string;
 }
 
@@ -91,6 +95,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   const [videoUrl, setVideoUrl] = useState("");
   const [audioUrl, setAudioUrl] = useState("");
   const [notes, setNotes] = useState("");
+  const [playVideo, setPlayVideo] = useState<boolean>(true);
   const { toast } = useToast();
   const { user } = useAuth();
   const { getDifficultyColor, getDifficultyLabel } = useDictionary();
@@ -103,7 +108,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     try {
       let query = supabase
         .from("figures")
-        .select("id, name, difficulty_level, category, image_url, type")
+        .select("id, name, difficulty_level, category, image_url, video_url, type")
         .order("name");
 
       // Filter by "core" type for timer challenges
@@ -120,6 +125,21 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     }
   };
 
+  const selectedFigureHasVideo = (): boolean => {
+    if (!selectedFigure) return false;
+    const figure = availableFigures.find(f => f.id === selectedFigure);
+    return !!(figure?.video_url);
+  };
+
+  useEffect(() => {
+    if (selectedFigure && !editingExercise) {
+      const figure = availableFigures.find(f => f.id === selectedFigure);
+      if (figure?.video_url) {
+        setPlayVideo(true);
+      }
+    }
+  }, [selectedFigure]);
+
   const resetForm = () => {
     setSelectedFigure("");
     setSets(undefined);
@@ -129,6 +149,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     setVideoUrl("");
     setAudioUrl("");
     setNotes("");
+    setPlayVideo(true);
     setEditingExercise(null);
   };
 
@@ -147,6 +168,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     setVideoUrl(exercise.video_url || "");
     setAudioUrl(exercise.audio_url || "");
     setNotes(exercise.notes || "");
+    setPlayVideo(exercise.play_video ?? true);
     setIsAddModalOpen(true);
   };
 
@@ -176,6 +198,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         video_url: videoUrl || undefined,
         audio_url: audioUrl || undefined,
         notes: notes || undefined,
+        play_video: selectedFigureHasVideo() ? playVideo : undefined,
         figure: availableFigures.find((f) => f.id === selectedFigure),
       };
 
@@ -206,6 +229,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         video_url: videoUrl || null,
         audio_url: audioUrl || null,
         notes: notes || null,
+        play_video: selectedFigureHasVideo() ? playVideo : null,
       };
 
       let result;
@@ -432,16 +456,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                 <SelectContent>
                   {availableFigures.map((figure) => (
                     <SelectItem key={figure.id} value={figure.id}>
-                      <div className="flex items-center gap-2">
-                        <span>{figure.name}</span>
-                        <Badge
-                          className={getDifficultyColor(
-                            figure.difficulty_level
-                          )}
-                        >
-                          {getDifficultyLabel(figure.difficulty_level)}
-                        </Badge>
-                      </div>
+                      {figure.name} - {getDifficultyLabel(figure.difficulty_level)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -514,6 +529,27 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                 onChange={(e) => setVideoUrl(e.target.value)}
               />
             </div>
+
+            {selectedFigureHasVideo() && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={playVideo}
+                    onCheckedChange={setPlayVideo}
+                    id="play-video"
+                  />
+                  <Label htmlFor="play-video" className="cursor-pointer">
+                    <div className="flex items-center gap-2">
+                      <Video className="w-4 h-4" />
+                      <span>Pokaż wideo podczas treningu</span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Jeśli włączone, podczas treningu zamiast zdjęcia odtworzy się wideo figury
+                    </p>
+                  </Label>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-2">
               <Label>Audio URL</Label>
