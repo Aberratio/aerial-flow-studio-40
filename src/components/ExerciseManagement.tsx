@@ -9,6 +9,9 @@ import {
   Video,
   Volume2,
   FileText,
+  ArrowUp,
+  ArrowDown,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -374,6 +377,173 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     }
   };
 
+  const handleMoveUp = async (exerciseId: string, currentIndex: number) => {
+    if (currentIndex === 0) return;
+
+    const currentExercise = exercises[currentIndex];
+    const aboveExercise = exercises[currentIndex - 1];
+
+    const updatedExercises = [...exercises];
+    updatedExercises[currentIndex] = { ...aboveExercise, order_index: currentExercise.order_index };
+    updatedExercises[currentIndex - 1] = { ...currentExercise, order_index: aboveExercise.order_index };
+
+    if (!trainingDayId.startsWith("temp-")) {
+      try {
+        const { error: error1 } = await supabase
+          .from("training_day_exercises")
+          .update({ order_index: currentExercise.order_index })
+          .eq("id", aboveExercise.id);
+
+        const { error: error2 } = await supabase
+          .from("training_day_exercises")
+          .update({ order_index: aboveExercise.order_index })
+          .eq("id", currentExercise.id);
+
+        if (error1 || error2) throw error1 || error2;
+
+        toast({
+          title: "Success",
+          description: "Exercise moved up successfully",
+        });
+      } catch (error) {
+        console.error("Error moving exercise:", error);
+        toast({
+          title: "Error",
+          description: "Failed to move exercise",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    onExercisesChange(updatedExercises.sort((a, b) => a.order_index - b.order_index));
+  };
+
+  const handleMoveDown = async (exerciseId: string, currentIndex: number) => {
+    if (currentIndex === exercises.length - 1) return;
+
+    const currentExercise = exercises[currentIndex];
+    const belowExercise = exercises[currentIndex + 1];
+
+    const updatedExercises = [...exercises];
+    updatedExercises[currentIndex] = { ...belowExercise, order_index: currentExercise.order_index };
+    updatedExercises[currentIndex + 1] = { ...currentExercise, order_index: belowExercise.order_index };
+
+    if (!trainingDayId.startsWith("temp-")) {
+      try {
+        const { error: error1 } = await supabase
+          .from("training_day_exercises")
+          .update({ order_index: currentExercise.order_index })
+          .eq("id", belowExercise.id);
+
+        const { error: error2 } = await supabase
+          .from("training_day_exercises")
+          .update({ order_index: belowExercise.order_index })
+          .eq("id", currentExercise.id);
+
+        if (error1 || error2) throw error1 || error2;
+
+        toast({
+          title: "Success",
+          description: "Exercise moved down successfully",
+        });
+      } catch (error) {
+        console.error("Error moving exercise:", error);
+        toast({
+          title: "Error",
+          description: "Failed to move exercise",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    onExercisesChange(updatedExercises.sort((a, b) => a.order_index - b.order_index));
+  };
+
+  const handleDuplicate = async (exercise: Exercise, currentIndex: number) => {
+    try {
+      const newOrderIndex = currentIndex + 1;
+      
+      // Increment order_index for all exercises after the current one
+      const updatedExercises = exercises.map((ex, idx) => {
+        if (idx > currentIndex) {
+          return { ...ex, order_index: ex.order_index + 1 };
+        }
+        return ex;
+      });
+
+      // Create the duplicate exercise
+      const duplicatedExercise: Exercise = {
+        ...exercise,
+        id: trainingDayId.startsWith("temp-") ? `temp-${Date.now()}` : exercise.id,
+        order_index: newOrderIndex,
+      };
+
+      if (!trainingDayId.startsWith("temp-")) {
+        // Update order_index for affected exercises
+        const affectedExercises = exercises.filter((_, idx) => idx > currentIndex);
+        
+        for (const ex of affectedExercises) {
+          const { error } = await supabase
+            .from("training_day_exercises")
+            .update({ order_index: ex.order_index + 1 })
+            .eq("id", ex.id);
+          
+          if (error) throw error;
+        }
+
+        // Insert the new exercise
+        const { data, error } = await supabase
+          .from("training_day_exercises")
+          .insert({
+            training_day_id: trainingDayId,
+            figure_id: exercise.figure_id,
+            order_index: newOrderIndex,
+            sets: exercise.sets,
+            reps: exercise.reps,
+            hold_time_seconds: exercise.hold_time_seconds,
+            rest_time_seconds: exercise.rest_time_seconds,
+            video_url: exercise.video_url,
+            audio_url: exercise.audio_url,
+            notes: exercise.notes,
+            play_video: exercise.play_video,
+            video_position: exercise.video_position,
+          })
+          .select(`
+            *,
+            figure:figures(id, name, difficulty_level, category, image_url, video_url, instructions)
+          `)
+          .single();
+
+        if (error) throw error;
+        duplicatedExercise.id = data.id;
+        duplicatedExercise.figure = data.figure;
+
+        toast({
+          title: "Success",
+          description: "Exercise duplicated successfully",
+        });
+      }
+
+      // Insert the duplicated exercise at the correct position
+      const finalExercises = [
+        ...updatedExercises.slice(0, newOrderIndex),
+        duplicatedExercise,
+        ...updatedExercises.slice(newOrderIndex),
+      ];
+
+      onExercisesChange(finalExercises.sort((a, b) => a.order_index - b.order_index));
+    } catch (error) {
+      console.error("Error duplicating exercise:", error);
+      toast({
+        title: "Error",
+        description: "Failed to duplicate exercise",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -414,6 +584,32 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                 </div>
                 {canEdit && (
                   <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMoveUp(exercise.id, index)}
+                      disabled={index === 0}
+                      title="Przenieś w górę"
+                    >
+                      <ArrowUp className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleMoveDown(exercise.id, index)}
+                      disabled={index === exercises.length - 1}
+                      title="Przenieś w dół"
+                    >
+                      <ArrowDown className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDuplicate(exercise, index)}
+                      title="Duplikuj ćwiczenie"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
