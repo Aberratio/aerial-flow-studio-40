@@ -326,45 +326,34 @@ const Challenges = () => {
   }, [challenges, filters, sortBy, isAdmin, activeFilterCount]);
 
   // Group challenges by series
-  const { seriesChallenges, standaloneChallenges, activeChallenges } =
-    useMemo(() => {
-      const series: Record<string, Challenge[]> = {};
-      const standalone: Challenge[] = [];
-      const active: Challenge[] = [];
+  const { seriesChallenges, standaloneChallenges } = useMemo(() => {
+    const series: Record<string, Challenge[]> = {};
+    const standalone: Challenge[] = [];
 
-      filteredAndSortedChallenges.forEach((challenge) => {
-        // Collect active challenges
-        if (challenge.status === "active") {
-          active.push(challenge);
+    filteredAndSortedChallenges.forEach((challenge) => {
+      // Group by series or standalone (regardless of status)
+      if (challenge.series_name) {
+        if (!series[challenge.series_name]) {
+          series[challenge.series_name] = [];
         }
+        series[challenge.series_name].push(challenge);
+      } else {
+        standalone.push(challenge);
+      }
+    });
 
-        // Only add to series/standalone if NOT active (to avoid duplication)
-        if (challenge.status !== "active") {
-          // Group by series or standalone
-          if (challenge.series_name) {
-            if (!series[challenge.series_name]) {
-              series[challenge.series_name] = [];
-            }
-            series[challenge.series_name].push(challenge);
-          } else {
-            standalone.push(challenge);
-          }
-        }
-      });
+    // Sort challenges within each series by series_order
+    Object.keys(series).forEach((seriesName) => {
+      series[seriesName].sort(
+        (a, b) => (a.series_order || 0) - (b.series_order || 0)
+      );
+    });
 
-      // Sort challenges within each series by series_order
-      Object.keys(series).forEach((seriesName) => {
-        series[seriesName].sort(
-          (a, b) => (a.series_order || 0) - (b.series_order || 0)
-        );
-      });
-
-      return {
-        seriesChallenges: series,
-        standaloneChallenges: standalone,
-        activeChallenges: active.slice(0, 3), // Max 3 active challenges
-      };
-    }, [filteredAndSortedChallenges]);
+    return {
+      seriesChallenges: series,
+      standaloneChallenges: standalone,
+    };
+  }, [filteredAndSortedChallenges]);
 
   const openChallengeModal = (challenge: Challenge) => {
     setSelectedChallenge(challenge);
@@ -726,32 +715,6 @@ const Challenges = () => {
           </div>
         )}
 
-        {/* Active Challenges Section */}
-        {activeChallenges.length > 0 && (
-          <div className="mb-8">
-            {viewMode === "grid" ? (
-              <ChallengeGridView>
-                {activeChallenges.map((challenge) =>
-                  renderChallengeCard(challenge)
-                )}
-              </ChallengeGridView>
-            ) : (
-              <ChallengeListView
-                challenges={activeChallenges}
-                onChallengeClick={(challenge) => openChallengeModal(challenge)}
-                onPurchase={(challenge) => {
-                  setChallengeToPurchase(challenge);
-                  setIsPurchaseModalOpen(true);
-                }}
-                onJoinChallenge={handleJoinChallenge}
-                getDifficultyColor={getDifficultyColor}
-                getButtonText={getButtonText}
-                userPurchases={userPurchases}
-                hasPremiumAccess={hasPremiumAccess}
-              />
-            )}
-          </div>
-        )}
 
         {/* Main Challenges Grid */}
         {isLoading ? (
@@ -778,7 +741,7 @@ const Challenges = () => {
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Series Paths */}
             {Object.keys(seriesChallenges).length > 0 && (
               <div className="space-y-4">
