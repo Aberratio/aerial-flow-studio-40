@@ -314,6 +314,9 @@ const ChallengePreview = () => {
   // Auto-scroll to current day
   useEffect(() => {
     if (!carouselApi || !challenge?.training_days || calendarLoading) return;
+    
+    // Wait for calendarDays to be loaded
+    if (!calendarDays || calendarDays.length === 0) return;
 
     const currentDay = getCurrentTrainingDay();
     if (!currentDay) return;
@@ -324,9 +327,10 @@ const ChallengePreview = () => {
     );
 
     if (currentDayIndex >= 0) {
+      // Increased timeout for better reliability
       setTimeout(() => {
         carouselApi.scrollTo(currentDayIndex);
-      }, 100);
+      }, 300);
     }
   }, [carouselApi, challenge?.training_days, calendarDays, calendarLoading]);
 

@@ -93,13 +93,37 @@ export const useChallengeCalendar = (challengeId: string) => {
 
       console.log("loadCalendar: Progress data:", progressData);
 
+      // Get user's start date from challenge_participants
+      const { data: participantData } = await supabase
+        .from("challenge_participants")
+        .select("user_started_at")
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId)
+        .single();
+
+      const userStartDate = participantData?.user_started_at 
+        ? new Date(participantData.user_started_at) 
+        : new Date();
+
       // Create calendar days by merging available days with progress
       const calendarDays: CalendarDay[] = (availableDays || []).map((day: any) => {
         const progress = progressData?.find(p => p.training_day_id === day.training_day_id);
         
+        // Calculate calendar_date properly
+        let calendarDate: string;
+        if (day.calendar_date) {
+          // Use calendar_date from available days RPC
+          calendarDate = day.calendar_date;
+        } else {
+          // Fallback: calculate from user_started_at + day_number
+          const calculatedDate = new Date(userStartDate);
+          calculatedDate.setDate(calculatedDate.getDate() + (day.day_number - 1));
+          calendarDate = calculatedDate.toISOString().split('T')[0];
+        }
+        
         return {
           id: progress?.id || `${day.training_day_id}_placeholder`,
-          calendar_date: new Date().toISOString().split('T')[0], // Placeholder
+          calendar_date: calendarDate,
           training_day_id: day.training_day_id,
           day_number: day.day_number,
           title: day.title,
