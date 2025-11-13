@@ -380,6 +380,8 @@ const ChallengeDayTimer = () => {
   useEffect(() => {
     if (!videoRef.current) return;
     
+    // Load video first (important for iOS)
+    videoRef.current.load();
     videoRef.current.currentTime = 0;
     
     // Auto-play video for new segment if:
@@ -393,9 +395,13 @@ const ChallengeDayTimer = () => {
       currentSegment?.shouldPlayVideo;
     
     if (shouldAutoPlay) {
-      videoRef.current.play().catch(err => {
-        console.error("Error auto-playing video on segment change:", err);
-      });
+      // Add delay for iOS compatibility
+      setTimeout(() => {
+        videoRef.current?.play().catch(err => {
+          console.error("Error auto-playing video on segment change:", err);
+          // Fallback to showing image if video fails
+        });
+      }, 100);
     }
   }, [currentSegmentIndex, isRunning, isPreparingToStart, segments]);
 
@@ -854,10 +860,14 @@ const ChallengeDayTimer = () => {
                           <video
                             ref={videoRef}
                             src={getCurrentSegment().videoUrl}
-                            className={`w-full aspect-square object-cover rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0 ${getVideoPositionClass(getCurrentSegment().videoPosition)}`}
+                            className={`w-full aspect-square object-contain rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0 ${getVideoPositionClass(getCurrentSegment().videoPosition)}`}
                             loop
                             muted
                             playsInline
+                            autoPlay
+                            preload="auto"
+                            crossOrigin="anonymous"
+                            webkit-playsinline="true"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl sm:rounded-3xl pointer-events-none z-0"></div>
                         </div>
