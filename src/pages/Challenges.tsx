@@ -40,6 +40,7 @@ interface Challenge {
   description: string;
   level?: number;
   status: string;
+  dbStatus?: string; // DB status (published/draft)
   created_by: string;
   premium: boolean;
   price_usd: number;
@@ -266,6 +267,7 @@ const Challenges = () => {
             description: challenge.description,
             level: challenge.level,
             status,
+            dbStatus: challenge.status, // Preserve DB status (published/draft)
             created_by: challenge.created_by,
             premium: challenge.premium || false,
             price_usd: challenge.price_usd,
@@ -290,6 +292,19 @@ const Challenges = () => {
           };
         }) || [];
 
+      // Debug: Check for problematic challenge
+      const problematicChallenge = transformedData.find(c => c.id === '26d319e5-49c8-4b30-a7e7-35c59d44b7e5');
+      if (problematicChallenge) {
+        console.log('[Challenges] Problematic challenge found:', problematicChallenge);
+      } else {
+        console.log('[Challenges] Problematic challenge NOT in transformedData');
+        console.log('[Challenges] All challenges from DB:', allChallenges?.map(c => ({ 
+          id: c.id, 
+          title: c.title, 
+          status: c.status 
+        })));
+      }
+
       setChallenges(transformedData);
     } catch (error) {
       console.error("Error fetching challenges:", error);
@@ -300,9 +315,15 @@ const Challenges = () => {
 
   // Apply filters and sorting
   const filteredAndSortedChallenges = useMemo(() => {
+    // Admins bypass UI filters when activeFilterCount === 0
+    if (isAdmin && activeFilterCount === 0) {
+      console.log('[Challenges] Admin mode: showing all challenges, bypassing UI filters');
+      return applySorting(challenges);
+    }
+    
     const filtered = applyFilters(challenges);
     return applySorting(filtered);
-  }, [challenges, filters, sortBy]);
+  }, [challenges, filters, sortBy, isAdmin, activeFilterCount]);
 
   // Group challenges by series
   const { seriesChallenges, standaloneChallenges, activeChallenges } =
@@ -452,6 +473,18 @@ const Challenges = () => {
         key={challenge.id}
         className="overflow-hidden hover:shadow-xl transition-all duration-300 relative group"
       >
+        {/* Admin DB Status Badge */}
+        {isAdmin && challenge.dbStatus && (
+          <div className="absolute top-2 left-2 z-10">
+            <Badge
+              variant="outline"
+              className="bg-black/70 backdrop-blur-sm text-xs"
+            >
+              DB: {challenge.dbStatus}
+            </Badge>
+          </div>
+        )}
+        
         {/* Premium Badge - mały, bez blura */}
         {isPremiumLocked && (
           <div className="absolute top-2 right-2 z-10">
@@ -655,6 +688,14 @@ const Challenges = () => {
             <div className="text-white/60 text-sm">
               Pokazano {filteredAndSortedChallenges.length} z{" "}
               {challenges.length} wyzwań
+              {isAdmin && activeFilterCount === 0 && (
+                <span className="ml-2 text-amber-400">(Tryb admina - wszystkie statusy)</span>
+              )}
+              {activeFilterCount > 0 && (
+                <span className="ml-2 text-blue-400">
+                  ({activeFilterCount} {activeFilterCount === 1 ? 'filtr' : activeFilterCount < 5 ? 'filtry' : 'filtrów'} {activeFilterCount === 1 ? 'aktywny' : activeFilterCount < 5 ? 'aktywne' : 'aktywnych'})
+                </span>
+              )}
             </div>
             <div className="flex gap-1 bg-white/5 rounded-lg p-1">
               <Button

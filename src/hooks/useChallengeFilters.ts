@@ -130,6 +130,7 @@ export const useChallengeFilters = () => {
 
   const applyFilters = <
     T extends {
+      id?: string;
       status: string;
       premium: boolean;
       level?: number;
@@ -138,7 +139,17 @@ export const useChallengeFilters = () => {
   >(
     challenges: T[]
   ): T[] => {
-    return challenges.filter((challenge) => {
+    console.log('[useChallengeFilters] Applying filters:', {
+      totalChallenges: challenges.length,
+      activeFilters: {
+        status: filters.status,
+        access: filters.access,
+        levelGroups: filters.levelGroups,
+        durations: filters.durations
+      }
+    });
+    
+    const filtered = challenges.filter((challenge) => {
       // Status filter
       if (filters.status.length > 0) {
         const statusMatch = filters.status.some((s) => {
@@ -184,6 +195,13 @@ export const useChallengeFilters = () => {
 
       return true;
     });
+    
+    console.log('[useChallengeFilters] After filtering:', {
+      filteredChallenges: filtered.length,
+      filtered: filtered.map(c => ({ id: c.id, status: c.status, premium: c.premium, level: c.level }))
+    });
+    
+    return filtered;
   };
 
   const applySorting = <
