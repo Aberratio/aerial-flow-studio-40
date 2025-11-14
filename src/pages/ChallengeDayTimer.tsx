@@ -860,7 +860,7 @@ const ChallengeDayTimer = () => {
                           <video
                             ref={videoRef}
                             src={getCurrentSegment().videoUrl}
-                            className={`w-full aspect-square object-contain rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0 ${getVideoPositionClass(getCurrentSegment().videoPosition)}`}
+                            className={`w-full aspect-square object-cover md:object-contain rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0 ${getVideoPositionClass(getCurrentSegment().videoPosition)}`}
                             loop
                             muted
                             playsInline
