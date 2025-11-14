@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Hand,
@@ -101,40 +101,80 @@ const ChallengeDayTimer = () => {
   } = useWakeLock();
 
   // Create optimistic beeping sound for minimal mode
-  const playBeep = (
-    type: "countdown" | "transition" | "ready" = "countdown"
-  ) => {
-    if (audioMode !== "minimal_sound") return;
+  const playBeep = useCallback(
+    (type: "countdown" | "transition" | "ready" = "countdown") => {
+      if (audioMode !== "minimal_sound") return;
 
-    const audioContext = new (window.AudioContext ||
-      (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
+      const audioContext = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
 
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
 
-    // Different frequencies for different contexts
-    if (type === "countdown") {
-      oscillator.frequency.value = 1000; // Higher pitched for countdown
-    } else if (type === "transition") {
-      oscillator.frequency.value = 800; // Medium pitch for transitions
-    } else if (type === "ready") {
-      oscillator.frequency.value = 1200; // Highest pitch for get ready
+      // Different frequencies for different contexts
+      if (type === "countdown") {
+        oscillator.frequency.value = 1000; // Higher pitched for countdown
+      } else if (type === "transition") {
+        oscillator.frequency.value = 800; // Medium pitch for transitions
+      } else if (type === "ready") {
+        oscillator.frequency.value = 1200; // Highest pitch for get ready
+      }
+
+      oscillator.type = "sine";
+
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+      gainNode.gain.linearRampToValueAtTime(
+        0.2,
+        audioContext.currentTime + 0.01
+      );
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioContext.currentTime + 0.2
+      );
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    },
+    [audioMode]
+  );
+
+  const formatTimeNatural = useCallback((seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    if (mins === 0) {
+      return `${secs} sekund`;
+    } else if (mins === 1 && secs === 0) {
+      return "1 minuta";
+    } else if (mins === 1) {
+      return `1 minuta i ${secs} sekund`;
+    } else if (secs === 0) {
+      return `${mins} minut`;
+    } else {
+      return `${mins} minut i ${secs} sekund`;
+    }
+  }, []);
+
+  const handleSegmentComplete = useCallback(() => {
+    const currentSegment = segments[currentSegmentIndex];
+
+    if (currentSegmentIndex >= segments.length - 1) {
+      setIsCompleted(true);
+      setIsRunning(false);
+      if (audioMode === "sound") {
+        speak("Trening ukończony! Świetna robota!");
+      }
+      return;
     }
 
-    oscillator.type = "sine";
+    const nextIndex = currentSegmentIndex + 1;
+    const nextSegment = segments[nextIndex];
 
-    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.2, audioContext.currentTime + 0.01);
-    gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioContext.currentTime + 0.2
-    );
-
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.2);
-  };
+    setCurrentSegmentIndex(nextIndex);
+    setTimeRemaining(nextSegment.duration);
+  }, [currentSegmentIndex, segments, audioMode, speak]);
 
   useEffect(() => {
     const fetchExercises = async () => {
@@ -217,7 +257,7 @@ const ChallengeDayTimer = () => {
     };
 
     fetchExercises();
-  }, [dayId, user?.id]);
+  }, [dayId, user?.id, challengeId, navigate, toast]);
 
   useEffect(() => {
     if (exercises.length === 0) return;
@@ -292,7 +332,7 @@ const ChallengeDayTimer = () => {
     }
 
     return () => clearInterval(interval);
-  }, [isPreparingToStart, preparationTime]);
+  }, [isPreparingToStart, preparationTime, audioMode, speak, playBeep]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -336,6 +376,10 @@ const ChallengeDayTimer = () => {
     timeRemaining,
     currentSegmentIndex,
     segments,
+    audioMode,
+    speak,
+    playBeep,
+    handleSegmentComplete,
   ]);
 
   useEffect(() => {
@@ -357,7 +401,15 @@ const ChallengeDayTimer = () => {
         speak(`Przerwa, ${duration}`);
       }
     }
-  }, [currentSegmentIndex, isRunning, hasAnnouncedSegment, segments]);
+  }, [
+    currentSegmentIndex,
+    isRunning,
+    hasAnnouncedSegment,
+    segments,
+    audioMode,
+    speak,
+    formatTimeNatural,
+  ]);
 
   useEffect(() => {
     setHasAnnouncedSegment(false);
@@ -507,23 +559,6 @@ const ChallengeDayTimer = () => {
     }
   };
 
-  const formatTimeNatural = (seconds: number): string => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-
-    if (mins === 0) {
-      return `${secs} sekund`;
-    } else if (mins === 1 && secs === 0) {
-      return "1 minuta";
-    } else if (mins === 1) {
-      return `1 minuta i ${secs} sekund`;
-    } else if (secs === 0) {
-      return `${mins} minut`;
-    } else {
-      return `${mins} minut i ${secs} sekund`;
-    }
-  };
-
   const getVideoPositionClass = (position?: string): string => {
     switch (position) {
       case "top":
@@ -538,25 +573,6 @@ const ChallengeDayTimer = () => {
       default:
         return "object-center";
     }
-  };
-
-  const handleSegmentComplete = () => {
-    const currentSegment = segments[currentSegmentIndex];
-
-    if (currentSegmentIndex >= segments.length - 1) {
-      setIsCompleted(true);
-      setIsRunning(false);
-      if (audioMode === "sound") {
-        speak("Trening ukończony! Świetna robota!");
-      }
-      return;
-    }
-
-    const nextIndex = currentSegmentIndex + 1;
-    const nextSegment = segments[nextIndex];
-
-    setCurrentSegmentIndex(nextIndex);
-    setTimeRemaining(nextSegment.duration);
   };
 
   const handleWorkoutComplete = async () => {
@@ -713,6 +729,18 @@ const ChallengeDayTimer = () => {
     );
   }
 
+  if (segments.length === 0) {
+    return (
+      <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10 flex items-center justify-center overflow-y-auto md:fixed md:inset-0">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Przygotowywanie timera...
+          </h2>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`min-h-screen bg-gradient-to-tr from-black to-purple-950/10 text-white flex flex-col ${
@@ -838,56 +866,59 @@ const ChallengeDayTimer = () => {
         )}
 
         {/* Nowe ćwiczenie */}
-        <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 backdrop-blur-xl mt-6 mx-2">
-          <CardContent className="p-4 sm:p-6 md:p-8">
-            {getCurrentSegment().type === "exercise" ? (
-              <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
-                <>
-                  {getCurrentSegment().shouldPlayVideo &&
-                  getCurrentSegment().videoUrl ? (
-                    <video
-                      src={getCurrentSegment().videoUrl}
-                      className={`w-full h-full object-cover ${getVideoPositionClass(
-                        getCurrentSegment().videoPosition
-                      )}`}
-                      autoPlay
-                      muted
-                      loop
-                      playsInline
-                    />
-                  ) : getCurrentSegment().exerciseImage ? (
-                    <img
-                      src={getCurrentSegment().exerciseImage}
-                      alt={getCurrentSegment().exerciseName}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
-                      <span className="text-6xl opacity-70">🏃‍♂️</span>
-                    </div>
-                  )}
-                </>
-              </div>
-            ) : null}
+        {getCurrentSegment() && (
+          <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 backdrop-blur-xl mt-6 mx-2">
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              {getCurrentSegment()?.type === "exercise" ? (
+                <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
+                  <>
+                    {getCurrentSegment()?.shouldPlayVideo &&
+                    getCurrentSegment()?.videoUrl ? (
+                      <video
+                        ref={videoRef}
+                        src={getCurrentSegment()?.videoUrl}
+                        className={`w-full h-full object-cover ${getVideoPositionClass(
+                          getCurrentSegment()?.videoPosition
+                        )}`}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    ) : getCurrentSegment()?.exerciseImage ? (
+                      <img
+                        src={getCurrentSegment()?.exerciseImage}
+                        alt={getCurrentSegment()?.exerciseName}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
+                        <span className="text-6xl opacity-70">🏃‍♂️</span>
+                      </div>
+                    )}
+                  </>
+                </div>
+              ) : null}
 
-            {/* Exercise name and duration */}
-            <div className="text-center space-y-2">
-              <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-foreground">
-                {getCurrentSegment().exerciseName}
-              </h2>
-              <p className="text-lg sm:text-xl text-muted-foreground">
-                {isPreparingToStart
-                  ? formatTime(preparationTime)
-                  : formatTime(timeRemaining)}
-              </p>
-              {getCurrentSegment().exerciseNotes && (
-                <p className="text-sm sm:text-base text-primary mt-2 bg-primary/10 rounded-lg px-4 py-2 border border-primary/20 backdrop-blur-sm">
-                  {getCurrentSegment().exerciseNotes}
+              {/* Exercise name and duration */}
+              <div className="text-center space-y-2">
+                <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-foreground">
+                  {getCurrentSegment()?.exerciseName}
+                </h2>
+                <p className="text-lg sm:text-xl text-muted-foreground">
+                  {isPreparingToStart
+                    ? formatTime(preparationTime)
+                    : formatTime(timeRemaining)}
                 </p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+                {getCurrentSegment()?.exerciseNotes && (
+                  <p className="text-sm sm:text-base text-primary mt-2 bg-primary/10 rounded-lg px-4 py-2 border border-primary/20 backdrop-blur-sm">
+                    {getCurrentSegment()?.exerciseNotes}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Next Up Section - Large version during rest */}
         {getNextExercise() && getCurrentSegment()?.type === "rest" && (
