@@ -34,7 +34,7 @@ interface Exercise {
   rest_time_seconds?: number;
   notes?: string;
   play_video?: boolean;
-  video_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
+  video_position?: "center" | "top" | "bottom" | "left" | "right";
   figure: {
     id: string;
     name: string;
@@ -238,7 +238,7 @@ const ChallengeDayTimer = () => {
           exerciseNotes: exercise.notes,
           shouldPlayVideo: exercise.play_video && !!exercise.figure.video_url,
           videoUrl: exercise.figure.video_url,
-          videoPosition: exercise.video_position || 'center',
+          videoPosition: exercise.video_position || "center",
         });
 
         if (
@@ -366,9 +366,9 @@ const ChallengeDayTimer = () => {
   // Sync video playback with timer
   useEffect(() => {
     if (!videoRef.current) return;
-    
+
     if (isRunning && !isPreparingToStart) {
-      videoRef.current.play().catch(err => {
+      videoRef.current.play().catch((err) => {
         console.error("Error playing video:", err);
       });
     } else {
@@ -379,25 +379,23 @@ const ChallengeDayTimer = () => {
   // Reset video when segment changes and auto-play if needed
   useEffect(() => {
     if (!videoRef.current) return;
-    
+
     // Load video first (important for iOS)
     videoRef.current.load();
     videoRef.current.currentTime = 0;
-    
+
     // Auto-play video for new segment if:
     // 1. Timer is running (not paused)
     // 2. Not in preparation phase
     // 3. Current segment has video to play
     const currentSegment = segments[currentSegmentIndex];
-    const shouldAutoPlay = 
-      isRunning && 
-      !isPreparingToStart && 
-      currentSegment?.shouldPlayVideo;
-    
+    const shouldAutoPlay =
+      isRunning && !isPreparingToStart && currentSegment?.shouldPlayVideo;
+
     if (shouldAutoPlay) {
       // Add delay for iOS compatibility
       setTimeout(() => {
-        videoRef.current?.play().catch(err => {
+        videoRef.current?.play().catch((err) => {
           console.error("Error auto-playing video on segment change:", err);
           // Fallback to showing image if video fails
         });
@@ -528,12 +526,17 @@ const ChallengeDayTimer = () => {
 
   const getVideoPositionClass = (position?: string): string => {
     switch (position) {
-      case 'top': return 'object-top';
-      case 'bottom': return 'object-bottom';
-      case 'left': return 'object-left';
-      case 'right': return 'object-right';
-      case 'center':
-      default: return 'object-center';
+      case "top":
+        return "object-top";
+      case "bottom":
+        return "object-bottom";
+      case "left":
+        return "object-left";
+      case "right":
+        return "object-right";
+      case "center":
+      default:
+        return "object-center";
     }
   };
 
@@ -855,12 +858,15 @@ const ChallengeDayTimer = () => {
                         isFullscreen ? "max-h-[22vh]" : "max-h-[22vh]"
                       } md:max-h-none`}
                     >
-                      {getCurrentSegment().shouldPlayVideo && getCurrentSegment().videoUrl ? (
+                      {getCurrentSegment().shouldPlayVideo &&
+                      getCurrentSegment().videoUrl ? (
                         <div className="relative w-full max-w-md mx-auto z-0">
                           <video
                             ref={videoRef}
                             src={getCurrentSegment().videoUrl}
-                            className={`w-full aspect-square object-cover md:object-contain rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0 ${getVideoPositionClass(getCurrentSegment().videoPosition)}`}
+                            className={`w-full aspect-square object-cover md:object-contain rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0 ${getVideoPositionClass(
+                              getCurrentSegment().videoPosition
+                            )}`}
                             loop
                             muted
                             playsInline
@@ -891,18 +897,9 @@ const ChallengeDayTimer = () => {
                     </div>
                   </>
                 ) : (
-                  <>
-                    {/* Rest Display - Improved layout with next exercise preview */}
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-2 sm:mb-3">
-                      <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 bg-gradient-to-br from-blue-500/30 via-green-500/20 to-blue-600/30 rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg ring-1 ring-blue-400/30 backdrop-blur-sm flex-shrink-0">
-                        <Hand className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-blue-300" />
-                      </div>
-                    </div>
-
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-300 mb-0 relative z-10">
-                      Odpoczynek
-                    </h2>
-                  </>
+                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-300 mb-0 relative z-10">
+                    Odpoczynek
+                  </h2>
                 )}
 
                 {/* Timer Display - With better contrast for visibility on white backgrounds */}
@@ -949,13 +946,16 @@ const ChallengeDayTimer = () => {
                 <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
                 Następne ćwiczenie
               </h3>
-              
+
               {/* Large video or image preview */}
               <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
-                {getNextExercise().shouldPlayVideo && getNextExercise().videoUrl ? (
+                {getNextExercise().shouldPlayVideo &&
+                getNextExercise().videoUrl ? (
                   <video
                     src={getNextExercise().videoUrl}
-                    className={`w-full h-full object-cover ${getVideoPositionClass(getNextExercise().videoPosition)}`}
+                    className={`w-full h-full object-cover ${getVideoPositionClass(
+                      getNextExercise().videoPosition
+                    )}`}
                     autoPlay
                     muted
                     loop
