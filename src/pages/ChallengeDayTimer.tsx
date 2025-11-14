@@ -840,8 +840,8 @@ const ChallengeDayTimer = () => {
         {/* Nowe ćwiczenie */}
         <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 backdrop-blur-xl mt-6 mx-2">
           <CardContent className="p-4 sm:p-6 md:p-8">
-            <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
-              {getCurrentSegment().type === "exercise" ? (
+            {getCurrentSegment().type === "exercise" ? (
+              <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
                 <>
                   {getCurrentSegment().shouldPlayVideo &&
                   getCurrentSegment().videoUrl ? (
@@ -867,12 +867,8 @@ const ChallengeDayTimer = () => {
                     </div>
                   )}
                 </>
-              ) : (
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-300 mb-0 relative z-10">
-                  Odpoczynek
-                </h2>
-              )}
-            </div>
+              </div>
+            ) : null}
 
             {/* Exercise name and duration */}
             <div className="text-center space-y-2">
