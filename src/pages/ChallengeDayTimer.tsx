@@ -735,7 +735,7 @@ const ChallengeDayTimer = () => {
         `}</style>
       )}
       <div
-        className={`flex-1 flex flex-col container mx-auto px-2 sm:px-4 pt-16 sm:pt-20 md:pt-6 py-2 sm:py-3 md:py-6 max-w-4xl lg:max-w-6xl md:max-w-3xl xl:max-w-4xl min-h-0 ${
+        className={`flex-1 flex flex-col container mx-auto px-2 sm:px-4 pt-1 sm:pt-20 md:pt-6 py-2 sm:py-3 md:py-6 max-w-4xl lg:max-w-6xl md:max-w-3xl xl:max-w-4xl min-h-0 ${
           isFullscreen ? "h-screen pt-2" : ""
         }`}
       >
@@ -823,11 +823,7 @@ const ChallengeDayTimer = () => {
 
         {/* Progress Bar - Mobile (after exercise image) */}
         {getCurrentSegment() && (
-          <div
-            className={`mt-2 ${
-              getCurrentSegment()?.type === "rest" ? "mb-4" : "mb-[100px]"
-            } flex-shrink-0 block md:hidden`}
-          >
+          <div className={`mt-2 flex-shrink-0 block md:hidden`}>
             <div className="relative">
               <Progress
                 value={calculateProgress()}
@@ -841,100 +837,59 @@ const ChallengeDayTimer = () => {
           </div>
         )}
 
-        {/* Current Exercise/Rest Display */}
-        <Card
-          className={`glass-effect border-white/10 mb-1 sm:mb-2 md:mb-6 flex-shrink-0 flex flex-col bg-gradient-to-b from-white/5 to-transparent ${
-            isFullscreen ? "max-h-[calc(100vh-380px)]" : "max-h-[45vh]"
-          } md:max-h-none overflow-visible min-h-0 relative z-0`}
-        >
-          <CardContent className="p-2 sm:p-3 md:p-6 text-center flex flex-col justify-start relative overflow-visible min-h-0 z-0">
-            {getCurrentSegment() && (
-              <>
-                {getCurrentSegment().type === "exercise" ? (
-                  <>
-                    {/* Exercise Image/Video - Optimized for mobile, smaller to fit everything */}
-                    <div
-                      className={`mb-1 sm:mb-2 md:mb-4 flex-shrink-0 flex items-center justify-center relative z-0 ${
-                        isFullscreen ? "max-h-[22vh]" : "max-h-[22vh]"
-                      } md:max-h-none`}
-                    >
-                      {getCurrentSegment().shouldPlayVideo &&
-                      getCurrentSegment().videoUrl ? (
-                        <div className="relative w-full max-w-md mx-auto z-0">
-                          <video
-                            ref={videoRef}
-                            src={getCurrentSegment().videoUrl}
-                            className={`w-full aspect-square object-cover md:object-contain rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0 ${getVideoPositionClass(
-                              getCurrentSegment().videoPosition
-                            )}`}
-                            loop
-                            muted
-                            playsInline
-                            autoPlay
-                            preload="auto"
-                            crossOrigin="anonymous"
-                            webkit-playsinline="true"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl sm:rounded-3xl pointer-events-none z-0"></div>
-                        </div>
-                      ) : getCurrentSegment().exerciseImage ? (
-                        <div className="relative w-full max-w-md mx-auto z-0">
-                          <img
-                            src={getCurrentSegment().exerciseImage}
-                            alt={getCurrentSegment().exerciseName}
-                            className="w-full aspect-square object-cover rounded-2xl sm:rounded-3xl shadow-2xl ring-1 ring-white/20 relative z-0"
-                          />
-                          {/* Subtle overlay for better text readability */}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-2xl sm:rounded-3xl pointer-events-none z-0"></div>
-                        </div>
-                      ) : (
-                        <div className="w-full max-w-md mx-auto aspect-square bg-gradient-to-br from-primary/20 via-primary/10 to-transparent rounded-2xl sm:rounded-3xl flex items-center justify-center shadow-2xl ring-1 ring-white/20 relative z-0">
-                          <div className="text-6xl sm:text-8xl md:text-9xl opacity-60">
-                            🏃‍♂️
-                          </div>
-                        </div>
-                      )}
+        {/* Nowe ćwiczenie */}
+        <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 backdrop-blur-xl mt-6 mx-2">
+          <CardContent className="p-4 sm:p-6 md:p-8">
+            <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
+              {getCurrentSegment().type === "exercise" ? (
+                <>
+                  {getCurrentSegment().shouldPlayVideo &&
+                  getCurrentSegment().videoUrl ? (
+                    <video
+                      src={getCurrentSegment().videoUrl}
+                      className={`w-full h-full object-cover ${getVideoPositionClass(
+                        getCurrentSegment().videoPosition
+                      )}`}
+                      autoPlay
+                      muted
+                      loop
+                      playsInline
+                    />
+                  ) : getCurrentSegment().exerciseImage ? (
+                    <img
+                      src={getCurrentSegment().exerciseImage}
+                      alt={getCurrentSegment().exerciseName}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
+                      <span className="text-6xl opacity-70">🏃‍♂️</span>
                     </div>
-                  </>
-                ) : (
-                  <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-300 mb-0 relative z-10">
-                    Odpoczynek
-                  </h2>
-                )}
+                  )}
+                </>
+              ) : (
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-300 mb-0 relative z-10">
+                  Odpoczynek
+                </h2>
+              )}
+            </div>
 
-                {/* Timer Display - With better contrast for visibility on white backgrounds */}
-                <div className="relative mt-1 sm:mt-2 mb-1 sm:mb-2">
-                  <div className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold bg-gradient-to-r from-white via-primary-foreground to-white bg-clip-text text-transparent drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] [text-shadow:_2px_2px_4px_rgba(0,0,0,0.8)]">
-                    {isPreparingToStart
-                      ? formatTime(preparationTime)
-                      : formatTime(timeRemaining)}
-                  </div>
-                  {/* Dark backdrop blur for better contrast */}
-                  <div className="absolute inset-0 -inset-x-2 -inset-y-1 bg-black/40 backdrop-blur-sm rounded-lg -z-10"></div>
-                </div>
-
-                {isPreparingToStart ? (
-                  <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1">
-                    🚀 Przygotuj się!
-                  </div>
-                ) : getCurrentSegment()?.type === "exercise" ? (
-                  <div className="relative bg-black rounded-lg p-2 text-sm sm:text-base md:text-lg font-semibold text-yellow-300 mb-0.5 sm:mb-1 mt-[50px]">
-                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-2 sm:mb-3 leading-tight px-2 sm:px-4 z-10">
-                      {getCurrentSegment().exerciseName}
-                    </h2>
-
-                    {/* Exercise Notes */}
-                    {getCurrentSegment().exerciseNotes && (
-                      <div className="mb-2 sm:mb-3 px-2 sm:px-4 bg-black/40">
-                        <p className="text-white/80 text-xs sm:text-sm md:text-base px-2 sm:px-3 py-1 sm:py-2 rounded-lg sm:rounded-xl border border-white/20 bg-black">
-                          {getCurrentSegment().exerciseNotes}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ) : null}
-              </>
-            )}
+            {/* Exercise name and duration */}
+            <div className="text-center space-y-2">
+              <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-foreground">
+                {getCurrentSegment().exerciseName}
+              </h2>
+              <p className="text-lg sm:text-xl text-muted-foreground">
+                {isPreparingToStart
+                  ? formatTime(preparationTime)
+                  : formatTime(timeRemaining)}
+              </p>
+              {getCurrentSegment().exerciseNotes && (
+                <p className="text-sm sm:text-base text-primary mt-2 bg-primary/10 rounded-lg px-4 py-2 border border-primary/20 backdrop-blur-sm">
+                  {getCurrentSegment().exerciseNotes}
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
