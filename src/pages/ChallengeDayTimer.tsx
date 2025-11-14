@@ -991,9 +991,9 @@ const ChallengeDayTimer = () => {
                 onClick={handlePlayPause}
                 size="lg"
                 variant="primary"
-                className="flex-1 md:w-full md:max-w-xs px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 md:py-6 text-base sm:text-lg md:text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl sm:rounded-2xl hover:scale-105"
+                className="flex-1 md:w-full md:max-w-xs px-3 sm:px-4 md:px-4 py-2.5 sm:py-3 md:py-3 text-base sm:text-lg md:text-lg font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl sm:rounded-2xl hover:scale-105"
               >
-                <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-7 md:h-7 mr-1.5 sm:mr-2 md:mr-3" />
+                <Pause className="w-4 h-4 sm:w-5 sm:h-5 md:w-5 md:h-5 mr-1.5 sm:mr-2 md:mr-2" />
                 {isPreparingToStart ? "Anuluj" : "Pauza"}
               </Button>
 
@@ -1001,7 +1001,7 @@ const ChallengeDayTimer = () => {
                 onClick={handleSkip}
                 variant="outline"
                 size="lg"
-                className="flex-1 md:w-full md:max-w-xs px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4 text-sm sm:text-base md:text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl sm:rounded-2xl"
+                className="flex-1 md:w-full md:max-w-xs px-3 sm:px-4 md:px-4 py-2.5 sm:py-3 md:py-2.5 text-sm sm:text-base md:text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl sm:rounded-2xl"
               >
                 Pomiń
               </Button>
@@ -1011,9 +1011,9 @@ const ChallengeDayTimer = () => {
               onClick={handlePlayPause}
               size="lg"
               variant="primary"
-              className="w-full max-w-xs px-6 sm:px-8 py-4 sm:py-5 md:py-6 text-lg sm:text-xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl sm:rounded-2xl hover:scale-105"
+              className="w-full max-w-xs px-6 sm:px-8 md:px-6 py-4 sm:py-5 md:py-4 text-lg sm:text-xl md:text-lg font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl sm:rounded-2xl hover:scale-105"
             >
-              <Play className="w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 mr-2 sm:mr-3" />
+              <Play className="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 mr-2 sm:mr-3 md:mr-2" />
               Start
             </Button>
           )}
