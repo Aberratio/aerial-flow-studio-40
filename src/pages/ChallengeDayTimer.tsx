@@ -955,21 +955,6 @@ const ChallengeDayTimer = () => {
                   </div>
                 )}
               </div>
-
-              {/* Exercise name and duration */}
-              <div className="text-center space-y-2">
-                <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-foreground">
-                  {getNextExercise().exerciseName}
-                </h2>
-                <p className="text-lg sm:text-xl text-muted-foreground">
-                  {formatTime(getNextExercise().duration)}
-                </p>
-                {getNextExercise().exerciseNotes && (
-                  <p className="text-sm sm:text-base text-primary mt-2 bg-primary/10 rounded-lg px-4 py-2 border border-primary/20 backdrop-blur-sm">
-                    {getNextExercise().exerciseNotes}
-                  </p>
-                )}
-              </div>
             </CardContent>
           </Card>
         )}
