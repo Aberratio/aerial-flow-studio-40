@@ -941,8 +941,59 @@ const ChallengeDayTimer = () => {
           </CardContent>
         </Card>
 
-        {/* Next Up Section - Always show next exercise, not rest */}
-        {getNextExercise() && (
+        {/* Next Up Section - Large version during rest */}
+        {getNextExercise() && getCurrentSegment()?.type === "rest" && (
+          <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 backdrop-blur-xl mt-6 mx-2">
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <h3 className="text-sm sm:text-base font-medium text-muted-foreground mb-4 sm:mb-6 uppercase tracking-wider flex items-center">
+                <span className="w-2 h-2 bg-primary rounded-full mr-2 animate-pulse"></span>
+                Następne ćwiczenie
+              </h3>
+              
+              {/* Large video or image preview */}
+              <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
+                {getNextExercise().shouldPlayVideo && getNextExercise().videoUrl ? (
+                  <video
+                    src={getNextExercise().videoUrl}
+                    className={`w-full h-full object-cover ${getVideoPositionClass(getNextExercise().videoPosition)}`}
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  />
+                ) : getNextExercise().exerciseImage ? (
+                  <img
+                    src={getNextExercise().exerciseImage}
+                    alt={getNextExercise().exerciseName}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
+                    <span className="text-6xl opacity-70">🏃‍♂️</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Exercise name and duration */}
+              <div className="text-center space-y-2">
+                <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-foreground">
+                  {getNextExercise().exerciseName}
+                </h2>
+                <p className="text-lg sm:text-xl text-muted-foreground">
+                  {formatTime(getNextExercise().duration)}
+                </p>
+                {getNextExercise().exerciseNotes && (
+                  <p className="text-sm sm:text-base text-primary mt-2 bg-primary/10 rounded-lg px-4 py-2 border border-primary/20 backdrop-blur-sm">
+                    {getNextExercise().exerciseNotes}
+                  </p>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Next Up Section - Small version during exercise */}
+        {getNextExercise() && getCurrentSegment()?.type === "exercise" && (
           <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-r from-white/5 to-white/10 backdrop-blur-md mt-6 mx-2">
             <CardContent className="p-2 sm:p-3 md:p-4">
               <h3 className="text-xs sm:text-sm md:text-base font-semibold text-white mb-1.5 sm:mb-2 md:mb-3 flex items-center">
