@@ -896,6 +896,21 @@ const ChallengeDayTimer = () => {
                         <span className="text-6xl opacity-70">🏃‍♂️</span>
                       </div>
                     )}
+
+                    {/* Overlay with Start button */}
+                    {!isRunning && !isPreparingToStart && (
+                      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-10 transition-all duration-300">
+                        <Button
+                          onClick={handlePlayPause}
+                          size="lg"
+                          variant="primary"
+                          className="px-8 sm:px-12 md:px-16 py-6 sm:py-8 md:py-10 text-xl sm:text-2xl md:text-3xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-110 animate-pulse"
+                        >
+                          <Play className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mr-3 sm:mr-4" />
+                          Start
+                        </Button>
+                      </div>
+                    )}
                   </>
                 </div>
               ) : null}
@@ -953,6 +968,21 @@ const ChallengeDayTimer = () => {
                   <div className="w-full h-full bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center">
                     <span className="text-6xl opacity-70">🏃‍♂️</span>
                   </div>
+                )}
+              </div>
+
+              {/* Exercise name and duration */}
+              <div className="text-center space-y-2">
+                <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-foreground">
+                  {getNextExercise().exerciseName}
+                </h2>
+                <p className="text-lg sm:text-xl text-muted-foreground">
+                  {formatTime(getNextExercise().duration)}
+                </p>
+                {getNextExercise().exerciseNotes && (
+                  <p className="text-sm sm:text-base text-primary mt-2 bg-primary/10 rounded-lg px-4 py-2 border border-primary/20 backdrop-blur-sm">
+                    {getNextExercise().exerciseNotes}
+                  </p>
                 )}
               </div>
             </CardContent>
@@ -1024,17 +1054,7 @@ const ChallengeDayTimer = () => {
                 Pomiń
               </Button>
             </div>
-          ) : (
-            <Button
-              onClick={handlePlayPause}
-              size="lg"
-              variant="primary"
-              className="w-full max-w-xs px-6 sm:px-8 md:px-6 py-4 sm:py-5 md:py-4 text-lg sm:text-xl md:text-lg font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-xl sm:rounded-2xl hover:scale-105"
-            >
-              <Play className="w-5 h-5 sm:w-6 sm:h-6 md:w-6 md:h-6 mr-2 sm:mr-3 md:mr-2" />
-              Start
-            </Button>
-          )}
+          ) : null}
         </div>
       </div>
 
