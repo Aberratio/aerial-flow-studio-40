@@ -899,12 +899,12 @@ const ChallengeDayTimer = () => {
 
                     {/* Overlay with Start button */}
                     {!isRunning && !isPreparingToStart && (
-                      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-10 transition-all duration-300">
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10 transition-all duration-300">
                         <Button
                           onClick={handlePlayPause}
                           size="lg"
                           variant="primary"
-                          className="px-8 sm:px-12 md:px-16 py-6 sm:py-8 md:py-10 text-xl sm:text-2xl md:text-3xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-110 animate-pulse"
+                          className="px-8 sm:px-12 md:px-16 py-6 sm:py-8 md:py-10 text-xl sm:text-2xl md:text-3xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-110"
                         >
                           <Play className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mr-3 sm:mr-4" />
                           Start
