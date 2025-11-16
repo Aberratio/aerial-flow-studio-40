@@ -8,6 +8,7 @@ import {
   Pause,
   Maximize,
   Minimize,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useSpeech } from "@/hooks/useSpeech";
 import { useWakeLock } from "@/hooks/useWakeLock";
+import { FigurePreviewModal } from "@/components/FigurePreviewModal";
 
 interface Exercise {
   id: string;
@@ -43,6 +45,11 @@ interface Exercise {
     instructions?: string;
     image_url?: string;
     video_url?: string;
+    audio_url?: string;
+    type?: string;
+    tags?: string[];
+    hold_time_seconds?: number;
+    description?: string;
   };
 }
 
@@ -92,6 +99,8 @@ const ChallengeDayTimer = () => {
   const [trainingDayData, setTrainingDayData] = useState<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [selectedFigure, setSelectedFigure] = useState<any>(null);
+  const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
 
   const { speak } = useSpeech(audioMode === "sound");
   const {
@@ -220,7 +229,8 @@ const ChallengeDayTimer = () => {
             `
               *,
               figure:figures (
-                id, name, image_url, video_url
+                id, name, image_url, video_url, difficulty_level, category,
+                instructions, audio_url, type, tags, hold_time_seconds, description
               )
             `
           )
@@ -575,6 +585,30 @@ const ChallengeDayTimer = () => {
     }
   };
 
+  const handleOpenExerciseInfo = () => {
+    const currentSegment = getCurrentSegment();
+    if (!currentSegment || currentSegment.type !== "exercise") return;
+    
+    const currentExercise = exercises[currentSegment.exerciseIndex];
+    if (!currentExercise) return;
+    
+    setSelectedFigure({
+      id: currentExercise.figure.id,
+      name: currentExercise.figure.name,
+      difficulty_level: currentExercise.figure.difficulty_level,
+      category: currentExercise.figure.category,
+      instructions: currentExercise.figure.instructions,
+      image_url: currentExercise.figure.image_url,
+      video_url: currentExercise.figure.video_url,
+      audio_url: currentExercise.figure.audio_url,
+      type: currentExercise.figure.type,
+      tags: currentExercise.figure.tags,
+      hold_time_seconds: currentExercise.hold_time_seconds || currentExercise.figure.hold_time_seconds,
+      description: currentExercise.figure.description,
+    });
+    setIsFigureModalOpen(true);
+  };
+
   const handleWorkoutComplete = async () => {
     if (!user || !challengeId || !dayId) return;
 
@@ -777,6 +811,18 @@ const ChallengeDayTimer = () => {
                 {currentSegmentIndex + 1} z {segments.length}
               </span>
             </div>
+
+            {/* Info Button - only show during exercise, not rest */}
+            {getCurrentSegment()?.type === "exercise" && (
+              <Button
+                variant="ghost"
+                onClick={handleOpenExerciseInfo}
+                className="text-white hover:bg-white/10 transition-all bg-white/5 min-w-[44px] min-h-[44px] relative z-50"
+                title="Informacje o ćwiczeniu"
+              >
+                <Info className="w-5 h-5 sm:w-6 sm:h-6" />
+              </Button>
+            )}
 
             <Button
               variant="ghost"
@@ -1094,6 +1140,16 @@ const ChallengeDayTimer = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Exercise Info Modal */}
+      <FigurePreviewModal
+        figure={selectedFigure}
+        isOpen={isFigureModalOpen}
+        onClose={() => {
+          setIsFigureModalOpen(false);
+          setSelectedFigure(null);
+        }}
+      />
     </div>
   );
 };
