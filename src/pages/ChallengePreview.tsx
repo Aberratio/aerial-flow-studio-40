@@ -38,7 +38,7 @@ import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
 import { ChallengeCompletionCelebration } from "@/components/ChallengeCompletionCelebration";
-import { FigurePreviewModal } from "@/components/FigurePreviewModal";
+import { ChallengeExerciseInfoModal } from "@/components/ChallengeExerciseInfoModal";
 import { format } from "date-fns";
 
 interface Challenge {
@@ -105,7 +105,15 @@ const ChallengePreview = () => {
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
-  const [selectedFigure, setSelectedFigure] = useState<any>(null);
+  const [selectedFigure, setSelectedFigure] = useState<{
+    id: string;
+    name: string;
+    image_url?: string;
+    video_url?: string;
+    description?: string;
+    instructions?: string;
+    tags?: string[];
+  } | null>(null);
   const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
 
   const translateDifficulty = (level: string) => {
@@ -474,16 +482,11 @@ const ChallengePreview = () => {
     setSelectedFigure({
       id: exercise.figure.id,
       name: exercise.figure.name,
-      difficulty_level: exercise.figure.difficulty_level,
-      category: exercise.figure.category,
-      instructions: exercise.figure.instructions,
       image_url: exercise.figure.image_url,
       video_url: exercise.figure.video_url,
-      audio_url: exercise.figure.audio_url,
-      type: exercise.figure.type,
-      tags: exercise.figure.tags,
-      hold_time_seconds: exercise.hold_time_seconds || exercise.figure.hold_time_seconds,
       description: exercise.figure.description,
+      instructions: exercise.figure.instructions,
+      tags: exercise.figure.tags,
     });
     setIsFigureModalOpen(true);
   };
@@ -1036,8 +1039,8 @@ const ChallengePreview = () => {
       )}
 
       {/* Exercise Info Modal */}
-      <FigurePreviewModal
-        figure={selectedFigure}
+      <ChallengeExerciseInfoModal
+        exercise={selectedFigure}
         isOpen={isFigureModalOpen}
         onClose={() => {
           setIsFigureModalOpen(false);
