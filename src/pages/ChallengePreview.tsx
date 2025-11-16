@@ -314,7 +314,7 @@ const ChallengePreview = () => {
   // Auto-scroll to current day
   useEffect(() => {
     if (!carouselApi || !challenge?.training_days || calendarLoading) return;
-    
+
     // Wait for calendarDays to be loaded
     if (!calendarDays || calendarDays.length === 0) return;
 
@@ -946,7 +946,7 @@ const ChallengePreview = () => {
                                       className="w-full py-3 text-sm font-semibold rounded-xl border-orange-500/50 text-orange-400 hover:bg-orange-500/20 hover:border-orange-500 transition-all duration-300"
                                     >
                                       <CheckCircle className="w-4 h-4 mr-2" />
-                                      Complete (Admin)
+                                      Ukończ (Admin)
                                     </Button>
                                   )}
 
@@ -954,12 +954,12 @@ const ChallengePreview = () => {
                                 <div className="text-center">
                                   {isCompleted ? (
                                     <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                                      ✓ Completed
+                                      ✓ Ukończone
                                     </span>
                                   ) : actualIsLocked ? (
                                     <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-slate-500/20 text-slate-400 border border-slate-500/30">
                                       <Lock className="w-3 h-3 mr-2" />
-                                      Locked
+                                      Zablokowane
                                     </span>
                                   ) : null}
                                 </div>
