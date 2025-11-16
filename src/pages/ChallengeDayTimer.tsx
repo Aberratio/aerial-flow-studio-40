@@ -26,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useSpeech } from "@/hooks/useSpeech";
 import { useWakeLock } from "@/hooks/useWakeLock";
-import { FigurePreviewModal } from "@/components/FigurePreviewModal";
+import { ChallengeExerciseInfoModal } from "@/components/ChallengeExerciseInfoModal";
 
 interface Exercise {
   id: string;
@@ -99,7 +99,15 @@ const ChallengeDayTimer = () => {
   const [trainingDayData, setTrainingDayData] = useState<any>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [selectedFigure, setSelectedFigure] = useState<any>(null);
+  const [selectedFigure, setSelectedFigure] = useState<{
+    id: string;
+    name: string;
+    image_url?: string;
+    video_url?: string;
+    description?: string;
+    instructions?: string;
+    tags?: string[];
+  } | null>(null);
   const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
 
   const { speak } = useSpeech(audioMode === "sound");
@@ -595,16 +603,11 @@ const ChallengeDayTimer = () => {
     setSelectedFigure({
       id: currentExercise.figure.id,
       name: currentExercise.figure.name,
-      difficulty_level: currentExercise.figure.difficulty_level,
-      category: currentExercise.figure.category,
-      instructions: currentExercise.figure.instructions,
       image_url: currentExercise.figure.image_url,
       video_url: currentExercise.figure.video_url,
-      audio_url: currentExercise.figure.audio_url,
-      type: currentExercise.figure.type,
-      tags: currentExercise.figure.tags,
-      hold_time_seconds: currentExercise.hold_time_seconds || currentExercise.figure.hold_time_seconds,
       description: currentExercise.figure.description,
+      instructions: currentExercise.figure.instructions,
+      tags: currentExercise.figure.tags,
     });
     setIsFigureModalOpen(true);
   };
@@ -1142,8 +1145,8 @@ const ChallengeDayTimer = () => {
       </Dialog>
 
       {/* Exercise Info Modal */}
-      <FigurePreviewModal
-        figure={selectedFigure}
+      <ChallengeExerciseInfoModal
+        exercise={selectedFigure}
         isOpen={isFigureModalOpen}
         onClose={() => {
           setIsFigureModalOpen(false);
