@@ -119,7 +119,7 @@ const ChallengeDayTimer = () => {
 
   // Create optimistic beeping sound for minimal mode
   const playBeep = useCallback(
-    (type: "countdown" | "transition" | "ready" = "countdown") => {
+    (type: "countdown" | "transition" | "ready" | "final" = "countdown") => {
       if (audioMode !== "minimal_sound") return;
 
       const audioContext = new (window.AudioContext ||
@@ -137,22 +137,24 @@ const ChallengeDayTimer = () => {
         oscillator.frequency.value = 800; // Medium pitch for transitions
       } else if (type === "ready") {
         oscillator.frequency.value = 1200; // Highest pitch for get ready
+      } else if (type === "final") {
+        oscillator.frequency.value = 1400; // HIGHEST pitch for final beep
       }
 
       oscillator.type = "sine";
 
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
       gainNode.gain.linearRampToValueAtTime(
-        0.2,
+        type === "final" ? 0.35 : 0.2,
         audioContext.currentTime + 0.01
       );
       gainNode.gain.exponentialRampToValueAtTime(
         0.01,
-        audioContext.currentTime + 0.2
+        audioContext.currentTime + (type === "final" ? 0.3 : 0.2)
       );
 
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
+      oscillator.stop(audioContext.currentTime + (type === "final" ? 0.3 : 0.2));
     },
     [audioMode]
   );
@@ -371,7 +373,9 @@ const ChallengeDayTimer = () => {
             prev > 0
           ) {
             const currentSegment = segments[currentSegmentIndex];
-            if (currentSegment?.type === "exercise") {
+            if (prev === 1) {
+              playBeep("final"); // Stronger beep for last second
+            } else if (currentSegment?.type === "exercise") {
               playBeep("countdown");
             } else if (currentSegment?.type === "rest") {
               playBeep("transition");
@@ -916,7 +920,11 @@ const ChallengeDayTimer = () => {
 
         {/* Nowe ćwiczenie */}
         {getCurrentSegment() && (
-          <Card className="glass-effect border-white/10 flex-shrink-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 backdrop-blur-xl mt-6 mx-2">
+          <Card className={`glass-effect border-white/10 flex-shrink-0 backdrop-blur-xl mt-6 mx-2 ${
+            getCurrentSegment()?.type === "rest"
+              ? "bg-gradient-to-br from-green-500/20 via-cyan-500/15 to-blue-500/20 border-green-400/30"
+              : "bg-gradient-to-br from-primary/5 via-transparent to-secondary/5"
+          }`}>
             <CardContent className="p-4 sm:p-6 md:p-8">
               {getCurrentSegment()?.type === "exercise" ? (
                 <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
@@ -946,18 +954,44 @@ const ChallengeDayTimer = () => {
                       </div>
                     )}
 
-                    {/* Overlay with Start button */}
-                    {!isRunning && !isPreparingToStart && (
-                      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-10 transition-all duration-300">
-                        <Button
-                          onClick={handlePlayPause}
-                          size="lg"
-                          variant="primary"
-                          className="px-8 sm:px-12 md:px-16 py-6 sm:py-8 md:py-10 text-xl sm:text-2xl md:text-3xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-110"
-                        >
-                          <Play className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mr-3 sm:mr-4" />
-                          Start
-                        </Button>
+                    {/* Overlay with Start button OR Preparation Countdown */}
+                    {(!isRunning || isPreparingToStart) && (
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10 transition-all duration-300">
+                        {isPreparingToStart ? (
+                          <>
+                            {/* Preparation countdown display */}
+                            <div className="text-center">
+                              <div className="text-yellow-400 text-sm sm:text-base md:text-lg font-semibold mb-2 uppercase tracking-wider">
+                                Przygotuj się!
+                              </div>
+                              <div className="text-white text-6xl sm:text-7xl md:text-8xl font-bold animate-pulse">
+                                {preparationTime}
+                              </div>
+                              <div className="text-white/70 text-base sm:text-lg md:text-xl mt-4">
+                                Trening rozpocznie się za chwilę
+                              </div>
+                            </div>
+                            {/* Cancel button */}
+                            <Button
+                              onClick={handlePlayPause}
+                              variant="ghost"
+                              className="mt-6 text-white/70 hover:text-white hover:bg-white/10"
+                            >
+                              Anuluj
+                            </Button>
+                          </>
+                        ) : (
+                          /* Start button */
+                          <Button
+                            onClick={handlePlayPause}
+                            size="lg"
+                            variant="primary"
+                            className="px-8 sm:px-12 md:px-16 py-6 sm:py-8 md:py-10 text-xl sm:text-2xl md:text-3xl font-bold shadow-2xl hover:shadow-3xl transition-all duration-300 rounded-2xl hover:scale-110"
+                          >
+                            <Play className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mr-3 sm:mr-4" />
+                            Start
+                          </Button>
+                        )}
                       </div>
                     )}
                   </>
@@ -966,13 +1000,15 @@ const ChallengeDayTimer = () => {
 
               {/* Exercise name and duration */}
               <div className="text-center space-y-2">
-                <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-foreground">
+                <h2 className={`font-bold text-xl sm:text-2xl md:text-3xl ${
+                  getCurrentSegment()?.type === "rest" 
+                    ? "text-green-400 animate-pulse" 
+                    : "text-foreground"
+                }`}>
                   {getCurrentSegment()?.exerciseName}
                 </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground">
-                  {isPreparingToStart
-                    ? formatTime(preparationTime)
-                    : formatTime(timeRemaining)}
+                  {formatTime(timeRemaining)}
                 </p>
                 {getCurrentSegment()?.exerciseNotes && (
                   <p className="text-sm sm:text-base text-primary mt-2 bg-primary/10 rounded-lg px-4 py-2 border border-primary/20 backdrop-blur-sm">
