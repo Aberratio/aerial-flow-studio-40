@@ -74,7 +74,7 @@ const ChallengeDayTimer = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { changeDayStatus, getCalendarDayByTrainingDay } = useChallengeCalendar(
+  const { getCalendarDayByTrainingDay } = useChallengeCalendar(
     challengeId || ""
   );
 
@@ -511,7 +511,35 @@ const ChallengeDayTimer = () => {
     document.addEventListener("mozfullscreenchange", handleFullscreenChange);
     document.addEventListener("MSFullscreenChange", handleFullscreenChange);
 
+    // Cleanup: Exit fullscreen and remove listeners on unmount
     return () => {
+      // Exit fullscreen if active
+      const exitFullscreen = async () => {
+        try {
+          if (
+            document.fullscreenElement ||
+            doc.webkitFullscreenElement ||
+            doc.mozFullScreenElement ||
+            doc.msFullscreenElement
+          ) {
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if (doc.webkitExitFullscreen) {
+              await doc.webkitExitFullscreen();
+            } else if (doc.mozCancelFullScreen) {
+              await doc.mozCancelFullScreen();
+            } else if (doc.msExitFullscreen) {
+              await doc.msExitFullscreen();
+            }
+          }
+        } catch (error) {
+          console.error("Error exiting fullscreen on unmount:", error);
+        }
+      };
+      
+      exitFullscreen();
+
+      // Remove event listeners
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
       document.removeEventListener(
         "webkitfullscreenchange",
@@ -617,7 +645,15 @@ const ChallengeDayTimer = () => {
   };
 
   const handleWorkoutComplete = async () => {
-    if (!user || !challengeId || !dayId) return;
+    if (!user || !challengeId || !dayId) {
+      console.error("Missing required data:", { user: !!user, challengeId, dayId });
+      toast({
+        title: "Błąd",
+        description: "Brak wymaganych danych do zapisania postępu",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       // Release wake lock when workout is completed
@@ -630,24 +666,41 @@ const ChallengeDayTimer = () => {
         .eq("id", dayId)
         .single();
 
-      if (trainingDayError) throw trainingDayError;
+      if (trainingDayError) {
+        console.error("Training day error:", trainingDayError);
+        throw new Error("Nie udało się pobrać danych dnia treningowego");
+      }
 
-      // Insert progress record
+      // Insert progress record with better error handling
       const { error: progressError } = await supabase
         .from("challenge_day_progress")
-        .upsert({
-          user_id: user.id,
-          challenge_id: challengeId,
-          training_day_id: dayId,
-          status: "completed",
-          changed_status_at: new Date().toISOString(),
-          exercises_completed: exercises.length,
-          total_exercises: exercises.length,
-        });
+        .upsert(
+          {
+            user_id: user.id,
+            challenge_id: challengeId,
+            training_day_id: dayId,
+            status: "completed",
+            changed_status_at: new Date().toISOString(),
+            exercises_completed: exercises.length,
+            total_exercises: exercises.length,
+          },
+          {
+            onConflict: "user_id,challenge_id,training_day_id",
+            ignoreDuplicates: false,
+          }
+        );
 
-      if (progressError) throw progressError;
+      if (progressError) {
+        console.error("Progress error:", progressError);
+        // Check if it's just a duplicate/conflict error that actually succeeded
+        if (progressError.code === "23505") {
+          console.log("Duplicate insert - data already exists, considering it success");
+        } else {
+          throw new Error(`Nie udało się zapisać postępu: ${progressError.message}`);
+        }
+      }
 
-      // Update participant status to completed if needed
+      // Update participant status - non-critical, just log errors
       const { error: participantError } = await supabase
         .from("challenge_participants")
         .update({
@@ -656,19 +709,27 @@ const ChallengeDayTimer = () => {
         .eq("user_id", user.id)
         .eq("challenge_id", challengeId);
 
-      if (participantError)
-        console.error("Error updating participant:", participantError);
+      if (participantError) {
+        console.error("Participant update error (non-critical):", participantError);
+      }
+
+      // Success - show toast and navigate
       toast({
         title: "Trening ukończony!",
         description:
           "Świetna robota! Dzień treningowy został oznaczony jako ukończony.",
       });
-      navigate(`/challenges/${challengeId}`);
-    } catch (error) {
+      
+      // Small delay before navigate to ensure toast is visible
+      setTimeout(() => {
+        navigate(`/challenges/${challengeId}`);
+      }, 300);
+      
+    } catch (error: any) {
       console.error("Error completing workout:", error);
       toast({
-        title: "Error",
-        description: "Nie udało się oznaczyć treningu jako ukończony",
+        title: "Błąd",
+        description: error.message || "Nie udało się oznaczyć treningu jako ukończony",
         variant: "destructive",
       });
     }
