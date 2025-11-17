@@ -671,33 +671,52 @@ const ChallengeDayTimer = () => {
         throw new Error("Nie udało się pobrać danych dnia treningowego");
       }
 
-      // Insert progress record with better error handling
-      const { error: progressError } = await supabase
+      // Check if progress record exists
+      const { data: existingProgress, error: checkError } = await supabase
         .from("challenge_day_progress")
-        .upsert(
-          {
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId)
+        .eq("training_day_id", dayId)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error("Error checking existing progress:", checkError);
+        throw new Error("Nie udało się sprawdzić postępu");
+      }
+
+      const progressData = {
+        status: "completed",
+        changed_status_at: new Date().toISOString(),
+        exercises_completed: exercises.length,
+        total_exercises: exercises.length,
+      };
+
+      let progressError;
+
+      if (existingProgress) {
+        // Update existing record
+        const { error } = await supabase
+          .from("challenge_day_progress")
+          .update(progressData)
+          .eq("id", existingProgress.id);
+        progressError = error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from("challenge_day_progress")
+          .insert({
             user_id: user.id,
             challenge_id: challengeId,
             training_day_id: dayId,
-            status: "completed",
-            changed_status_at: new Date().toISOString(),
-            exercises_completed: exercises.length,
-            total_exercises: exercises.length,
-          },
-          {
-            onConflict: "user_id,challenge_id,training_day_id",
-            ignoreDuplicates: false,
-          }
-        );
+            ...progressData,
+          });
+        progressError = error;
+      }
 
       if (progressError) {
         console.error("Progress error:", progressError);
-        // Check if it's just a duplicate/conflict error that actually succeeded
-        if (progressError.code === "23505") {
-          console.log("Duplicate insert - data already exists, considering it success");
-        } else {
-          throw new Error(`Nie udało się zapisać postępu: ${progressError.message}`);
-        }
+        throw new Error(`Nie udało się zapisać postępu: ${progressError.message}`);
       }
 
       // Update participant status - non-critical, just log errors
