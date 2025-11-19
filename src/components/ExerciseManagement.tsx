@@ -102,7 +102,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   const [notes, setNotes] = useState("");
   const [playVideo, setPlayVideo] = useState<boolean>(true);
   const [videoPosition, setVideoPosition] = useState<'center' | 'top' | 'bottom' | 'left' | 'right'>('center');
-  const [applyToAllDays, setApplyToAllDays] = useState<boolean>(true);
   const { toast } = useToast();
   const { user } = useAuth();
   const { getDifficultyColor, getDifficultyLabel } = useDictionary();
@@ -158,7 +157,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     setNotes("");
     setPlayVideo(true);
     setVideoPosition('center');
-    setApplyToAllDays(true);
     setEditingExercise(null);
   };
 
@@ -179,7 +177,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     setNotes(exercise.notes || "");
     setPlayVideo(exercise.play_video ?? true);
     setVideoPosition(exercise.video_position || 'center');
-    setApplyToAllDays(true);
     setIsAddModalOpen(true);
   };
 
@@ -260,12 +257,7 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
           .single();
 
         // Update all instances of this figure in the challenge if applyToAllDays is checked
-        if (!result.error && applyToAllDays && selectedFigureHasVideo()) {
-          await updateVideoSettingsForAllDays(selectedFigure, {
-            play_video: playVideo,
-            video_position: videoPosition as 'center' | 'top' | 'bottom' | 'left' | 'right',
-          });
-        }
+        // REMOVED: This functionality has been moved to the figures table level
       } else {
         result = await supabase
           .from("training_day_exercises")
@@ -305,50 +297,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         description: "Failed to save exercise",
         variant: "destructive",
       });
-    }
-  };
-
-  const updateVideoSettingsForAllDays = async (
-    figureId: string,
-    settings: { play_video: boolean; video_position: 'center' | 'top' | 'bottom' | 'left' | 'right' }
-  ) => {
-    try {
-      // Get challenge_id from current training_day_id
-      const { data: dayData } = await supabase
-        .from("challenge_training_days")
-        .select("challenge_id")
-        .eq("id", trainingDayId)
-        .single();
-
-      if (!dayData) return;
-
-      // Get all training days for this challenge
-      const { data: allDays } = await supabase
-        .from("challenge_training_days")
-        .select("id")
-        .eq("challenge_id", dayData.challenge_id);
-
-      if (!allDays) return;
-
-      const dayIds = allDays.map(d => d.id);
-
-      // Update all exercises with this figure_id in all days of this challenge
-      const { error } = await supabase
-        .from("training_day_exercises")
-        .update(settings)
-        .eq("figure_id", figureId)
-        .in("training_day_id", dayIds);
-
-      if (error) {
-        console.error("Error updating video settings for all days:", error);
-        toast({
-          title: "Partial update",
-          description: "Exercise updated but settings may not have applied to all days.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Error in updateVideoSettingsForAllDays:", error);
     }
   };
 
@@ -863,23 +811,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                   </Select>
                   <p className="text-xs text-muted-foreground">
                     Określa, która część video jest widoczna gdy jest przycinane do kwadratu
-                  </p>
-                </div>
-
-                <div className="space-y-2 bg-blue-900/20 border border-blue-400/30 rounded-lg p-3">
-                  <div className="flex items-center gap-2">
-                    <Checkbox
-                      id="apply-to-all-days"
-                      checked={applyToAllDays}
-                      onCheckedChange={(checked) => setApplyToAllDays(!!checked)}
-                    />
-                    <Label htmlFor="apply-to-all-days" className="cursor-pointer text-sm font-medium text-blue-300">
-                      Zastosuj ustawienia video do wszystkich dni z tym ćwiczeniem
-                    </Label>
-                  </div>
-                  <p className="text-xs text-blue-200/70 ml-6">
-                    Jeśli zaznaczone, ustawienia "Pokaż wideo" i "Pozycja kadrowania" zostaną 
-                    zastosowane do wszystkich wystąpień tego ćwiczenia w wyzwaniu
                   </p>
                 </div>
               </>

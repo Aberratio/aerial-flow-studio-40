@@ -529,6 +529,7 @@ export type Database = {
           image_url: string | null
           instructions: string | null
           name: string
+          play_video: boolean | null
           premium: boolean
           sport_category_id: string | null
           synonyms: string[] | null
@@ -537,6 +538,7 @@ export type Database = {
           transition_to_figure_id: string | null
           type: string | null
           updated_at: string | null
+          video_position: string | null
           video_url: string | null
         }
         Insert: {
@@ -551,6 +553,7 @@ export type Database = {
           image_url?: string | null
           instructions?: string | null
           name: string
+          play_video?: boolean | null
           premium?: boolean
           sport_category_id?: string | null
           synonyms?: string[] | null
@@ -559,6 +562,7 @@ export type Database = {
           transition_to_figure_id?: string | null
           type?: string | null
           updated_at?: string | null
+          video_position?: string | null
           video_url?: string | null
         }
         Update: {
@@ -573,6 +577,7 @@ export type Database = {
           image_url?: string | null
           instructions?: string | null
           name?: string
+          play_video?: boolean | null
           premium?: boolean
           sport_category_id?: string | null
           synonyms?: string[] | null
@@ -581,6 +586,7 @@ export type Database = {
           transition_to_figure_id?: string | null
           type?: string | null
           updated_at?: string | null
+          video_position?: string | null
           video_url?: string | null
         }
         Relationships: [

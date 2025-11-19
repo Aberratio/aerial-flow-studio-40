@@ -58,6 +58,8 @@ export const CreateExerciseModal = ({
     hold_time_seconds: 0,
     transition_from_figure_id: "",
     transition_to_figure_id: "",
+    video_position: 'center' as 'center' | 'top' | 'bottom' | 'left' | 'right',
+    play_video: true,
   });
   const [tagInput, setTagInput] = useState("");
   const [synonymInput, setSynonymInput] = useState("");
@@ -92,6 +94,8 @@ export const CreateExerciseModal = ({
         hold_time_seconds: editingFigure.hold_time_seconds || 0,
         transition_from_figure_id: editingFigure.transition_from_figure_id || "",
         transition_to_figure_id: editingFigure.transition_to_figure_id || "",
+        video_position: editingFigure.video_position || 'center',
+        play_video: editingFigure.play_video !== undefined ? editingFigure.play_video : true,
       });
     } else {
       setFormData({
@@ -110,6 +114,8 @@ export const CreateExerciseModal = ({
         hold_time_seconds: 0,
         transition_from_figure_id: "",
         transition_to_figure_id: "",
+        video_position: 'center',
+        play_video: true,
       });
     }
     setTagInput("");
@@ -254,6 +260,8 @@ export const CreateExerciseModal = ({
                 : null,
             transition_from_figure_id: formData.type === 'transitions' ? formData.transition_from_figure_id : null,
             transition_to_figure_id: formData.type === 'transitions' ? formData.transition_to_figure_id : null,
+            video_position: formData.video_position,
+            play_video: formData.play_video,
             updated_at: new Date().toISOString(),
           })
           .eq("id", editingFigure.id);
@@ -276,6 +284,8 @@ export const CreateExerciseModal = ({
                 : null,
             transition_from_figure_id: formData.type === 'transitions' ? formData.transition_from_figure_id : null,
             transition_to_figure_id: formData.type === 'transitions' ? formData.transition_to_figure_id : null,
+            video_position: formData.video_position,
+            play_video: formData.play_video,
             created_by: user.id,
           })
           .select()
@@ -323,6 +333,8 @@ export const CreateExerciseModal = ({
         hold_time_seconds: 0,
         transition_from_figure_id: "",
         transition_to_figure_id: "",
+        video_position: 'center',
+        play_video: true,
       });
       setImageFile(null);
       setVideoFile(null);
@@ -668,6 +680,52 @@ export const CreateExerciseModal = ({
               )}
             </div>
           </div>
+
+          {/* Video Settings - Show if video is provided */}
+          {(formData.video_url || videoFile) && (
+            <div className="space-y-4 p-4 bg-purple-900/20 border border-purple-400/20 rounded-lg">
+              <h3 className="text-white font-semibold">Ustawienia wyświetlania video</h3>
+              
+              <div className="flex items-center justify-between">
+                <Label htmlFor="play_video" className="text-white">
+                  Odtwarzaj video automatycznie
+                </Label>
+                <Switch
+                  id="play_video"
+                  checked={formData.play_video}
+                  onCheckedChange={(checked) =>
+                    setFormData({ ...formData, play_video: checked })
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="video_position" className="text-white">
+                  Pozycja kadrowania video
+                </Label>
+                <Select
+                  value={formData.video_position}
+                  onValueChange={(value: 'center' | 'top' | 'bottom' | 'left' | 'right') =>
+                    setFormData({ ...formData, video_position: value })
+                  }
+                >
+                  <SelectTrigger id="video_position" className="bg-white/5 border-white/10 text-white">
+                    <SelectValue placeholder="Wybierz pozycję" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="center">Centrum</SelectItem>
+                    <SelectItem value="top">Góra</SelectItem>
+                    <SelectItem value="bottom">Dół</SelectItem>
+                    <SelectItem value="left">Lewa strona</SelectItem>
+                    <SelectItem value="right">Prawa strona</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-white/60">
+                  Określa, która część video jest widoczna gdy jest przycinane do kwadratu
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Transitions Section - Only for admin and type === 'transitions' */}
           {isAdmin && formData.type === 'transitions' && (
