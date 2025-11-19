@@ -74,6 +74,8 @@ interface Exercise {
   video_url?: string;
   audio_url?: string;
   notes?: string;
+  play_video?: boolean;
+  video_position?: "center" | "top" | "bottom" | "left" | "right";
   figure?: {
     id: string;
     name: string;
@@ -125,6 +127,8 @@ interface TrainingDayExercise {
   video_url?: string;
   audio_url?: string;
   notes?: string;
+  play_video?: boolean;
+  video_position?: "center" | "top" | "bottom" | "left" | "right";
   figure?: {
     id: string;
     name: string;
@@ -281,6 +285,8 @@ const EditChallenge = () => {
                 video_url: ex.video_url,
                 audio_url: ex.audio_url,
                 notes: ex.notes,
+                play_video: ex.play_video,
+                video_position: ex.video_position,
                 figure: ex.figure,
               })) || [],
           })) || [];
@@ -542,6 +548,8 @@ const EditChallenge = () => {
           video_url: exercise.video_url,
           audio_url: exercise.audio_url,
           notes: exercise.notes,
+          play_video: exercise.play_video !== undefined ? exercise.play_video : true,
+          video_position: exercise.video_position || "center",
         }));
 
         const { error: exerciseError } = await supabase
