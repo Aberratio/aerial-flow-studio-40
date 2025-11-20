@@ -61,7 +61,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { CreateExerciseModal } from "@/components/CreateExerciseModal";
+
 import { ConfirmDeleteModal } from "@/components/ConfirmDeleteModal";
 import { PricingModal } from "@/components/PricingModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -97,8 +97,6 @@ const Library = () => {
   const [selectedVideoTypes, setSelectedVideoTypes] = useState<string[]>([]);
   const [extendedFiltersOpen, setExtendedFiltersOpen] = useState(false);
   const [filtersCollapsed, setFiltersCollapsed] = useState(isMobile);
-  const [showCreateExercise, setShowCreateExercise] = useState(false);
-  const [editingFigure, setEditingFigure] = useState(null);
   const [figures, setFigures] = useState([]);
   const [figuresWithProgress, setFiguresWithProgress] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -545,7 +543,7 @@ const Library = () => {
             </div>
             {(user?.role === "trainer" || user?.role === "admin") && (
               <Button
-                onClick={() => setShowCreateExercise(true)}
+                onClick={() => navigate('/exercise/new')}
                 variant="primary"
                 className="w-full sm:w-auto"
               >
@@ -1815,10 +1813,7 @@ const Library = () => {
               canModifyFigure={canModifyFigure}
               getDifficultyColor={getDifficultyColor}
               getStatusIcon={getStatusIcon}
-              onEdit={(figure) => {
-                setEditingFigure(figure);
-                setShowCreateExercise(true);
-              }}
+              onEdit={(figure) => navigate(`/exercise/${figure.id}/edit`)}
               onDelete={(figure) => {
                 setDeleteModal({
                   isOpen: true,
@@ -1833,10 +1828,7 @@ const Library = () => {
               canModifyFigure={canModifyFigure}
               getDifficultyColor={getDifficultyColor}
               getStatusIcon={getStatusIcon}
-              onEdit={(figure) => {
-                setEditingFigure(figure);
-                setShowCreateExercise(true);
-              }}
+              onEdit={(figure) => navigate(`/exercise/${figure.id}/edit`)}
               onDelete={(figure) => {
                 setDeleteModal({
                   isOpen: true,
@@ -2209,15 +2201,6 @@ const Library = () => {
       </div>
 
       {/* Modals */}
-      <CreateExerciseModal
-        isOpen={showCreateExercise}
-        onClose={() => {
-          setShowCreateExercise(false);
-          setEditingFigure(null);
-          fetchFigures();
-        }}
-        editingFigure={editingFigure}
-      />
 
       <ConfirmDeleteModal
         isOpen={deleteModal.isOpen}

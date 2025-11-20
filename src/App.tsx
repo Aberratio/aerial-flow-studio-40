@@ -165,6 +165,14 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/exercise/new"
+        element={
+          <ProtectedRoute>
+            <EditExercise />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/exercise/:exerciseId/edit"
         element={
           <ProtectedRoute>
