@@ -18,7 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { TrainingDetailsModal } from "@/components/TrainingDetailsModal";
 import { TrainingSessionPage } from "@/components/TrainingSessionPage";
 import { CreateTrainingModal } from "@/components/CreateTrainingModal";
-import { CreateExerciseModal } from "@/components/CreateExerciseModal";
+
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useNavigate } from "react-router-dom";
@@ -33,7 +33,7 @@ const Training = () => {
   const [showSessionDetails, setShowSessionDetails] = useState(false);
   const [showTrainingSession, setShowTrainingSession] = useState(false);
   const [editingSession, setEditingSession] = useState<any>(null);
-  const [showCreateExercise, setShowCreateExercise] = useState(false);
+  
   const [sessions, setSessions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -208,7 +208,7 @@ const Training = () => {
                 </Button>
                 {isAdmin && (
                   <Button
-                    onClick={() => setShowCreateExercise(true)}
+                    onClick={() => navigate('/exercise/new?type=warm_up')}
                     variant="outline"
                     className="border-white/20 text-white hover:bg-white/10"
                   >
@@ -409,18 +409,6 @@ const Training = () => {
         editingSession={editingSession}
       />
 
-      <CreateExerciseModal
-        isOpen={showCreateExercise}
-        onClose={() => setShowCreateExercise(false)}
-        onExerciseCreated={() => {
-          setShowCreateExercise(false);
-          toast({
-            title: "Utworzono ćwiczenie",
-            description: "Specjalne ćwiczenie zostało pomyślnie utworzone.",
-          });
-        }}
-        isTrainingSpecial={true}
-      />
     </div>
   );
 };

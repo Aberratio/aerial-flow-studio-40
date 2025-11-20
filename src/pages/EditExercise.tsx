@@ -31,6 +31,7 @@ const EditExercise = () => {
   const { isTrainer, isAdmin } = useUserRole();
   const { getDifficultyLabel, getFigureTypeLabel, getSportCategoryLabel } = useDictionary();
 
+  const isCreateMode = !exerciseId;
   const [exercise, setExercise] = useState<any>(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -47,17 +48,24 @@ const EditExercise = () => {
     premium: false,
     transition_from_figure_id: "",
     transition_to_figure_id: "",
+    hold_time_seconds: 0,
+    video_position: 'center' as 'center' | 'top' | 'bottom' | 'left' | 'right',
+    play_video: true,
   });
   const [tagInput, setTagInput] = useState("");
   const [synonymInput, setSynonymInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchExercise = async () => {
-      if (!exerciseId) return;
+      if (!exerciseId) {
+        setLoading(false);
+        return;
+      }
 
       try {
         const { data, error } = await supabase
@@ -84,6 +92,9 @@ const EditExercise = () => {
           premium: data.premium || false,
           transition_from_figure_id: data.transition_from_figure_id || "",
           transition_to_figure_id: data.transition_to_figure_id || "",
+          hold_time_seconds: data.hold_time_seconds || 0,
+          video_position: (data.video_position || 'center') as 'center' | 'top' | 'bottom' | 'left' | 'right',
+          play_video: data.play_video !== undefined ? data.play_video : true,
         });
       } catch (error: any) {
         console.error("Error fetching exercise:", error);
@@ -105,17 +116,23 @@ const EditExercise = () => {
     e.preventDefault();
     console.log("Form submitted with data:", formData);
     
-    if (!user || !formData.name.trim() || !exercise) {
-      console.log("Validation failed:", { user: !!user, name: formData.name.trim(), exercise: !!exercise });
+    if (!user || !formData.name.trim()) {
+      console.log("Validation failed:", { user: !!user, name: formData.name.trim() });
+      return;
+    }
+
+    if (!isCreateMode && !exercise) {
+      console.log("Exercise not loaded for edit mode");
       return;
     }
 
     setIsLoading(true);
-    console.log("Starting exercise update process...");
+    console.log(isCreateMode ? "Creating new exercise..." : "Updating exercise...");
 
     try {
       let imageUrl = formData.image_url;
       let videoUrl = formData.video_url;
+      let audioUrl = formData.audio_url;
 
       // Upload image if provided
       if (imageFile) {
@@ -153,8 +170,26 @@ const EditExercise = () => {
         videoUrl = videoData.publicUrl;
       }
 
+      // Upload audio if provided
+      if (audioFile) {
+        const audioExt = audioFile.name.split(".").pop();
+        const audioName = `${Date.now()}.${audioExt}`;
+
+        const { error: audioError } = await supabase.storage
+          .from("posts")
+          .upload(`audio/${audioName}`, audioFile);
+
+        if (audioError) throw audioError;
+
+        const { data: audioData } = supabase.storage
+          .from("posts")
+          .getPublicUrl(`audio/${audioName}`);
+
+        audioUrl = audioData.publicUrl;
+      }
+
       // Normalize data before saving to prevent future issues
-      const updateData = {
+      const saveData = {
         name: formData.name.trim(),
         description: formData.description.trim() || null,
         instructions: formData.instructions.trim() || null,
@@ -163,39 +198,71 @@ const EditExercise = () => {
         type: formData.type?.replace(/\s+/g, '_')?.toLowerCase() || null,
         image_url: imageUrl || null,
         video_url: videoUrl || null,
-        audio_url: formData.audio_url || null,
+        audio_url: audioUrl || null,
         tags: formData.tags.length > 0 ? formData.tags : null,
         synonyms: formData.synonyms.length > 0 ? formData.synonyms : null,
         premium: formData.premium,
         transition_from_figure_id: formData.type === 'transitions' ? formData.transition_from_figure_id : null,
         transition_to_figure_id: formData.type === 'transitions' ? formData.transition_to_figure_id : null,
-        updated_at: new Date().toISOString(),
+        hold_time_seconds: formData.hold_time_seconds > 0 ? formData.hold_time_seconds : null,
+        video_position: formData.video_position,
+        play_video: formData.play_video,
+        ...(isCreateMode ? { created_by: user.id } : { updated_at: new Date().toISOString() }),
       };
       
-      console.log("Updating exercise with data:", updateData);
-      console.log("Exercise ID:", exercise.id);
+      console.log(isCreateMode ? "Creating exercise with data:" : "Updating exercise with data:", saveData);
 
-      const { error, data } = await supabase
-        .from("figures")
-        .update(updateData)
-        .eq("id", exercise.id)
-        .select();
+      if (isCreateMode) {
+        // CREATE MODE
+        const { error, data } = await supabase
+          .from("figures")
+          .insert(saveData)
+          .select()
+          .single();
 
-      console.log("Update result:", { data, error });
+        if (error) throw error;
 
-      if (error) throw error;
+        // Add trainer as expert if applicable
+        if (isTrainer && data) {
+          await supabase.from("figure_experts").insert({
+            figure_id: data.id,
+            expert_user_id: user.id,
+            added_by: user.id,
+          });
+        }
 
-      toast({
-        title: "Exercise Updated",
-        description: "Your exercise has been successfully updated.",
-      });
+        toast({
+          title: "Exercise Created",
+          description: "Your exercise has been successfully created.",
+        });
 
-      navigate(`/exercise/${exerciseId}`);
+        navigate(`/exercise/${data.id}`);
+      } else {
+        // UPDATE MODE
+        console.log("Exercise ID:", exercise.id);
+
+        const { error, data } = await supabase
+          .from("figures")
+          .update(saveData)
+          .eq("id", exercise.id)
+          .select();
+
+        console.log("Update result:", { data, error });
+
+        if (error) throw error;
+
+        toast({
+          title: "Exercise Updated",
+          description: "Your exercise has been successfully updated.",
+        });
+
+        navigate(`/exercise/${exerciseId}`);
+      }
     } catch (error: any) {
-      console.error("Error updating exercise:", error);
+      console.error("Error saving exercise:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to update exercise",
+        description: error.message || "Failed to save exercise",
         variant: "destructive",
       });
     } finally {
@@ -216,6 +283,14 @@ const EditExercise = () => {
     if (file) {
       setVideoFile(file);
       setFormData((prev) => ({ ...prev, video_url: "" }));
+    }
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAudioFile(file);
+      setFormData((prev) => ({ ...prev, audio_url: "" }));
     }
   };
 
@@ -274,7 +349,7 @@ const EditExercise = () => {
     );
   }
 
-  if (!exercise) {
+  if (!isCreateMode && !exercise) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 flex items-center justify-center">
         <div className="text-center">
@@ -294,8 +369,12 @@ const EditExercise = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Edit Exercise</h1>
-              <p className="text-muted-foreground">{exercise.name}</p>
+              <h1 className="text-2xl font-bold text-foreground">
+                {isCreateMode ? "Create Exercise" : "Edit Exercise"}
+              </h1>
+              <p className="text-muted-foreground">
+                {isCreateMode ? "Add a new exercise to the library" : exercise?.name}
+              </p>
             </div>
             <Button
               onClick={handleSubmit}
@@ -392,6 +471,32 @@ const EditExercise = () => {
                   </Select>
                 </div>
               </div>
+
+              {/* Hold Time - only for core category */}
+              {formData.category === "core" && (
+                <div>
+                  <Label htmlFor="hold_time" className="text-foreground">
+                    Default Hold Time (seconds)
+                  </Label>
+                  <Input
+                    id="hold_time"
+                    type="number"
+                    min="0"
+                    value={formData.hold_time_seconds}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        hold_time_seconds: parseInt(e.target.value) || 0,
+                      }))
+                    }
+                    className="bg-background/50 border-border/50 text-foreground"
+                    placeholder="Enter hold time in seconds (e.g., 30)"
+                  />
+                  <p className="text-sm text-muted-foreground mt-1">
+                    How long should this exercise be held? (0 = completion mode)
+                  </p>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="type" className="text-foreground">
@@ -522,9 +627,93 @@ const EditExercise = () => {
                     )}
                   </div>
                 </div>
+
+                {/* Audio Upload */}
+                <div>
+                  <Label htmlFor="audio-upload" className="text-foreground">
+                    Audio Instructions (Optional)
+                  </Label>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <input
+                        id="audio-upload"
+                        type="file"
+                        accept="audio/*"
+                        onChange={handleAudioUpload}
+                        className="hidden"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById("audio-upload")?.click()}
+                        className="border-border/50 hover:bg-accent/50"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Audio
+                      </Button>
+                      {audioFile && (
+                        <span className="text-sm text-muted-foreground">{audioFile.name}</span>
+                      )}
+                    </div>
+                    {(formData.audio_url || audioFile) && (
+                      <div className="text-sm text-green-600">
+                        {audioFile ? "New audio selected" : "Audio uploaded"}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Video Settings - only when video exists */}
+          {(formData.video_url || videoFile) && (
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-foreground">Video Display Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="play_video" className="text-foreground">
+                    Auto-play video
+                  </Label>
+                  <Switch
+                    id="play_video"
+                    checked={formData.play_video}
+                    onCheckedChange={(checked) =>
+                      setFormData({ ...formData, play_video: checked })
+                    }
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="video_position" className="text-foreground">
+                    Video Crop Position
+                  </Label>
+                  <Select
+                    value={formData.video_position}
+                    onValueChange={(value: 'center' | 'top' | 'bottom' | 'left' | 'right') =>
+                      setFormData({ ...formData, video_position: value })
+                    }
+                  >
+                    <SelectTrigger id="video_position" className="bg-background/50 border-border/50 text-foreground">
+                      <SelectValue placeholder="Select position" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="center">Center</SelectItem>
+                      <SelectItem value="top">Top</SelectItem>
+                      <SelectItem value="bottom">Bottom</SelectItem>
+                      <SelectItem value="left">Left</SelectItem>
+                      <SelectItem value="right">Right</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-muted-foreground">
+                    Specifies which part of the video is visible when cropped to square
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Content Details */}
           {!isTrainer && (
@@ -653,25 +842,29 @@ const EditExercise = () => {
             </Card>
           )}
 
-          {/* Foundational Exercises */}
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-foreground">Foundational Skills</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <PrerequisiteExercisesManager figureId={exercise.id} />
-            </CardContent>
-          </Card>
+          {/* Foundational Exercises - only in edit mode */}
+          {!isCreateMode && exercise && (
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-foreground">Foundational Skills</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PrerequisiteExercisesManager figureId={exercise.id} />
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Similar Exercises */}
-          <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="text-foreground">Similar Exercises</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <SimilarExercisesManager figureId={exercise.id} />
-            </CardContent>
-          </Card>
+          {/* Similar Exercises - only in edit mode */}
+          {!isCreateMode && exercise && (
+            <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
+              <CardHeader>
+                <CardTitle className="text-foreground">Similar Exercises</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SimilarExercisesManager figureId={exercise.id} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Action Buttons - Mobile Sticky */}
           <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-card/90 backdrop-blur-sm border-t border-border/50">
@@ -679,7 +872,7 @@ const EditExercise = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate(`/exercise/${exerciseId}`)}
+                onClick={() => navigate(isCreateMode ? "/library" : `/exercise/${exerciseId}`)}
                 className="flex-1"
               >
                 Cancel
