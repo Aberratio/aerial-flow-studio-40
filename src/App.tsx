@@ -28,6 +28,7 @@ import TrainingSessionDetail from "@/pages/TrainingSessionDetail";
 import TrainingExerciseSession from "@/pages/TrainingExerciseSession";
 import EditTrainingSession from "@/pages/EditTrainingSession";
 import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
+import WorkoutTimer from "@/pages/WorkoutTimer";
 import MyJourney from "@/pages/MyJourney";
 import EditChallenge from "@/pages/EditChallenge";
 
@@ -271,6 +272,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Training />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/training/timer"
+        element={
+          <ProtectedRoute>
+            <WorkoutTimer />
           </ProtectedRoute>
         }
       />

@@ -10,6 +10,8 @@ import {
   Heart,
   Edit,
   Trash2,
+  BookOpen,
+  BarChart3,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -200,6 +202,14 @@ const Training = () => {
             {user?.role === "trainer" || user?.role === "admin" ? (
               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                 <Button
+                  onClick={() => navigate('/training/timer')}
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                  Stoper treningowy
+                </Button>
+                <Button
                   onClick={() => setShowCreateSession(true)}
                   className="bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
                 >
@@ -207,14 +217,24 @@ const Training = () => {
                   Utwórz sesję
                 </Button>
                 {isAdmin && (
-                  <Button
-                    onClick={() => navigate('/exercise/new?type=warm_up')}
-                    variant="outline"
-                    className="border-white/20 text-white hover:bg-white/10"
-                  >
-                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-                    Utwórz ćwiczenie
-                  </Button>
+                  <>
+                    <Button
+                      onClick={() => navigate('/exercise/new?type=warm_up')}
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                      Utwórz ćwiczenie
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate('/training/library')}
+                      className="border-white/20 text-white hover:bg-white/10"
+                    >
+                      <BookOpen className="w-4 h-4 mr-2" />
+                      Biblioteka treningowa
+                    </Button>
+                  </>
                 )}
               </div>
             ) : null}
