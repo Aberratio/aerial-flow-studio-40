@@ -13,6 +13,7 @@ import { useTimerAudio } from '@/hooks/useTimerAudio';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { DEFAULT_CONFIG, type TimerConfig } from '@/types/timer';
 
+// Workout Timer component for interval training
 const WorkoutTimer = () => {
   const navigate = useNavigate();
   const [config, setConfig] = useState<TimerConfig>(() => {
