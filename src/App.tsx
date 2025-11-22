@@ -29,6 +29,7 @@ import TrainingExerciseSession from "@/pages/TrainingExerciseSession";
 import EditTrainingSession from "@/pages/EditTrainingSession";
 import TrainingSessionPageWrapper from "@/pages/TrainingSessionPageWrapper";
 import WorkoutTimer from "@/pages/WorkoutTimer";
+import UserManagement from "@/pages/UserManagement";
 import MyJourney from "@/pages/MyJourney";
 import EditChallenge from "@/pages/EditChallenge";
 
@@ -424,6 +425,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <RedemptionCodeManager />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/user-management"
+        element={
+          <ProtectedRoute>
+            <UserManagement />
           </ProtectedRoute>
         }
       />
