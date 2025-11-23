@@ -1,73 +1,201 @@
-# Welcome to your Lovable project
+# 🦎 IguanaFlow
 
-## Project info
+**Master Your Aerial Journey - One Pose at a Time**
 
-**URL**: https://lovable.dev/projects/7b052f19-0cf6-4166-a429-092f3790e887
+IguanaFlow is a comprehensive training platform for aerial artists, pole dancers, and anyone who loves to fly. Think of it as your personal aerial arts coach, community hub, and progress tracker all rolled into one beautiful web app.
 
-## How can I edit this code?
+**🌐 Live and kicking at [iguanaflow.com](https://iguanaflow.com)**
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+## What's This All About?
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/7b052f19-0cf6-4166-a429-092f3790e887) and start prompting.
+Ever wanted to learn aerial silks, pole dance, or any other aerial discipline but didn't know where to start? Or maybe you're already advanced but need a better way to track your progress and connect with fellow aerialists? That's where IguanaFlow comes in.
 
-Changes made via Lovable will be committed automatically to this repo.
+This platform helps you:
+- **Learn** from a curated library of 200+ aerial poses and figures with step-by-step instructions
+- **Challenge yourself** with structured 28-day programs designed to level up your skills
+- **Connect** with a global community of aerial artists, share your progress, and get inspired
+- **Track** your journey with detailed analytics and visual progress reports
+- **Train** with personalized sessions and courses created by real instructors
 
-**Use your preferred IDE**
+Basically, it's like having a personal trainer, a social network, and a progress journal specifically for aerial arts. Pretty neat, right?
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## ✨ Key Features
 
-Follow these steps:
+### 📚 Exercise Library
+A massive collection of aerial poses, tricks, and transitions. Each exercise comes with:
+- Clear photos and video demonstrations
+- Step-by-step instructions
+- Tips and variations
+- Prerequisites and similar exercises
+- Difficulty levels and categories
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### 🎯 28-Day Challenges
+Structured programs that guide you through progressive training over 28 days. Perfect for staying motivated and seeing real progress.
+
+### 👥 Social Community
+- **Feed**: Share your achievements, ask questions, and cheer on others
+- **Friends System**: Connect with fellow aerialists, follow their journeys
+- **Posts**: Document your training, share photos, and celebrate milestones
+- **Achievements**: Earn badges and unlock rewards as you progress
+
+### 🏋️ Training Sessions & Courses
+- Create custom training sessions tailored to your goals
+- Access professional courses designed by certified instructors
+- Track your workout history and performance
+- Built-in workout timer for your practice sessions
+
+### 📊 Progress Tracking
+- Visual analytics showing your improvement over time
+- Skill tree system that maps your aerial journey
+- Level progression and milestone tracking
+- Detailed statistics on your training habits
+
+### 🌳 Skill Tree / Aerial Journey
+An interactive skill tree that visualizes your learning path. Unlock new levels, see your progress, and discover what's next in your aerial adventure.
+
+### 👑 Premium Features
+- Unlimited access to all challenges
+- Advanced analytics and insights
+- Expert coaching and feedback
+- Priority support
+- Exclusive content
+
+### 📱 Progressive Web App (PWA)
+Install IguanaFlow on your phone and use it like a native app. Works offline, loads fast, and feels smooth.
+
+### 📸 Instagram Integration
+Seamlessly embed and share Instagram content within the platform.
+
+---
+
+## 🛠️ Tech Stack
+
+This project is built with modern, battle-tested technologies:
+
+- **Frontend**: React 18 + TypeScript + Vite
+- **UI Framework**: Tailwind CSS + shadcn/ui components
+- **Backend**: Supabase (PostgreSQL database, authentication, real-time subscriptions)
+- **Payments**: Stripe integration for premium subscriptions
+- **State Management**: TanStack Query (React Query) for server state
+- **Routing**: React Router v6
+- **Forms**: React Hook Form + Zod validation
+- **Animations**: Framer Motion
+- **PWA**: Vite PWA plugin
+- **Deployment**: Production-ready and live at iguanaflow.com
+
+---
+
+## 🚀 Getting Started
+
+Want to run this locally? Here's how:
+
+### Prerequisites
+
+- Node.js 18+ (we recommend using [nvm](https://github.com/nvm-sh/nvm#installing-and-updating))
+- npm, yarn, or bun (we use bun, but npm works fine)
+- A Supabase account (for backend services)
+
+### Installation
+
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd aerial-flow-studio-40
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
+# or
+bun install
 
-# Step 3: Install the necessary dependencies.
-npm i
+# Set up environment variables
+# Create a .env file with your Supabase credentials
+# (Check with the project maintainer for required env vars)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start the development server
 npm run dev
+# or
+bun run dev
 ```
 
-**Edit a file directly in GitHub**
+The app will be available at `http://localhost:5173` (or whatever port Vite assigns).
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Available Scripts
 
-**Use GitHub Codespaces**
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run build:dev    # Build in development mode
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+---
 
-## What technologies are used for this project?
+## 📁 Project Structure
 
-This project is built with:
+```
+aerial-flow-studio-40/
+├── src/
+│   ├── components/          # React components
+│   │   ├── Auth/           # Authentication modals
+│   │   ├── Challenge/      # Challenge-related components
+│   │   ├── Layout/         # Layout components
+│   │   ├── Profile/        # User profile components
+│   │   ├── ui/             # shadcn/ui components
+│   │   └── ...             # Other feature components
+│   ├── contexts/           # React contexts (Auth, Dictionary)
+│   ├── hooks/              # Custom React hooks
+│   ├── integrations/      # External service integrations
+│   │   └── supabase/      # Supabase client and types
+│   ├── lib/                # Utility functions
+│   ├── pages/              # Page components (routes)
+│   ├── types/              # TypeScript type definitions
+│   └── App.tsx             # Main app component
+├── supabase/
+│   ├── functions/          # Edge functions
+│   └── migrations/         # Database migrations
+├── public/                 # Static assets
+└── ...config files
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+## 🤖 About This Project
 
-Simply open [Lovable](https://lovable.dev/projects/7b052f19-0cf6-4166-a429-092f3790e887) and click on Share -> Publish.
+**This repository is my AI experiment** - a journey into seeing what's possible when you combine modern AI coding assistants with a clear vision.
 
-## Can I connect a custom domain to my Lovable project?
+The majority of this codebase was built using:
+- **[Lovable](https://lovable.dev)** - For rapid prototyping and initial development
+- **[Cursor](https://cursor.sh)** - For iterative improvements, refactoring, and fine-tuning
 
-Yes, you can!
+It's been fascinating to watch AI tools help bring this platform to life, from the initial concept to a fully functional, production-ready application serving real users at iguanaflow.com.
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+This isn't just a demo or proof of concept - it's a real, working application that people use every day to improve their aerial skills. The fact that AI played such a significant role in its creation is both exciting and a testament to how far these tools have come.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+## 📝 Notes
+
+- The app is **live in production** at [iguanaflow.com](https://iguanaflow.com)
+- This is a private repository, but feel free to explore the code
+- Built with love (and a lot of AI assistance) for the aerial arts community
+- Contributions and feedback are welcome!
+
+---
+
+## 🦎 Why "Iguana"?
+
+The iguana pose is one of our favorite aerial movements - but it's also a symbol: calm, strong, adaptable, and always ready to climb higher. Just like you on your aerial journey.
+
+---
+
+**Questions? Ideas? Want to chat?**  
+Reach out via [Instagram @iguana.flow](https://www.instagram.com/iguana.flow) or [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
+
+---
+
+*Built with React, TypeScript, Supabase, and a healthy dose of AI magic ✨*
