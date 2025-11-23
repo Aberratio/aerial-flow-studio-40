@@ -1,5 +1,12 @@
 # 🦎 IguanaFlow
 
+![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red.svg)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.5-blue)
+![React](https://img.shields.io/badge/React-18.3-blue)
+![Vite](https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite&logoColor=white)
+![Status](https://img.shields.io/badge/status-production-green)
+![Website](https://img.shields.io/badge/website-iguanaflow.com-purple)
+
 IguanaFlow is a comprehensive training platform for aerial artists, pole dancers, and anyone who loves to fly. Think of it as your personal aerial arts coach, community hub, and progress tracker all rolled into one beautiful web app.
 
 This platform helps you:
