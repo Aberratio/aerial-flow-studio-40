@@ -93,7 +93,8 @@ const UserManagement = () => {
       // Update user_roles table (trigger will sync profiles automatically)
       const { error } = await supabase
         .from('user_roles')
-        .upsert({ user_id: userId, role: newRole });
+        .update({ role: newRole })
+        .eq('user_id', userId);
 
       if (error) throw error;
 
@@ -103,7 +104,7 @@ const UserManagement = () => {
       });
 
       // Refresh users list
-      fetchUsers();
+      await fetchUsers();
     } catch (error) {
       console.error('Error updating role:', error);
       toast({
