@@ -1,12 +1,18 @@
 # 🦎 IguanaFlow
 
-**Master Your Aerial Journey - One Pose at a Time**
-
 IguanaFlow is a comprehensive training platform for aerial artists, pole dancers, and anyone who loves to fly. Think of it as your personal aerial arts coach, community hub, and progress tracker all rolled into one beautiful web app.
 
-**🌐 Live and kicking at [iguanaflow.com](https://iguanaflow.com)**
+This platform helps you:
 
----
+- **Learn** from a curated library of 200+ aerial poses and figures with step-by-step instructions
+- **Challenge yourself** with structured 28-day programs designed to level up your skills
+- **Connect** with a global community of aerial artists, share your progress, and get inspired
+- **Track** your journey with detailed analytics and visual progress reports
+- **Train** with personalized sessions and courses created by real instructors
+
+Basically, it's like having a personal trainer, a social network, and a progress journal specifically for aerial arts. Pretty neat, right?
+
+**🌐 Live and kicking at [iguanaflow.com](https://iguanaflow.com)**
 
 ## 🤖 About This Project
 
@@ -30,22 +36,6 @@ This isn't just a demo or proof of concept - it's a real, working application th
 
 **Questions? Ideas? Want to chat?**  
 Reach out via [Instagram @iguana.flow](https://www.instagram.com/iguana.flow) or [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
-
----
-
-## What's This All About?
-
-Ever wanted to learn aerial silks, pole dance, or any other aerial discipline but didn't know where to start? Or maybe you're already advanced but need a better way to track your progress and connect with fellow aerialists? That's where IguanaFlow comes in.
-
-This platform helps you:
-
-- **Learn** from a curated library of 200+ aerial poses and figures with step-by-step instructions
-- **Challenge yourself** with structured 28-day programs designed to level up your skills
-- **Connect** with a global community of aerial artists, share your progress, and get inspired
-- **Track** your journey with detailed analytics and visual progress reports
-- **Train** with personalized sessions and courses created by real instructors
-
-Basically, it's like having a personal trainer, a social network, and a progress journal specifically for aerial arts. Pretty neat, right?
 
 ---
 
