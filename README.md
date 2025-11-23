@@ -1,5 +1,34 @@
 # 🦎 IguanaFlow
 
+## 🤖 About This Project
+
+**This repository is my AI experiment** - a journey into seeing what's possible when you combine modern AI coding assistants with a clear vision.
+
+The majority of this codebase was built using:
+
+- **[Lovable](https://lovable.dev)** - For rapid prototyping and initial development
+- **[Cursor](https://cursor.sh)** - For iterative improvements, refactoring, and fine-tuning
+
+It's been fascinating to watch AI tools help bring this platform to life, from the initial concept to a fully functional, production-ready application serving real users at iguanaflow.com.
+
+This isn't just a demo or proof of concept - it's a real, working application that people use every day to improve their aerial skills. The fact that AI played such a significant role in its creation is both exciting and a testament to how far these tools have come.
+
+---
+
+## 📝 Notes
+
+- The app is **live in production** at [iguanaflow.com](https://iguanaflow.com)
+- This is a private repository, but feel free to explore the code
+- Built with love (and a lot of AI assistance) for the aerial arts community
+- Contributions and feedback are welcome!
+
+---
+
+**Questions? Ideas? Want to chat?**  
+Reach out via [Instagram @iguana.flow](https://www.instagram.com/iguana.flow) or [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
+
+---
+
 **Master Your Aerial Journey - One Pose at a Time**
 
 IguanaFlow is a comprehensive training platform for aerial artists, pole dancers, and anyone who loves to fly. Think of it as your personal aerial arts coach, community hub, and progress tracker all rolled into one beautiful web app.
@@ -13,6 +42,7 @@ IguanaFlow is a comprehensive training platform for aerial artists, pole dancers
 Ever wanted to learn aerial silks, pole dance, or any other aerial discipline but didn't know where to start? Or maybe you're already advanced but need a better way to track your progress and connect with fellow aerialists? That's where IguanaFlow comes in.
 
 This platform helps you:
+
 - **Learn** from a curated library of 200+ aerial poses and figures with step-by-step instructions
 - **Challenge yourself** with structured 28-day programs designed to level up your skills
 - **Connect** with a global community of aerial artists, share your progress, and get inspired
@@ -26,7 +56,9 @@ Basically, it's like having a personal trainer, a social network, and a progress
 ## ✨ Key Features
 
 ### 📚 Exercise Library
+
 A massive collection of aerial poses, tricks, and transitions. Each exercise comes with:
+
 - Clear photos and video demonstrations
 - Step-by-step instructions
 - Tips and variations
@@ -34,30 +66,36 @@ A massive collection of aerial poses, tricks, and transitions. Each exercise com
 - Difficulty levels and categories
 
 ### 🎯 28-Day Challenges
+
 Structured programs that guide you through progressive training over 28 days. Perfect for staying motivated and seeing real progress.
 
 ### 👥 Social Community
+
 - **Feed**: Share your achievements, ask questions, and cheer on others
 - **Friends System**: Connect with fellow aerialists, follow their journeys
 - **Posts**: Document your training, share photos, and celebrate milestones
 - **Achievements**: Earn badges and unlock rewards as you progress
 
 ### 🏋️ Training Sessions & Courses
+
 - Create custom training sessions tailored to your goals
 - Access professional courses designed by certified instructors
 - Track your workout history and performance
 - Built-in workout timer for your practice sessions
 
 ### 📊 Progress Tracking
+
 - Visual analytics showing your improvement over time
 - Skill tree system that maps your aerial journey
 - Level progression and milestone tracking
 - Detailed statistics on your training habits
 
 ### 🌳 Skill Tree / Aerial Journey
+
 An interactive skill tree that visualizes your learning path. Unlock new levels, see your progress, and discover what's next in your aerial adventure.
 
 ### 👑 Premium Features
+
 - Unlimited access to all challenges
 - Advanced analytics and insights
 - Expert coaching and feedback
@@ -65,9 +103,11 @@ An interactive skill tree that visualizes your learning path. Unlock new levels,
 - Exclusive content
 
 ### 📱 Progressive Web App (PWA)
+
 Install IguanaFlow on your phone and use it like a native app. Works offline, loads fast, and feels smooth.
 
 ### 📸 Instagram Integration
+
 Seamlessly embed and share Instagram content within the platform.
 
 ---
@@ -164,38 +204,4 @@ aerial-flow-studio-40/
 
 ---
 
-## 🤖 About This Project
-
-**This repository is my AI experiment** - a journey into seeing what's possible when you combine modern AI coding assistants with a clear vision.
-
-The majority of this codebase was built using:
-- **[Lovable](https://lovable.dev)** - For rapid prototyping and initial development
-- **[Cursor](https://cursor.sh)** - For iterative improvements, refactoring, and fine-tuning
-
-It's been fascinating to watch AI tools help bring this platform to life, from the initial concept to a fully functional, production-ready application serving real users at iguanaflow.com.
-
-This isn't just a demo or proof of concept - it's a real, working application that people use every day to improve their aerial skills. The fact that AI played such a significant role in its creation is both exciting and a testament to how far these tools have come.
-
----
-
-## 📝 Notes
-
-- The app is **live in production** at [iguanaflow.com](https://iguanaflow.com)
-- This is a private repository, but feel free to explore the code
-- Built with love (and a lot of AI assistance) for the aerial arts community
-- Contributions and feedback are welcome!
-
----
-
-## 🦎 Why "Iguana"?
-
-The iguana pose is one of our favorite aerial movements - but it's also a symbol: calm, strong, adaptable, and always ready to climb higher. Just like you on your aerial journey.
-
----
-
-**Questions? Ideas? Want to chat?**  
-Reach out via [Instagram @iguana.flow](https://www.instagram.com/iguana.flow) or [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
-
----
-
-*Built with React, TypeScript, Supabase, and a healthy dose of AI magic ✨*
+_Built with React, TypeScript, Supabase, and a healthy dose of AI magic ✨_
