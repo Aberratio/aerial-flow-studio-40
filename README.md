@@ -1,5 +1,13 @@
 # 🦎 IguanaFlow
 
+**Master Your Aerial Journey - One Pose at a Time**
+
+IguanaFlow is a comprehensive training platform for aerial artists, pole dancers, and anyone who loves to fly. Think of it as your personal aerial arts coach, community hub, and progress tracker all rolled into one beautiful web app.
+
+**🌐 Live and kicking at [iguanaflow.com](https://iguanaflow.com)**
+
+---
+
 ## 🤖 About This Project
 
 **This repository is my AI experiment** - a journey into seeing what's possible when you combine modern AI coding assistants with a clear vision.
@@ -13,27 +21,15 @@ It's been fascinating to watch AI tools help bring this platform to life, from t
 
 This isn't just a demo or proof of concept - it's a real, working application that people use every day to improve their aerial skills. The fact that AI played such a significant role in its creation is both exciting and a testament to how far these tools have come.
 
----
-
 ## 📝 Notes
 
 - The app is **live in production** at [iguanaflow.com](https://iguanaflow.com)
-- This is a private repository, but feel free to explore the code
+- Feel free to explore the code
 - Built with love (and a lot of AI assistance) for the aerial arts community
 - Contributions and feedback are welcome!
 
----
-
 **Questions? Ideas? Want to chat?**  
 Reach out via [Instagram @iguana.flow](https://www.instagram.com/iguana.flow) or [hello@iguanaflow.com](mailto:hello@iguanaflow.com)
-
----
-
-**Master Your Aerial Journey - One Pose at a Time**
-
-IguanaFlow is a comprehensive training platform for aerial artists, pole dancers, and anyone who loves to fly. Think of it as your personal aerial arts coach, community hub, and progress tracker all rolled into one beautiful web app.
-
-**🌐 Live and kicking at [iguanaflow.com](https://iguanaflow.com)**
 
 ---
 
