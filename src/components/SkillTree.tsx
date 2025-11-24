@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Lock, CheckCircle, Circle, Crown, Bookmark, AlertCircle, Trophy, Eye } from "lucide-react";
+import { Lock, CheckCircle, Circle, Crown, Bookmark, AlertCircle, Trophy, Eye, Play } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FigurePreviewModal } from "@/components/FigurePreviewModal";
@@ -11,6 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useSubscriptionStatus } from "@/hooks/useSubscriptionStatus";
 import BreadcrumbNavigation from "@/components/Layout/BreadcrumbNavigation";
 import { cn } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import LevelTrainingsSection from "./SkillTree/LevelTrainingsSection";
 interface Figure {
   id: string;
   name: string;
@@ -116,14 +118,32 @@ const SkillTree = ({
     };
   }>({});
   const [historyStatePushed, setHistoryStatePushed] = useState(false);
+  
+  // Demo mode
+  const [hasDemoAccess, setHasDemoAccess] = useState(false);
+  const [demoMode, setDemoMode] = useState(false);
   useEffect(() => {
     const loadData = async () => {
       await fetchSportLevelsAndProgress();
       const participations = await fetchUserChallengeParticipations();
       await fetchUserPoints(participations);
+      await checkDemoAccess();
     };
     loadData();
   }, [sportCategory, user]);
+
+  const checkDemoAccess = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('sport_demo_users')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('sport_category', sportCategory)
+      .maybeSingle();
+      
+    setHasDemoAccess(!!data);
+  };
 
   // Handle browser back button for modal
   useEffect(() => {
@@ -617,8 +637,41 @@ const SkillTree = ({
         </div>
 
         {/* Simplified Level Grid */}
-        <div className="space-y-6">
-          {sportLevels.map((level, index) => {
+      <div className="space-y-6">
+        {/* Demo Mode Toggle for Beta Testers */}
+        {hasDemoAccess && !adminPreviewMode && (
+          <Card className="glass-effect bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-500/20">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-purple-400 flex items-center gap-2">
+                    <Eye className="w-5 h-5" />
+                    Tryb Demo - Beta Tester
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {demoMode 
+                      ? "Wszystkie poziomy odblokowane - tryb podglądu. Twój postęp jest zapisywany!"
+                      : "Normalny tryb z odblokowywaniem poziomów"}
+                  </p>
+                </div>
+                <Switch 
+                  checked={demoMode}
+                  onCheckedChange={(checked) => {
+                    setDemoMode(checked);
+                    toast({
+                      title: checked ? "Tryb Demo Aktywny" : "Tryb Normalny Aktywny",
+                      description: checked 
+                        ? "Możesz przeglądać wszystkie poziomy. Twój postęp jest zapisywany!"
+                        : "Poziomy będą odblokowywane na podstawie Twoich punktów.",
+                    });
+                  }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {sportLevels.map((level, index) => {
           const isUnlocked = isLevelUnlocked(level, index);
           const progress = getLevelProgress(level);
           const isCompleted = progress === 100;

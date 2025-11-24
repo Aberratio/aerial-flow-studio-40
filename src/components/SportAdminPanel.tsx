@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import LevelEditorSheet from "@/components/LevelEditorSheet";
+import SportDemoUsersManager from "@/components/SportDemoUsersManager";
 
 interface SportCategory {
   id: string;
@@ -355,6 +356,9 @@ const SportAdminPanel = ({ sportKey }: SportAdminPanelProps) => {
             )}
           </CardContent>
         </Card>
+
+        {/* Demo Users Management */}
+        <SportDemoUsersManager sportCategory={sportKey} />
 
         {/* Levels Management */}
         <Card className="glass-effect border-white/10">

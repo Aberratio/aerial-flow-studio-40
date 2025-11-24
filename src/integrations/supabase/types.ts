@@ -827,6 +827,61 @@ export type Database = {
           },
         ]
       }
+      level_trainings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_required: boolean
+          level_id: string
+          notes: string | null
+          order_index: number
+          training_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_required?: boolean
+          level_id: string
+          notes?: string | null
+          order_index?: number
+          training_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_required?: boolean
+          level_id?: string
+          notes?: string | null
+          order_index?: number
+          training_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "level_trainings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "level_trainings_level_id_fkey"
+            columns: ["level_id"]
+            isOneToOne: false
+            referencedRelation: "sport_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "level_trainings_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "training_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders: {
         Row: {
           amount: number | null
@@ -1388,6 +1443,48 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      sport_demo_users: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          notes: string | null
+          sport_category: string
+          user_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          notes?: string | null
+          sport_category: string
+          user_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          notes?: string | null
+          sport_category?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sport_demo_users_granted_by_fkey"
+            columns: ["granted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sport_demo_users_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sport_level_achievements: {
         Row: {
@@ -2446,6 +2543,58 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_sport_level_training_completions: {
+        Row: {
+          completed_at: string
+          duration_seconds: number | null
+          id: string
+          notes: string | null
+          sport_level_id: string
+          training_id: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          duration_seconds?: number | null
+          id?: string
+          notes?: string | null
+          sport_level_id: string
+          training_id: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          duration_seconds?: number | null
+          id?: string
+          notes?: string | null
+          sport_level_id?: string
+          training_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_sport_level_training_completions_sport_level_id_fkey"
+            columns: ["sport_level_id"]
+            isOneToOne: false
+            referencedRelation: "sport_levels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_sport_level_training_completions_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "training_library"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_sport_level_training_completions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_training_bookmarks: {
         Row: {
