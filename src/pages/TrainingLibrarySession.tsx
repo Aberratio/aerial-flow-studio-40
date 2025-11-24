@@ -37,6 +37,12 @@ export default function TrainingLibrarySession() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { requestWakeLock, releaseWakeLock } = useWakeLock();
+  
+  // URL params for level context
+  const searchParams = new URLSearchParams(window.location.search);
+  const fromLevel = searchParams.get('from') === 'level';
+  const levelId = searchParams.get('levelId');
+  const sportCategory = searchParams.get('sportCategory');
 
   // Training data
   const [training, setTraining] = useState<any>(null);
@@ -253,6 +259,42 @@ export default function TrainingLibrarySession() {
         .from('training_library')
         .update({ completions_count: (training.completions_count || 0) + 1 })
         .eq('id', id);
+    }
+
+    // If completed from level, save to user_sport_level_training_completions
+    if (fromLevel && levelId && user && id) {
+      try {
+        const totalDuration = exercises.reduce((sum, ex) => {
+          const sets = ex.sets || 1;
+          const hold = ex.hold_time_seconds || 30;
+          const rest = ex.rest_time_seconds || 10;
+          return sum + (sets * (hold + rest));
+        }, 0);
+
+        await supabase
+          .from('user_sport_level_training_completions')
+          .insert({
+            user_id: user.id,
+            sport_level_id: levelId,
+            training_id: id,
+            duration_seconds: totalDuration,
+          });
+        
+        toast({
+          title: "Gratulacje!",
+          description: "Ukończyłeś trening! Postęp zapisany w Aerial Journey.",
+        });
+
+        // Navigate back to skill tree
+        if (sportCategory) {
+          navigate(`/aerial-journey/sport/${sportCategory}`);
+        } else {
+          navigate('/training/library');
+        }
+        return;
+      } catch (error) {
+        console.error('Error saving level training completion:', error);
+      }
     }
 
     toast({

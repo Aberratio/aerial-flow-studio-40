@@ -14,7 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ChevronDown, Crown, Plus, X, GripVertical, RotateCcw, Trophy } from "lucide-react";
+import { ChevronDown, Crown, Plus, X, GripVertical, RotateCcw, Trophy, Play } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getDifficultyColorClass } from "@/lib/figureUtils";
 import { useDictionary } from "@/contexts/DictionaryContext";
@@ -72,6 +72,24 @@ interface LevelFigureParams {
   sublevel_description?: string;
 }
 
+interface LevelTrainingParams {
+  training_id: string;
+  order_index: number;
+  is_required: boolean;
+  notes?: string;
+}
+
+interface Training {
+  id: string;
+  title: string;
+  category: string;
+  difficulty_level?: string;
+  duration_seconds?: number;
+  thumbnail_url?: string;
+  premium?: boolean;
+  training_type: string;
+}
+
 interface LevelEditorSheetProps {
   level: SportLevel | null;
   isOpen: boolean;
@@ -101,6 +119,14 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
   const [availableCategories, setAvailableCategories] = useState<FigureType[]>([]);
   const [availableTypes, setAvailableTypes] = useState<FigureType[]>([]);
   const [currentSportCategoryId, setCurrentSportCategoryId] = useState<string | null>(null);
+  
+  // Trainings state
+  const [allTrainings, setAllTrainings] = useState<Training[]>([]);
+  const [selectedTrainings, setSelectedTrainings] = useState<LevelTrainingParams[]>([]);
+  const [trainingSearchQuery, setTrainingSearchQuery] = useState("");
+  const [trainingCategoryFilter, setTrainingCategoryFilter] = useState<string>("all");
+  const [trainingDifficultyFilter, setTrainingDifficultyFilter] = useState<string>("all");
+  const [trainingPremiumFilter, setTrainingPremiumFilter] = useState<string>("all");
   
   // Achievements state
   const [selectedAchievements, setSelectedAchievements] = useState<string[]>([]);
@@ -163,13 +189,14 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
   const fetchData = async () => {
     try {
-      const [figuresRes, challengesRes, sportCategoryRes, sportCategoriesRes, typesRes, achievementsRes] = await Promise.all([
+      const [figuresRes, challengesRes, sportCategoryRes, sportCategoriesRes, typesRes, achievementsRes, trainingsRes] = await Promise.all([
         supabase.from("figures").select("*").order("name"),
         supabase.from("challenges").select("id, title").eq("status", "published").order("title"),
         supabase.from("sport_categories").select("id, key_name").eq("key_name", sportKey).single(),
         supabase.from("sport_categories").select("key_name, name").order("name"),
         supabase.from("figure_types").select("key, name_pl").order("order_index"),
-        supabase.from("achievements").select("id, name, description, icon, points, rule_type").eq("rule_type", "sport_level_completion").order("name")
+        supabase.from("achievements").select("id, name, description, icon, points, rule_type").eq("rule_type", "sport_level_completion").order("name"),
+        supabase.from("training_library").select("id, title, category, difficulty_level, duration_seconds, thumbnail_url, premium, training_type").eq("is_published", true).order("title")
       ]);
 
       if (figuresRes.error) throw figuresRes.error;
@@ -179,6 +206,7 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
       setChallenges(challengesRes.data || []);
       setCurrentSportCategoryId(sportCategoryRes.data?.id || null);
       setAvailableAchievements(achievementsRes.data || []);
+      setAllTrainings(trainingsRes.data || []);
       
       // Map sport categories to FigureType format
       const sportCats: FigureType[] = (sportCategoriesRes.data || []).map(sc => ({
@@ -232,6 +260,22 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
         .eq("sport_level_id", level.id);
 
       setSelectedAchievements(achievementData?.map(a => a.achievement_id) || []);
+      
+      // Fetch trainings for this level
+      const { data: trainingData } = await supabase
+        .from("level_trainings")
+        .select("training_id, order_index, is_required, notes")
+        .eq("level_id", level.id)
+        .order("order_index");
+
+      const trainingParams: LevelTrainingParams[] = (trainingData || []).map((lt) => ({
+        training_id: lt.training_id,
+        order_index: lt.order_index,
+        is_required: lt.is_required || true,
+        notes: lt.notes || undefined,
+      }));
+
+      setSelectedTrainings(trainingParams);
     } catch (error) {
       console.error("Błąd ładowania figurek:", error);
       toast.error("Nie udało się załadować figurek");
@@ -245,6 +289,7 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
     setChallengeId("");
     setStatus("draft");
     setSelectedFigures([]);
+    setSelectedTrainings([]);
     setSelectedAchievements([]);
     setActiveTab("info");
   };
@@ -358,6 +403,67 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
   };
 
   const getFigureById = (id: string) => allFigures.find(f => f.id === id);
+
+  const getTrainingById = (id: string) => allTrainings.find(t => t.id === id);
+
+  const addTraining = (trainingId: string) => {
+    if (selectedTrainings.some(t => t.training_id === trainingId)) {
+      toast.info("Ten trening jest już dodany do poziomu");
+      return;
+    }
+
+    const newTraining: LevelTrainingParams = {
+      training_id: trainingId,
+      order_index: selectedTrainings.length,
+      is_required: true,
+    };
+
+    setSelectedTrainings([...selectedTrainings, newTraining]);
+    toast.success("Dodano trening");
+  };
+
+  const removeTraining = (trainingId: string) => {
+    setSelectedTrainings(selectedTrainings.filter(t => t.training_id !== trainingId));
+    toast.success("Usunięto trening");
+  };
+
+  const updateTrainingParams = (trainingId: string, updates: Partial<LevelTrainingParams>) => {
+    setSelectedTrainings(selectedTrainings.map(t => 
+      t.training_id === trainingId ? { ...t, ...updates } : t
+    ));
+  };
+
+  const getFilteredTrainings = () => {
+    let filtered = allTrainings.filter((training) => {
+      // Search
+      if (trainingSearchQuery && !training.title.toLowerCase().includes(trainingSearchQuery.toLowerCase())) {
+        return false;
+      }
+
+      // Category filter
+      if (trainingCategoryFilter !== "all" && training.category !== trainingCategoryFilter) {
+        return false;
+      }
+
+      // Difficulty filter
+      if (trainingDifficultyFilter !== "all" && 
+          training.difficulty_level?.toLowerCase() !== trainingDifficultyFilter.toLowerCase()) {
+        return false;
+      }
+
+      // Premium filter
+      if (trainingPremiumFilter === "premium" && !training.premium) {
+        return false;
+      }
+      if (trainingPremiumFilter === "free" && training.premium) {
+        return false;
+      }
+
+      return true;
+    });
+
+    return filtered.sort((a, b) => a.title.localeCompare(b.title, 'pl'));
+  };
 
   const toggleAchievement = (achievementId: string) => {
     setSelectedAchievements(prev => {
@@ -473,6 +579,31 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
           if (achError) throw achError;
         }
+        
+        // Save level trainings
+        // Delete old trainings
+        await supabase
+          .from("level_trainings")
+          .delete()
+          .eq("level_id", levelId);
+
+        // Insert new trainings
+        if (selectedTrainings.length > 0) {
+          const trainingsData = selectedTrainings.map(training => ({
+            level_id: levelId,
+            training_id: training.training_id,
+            order_index: training.order_index,
+            is_required: training.is_required,
+            notes: training.notes || null,
+            created_by: user?.id,
+          }));
+
+          const { error: trainingError } = await supabase
+            .from("level_trainings")
+            .insert(trainingsData);
+
+          if (trainingError) throw trainingError;
+        }
       }
 
       toast.success(level ? "Zaktualizowano poziom" : "Utworzono poziom");
@@ -504,10 +635,13 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
             <div className="px-6 pt-4">
-              <TabsList className="w-full grid grid-cols-3">
+              <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="info">Informacje o Poziomie</TabsTrigger>
                 <TabsTrigger value="figures">
                   Figurki ({selectedFigures.length})
+                </TabsTrigger>
+                <TabsTrigger value="trainings">
+                  Treningi ({selectedTrainings.length})
                 </TabsTrigger>
                 <TabsTrigger value="achievements">
                   Odznaki ({selectedAchievements.length})
@@ -926,6 +1060,199 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
                       {selectedFigures.length === 0 && (
                         <p className="text-center text-muted-foreground py-8">
                           Nie wybrano jeszcze żadnych figurek
+                        </p>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="trainings" className="flex-1 overflow-hidden mt-4">
+              <div className="grid lg:grid-cols-2 gap-6 h-full px-6 pb-6">
+                {/* Left: Available trainings */}
+                <div className="space-y-4 flex flex-col overflow-hidden">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">Dostępne Treningi</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Znaleziono: {getFilteredTrainings().filter(t => !selectedTrainings.some(st => st.training_id === t.id)).length}
+                    </p>
+                  </div>
+                    
+                  <div className="space-y-3">
+                    <Input
+                      placeholder="Szukaj treningów..."
+                      value={trainingSearchQuery}
+                      onChange={(e) => setTrainingSearchQuery(e.target.value)}
+                    />
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <Select value={trainingCategoryFilter} onValueChange={setTrainingCategoryFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Kategoria" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Wszystkie</SelectItem>
+                          <SelectItem value="warmup">Rozgrzewka</SelectItem>
+                          <SelectItem value="strength">Siła</SelectItem>
+                          <SelectItem value="flexibility">Stretching</SelectItem>
+                          <SelectItem value="technique">Technika</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Select value={trainingDifficultyFilter} onValueChange={setTrainingDifficultyFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Trudność" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Wszystkie</SelectItem>
+                          <SelectItem value="beginner">Początkujący</SelectItem>
+                          <SelectItem value="intermediate">Średniozaawansowany</SelectItem>
+                          <SelectItem value="advanced">Zaawansowany</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Select value={trainingPremiumFilter} onValueChange={setTrainingPremiumFilter}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Dostęp" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Wszystkie</SelectItem>
+                          <SelectItem value="premium">Premium</SelectItem>
+                          <SelectItem value="free">Darmowe</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <ScrollArea className="flex-1">
+                    <div className="space-y-2 pr-4">
+                      {getFilteredTrainings()
+                        .filter(t => !selectedTrainings.some(st => st.training_id === t.id))
+                        .map((training) => (
+                        <Card key={training.id} className="overflow-hidden hover:border-primary/50 transition-colors">
+                          <CardContent className="p-3 flex items-center gap-3">
+                            {training.thumbnail_url && (
+                              <img
+                                src={training.thumbnail_url}
+                                alt={training.title}
+                                className="w-16 h-12 rounded object-cover"
+                              />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium truncate">{training.title}</p>
+                              <div className="flex gap-1 mt-1 flex-wrap">
+                                {training.difficulty_level && (
+                                  <Badge variant="outline" className={`text-xs ${getDifficultyColorClass(training.difficulty_level)}`}>
+                                    {getDifficultyLabel(training.difficulty_level)}
+                                  </Badge>
+                                )}
+                                {training.duration_seconds && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {Math.round(training.duration_seconds / 60)} min
+                                  </Badge>
+                                )}
+                                {training.premium && (
+                                  <Badge variant="outline" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
+                                    Premium
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => addTraining(training.id)}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+
+                      {getFilteredTrainings().filter(t => !selectedTrainings.some(st => st.training_id === t.id)).length === 0 && (
+                        <p className="text-center text-muted-foreground py-8">
+                          Brak dostępnych treningów
+                        </p>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </div>
+
+                {/* Right: Selected trainings with parameters */}
+                <div className="space-y-4 flex flex-col overflow-hidden">
+                  <h3 className="text-lg font-semibold">Wybrane Treningi</h3>
+
+                  <ScrollArea className="flex-1">
+                    <div className="space-y-3 pr-4">
+                      {selectedTrainings.map((trainingParam) => {
+                        const training = getTrainingById(trainingParam.training_id);
+                        if (!training) return null;
+
+                        return (
+                          <Card key={trainingParam.training_id} className="border-blue-400/30">
+                            <CardHeader className="pb-3">
+                              <div className="flex items-start gap-3">
+                                <Play className="h-5 w-5 text-blue-400 mt-1" />
+                                {training.thumbnail_url && (
+                                  <img
+                                    src={training.thumbnail_url}
+                                    alt={training.title}
+                                    className="w-16 h-12 rounded object-cover"
+                                  />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <CardTitle className="text-base flex items-center gap-2">
+                                    {training.title}
+                                  </CardTitle>
+                                  {training.difficulty_level && (
+                                    <Badge variant="outline" className="text-xs mt-1">
+                                      {getDifficultyLabel(training.difficulty_level)}
+                                    </Badge>
+                                  )}
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => removeTraining(trainingParam.training_id)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </CardHeader>
+
+                            <CardContent className="pt-0 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={trainingParam.is_required}
+                                  onCheckedChange={(checked) =>
+                                    updateTrainingParams(trainingParam.training_id, { is_required: checked as boolean })
+                                  }
+                                />
+                                <Label className="cursor-pointer">
+                                  Wymagany do ukończenia poziomu
+                                </Label>
+                              </div>
+
+                              <div className="space-y-2">
+                                <Label>Notatki (opcjonalnie)</Label>
+                                <Textarea
+                                  placeholder="np. Obowiązkowa rozgrzewka przed ćwiczeniami"
+                                  value={trainingParam.notes || ""}
+                                  onChange={(e) =>
+                                    updateTrainingParams(trainingParam.training_id, { notes: e.target.value })
+                                  }
+                                  rows={2}
+                                />
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+
+                      {selectedTrainings.length === 0 && (
+                        <p className="text-center text-muted-foreground py-8">
+                          Nie wybrano jeszcze żadnych treningów
                         </p>
                       )}
                     </div>
