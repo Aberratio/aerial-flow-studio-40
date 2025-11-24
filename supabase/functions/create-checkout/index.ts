@@ -105,7 +105,7 @@ serve(async (req) => {
         session = await stripe.checkout.sessions.create(sessionConfig);
         logStep("Subscription session created successfully", { sessionId: session.id });
       } catch (stripeError) {
-        logStep("Failed to create subscription session", { error: stripeError.message, code: stripeError.code });
+        logStep("Failed to create subscription session", { error: (stripeError as any).message, code: (stripeError as any).code });
         throw stripeError;
       }
 
@@ -157,7 +157,7 @@ serve(async (req) => {
         session = await stripe.checkout.sessions.create(sessionConfig);
         logStep("Challenge payment session created successfully", { sessionId: session.id });
       } catch (stripeError) {
-        logStep("Failed to create challenge payment session", { error: stripeError.message, code: stripeError.code });
+        logStep("Failed to create challenge payment session", { error: (stripeError as any).message, code: (stripeError as any).code });
         throw stripeError;
       }
 
@@ -194,7 +194,7 @@ serve(async (req) => {
     
     // Check if it's a Stripe-specific error
     if (error && typeof error === 'object' && 'type' in error) {
-      logStep("Stripe error details", { type: error.type, code: error.code, decline_code: error.decline_code });
+      logStep("Stripe error details", { type: error.type, code: (error as any).code, decline_code: (error as any).decline_code });
     }
     
     return new Response(JSON.stringify({ error: errorMessage }), {

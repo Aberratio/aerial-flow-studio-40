@@ -63,7 +63,7 @@ serve(async (req) => {
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
     logStep("Searching for customer by email", { email: user.email });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    logStep("Customer search result", { foundCustomers: customers.data.length, customerIds: customers.data.map(c => c.id) });
+    logStep("Customer search result", { foundCustomers: customers.data.length, customerIds: customers.data.map((c: any) => c.id) });
     
     if (customers.data.length === 0) {
       logStep("No customer found, updating unsubscribed state");
