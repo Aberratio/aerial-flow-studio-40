@@ -122,10 +122,15 @@ const SkillTree = ({
   // Demo mode
   const [hasDemoAccess, setHasDemoAccess] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
+  
+  // Level trainings state
+  const [levelTrainingCompletions, setLevelTrainingCompletions] = useState<{[levelId: string]: string[]}>({});
+  const [trainingsPerLevel, setTrainingsPerLevel] = useState<{[levelId: string]: number}>({});
   useEffect(() => {
     const loadData = async () => {
       await fetchSportLevelsAndProgress();
       const participations = await fetchUserChallengeParticipations();
+      await fetchLevelTrainingCompletions();
       await fetchUserPoints(participations);
       await checkDemoAccess();
     };
@@ -143,6 +148,23 @@ const SkillTree = ({
       .maybeSingle();
       
     setHasDemoAccess(!!data);
+  };
+
+  const fetchLevelTrainingCompletions = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('user_sport_level_training_completions')
+      .select('sport_level_id, training_id')
+      .eq('user_id', user.id);
+    
+    // Group by level_id
+    const completions: {[levelId: string]: string[]} = {};
+    data?.forEach(item => {
+      if (!completions[item.sport_level_id]) completions[item.sport_level_id] = [];
+      completions[item.sport_level_id].push(item.training_id);
+    });
+    setLevelTrainingCompletions(completions);
   };
 
   // Handle browser back button for modal
@@ -239,6 +261,19 @@ const SkillTree = ({
             points
           )
         `).in("sport_level_id", levelIds);
+
+      // Fetch trainings per level
+      const { data: levelTrainingsData } = await supabase
+        .from('level_trainings')
+        .select('level_id, training_id')
+        .in('level_id', levelIds);
+
+      // Group trainings by level_id
+      const trainingsCount: {[levelId: string]: number} = {};
+      levelTrainingsData?.forEach(lt => {
+        trainingsCount[lt.level_id] = (trainingsCount[lt.level_id] || 0) + 1;
+      });
+      setTrainingsPerLevel(trainingsCount);
 
       // Map achievements to levels
       const achievementsByLevel: {
@@ -348,6 +383,10 @@ const SkillTree = ({
           levelFigures.forEach(() => {
             calculatedPoints += 1 * level.level_number; // 1 point × level number
           });
+
+          // Add points for completed trainings in this level (2 × level number)
+          const completedTrainingsInLevel = levelTrainingCompletions[level.id]?.length || 0;
+          calculatedPoints += completedTrainingsInLevel * 2 * level.level_number;
 
           // Add points for completed challenges in this level (3 x level number)
           if (level.challenge_id && currentParticipations[level.challenge_id]?.completed) {
@@ -469,6 +508,9 @@ const SkillTree = ({
   const isLevelUnlocked = (level: SportLevel, index: number) => {
     // Admin preview mode - all levels unlocked
     if (adminPreviewMode) return true;
+    
+    // Demo mode for beta testers - all levels unlocked
+    if (hasDemoAccess && demoMode) return true;
 
     // First level always unlocked
     if (index === 0) return true;
@@ -493,19 +535,24 @@ const SkillTree = ({
     // Check if challenge is completed for this level
     const challengeCompleted = level.challenge_id ? userChallengeParticipations[level.challenge_id]?.completed : false;
 
-    // If level has no figures but has a completed challenge, consider it 100%
-    if (level.figures.length === 0 && challengeCompleted) {
-      return 100;
-    }
-    if (level.figures.length === 0) return 0;
+    const totalFigures = level.figures.length;
     const completedFigures = level.figures.filter(figure => {
       const progress = getFigureProgress(figure.id);
       return progress?.status === "completed";
-    });
-    const figureProgress = completedFigures.length / level.figures.length * 100;
-
-    // If challenge is completed, ensure progress is at least 100%
-    return challengeCompleted ? 100 : Math.round(figureProgress);
+    }).length;
+    
+    // Trainings
+    const totalTrainings = trainingsPerLevel[level.id] || 0;
+    const completedTrainings = levelTrainingCompletions[level.id]?.length || 0;
+    
+    const totalItems = totalFigures + totalTrainings;
+    const completedItems = completedFigures + completedTrainings;
+    
+    if (totalItems === 0 && challengeCompleted) return 100;
+    if (totalItems === 0) return 0;
+    
+    const progress = (completedItems / totalItems) * 100;
+    return challengeCompleted ? 100 : Math.round(progress);
   };
 
   // Check if figure requires premium access
@@ -536,6 +583,7 @@ const SkillTree = ({
   // Check if user can access a sublevel
   const canAccessSublevel = (level: SportLevel, sublevel: number) => {
     if (adminPreviewMode) return true; // Admin can access all sublevels
+    if (hasDemoAccess && demoMode) return true; // Demo mode - all sublevels accessible
     if (sublevel === 1) return true; // First sublevel always accessible
 
     // Check if all figures from previous sublevel are completed
@@ -692,7 +740,8 @@ const SkillTree = ({
                             {level.description}
                           </p>}
                         {isUnlocked && <p className="text-xs md:text-sm text-muted-foreground">
-                            {level.figures.length} dostępnych figur
+                            {level.figures.length} figur
+                            {trainingsPerLevel[level.id] > 0 && `, ${trainingsPerLevel[level.id]} treningów`}
                           </p>}
                       </div>
                     </div>
@@ -879,6 +928,13 @@ const SkillTree = ({
                             </Card>;
                 })}
                     </div>}
+
+                  {/* Level Trainings Section */}
+                  <LevelTrainingsSection 
+                    levelId={level.id}
+                    sportCategory={sportCategory}
+                    isLevelUnlocked={isUnlocked || (hasDemoAccess && demoMode)}
+                  />
 
                   {/* Transitions Section - After boss */}
                   {level.figures.some(f => f.type === "transitions") && isUnlocked && <div className="mt-6 pt-6 border-t-2 border-dashed border-purple-400/30">
