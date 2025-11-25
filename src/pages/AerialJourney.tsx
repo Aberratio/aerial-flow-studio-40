@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Edit } from "lucide-react";
+import { Eye, EyeOff, Edit, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SportSelectionModal from "@/components/SportSelectionModal";
+import SportCategoryManager from "@/components/SportCategoryManager";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { getAdminMode, setAdminMode, getModeLabel, type AdminMode } from "@/lib/adminModeUtils";
 
 interface UserJourney {
@@ -51,6 +53,7 @@ const AerialJourney = () => {
   const [loading, setLoading] = useState(true);
   const [adminMode, setAdminModeState] = useState<AdminMode>('user');
   const [showSportSelectionModal, setShowSportSelectionModal] = useState(false);
+  const [showSportCategoryManager, setShowSportCategoryManager] = useState(false);
 
   useEffect(() => {
     fetchAvailableSports();
@@ -468,17 +471,30 @@ const AerialJourney = () => {
                     : "Kliknij na dowolny sport, aby zobaczyć pełne drzewo umiejętności i swoją progresję"}
                 </p>
               </div>
-              {adminMode === 'user' && userSelectedSports.length > 0 && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowSportSelectionModal(true)}
-                  className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10 w-full md:w-auto text-sm"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edytuj sporty
-                </Button>
-              )}
+              <div className="flex flex-col md:flex-row gap-2">
+                {isAdmin && adminMode === 'edit' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSportCategoryManager(true)}
+                    className="border-green-400/30 text-green-400 hover:bg-green-400/10 w-full md:w-auto text-sm"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Dodaj nowy sport
+                  </Button>
+                )}
+                {adminMode === 'user' && userSelectedSports.length > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowSportSelectionModal(true)}
+                    className="border-purple-400/30 text-purple-400 hover:bg-purple-400/10 w-full md:w-auto text-sm"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edytuj sporty
+                  </Button>
+                )}
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -624,6 +640,23 @@ const AerialJourney = () => {
           onSuccess={handleSportSelectionSuccess}
           preSelectedSports={userSelectedSports}
         />
+
+        {/* Sport Category Manager Sheet */}
+        <Sheet open={showSportCategoryManager} onOpenChange={setShowSportCategoryManager}>
+          <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto bg-background">
+            <SheetHeader>
+              <SheetTitle>Zarządzanie sportami</SheetTitle>
+            </SheetHeader>
+            <div className="mt-6">
+              <SportCategoryManager 
+                onClose={() => {
+                  setShowSportCategoryManager(false);
+                  fetchAvailableSports(); // Refresh sports list after changes
+                }} 
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );
