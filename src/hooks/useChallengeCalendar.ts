@@ -347,6 +347,26 @@ export const useChallengeCalendar = (challengeId: string) => {
 
         if (trainingDayError || !trainingDay) return false;
 
+        // Get the highest attempt_number for this day to determine next attempt
+        const { data: existingProgresses, error: checkError } = await supabase
+          .from('challenge_day_progress')
+          .select('attempt_number')
+          .eq('user_id', user.id)
+          .eq('challenge_id', challengeId)
+          .eq('training_day_id', trainingDay.id)
+          .order('attempt_number', { ascending: false })
+          .limit(1);
+
+        if (checkError) {
+          console.error('Error checking existing progress:', checkError);
+          throw checkError;
+        }
+
+        // Determine attempt_number: use highest + 1, or 1 if no records exist
+        const attemptNumber = existingProgresses && existingProgresses.length > 0
+          ? (existingProgresses[0].attempt_number || 0) + 1
+          : 1;
+
         // Create or update progress record
         const { error: progressError } = await supabase
           .from('challenge_day_progress')
@@ -354,9 +374,12 @@ export const useChallengeCalendar = (challengeId: string) => {
             user_id: user.id,
             challenge_id: challengeId,
             training_day_id: trainingDay.id,
+            attempt_number: attemptNumber,
             status: newStatus,
             notes: notes || null,
             changed_status_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,challenge_id,training_day_id,attempt_number'
           });
 
         if (progressError) throw progressError;

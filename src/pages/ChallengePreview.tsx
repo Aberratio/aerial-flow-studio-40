@@ -360,18 +360,44 @@ const ChallengePreview = () => {
       const isRestDay = trainingDay?.training_day_exercises?.length === 0;
 
       if (isRestDay) {
+        // Get the highest attempt_number for this day to determine next attempt
+        const { data: existingProgresses, error: checkError } = await supabase
+          .from("challenge_day_progress")
+          .select("attempt_number")
+          .eq("user_id", user.id)
+          .eq("challenge_id", challengeId)
+          .eq("training_day_id", trainingDay.id)
+          .order("attempt_number", { ascending: false })
+          .limit(1);
+
+        if (checkError) {
+          console.error("Error checking existing progress:", checkError);
+          toast({
+            title: "Błąd",
+            description: "Nie udało się sprawdzić postępu",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        // Determine attempt_number: use highest + 1, or 1 if no records exist
+        const attemptNumber = existingProgresses && existingProgresses.length > 0
+          ? (existingProgresses[0].attempt_number || 0) + 1
+          : 1;
+
         // Use upsert to handle cases where record already exists
         const { error } = await supabase.from("challenge_day_progress").upsert({
           user_id: user.id,
           challenge_id: challengeId,
           training_day_id: trainingDay.id,
+          attempt_number: attemptNumber,
           status: "completed",
           exercises_completed: 0,
           total_exercises: 0,
           notes: "Rest day completed",
           changed_status_at: new Date().toISOString(),
         }, {
-          onConflict: 'user_id,challenge_id,training_day_id'
+          onConflict: 'user_id,challenge_id,training_day_id,attempt_number'
         });
 
         if (error) {

@@ -154,7 +154,9 @@ const ChallengeDayTimer = () => {
       );
 
       oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + (type === "final" ? 0.3 : 0.2));
+      oscillator.stop(
+        audioContext.currentTime + (type === "final" ? 0.3 : 0.2)
+      );
     },
     [audioMode]
   );
@@ -536,7 +538,7 @@ const ChallengeDayTimer = () => {
           console.error("Error exiting fullscreen on unmount:", error);
         }
       };
-      
+
       exitFullscreen();
 
       // Remove event listeners
@@ -628,10 +630,10 @@ const ChallengeDayTimer = () => {
   const handleOpenExerciseInfo = () => {
     const currentSegment = getCurrentSegment();
     if (!currentSegment || currentSegment.type !== "exercise") return;
-    
+
     const currentExercise = exercises[currentSegment.exerciseIndex];
     if (!currentExercise) return;
-    
+
     setSelectedFigure({
       id: currentExercise.figure.id,
       name: currentExercise.figure.name,
@@ -646,7 +648,11 @@ const ChallengeDayTimer = () => {
 
   const handleWorkoutComplete = async () => {
     if (!user || !challengeId || !dayId) {
-      console.error("Missing required data:", { user: !!user, challengeId, dayId });
+      console.error("Missing required data:", {
+        user: !!user,
+        challengeId,
+        dayId,
+      });
       toast({
         title: "Błąd",
         description: "Brak wymaganych danych do zapisania postępu",
@@ -671,52 +677,50 @@ const ChallengeDayTimer = () => {
         throw new Error("Nie udało się pobrać danych dnia treningowego");
       }
 
-      // Check if progress record exists
-      const { data: existingProgress, error: checkError } = await supabase
+      // Get the highest attempt_number for this day to determine next attempt
+      const { data: existingProgresses, error: checkError } = await supabase
         .from("challenge_day_progress")
-        .select("id")
+        .select("id, attempt_number")
         .eq("user_id", user.id)
         .eq("challenge_id", challengeId)
         .eq("training_day_id", dayId)
-        .maybeSingle();
+        .order("attempt_number", { ascending: false })
+        .limit(1);
 
       if (checkError) {
         console.error("Error checking existing progress:", checkError);
         throw new Error("Nie udało się sprawdzić postępu");
       }
 
+      // Determine attempt_number: use highest + 1, or 1 if no records exist
+      const attemptNumber =
+        existingProgresses && existingProgresses.length > 0
+          ? (existingProgresses[0].attempt_number || 0) + 1
+          : 1;
+
       const progressData = {
         status: "completed",
         changed_status_at: new Date().toISOString(),
         exercises_completed: exercises.length,
         total_exercises: exercises.length,
+        attempt_number: attemptNumber,
       };
 
-      let progressError;
-
-      if (existingProgress) {
-        // Update existing record
-        const { error } = await supabase
-          .from("challenge_day_progress")
-          .update(progressData)
-          .eq("id", existingProgress.id);
-        progressError = error;
-      } else {
-        // Insert new record
-        const { error } = await supabase
-          .from("challenge_day_progress")
-          .insert({
-            user_id: user.id,
-            challenge_id: challengeId,
-            training_day_id: dayId,
-            ...progressData,
-          });
-        progressError = error;
-      }
+      // Insert new record with attempt_number
+      const { error: progressError } = await supabase
+        .from("challenge_day_progress")
+        .insert({
+          user_id: user.id,
+          challenge_id: challengeId,
+          training_day_id: dayId,
+          ...progressData,
+        });
 
       if (progressError) {
         console.error("Progress error:", progressError);
-        throw new Error(`Nie udało się zapisać postępu: ${progressError.message}`);
+        throw new Error(
+          `Nie udało się zapisać postępu: ${progressError.message}`
+        );
       }
 
       // Update participant status - non-critical, just log errors
@@ -729,7 +733,10 @@ const ChallengeDayTimer = () => {
         .eq("challenge_id", challengeId);
 
       if (participantError) {
-        console.error("Participant update error (non-critical):", participantError);
+        console.error(
+          "Participant update error (non-critical):",
+          participantError
+        );
       }
 
       // Success - show toast and navigate
@@ -738,17 +745,17 @@ const ChallengeDayTimer = () => {
         description:
           "Świetna robota! Dzień treningowy został oznaczony jako ukończony.",
       });
-      
+
       // Small delay before navigate to ensure toast is visible
       setTimeout(() => {
         navigate(`/challenges/${challengeId}`);
       }, 300);
-      
     } catch (error: any) {
       console.error("Error completing workout:", error);
       toast({
         title: "Błąd",
-        description: error.message || "Nie udało się oznaczyć treningu jako ukończony",
+        description:
+          error.message || "Nie udało się oznaczyć treningu jako ukończony",
         variant: "destructive",
       });
     }
@@ -1000,11 +1007,13 @@ const ChallengeDayTimer = () => {
 
         {/* Nowe ćwiczenie */}
         {getCurrentSegment() && (
-          <Card className={`glass-effect border-white/10 flex-shrink-0 backdrop-blur-xl mt-6 mx-2 ${
-            getCurrentSegment()?.type === "rest"
-              ? "bg-gradient-to-br from-green-500/20 via-cyan-500/15 to-blue-500/20 border-green-400/30"
-              : "bg-gradient-to-br from-primary/5 via-transparent to-secondary/5"
-          }`}>
+          <Card
+            className={`glass-effect border-white/10 flex-shrink-0 backdrop-blur-xl mt-6 mx-2 ${
+              getCurrentSegment()?.type === "rest"
+                ? "bg-gradient-to-br from-green-500/20 via-cyan-500/15 to-blue-500/20 border-green-400/30"
+                : "bg-gradient-to-br from-primary/5 via-transparent to-secondary/5"
+            }`}
+          >
             <CardContent className="p-4 sm:p-6 md:p-8">
               {getCurrentSegment()?.type === "exercise" ? (
                 <div className="relative w-full h-[250px] sm:h-[300px] md:h-[400px] rounded-2xl overflow-hidden ring-1 ring-white/10 mb-6">
@@ -1080,11 +1089,13 @@ const ChallengeDayTimer = () => {
 
               {/* Exercise name and duration */}
               <div className="text-center space-y-2">
-                <h2 className={`font-bold text-xl sm:text-2xl md:text-3xl ${
-                  getCurrentSegment()?.type === "rest" 
-                    ? "text-green-400 animate-pulse" 
-                    : "text-foreground"
-                }`}>
+                <h2
+                  className={`font-bold text-xl sm:text-2xl md:text-3xl ${
+                    getCurrentSegment()?.type === "rest"
+                      ? "text-green-400 animate-pulse"
+                      : "text-foreground"
+                  }`}
+                >
                   {getCurrentSegment()?.exerciseName}
                 </h2>
                 <p className="text-lg sm:text-xl text-muted-foreground">
@@ -1138,12 +1149,6 @@ const ChallengeDayTimer = () => {
 
               {/* Exercise name and duration */}
               <div className="text-center space-y-2">
-                <h2 className="font-bold text-xl sm:text-2xl md:text-3xl text-foreground">
-                  {getNextExercise().exerciseName}
-                </h2>
-                <p className="text-lg sm:text-xl text-muted-foreground">
-                  {formatTime(getNextExercise().duration)}
-                </p>
                 {getNextExercise().exerciseNotes && (
                   <p className="text-sm sm:text-base text-primary mt-2 bg-primary/10 rounded-lg px-4 py-2 border border-primary/20 backdrop-blur-sm">
                     {getNextExercise().exerciseNotes}

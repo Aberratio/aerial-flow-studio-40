@@ -106,6 +106,26 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
     
     setIsLoading(true);
     try {
+      // Get the highest attempt_number for this day to determine next attempt
+      const { data: existingProgresses, error: checkError } = await supabase
+        .from('challenge_day_progress')
+        .select('attempt_number')
+        .eq('user_id', user.id)
+        .eq('challenge_id', challengeId)
+        .eq('training_day_id', dayId)
+        .order('attempt_number', { ascending: false })
+        .limit(1);
+
+      if (checkError) {
+        console.error('Error checking existing progress:', checkError);
+        throw checkError;
+      }
+
+      // Determine attempt_number: use highest + 1, or 1 if no records exist
+      const attemptNumber = existingProgresses && existingProgresses.length > 0
+        ? (existingProgresses[0].attempt_number || 0) + 1
+        : 1;
+
       // Save individual day progress
       const { error: progressError } = await supabase
         .from('challenge_day_progress')
@@ -113,9 +133,14 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
           user_id: user.id,
           challenge_id: challengeId,
           training_day_id: dayId,
+          attempt_number: attemptNumber,
           exercises_completed: completedExercises.size,
           total_exercises: exercises.length,
+          status: completionPercentage === 100 ? 'completed' : 'partial',
+          changed_status_at: new Date().toISOString(),
           completed_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,challenge_id,training_day_id,attempt_number'
         });
 
       if (progressError) throw progressError;
