@@ -35,6 +35,8 @@ interface CreatePostModalProps {
   onClose: () => void;
   onPostCreated: (post: any) => void;
   preselectedFigure?: any;
+  initialContent?: string;
+  onBeforeSubmit?: () => Promise<void>;
 }
 
 export const CreatePostModal = ({
@@ -42,6 +44,8 @@ export const CreatePostModal = ({
   onClose,
   onPostCreated,
   preselectedFigure,
+  initialContent,
+  onBeforeSubmit,
 }: CreatePostModalProps) => {
   const { user } = useAuth();
   const [content, setContent] = useState("");
@@ -128,8 +132,22 @@ export const CreatePostModal = ({
         setSelectedFigure(preselectedFigure);
         setShowFigureSearch(false);
       }
+      // Set initial content if provided
+      if (initialContent) {
+        setContent(initialContent);
+      }
+    } else {
+      // Reset form when modal closes
+      setContent("");
+      setSelectedFile(null);
+      setSelectedFilePreview(null);
+      setPrivacy("public");
+      setInstagramUrl("");
+      setInstagramEmbedHtml(null);
+      setSelectedFigure(null);
+      setShowFigureSearch(false);
     }
-  }, [isOpen, preselectedFigure]);
+  }, [isOpen, preselectedFigure, initialContent]);
 
   const filteredFigures = availableFigures.filter((figure) =>
     figure.name.toLowerCase().includes(figureSearchTerm.toLowerCase())
@@ -180,6 +198,10 @@ export const CreatePostModal = ({
     setIsLoading(true);
     console.log("Starting post creation...", { user, content, selectedFile });
     try {
+      // Call onBeforeSubmit callback if provided (e.g., to mark challenge day complete)
+      if (onBeforeSubmit) {
+        await onBeforeSubmit();
+      }
       let mediaUrl = null;
 
       // Upload media file if selected
