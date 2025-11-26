@@ -99,6 +99,7 @@ export type Database = {
       }
       challenge_day_progress: {
         Row: {
+          attempt_number: number
           challenge_id: string
           changed_status_at: string | null
           created_at: string
@@ -112,6 +113,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          attempt_number?: number
           challenge_id: string
           changed_status_at?: string | null
           created_at?: string
@@ -125,6 +127,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          attempt_number?: number
           challenge_id?: string
           changed_status_at?: string | null
           created_at?: string

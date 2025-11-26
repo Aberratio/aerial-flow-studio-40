@@ -9,6 +9,7 @@ import {
   Maximize,
   Minimize,
   Info,
+  Share,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import { useChallengeCalendar } from "@/hooks/useChallengeCalendar";
 import { useSpeech } from "@/hooks/useSpeech";
 import { useWakeLock } from "@/hooks/useWakeLock";
 import { ChallengeExerciseInfoModal } from "@/components/ChallengeExerciseInfoModal";
+import { CreatePostModal } from "@/components/CreatePostModal";
 
 interface Exercise {
   id: string;
@@ -109,6 +111,8 @@ const ChallengeDayTimer = () => {
     tags?: string[];
   } | null>(null);
   const [isFigureModalOpen, setIsFigureModalOpen] = useState(false);
+  const [showSharePostModal, setShowSharePostModal] = useState(false);
+  const [challengeTitle, setChallengeTitle] = useState("");
 
   const { speak } = useSpeech(audioMode === "sound");
   const {
@@ -215,6 +219,16 @@ const ChallengeDayTimer = () => {
         if (trainingDayError) throw trainingDayError;
         setTrainingDayId(dayId);
         setTrainingDayData(trainingDayData);
+
+        // Fetch challenge title
+        const { data: challengeData, error: challengeError } = await supabase
+          .from("challenges")
+          .select("title")
+          .eq("id", challengeId)
+          .single();
+
+        if (challengeError) throw challengeError;
+        setChallengeTitle(challengeData?.title || "");
 
         // Check if user is participant of this challenge
         const { data: participant, error: participantError } = await supabase
@@ -1222,13 +1236,24 @@ const ChallengeDayTimer = () => {
               Świetna robota! Co chcesz teraz zrobić?
             </DialogDescription>
           </DialogHeader>
-          <div className="flex flex-col sm:flex-row gap-3 mt-6">
+          <div className="flex flex-col gap-3 mt-6">
             <Button
               onClick={handleWorkoutComplete}
-              className="flex-1"
+              className="w-full"
               variant="default"
             >
               Oznacz jako ukończone
+            </Button>
+            <Button
+              onClick={() => {
+                setIsCompleted(false);
+                setShowSharePostModal(true);
+              }}
+              variant="secondary"
+              className="w-full"
+            >
+              <Share className="w-4 h-4 mr-2" />
+              Ukończ i udostępnij
             </Button>
             <Button
               onClick={() => {
@@ -1240,7 +1265,7 @@ const ChallengeDayTimer = () => {
                 setPreparationTime(10);
               }}
               variant="outline"
-              className="flex-1"
+              className="w-full"
             >
               Rozpocznij od nowa
             </Button>
@@ -1255,6 +1280,20 @@ const ChallengeDayTimer = () => {
         onClose={() => {
           setIsFigureModalOpen(false);
           setSelectedFigure(null);
+        }}
+      />
+
+      {/* Share Post Modal */}
+      <CreatePostModal
+        isOpen={showSharePostModal}
+        onClose={() => setShowSharePostModal(false)}
+        onPostCreated={(post) => {
+          setShowSharePostModal(false);
+          navigate(`/challenges/${challengeId}`);
+        }}
+        initialContent={`🎉 Właśnie ukończyłem dzień ${trainingDayData?.day_number || 1} wyzwania "${challengeTitle}"! 💪\n\nKolejny krok za mną! #challenge #trening #postęp`}
+        onBeforeSubmit={async () => {
+          await handleWorkoutComplete();
         }}
       />
     </div>
