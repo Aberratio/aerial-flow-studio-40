@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ChallengeDetailsModal } from "@/components/ChallengeDetailsModal";
 import ExerciseImageModal from "@/components/ExerciseImageModal";
 import RetakeChallengeModal from "@/components/RetakeChallengeModal";
 import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
@@ -94,7 +93,6 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
   ctaMessage,
 }) => {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
-  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isRetakeModalOpen, setIsRetakeModalOpen] = useState(false);
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
   const [selectedExercise, setSelectedExercise] = useState<{
@@ -190,13 +188,14 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 
   const canEditChallenge = () => {
     if (!challenge || !user) return false;
-    
+
     // Admins can always edit
-    if (user.role === 'admin') return true;
-    
+    if (user.role === "admin") return true;
+
     // Trainers can edit their own challenges
-    if (user.role === 'trainer' && user.id === challenge.created_by) return true;
-    
+    if (user.role === "trainer" && user.id === challenge.created_by)
+      return true;
+
     return false;
   };
 
@@ -666,86 +665,99 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                   className="flex-1"
                   variant="primary"
                   onClick={async () => {
-                    if (challenge.status === "published") {
-                      // Check if it's a "Join Challenge" action (no user participation yet)
-                      const challengeStatus = initialChallenge?.status;
+                    const challengeStatus = initialChallenge?.status;
 
-                      if (
-                        challengeStatus === "not-started" ||
-                        challengeStatus === "available"
-                      ) {
-                        // User is joining the challenge - replicate the join logic from Challenges page
-                        if (!user) return;
-
-                        // Check if challenge is premium and user has access
-                        if (challenge.premium) {
-                          const hasAccess = await checkChallengeAccess(
-                            challenge.id
-                          );
-                          if (!hasAccess) {
-                            setIsPurchaseModalOpen(true);
-                            return;
-                          }
-                        }
-
-                        // Automatically start today
-                        const today = new Date();
-
-                        try {
-                          const { error, data } = await supabase
-                            .from("challenge_participants")
-                            .insert({
-                              challenge_id: challenge.id,
-                              user_id: user.id,
-                              status: "active",
-                              user_started_at: today.toISOString(),
-                            })
-                            .select();
-
-                          if (error) throw error;
-
-                          console.log(
-                            "User joined challenge from modal, now generating calendar..."
-                          );
-
-                          // Check if calendar already exists before generating
-                          // Calendar generation skipped; handled by challenge page
-
-                          // Small delay to ensure calendar generation completes
-                          await new Promise((resolve) =>
-                            setTimeout(resolve, 500)
-                          );
-
-                          onClose();
-                          navigate(`/challenges/${challenge.id}`);
-                          toast({
-                            title: "Sukces!",
-                            description: "Dołączyłeś do wyzwania. Powodzenia!",
-                          });
-                        } catch (error) {
-                          console.error("Error joining challenge:", error);
-                          toast({
-                            title: "Błąd",
-                            description:
-                              "Nie udało się dołączyć do wyzwania. Spróbuj ponownie.",
-                            variant: "destructive",
-                          });
-                        }
-                      } else {
-                        // Just navigate for other statuses
-                        onClose();
+                    // Handle active challenge - navigate directly to challenge page (same as Challenges.tsx)
+                    if (challengeStatus === "active") {
+                      onClose();
+                      setTimeout(() => {
                         navigate(`/challenges/${challenge.id}`);
-                      }
-                    } else if (
+                      }, 200);
+                      return;
+                    }
+
+                    // Handle completed challenge - open modal (same as Challenges.tsx)
+                    if (challengeStatus === "completed") {
+                      // Modal is already open, just close it
+                      onClose();
+                      return;
+                    }
+
+                    // Handle premium challenge without access
+                    if (
                       challenge.premium &&
                       !hasPremiumAccess &&
                       !userPurchases[challenge.id]
                     ) {
-                      // If challenge is premium and user doesn't have access, open purchase modal
                       setIsPurchaseModalOpen(true);
+                      return;
+                    }
+
+                    // Handle not-started or available - join challenge
+                    if (
+                      challengeStatus === "not-started" ||
+                      challengeStatus === "available"
+                    ) {
+                      if (!user) return;
+
+                      // Check if challenge is premium and user has access
+                      if (challenge.premium) {
+                        const hasAccess = await checkChallengeAccess(
+                          challenge.id
+                        );
+                        if (!hasAccess) {
+                          setIsPurchaseModalOpen(true);
+                          return;
+                        }
+                      }
+
+                      // Automatically start today
+                      const today = new Date();
+
+                      try {
+                        const { error, data } = await supabase
+                          .from("challenge_participants")
+                          .insert({
+                            challenge_id: challenge.id,
+                            user_id: user.id,
+                            status: "active",
+                            user_started_at: today.toISOString(),
+                          })
+                          .select();
+
+                        if (error) throw error;
+
+                        console.log(
+                          "User joined challenge from modal, now generating calendar..."
+                        );
+
+                        // Small delay to ensure calendar generation completes
+                        await new Promise((resolve) =>
+                          setTimeout(resolve, 500)
+                        );
+
+                        onClose();
+                        navigate(`/challenges/${challenge.id}`);
+                        toast({
+                          title: "Sukces!",
+                          description: "Dołączyłeś do wyzwania. Powodzenia!",
+                        });
+                      } catch (error) {
+                        console.error("Error joining challenge:", error);
+                        toast({
+                          title: "Błąd",
+                          description:
+                            "Nie udało się dołączyć do wyzwania. Spróbuj ponownie.",
+                          variant: "destructive",
+                        });
+                      }
+                    } else {
+                      // Fallback: just navigate to challenge page
+                      onClose();
+                      navigate(`/challenges/${challenge.id}`);
                     }
                   }}
-                  disabled={challenge.status !== "published"}
+                  disabled={false}
                 >
                   {challenge.premium &&
                   !hasPremiumAccess &&
@@ -762,47 +774,6 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
           </div>
         </div>
       </DialogContent>
-
-      {/* Challenge Details Modal */}
-      {challenge.training_days && (
-        <ChallengeDetailsModal
-          challenge={{
-            id: challenge.id,
-            title: challenge.title,
-            description: challenge.description,
-            level: getDifficultyFromChallenge(),
-            totalDays: challenge.training_days.length,
-            currentDay: 0,
-            completedDays: 0,
-            image: challenge.image_url || "",
-            days: challenge.training_days.map((day, index) => ({
-              day: index + 1,
-              dayId: day.id, // Add the actual training day ID
-              title: day.title || `Day ${index + 1}`,
-              description: day.is_rest_day
-                ? "Rest Day"
-                : day.description || "Training session",
-              duration: day.is_rest_day ? "Rest" : "30-45 mins",
-              completed: false,
-              figures: day.is_rest_day
-                ? []
-                : day.exercises?.map((ex) => ex.figure.name) || [],
-              isRestDay: day.is_rest_day,
-            })),
-            training_days: challenge.training_days,
-          }}
-          isOpen={isDetailsModalOpen}
-          onClose={() => setIsDetailsModalOpen(false)}
-          onStart={() => {
-            setIsDetailsModalOpen(false);
-            onClose();
-          }}
-          onContinue={() => {
-            setIsDetailsModalOpen(false);
-            onClose();
-          }}
-        />
-      )}
 
       {/* Retake Challenge Confirmation Modal */}
       <RetakeChallengeModal
