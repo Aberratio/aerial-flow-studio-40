@@ -12,21 +12,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import SportSelectionModal from "@/components/SportSelectionModal";
 import SportCategoryManager from "@/components/SportCategoryManager";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { getAdminMode, setAdminMode, getModeLabel, type AdminMode } from "@/lib/adminModeUtils";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  getAdminMode,
+  setAdminMode,
+  getModeLabel,
+  type AdminMode,
+} from "@/lib/adminModeUtils";
 
-interface UserJourney {
-  id: string;
-  user_id: string;
-  sport_type: string;
-  experience_level: string;
-  goals: string[];
-  created_at: string;
-  updated_at: string;
-  current_streak: number;
-  total_points: number;
-  badges_earned: string[];
-}
 interface SportCategory {
   id: string;
   key_name?: string;
@@ -51,14 +49,15 @@ const AerialJourney = () => {
   const [userSelectedSports, setUserSelectedSports] = useState<string[]>([]);
   const [tempSelectedSports, setTempSelectedSports] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [adminMode, setAdminModeState] = useState<AdminMode>('user');
+  const [adminMode, setAdminModeState] = useState<AdminMode>("user");
   const [showSportSelectionModal, setShowSportSelectionModal] = useState(false);
-  const [showSportCategoryManager, setShowSportCategoryManager] = useState(false);
+  const [showSportCategoryManager, setShowSportCategoryManager] =
+    useState(false);
 
   useEffect(() => {
     fetchAvailableSports();
     fetchUserProfile();
-    
+
     // Load admin mode from localStorage
     if (isAdmin) {
       const savedMode = getAdminMode();
@@ -69,13 +68,13 @@ const AerialJourney = () => {
   // Sync admin mode across browser tabs
   useEffect(() => {
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'aerial-journey-admin-mode' && e.newValue) {
+      if (e.key === "aerial-journey-admin-mode" && e.newValue) {
         setAdminModeState(e.newValue as AdminMode);
       }
     };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   // No need for auto-open modal - we'll show inline selection instead
@@ -92,7 +91,11 @@ const AerialJourney = () => {
 
       // Fetch user challenge participations once before the loop
       const challengeParticipations: {
-        [challengeId: string]: { participating: boolean; completed: boolean; status?: string };
+        [challengeId: string]: {
+          participating: boolean;
+          completed: boolean;
+          status?: string;
+        };
       } = {};
 
       if (user) {
@@ -252,9 +255,9 @@ const AerialJourney = () => {
   };
 
   const handleSkillTreeView = (category: string, name: string) => {
-    if (isAdmin && adminMode === 'edit') {
+    if (isAdmin && adminMode === "edit") {
       navigate(`/aerial-journey/admin/${category}`);
-    } else if (isAdmin && adminMode === 'preview') {
+    } else if (isAdmin && adminMode === "preview") {
       navigate(`/aerial-journey/preview/${category}`);
     } else {
       navigate(`/aerial-journey/sport/${category}`);
@@ -274,7 +277,7 @@ const AerialJourney = () => {
 
   // Filter sports based on user role and selected sports
   const filteredSports =
-    isAdmin && (adminMode === 'edit' || adminMode === 'preview')
+    isAdmin && (adminMode === "edit" || adminMode === "preview")
       ? availableSports // Admins in admin/preview mode see all sports
       : availableSports.filter((sport) => {
           // Regular users or admins in user mode see only published sports that they have selected in their profile
@@ -295,7 +298,12 @@ const AerialJourney = () => {
   }
 
   // Show inline sport selection for users without selected sports
-  if (!loading && adminMode === 'user' && userSelectedSports.length === 0 && user) {
+  if (
+    !loading &&
+    adminMode === "user" &&
+    userSelectedSports.length === 0 &&
+    user
+  ) {
     return (
       <div className="min-h-screen bg-gradient-to-tr from-black to-purple-950/10">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -413,23 +421,38 @@ const AerialJourney = () => {
           {isAdmin && (
             <Card className="bg-black/20 border-white/10">
               <CardContent className="p-4">
-                <Label className="text-white mb-3 block font-semibold">Tryb Administratora</Label>
-                <RadioGroup value={adminMode} onValueChange={handleAdminModeChange} className="space-y-2">
+                <Label className="text-white mb-3 block font-semibold">
+                  Tryb Administratora
+                </Label>
+                <RadioGroup
+                  value={adminMode}
+                  onValueChange={handleAdminModeChange}
+                  className="space-y-2"
+                >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="user" id="mode-user" />
-                    <Label htmlFor="mode-user" className="text-white cursor-pointer font-normal">
+                    <Label
+                      htmlFor="mode-user"
+                      className="text-white cursor-pointer font-normal"
+                    >
                       Tryb użytkownika
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="preview" id="mode-preview" />
-                    <Label htmlFor="mode-preview" className="text-white cursor-pointer font-normal">
+                    <Label
+                      htmlFor="mode-preview"
+                      className="text-white cursor-pointer font-normal"
+                    >
                       Podgląd admina (wszystkie poziomy)
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="edit" id="mode-edit" />
-                    <Label htmlFor="mode-edit" className="text-white cursor-pointer font-normal">
+                    <Label
+                      htmlFor="mode-edit"
+                      className="text-white cursor-pointer font-normal"
+                    >
                       Edycja sportu
                     </Label>
                   </div>
@@ -452,27 +475,27 @@ const AerialJourney = () => {
               <div className="flex-1">
                 <CardTitle className="text-white flex flex-wrap items-center gap-2 mb-2 text-lg md:text-2xl">
                   Odkrywaj umiejętności według sportu
-                  {isAdmin && adminMode === 'edit' && (
+                  {isAdmin && adminMode === "edit" && (
                     <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30 text-xs">
                       Tryb edycji
                     </Badge>
                   )}
-                  {isAdmin && adminMode === 'preview' && (
+                  {isAdmin && adminMode === "preview" && (
                     <Badge className="bg-blue-500/20 text-blue-400 border-blue-400/30 text-xs">
                       Podgląd admina
                     </Badge>
                   )}
                 </CardTitle>
                 <p className="text-muted-foreground text-xs md:text-sm">
-                  {isAdmin && (adminMode === 'edit' || adminMode === 'preview')
-                    ? adminMode === 'edit' 
+                  {isAdmin && (adminMode === "edit" || adminMode === "preview")
+                    ? adminMode === "edit"
                       ? "Wszystkie sporty (opublikowane i wersje robocze). Użyj przełączników, aby publikować/odpublikować sporty."
                       : "Wszystkie poziomy odblokowane. Możesz przeglądać wszystkie sporty bez ograniczeń."
                     : "Kliknij na dowolny sport, aby zobaczyć pełne drzewo umiejętności i swoją progresję"}
                 </p>
               </div>
               <div className="flex flex-col md:flex-row gap-2">
-                {isAdmin && adminMode === 'edit' && (
+                {isAdmin && adminMode === "edit" && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -483,7 +506,7 @@ const AerialJourney = () => {
                     Dodaj nowy sport
                   </Button>
                 )}
-                {adminMode === 'user' && userSelectedSports.length > 0 && (
+                {adminMode === "user" && userSelectedSports.length > 0 && (
                   <Button
                     variant="outline"
                     size="sm"
@@ -504,7 +527,7 @@ const AerialJourney = () => {
                   Brak dostępnych sportów
                 </h3>
                 <p className="text-muted-foreground">
-                  {isAdmin && (adminMode === 'edit' || adminMode === 'preview')
+                  {isAdmin && (adminMode === "edit" || adminMode === "preview")
                     ? "Nie utworzono jeszcze żadnych kategorii sportowych. Użyj przycisku Zarządzaj sportami, aby dodać."
                     : userSelectedSports.length === 0
                     ? "Nie wybrałeś jeszcze żadnych sportów. Użyj modala wyboru sportów, aby dodać."
@@ -530,7 +553,8 @@ const AerialJourney = () => {
                       key={sport.id}
                       className={`relative cursor-pointer hover:scale-105 transition-all duration-300 ${
                         (sport.unlockedLevels || 0) > 0 ||
-                        (isAdmin && (adminMode === 'edit' || adminMode === 'preview'))
+                        (isAdmin &&
+                          (adminMode === "edit" || adminMode === "preview"))
                           ? sport.is_published
                             ? "bg-white/5 border-white/10 hover:border-purple-400/50"
                             : "bg-orange-500/5 border-orange-400/20 hover:border-orange-400/50"
@@ -539,29 +563,37 @@ const AerialJourney = () => {
                       onClick={() => {
                         if (
                           (sport.unlockedLevels || 0) > 0 ||
-                          (isAdmin && (adminMode === 'edit' || adminMode === 'preview'))
+                          (isAdmin &&
+                            (adminMode === "edit" || adminMode === "preview"))
                         ) {
-                          handleSkillTreeView(sport.key_name!, displayName);
+                          if (sport.key_name) {
+                            handleSkillTreeView(sport.key_name, displayName);
+                          } else {
+                            toast.error(
+                              "Brak klucza sportu. Skontaktuj się z administratorem."
+                            );
+                          }
                         }
                       }}
                     >
                       <CardContent className="p-4 md:p-6">
                         {/* Status Badge */}
-                        {isAdmin && (adminMode === 'edit' || adminMode === 'preview') && (
-                          <div className="mb-3">
-                            <Badge
-                              className={`text-xs ${
-                                sport.is_published
-                                  ? "bg-green-500/20 text-green-400 border-green-400/30"
-                                  : "bg-orange-500/20 text-orange-400 border-orange-400/30"
-                              }`}
-                            >
-                              {sport.is_published
-                                ? "Opublikowane"
-                                : "Wersja robocza"}
-                            </Badge>
-                          </div>
-                        )}
+                        {isAdmin &&
+                          (adminMode === "edit" || adminMode === "preview") && (
+                            <div className="mb-3">
+                              <Badge
+                                className={`text-xs ${
+                                  sport.is_published
+                                    ? "bg-green-500/20 text-green-400 border-green-400/30"
+                                    : "bg-orange-500/20 text-orange-400 border-orange-400/30"
+                                }`}
+                              >
+                                {sport.is_published
+                                  ? "Opublikowane"
+                                  : "Wersja robocza"}
+                              </Badge>
+                            </div>
+                          )}
 
                         <div className="text-center mb-4">
                           <div className="text-4xl mb-3">{icon}</div>
@@ -577,26 +609,51 @@ const AerialJourney = () => {
 
                         <div className="space-y-2">
                           {/* Badge/Achievement System */}
-                          {user && (
-                            <div className="flex items-center justify-center mb-3">
-                              {(sport.unlockedLevels || 0) > 0 ? (
-                                <div className="flex items-center gap-2">
-                                  <span className="text-yellow-400 font-semibold text-sm">
-                                    Poziom {sport.unlockedLevels}
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="flex items-center gap-2 opacity-50">
-                                  <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-gray-400 font-bold text-sm">
-                                    ?
+                          {user &&
+                            !(
+                              isAdmin &&
+                              (adminMode === "edit" || adminMode === "preview")
+                            ) && (
+                              <div className="flex items-center justify-center mb-3">
+                                {(sport.unlockedLevels || 0) > 0 ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-yellow-400 font-semibold text-sm">
+                                      Poziom {sport.unlockedLevels}
+                                    </span>
                                   </div>
-                                  <span className="text-gray-400 text-sm">
-                                    Zablokowane
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                                ) : (
+                                  <div className="flex items-center gap-2 opacity-50">
+                                    <div className="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center text-gray-400 font-bold text-sm">
+                                      ?
+                                    </div>
+                                    <span className="text-gray-400 text-sm">
+                                      Zablokowane
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          {/* Admin mode: Show level info if available, otherwise show status */}
+                          {user &&
+                            isAdmin &&
+                            (adminMode === "edit" ||
+                              adminMode === "preview") && (
+                              <div className="flex items-center justify-center mb-3">
+                                {(sport.unlockedLevels || 0) > 0 ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-yellow-400 font-semibold text-sm">
+                                      Poziom {sport.unlockedLevels}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-muted-foreground text-sm">
+                                      Brak poziomów
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
 
                           {/* Simple progress bar - only show if user has progress */}
                           {hasLevels &&
@@ -610,8 +667,19 @@ const AerialJourney = () => {
                               </div>
                             )}
 
-                          {/* Only show figure count if not locked */}
-                          {(sport.unlockedLevels || 0) > 0 ? (
+                          {/* Show figure count or appropriate message */}
+                          {isAdmin &&
+                          (adminMode === "edit" || adminMode === "preview") ? (
+                            <div className="text-center">
+                              <span className="text-xs text-muted-foreground">
+                                {sport.count || 0} dostępnych figur
+                                {sport.totalLevels !== undefined &&
+                                  sport.totalLevels > 0 && (
+                                    <> • {sport.totalLevels} poziomów</>
+                                  )}
+                              </span>
+                            </div>
+                          ) : (sport.unlockedLevels || 0) > 0 ? (
                             <div className="text-center">
                               <span className="text-xs text-muted-foreground">
                                 {sport.count} dostępnych figur
@@ -642,17 +710,23 @@ const AerialJourney = () => {
         />
 
         {/* Sport Category Manager Sheet */}
-        <Sheet open={showSportCategoryManager} onOpenChange={setShowSportCategoryManager}>
-          <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto bg-background">
+        <Sheet
+          open={showSportCategoryManager}
+          onOpenChange={setShowSportCategoryManager}
+        >
+          <SheetContent
+            side="right"
+            className="w-full sm:max-w-2xl overflow-y-auto bg-background"
+          >
             <SheetHeader>
               <SheetTitle>Zarządzanie sportami</SheetTitle>
             </SheetHeader>
             <div className="mt-6">
-              <SportCategoryManager 
+              <SportCategoryManager
                 onClose={() => {
                   setShowSportCategoryManager(false);
                   fetchAvailableSports(); // Refresh sports list after changes
-                }} 
+                }}
               />
             </div>
           </SheetContent>
