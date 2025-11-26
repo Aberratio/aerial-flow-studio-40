@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Lock, CheckCircle, Circle, Crown, Bookmark, AlertCircle, Trophy, Eye, Play } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FigurePreviewModal } from "@/components/FigurePreviewModal";
@@ -104,6 +105,7 @@ const SkillTree = ({
   const [sportLevels, setSportLevels] = useState<SportLevel[]>([]);
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
   const [userPoints, setUserPoints] = useState<number>(0);
+  const [userAchievements, setUserAchievements] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedFigure, setSelectedFigure] = useState<Figure | null>(null);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
@@ -133,6 +135,7 @@ const SkillTree = ({
       await fetchLevelTrainingCompletions();
       await fetchUserPoints(participations);
       await checkDemoAccess();
+      await fetchUserAchievements();
     };
     loadData();
   }, [sportCategory, user]);
@@ -148,6 +151,19 @@ const SkillTree = ({
       .maybeSingle();
       
     setHasDemoAccess(!!data);
+  };
+
+  const fetchUserAchievements = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('user_achievements')
+      .select('achievement_id')
+      .eq('user_id', user.id);
+    
+    if (!error && data) {
+      setUserAchievements(data.map(item => item.achievement_id));
+    }
   };
 
   const fetchLevelTrainingCompletions = async () => {
@@ -491,6 +507,8 @@ const SkillTree = ({
             p_sport_level_id: level.id
           });
           if (!error) {
+            // Refresh user achievements after awarding
+            await fetchUserAchievements();
             toast({
               title: "🎉 Gratulacje!",
               description: `Ukończyłeś poziom ${level.level_name} i zdobyłeś odznaki!`
@@ -818,17 +836,50 @@ const SkillTree = ({
                       </div>
                     </div>}
 
-                  {/* Achievements Section for Level */}
-                  {level.achievements && level.achievements.length > 0 && isUnlocked && <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-400/20 rounded-lg">
-                        <h4 className="text-yellow-400 font-medium mb-2 flex items-center gap-2">
-                          🏆 Odznaki za ukończenie:
+                  {/* Achievements Section for Level - NEW DESIGN */}
+                  {level.achievements && level.achievements.length > 0 && isUnlocked && <div className="mt-8 pt-6 border-t border-emerald-400/20">
+                        <h4 className="text-emerald-400 font-semibold mb-4 flex items-center gap-2 text-sm md:text-base">
+                          <span className="text-xl">🎖️</span>
+                          Odznaki za ukończenie poziomu
                         </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {level.achievements.map(achievement => <Badge key={achievement.id} className="bg-yellow-500/20 text-yellow-400 border-yellow-400/30">
-                              {achievement.icon} {achievement.name} (+
-                              {achievement.points} pts)
-                            </Badge>)}
-                        </div>
+                        <TooltipProvider>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 md:gap-4">
+                            {level.achievements.map(achievement => {
+                      const isEarned = userAchievements?.includes(achievement.id);
+                      return <Tooltip key={achievement.id}>
+                                  <TooltipTrigger asChild>
+                                    <div className={cn("relative p-4 rounded-xl text-center transition-all cursor-pointer", "bg-gradient-to-br from-emerald-900/30 to-purple-900/30", "border border-emerald-400/30 hover:border-emerald-400/50", isEarned && "ring-2 ring-emerald-400/50 shadow-lg shadow-emerald-400/20")}>
+                                      {/* Large icon */}
+                                      <div className="text-4xl md:text-5xl mb-2">{achievement.icon}</div>
+
+                                      {/* Name */}
+                                      <p className="text-white font-medium text-sm md:text-base truncate">
+                                        {achievement.name}
+                                      </p>
+
+                                      {/* Points */}
+                                      <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-semibold">
+                                        +{achievement.points} pkt
+                                      </div>
+
+                                      {/* Status badge */}
+                                      {isEarned && <div className="absolute -top-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center">
+                                            <CheckCircle className="w-4 h-4 text-white" />
+                                          </div>}
+
+                                      {!isEarned && <div className="absolute inset-0 rounded-xl bg-black/50 flex items-center justify-center">
+                                            <p className="text-xs text-gray-300 px-2">Odblokuj ukończając poziom</p>
+                                          </div>}
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="font-semibold">{achievement.name}</p>
+                                    <p className="text-xs text-muted-foreground">+{achievement.points} punktów</p>
+                                  </TooltipContent>
+                                </Tooltip>;
+                    })}
+                          </div>
+                        </TooltipProvider>
                       </div>}
 
                   {/* Regular Figures - Grouped by Sublevel */}
