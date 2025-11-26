@@ -15,7 +15,6 @@ export interface CalendarDay {
   is_rest_day: boolean;
   status: string;
   is_retry: boolean;
-  attempt_number: number;
   exercises_completed: number;
   total_exercises: number;
   notes: string | null;
@@ -31,7 +30,6 @@ export interface NextAvailableDay {
   day_number: number;
   is_rest_day: boolean;
   is_retry: boolean;
-  attempt_number: number;
   total_exercises: number;
 }
 
@@ -131,7 +129,6 @@ export const useChallengeCalendar = (challengeId: string) => {
           is_rest_day: day.total_exercises === 0, // Rest day if no exercises
           status: progress?.status || day.status || "pending",
           is_retry: false,
-          attempt_number: progress?.attempt_number || 1,
           exercises_completed: progress?.exercises_completed || 0,
           total_exercises: day.total_exercises || 0,
           notes: progress?.notes || null,
@@ -188,7 +185,6 @@ export const useChallengeCalendar = (challengeId: string) => {
         day_number: nextDayData[0].day_number,
         is_rest_day: nextDayData[0].total_exercises === 0,
         is_retry: false,
-        attempt_number: 1,
         total_exercises: nextDayData[0].total_exercises
       } : null;
 
@@ -347,26 +343,6 @@ export const useChallengeCalendar = (challengeId: string) => {
 
         if (trainingDayError || !trainingDay) return false;
 
-        // Get the highest attempt_number for this day to determine next attempt
-        const { data: existingProgresses, error: checkError } = await supabase
-          .from('challenge_day_progress')
-          .select('attempt_number')
-          .eq('user_id', user.id)
-          .eq('challenge_id', challengeId)
-          .eq('training_day_id', trainingDay.id)
-          .order('attempt_number', { ascending: false })
-          .limit(1);
-
-        if (checkError) {
-          console.error('Error checking existing progress:', checkError);
-          throw checkError;
-        }
-
-        // Determine attempt_number: use highest + 1, or 1 if no records exist
-        const attemptNumber = existingProgresses && existingProgresses.length > 0
-          ? (existingProgresses[0].attempt_number || 0) + 1
-          : 1;
-
         // Create or update progress record
         const { error: progressError } = await supabase
           .from('challenge_day_progress')
@@ -374,12 +350,11 @@ export const useChallengeCalendar = (challengeId: string) => {
             user_id: user.id,
             challenge_id: challengeId,
             training_day_id: trainingDay.id,
-            attempt_number: attemptNumber,
             status: newStatus,
             notes: notes || null,
             changed_status_at: new Date().toISOString()
           }, {
-            onConflict: 'user_id,challenge_id,training_day_id,attempt_number'
+            onConflict: 'user_id,challenge_id,training_day_id'
           });
 
         if (progressError) throw progressError;

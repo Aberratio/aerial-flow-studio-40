@@ -360,45 +360,22 @@ const ChallengePreview = () => {
       const isRestDay = trainingDay?.training_day_exercises?.length === 0;
 
       if (isRestDay) {
-        // Get the highest attempt_number for this day to determine next attempt
-        const { data: existingProgresses, error: checkError } = await supabase
-          .from("challenge_day_progress")
-          .select("attempt_number")
-          .eq("user_id", user.id)
-          .eq("challenge_id", challengeId)
-          .eq("training_day_id", trainingDay.id)
-          .order("attempt_number", { ascending: false })
-          .limit(1);
-
-        if (checkError) {
-          console.error("Error checking existing progress:", checkError);
-          toast({
-            title: "Błąd",
-            description: "Nie udało się sprawdzić postępu",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        // Determine attempt_number: use highest + 1, or 1 if no records exist
-        const attemptNumber = existingProgresses && existingProgresses.length > 0
-          ? (existingProgresses[0].attempt_number || 0) + 1
-          : 1;
-
         // Use upsert to handle cases where record already exists
-        const { error } = await supabase.from("challenge_day_progress").upsert({
-          user_id: user.id,
-          challenge_id: challengeId,
-          training_day_id: trainingDay.id,
-          attempt_number: attemptNumber,
-          status: "completed",
-          exercises_completed: 0,
-          total_exercises: 0,
-          notes: "Rest day completed",
-          changed_status_at: new Date().toISOString(),
-        }, {
-          onConflict: 'user_id,challenge_id,training_day_id,attempt_number'
-        });
+        const { error } = await supabase.from("challenge_day_progress").upsert(
+          {
+            user_id: user.id,
+            challenge_id: challengeId,
+            training_day_id: trainingDay.id,
+            status: "completed",
+            exercises_completed: 0,
+            total_exercises: 0,
+            notes: "Rest day completed",
+            changed_status_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "user_id,challenge_id,training_day_id",
+          }
+        );
 
         if (error) {
           console.error("Error completing rest day:", error);
@@ -702,7 +679,12 @@ const ChallengePreview = () => {
                   ?.map((trainingDay) => {
                     const relatedDays = calendarDays
                       .filter((cd) => cd.training_day_id === trainingDay.id)
-                      .sort((a, b) => b.attempt_number - a.attempt_number);
+                      .sort((a, b) => {
+                        // Sort by completed_at if available, otherwise by calendar_date
+                        const aDate = a.completed_at || a.calendar_date;
+                        const bDate = b.completed_at || b.calendar_date;
+                        return bDate.localeCompare(aDate);
+                      });
 
                     const todayCalendarDay = relatedDays.find(
                       (cd) => cd.calendar_date === todayStr
@@ -871,9 +853,13 @@ const ChallengePreview = () => {
                                     .map((exercise, exerciseIndex) => (
                                       <div
                                         key={exercise.id}
-                                        onClick={() => handleExerciseClick(exercise)}
+                                        onClick={() =>
+                                          handleExerciseClick(exercise)
+                                        }
                                         className={`flex items-start justify-between p-3 md:p-4 bg-white/5 rounded-xl border border-white/10 backdrop-blur-sm ${
-                                          actualIsLocked ? "cursor-not-allowed" : "cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all"
+                                          actualIsLocked
+                                            ? "cursor-not-allowed"
+                                            : "cursor-pointer hover:bg-white/10 hover:border-white/20 transition-all"
                                         }`}
                                       >
                                         <div className="flex-1 pr-4">

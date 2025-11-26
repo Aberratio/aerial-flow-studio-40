@@ -182,7 +182,7 @@ const Challenges = () => {
         if (participatingChallengeIds.length > 0) {
           const { data: progressData } = await supabase
             .from("challenge_day_progress")
-            .select("challenge_id, status, training_day_id, attempt_number")
+            .select("challenge_id, status, training_day_id")
             .eq("user_id", user.id)
             .in("challenge_id", participatingChallengeIds);
 
@@ -208,17 +208,20 @@ const Challenges = () => {
               return acc;
             }, {} as Record<string, number>) || {};
 
-          // Calculate completed cycles (max attempt_number for completed challenges)
+          // Calculate completed cycles based on number of completed days
+          // A cycle is considered complete when all days are completed
           completedCycles =
-            progressData?.reduce((acc, progress) => {
-              if (progress.status === "completed") {
-                acc[progress.challenge_id] = Math.max(
-                  acc[progress.challenge_id] || 0,
-                  progress.attempt_number || 1
-                );
+            Object.keys(challengeTotalDays).reduce((acc, challengeId) => {
+              const totalDays = challengeTotalDays[challengeId] || 0;
+              const completedDays = challengeCompletedDays[challengeId] || 0;
+              // If all days are completed, count as 1 cycle
+              if (totalDays > 0 && completedDays >= totalDays) {
+                acc[challengeId] = 1;
+              } else {
+                acc[challengeId] = 0;
               }
               return acc;
-            }, {} as Record<string, number>) || {};
+            }, {} as Record<string, number>);
 
           participatingChallengeIds.forEach((challengeId) => {
             const completedDays = challengeCompletedDays[challengeId] || 0;

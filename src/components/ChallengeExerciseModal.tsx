@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, Trophy, CheckCircle, Play, Volume2, X } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useDictionary } from '@/contexts/DictionaryContext';
+import React, { useState, useEffect } from "react";
+import { Clock, Trophy, CheckCircle, Play, Volume2, X } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useDictionary } from "@/contexts/DictionaryContext";
 
 interface Exercise {
   id: string;
@@ -46,9 +51,11 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
   challengeId,
   dayId,
   dayNumber,
-  exercises
+  exercises,
 }) => {
-  const [completedExercises, setCompletedExercises] = useState<Set<string>>(new Set());
+  const [completedExercises, setCompletedExercises] = useState<Set<string>>(
+    new Set()
+  );
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -64,18 +71,18 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
     try {
       // Load user's progress for this specific day
       const { data, error } = await supabase
-        .from('challenge_day_progress')
-        .select('exercises_completed, total_exercises')
-        .eq('user_id', user?.id)
-        .eq('challenge_id', challengeId)
-        .eq('training_day_id', dayId)
+        .from("challenge_day_progress")
+        .select("exercises_completed, total_exercises")
+        .eq("user_id", user?.id)
+        .eq("challenge_id", challengeId)
+        .eq("training_day_id", dayId)
         .single();
 
       if (!error && data) {
         // For now, we'll mark all exercises as completed if the day was completed
         // In a more advanced implementation, you could store individual exercise completion
         if (data.exercises_completed === data.total_exercises) {
-          const allCompleted = new Set(exercises.map(ex => ex.id));
+          const allCompleted = new Set(exercises.map((ex) => ex.id));
           setCompletedExercises(allCompleted);
         }
       } else {
@@ -83,7 +90,7 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
         setCompletedExercises(new Set());
       }
     } catch (error) {
-      console.error('Error loading completed exercises:', error);
+      console.error("Error loading completed exercises:", error);
       setCompletedExercises(new Set());
     }
   };
@@ -98,105 +105,92 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
     setCompletedExercises(newCompleted);
   };
 
-  const completionPercentage = exercises.length > 0 ? 
-    (completedExercises.size / exercises.length) * 100 : 0;
+  const completionPercentage =
+    exercises.length > 0
+      ? (completedExercises.size / exercises.length) * 100
+      : 0;
 
   const handleFinishDay = async () => {
     if (!user) return;
-    
+
     setIsLoading(true);
     try {
-      // Get the highest attempt_number for this day to determine next attempt
-      const { data: existingProgresses, error: checkError } = await supabase
-        .from('challenge_day_progress')
-        .select('attempt_number')
-        .eq('user_id', user.id)
-        .eq('challenge_id', challengeId)
-        .eq('training_day_id', dayId)
-        .order('attempt_number', { ascending: false })
-        .limit(1);
-
-      if (checkError) {
-        console.error('Error checking existing progress:', checkError);
-        throw checkError;
-      }
-
-      // Determine attempt_number: use highest + 1, or 1 if no records exist
-      const attemptNumber = existingProgresses && existingProgresses.length > 0
-        ? (existingProgresses[0].attempt_number || 0) + 1
-        : 1;
-
       // Save individual day progress
       const { error: progressError } = await supabase
-        .from('challenge_day_progress')
-        .upsert({
-          user_id: user.id,
-          challenge_id: challengeId,
-          training_day_id: dayId,
-          attempt_number: attemptNumber,
-          exercises_completed: completedExercises.size,
-          total_exercises: exercises.length,
-          status: completionPercentage === 100 ? 'completed' : 'partial',
-          changed_status_at: new Date().toISOString(),
-          completed_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,challenge_id,training_day_id,attempt_number'
-        });
+        .from("challenge_day_progress")
+        .upsert(
+          {
+            user_id: user.id,
+            challenge_id: challengeId,
+            training_day_id: dayId,
+            exercises_completed: completedExercises.size,
+            total_exercises: exercises.length,
+            status: completionPercentage === 100 ? "completed" : "partial",
+            changed_status_at: new Date().toISOString(),
+            completed_at: new Date().toISOString(),
+          },
+          {
+            onConflict: "user_id,challenge_id,training_day_id",
+          }
+        );
 
       if (progressError) throw progressError;
 
       // Check if day is fully completed
       const isFullyCompleted = completionPercentage === 100;
-      
+
       if (isFullyCompleted) {
         // Update challenge participant status if day is fully completed
         const { error: participantError } = await supabase
-          .from('challenge_participants')
-          .update({ 
-            status: 'active', // Keep as active, they can continue to next day
-            updated_at: new Date().toISOString()
+          .from("challenge_participants")
+          .update({
+            status: "active", // Keep as active, they can continue to next day
+            updated_at: new Date().toISOString(),
           })
-          .eq('challenge_id', challengeId)
-          .eq('user_id', user.id);
+          .eq("challenge_id", challengeId)
+          .eq("user_id", user.id);
 
         if (participantError) throw participantError;
 
         // Create activity entry for points
-        const { error: activityError } = await supabase
-          .rpc('create_activity_with_points', {
+        const { error: activityError } = await supabase.rpc(
+          "create_activity_with_points",
+          {
             user_id: user.id,
-            activity_type: 'challenge_day_completed',
+            activity_type: "challenge_day_completed",
             activity_data: {
               challenge_id: challengeId,
               training_day_id: dayId,
-              exercises_completed: completedExercises.size
+              exercises_completed: completedExercises.size,
             },
-            points: 25 // Award 25 points for completing a challenge day
-          });
+            points: 25, // Award 25 points for completing a challenge day
+          }
+        );
 
-        if (activityError) console.error('Error creating activity:', activityError);
+        if (activityError)
+          console.error("Error creating activity:", activityError);
       }
 
       toast({
         title: isFullyCompleted ? "Day Completed!" : "Progress Saved!",
-        description: isFullyCompleted 
+        description: isFullyCompleted
           ? `Congratulations! You've completed all ${exercises.length} exercises and earned 25 points!`
-          : `Progress saved: ${completedExercises.size} out of ${exercises.length} exercises completed.`
+          : `Progress saved: ${completedExercises.size} out of ${exercises.length} exercises completed.`,
       });
-      
+
       onClose();
-      
+
       // If day is completed, navigate to next day or back to challenge
       if (isFullyCompleted) {
         // Refresh the page to update progress display
         window.location.reload();
       }
     } catch (error) {
-      console.error('Error finishing day:', error);
+      console.error("Error finishing day:", error);
       toast({
         title: "Error",
         description: "Failed to save progress. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -207,7 +201,9 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-[95vw] max-h-[90vh] glass-effect border-white/10 text-white overflow-hidden flex flex-col p-4 md:p-6">
         <DialogHeader className="flex-shrink-0">
-          <DialogTitle className="text-xl md:text-2xl gradient-text">Dzień {dayNumber} - Ćwiczenia</DialogTitle>
+          <DialogTitle className="text-xl md:text-2xl gradient-text">
+            Dzień {dayNumber} - Ćwiczenia
+          </DialogTitle>
         </DialogHeader>
 
         <ScrollArea className="flex-1 -mx-4 md:-mx-6 px-4 md:px-6">
@@ -217,9 +213,12 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
               <CardContent className="p-4 md:p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-base md:text-lg font-semibold text-white">Postęp</h3>
+                    <h3 className="text-base md:text-lg font-semibold text-white">
+                      Postęp
+                    </h3>
                     <p className="text-sm text-muted-foreground">
-                      {completedExercises.size} z {exercises.length} ćwiczeń ukończono
+                      {completedExercises.size} z {exercises.length} ćwiczeń
+                      ukończono
                     </p>
                   </div>
                   <div className="text-right">
@@ -235,14 +234,18 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
 
             {/* Exercise List */}
             <div className="space-y-3 md:space-y-4">
-              <h3 className="text-base md:text-lg font-semibold text-white">Ćwiczenia</h3>
+              <h3 className="text-base md:text-lg font-semibold text-white">
+                Ćwiczenia
+              </h3>
               {exercises.map((exercise, index) => {
                 const isCompleted = completedExercises.has(exercise.id);
                 return (
-                  <Card 
-                    key={exercise.id} 
+                  <Card
+                    key={exercise.id}
                     className={`glass-effect transition-all duration-200 ${
-                      isCompleted ? 'border-green-500/50 bg-green-500/10' : 'border-white/10'
+                      isCompleted
+                        ? "border-green-500/50 bg-green-500/10"
+                        : "border-white/10"
                     }`}
                   >
                     <CardContent className="p-3 md:p-6">
@@ -251,7 +254,9 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
                         <div className="flex items-center mt-1 flex-shrink-0">
                           <Checkbox
                             checked={isCompleted}
-                            onCheckedChange={() => toggleExerciseCompletion(exercise.id)}
+                            onCheckedChange={() =>
+                              toggleExerciseCompletion(exercise.id)
+                            }
                             className="w-4 h-4 md:w-5 md:h-5"
                           />
                         </div>
@@ -260,8 +265,8 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
                         <div className="flex-shrink-0">
                           <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg overflow-hidden bg-gradient-to-br from-purple-500/20 to-blue-500/20">
                             {exercise.figure.image_url ? (
-                              <img 
-                                src={exercise.figure.image_url} 
+                              <img
+                                src={exercise.figure.image_url}
                                 alt={exercise.figure.name}
                                 className="w-full h-full object-cover"
                               />
@@ -281,7 +286,9 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
                                 {index + 1}. {exercise.figure.name}
                               </h4>
                               <Badge className="mb-2 text-xs">
-                                {getDifficultyLabel(exercise.figure.difficulty_level)}
+                                {getDifficultyLabel(
+                                  exercise.figure.difficulty_level
+                                )}
                               </Badge>
                             </div>
                             {isCompleted && (
@@ -300,25 +307,33 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
                             {exercise.sets && (
                               <div className="flex items-center gap-1 md:gap-2">
                                 <span className="w-2 h-2 bg-purple-400 rounded-full flex-shrink-0" />
-                                <span className="truncate">{exercise.sets} serie</span>
+                                <span className="truncate">
+                                  {exercise.sets} serie
+                                </span>
                               </div>
                             )}
                             {exercise.reps && (
                               <div className="flex items-center gap-1 md:gap-2">
                                 <span className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0" />
-                                <span className="truncate">{exercise.reps} powtórzeń</span>
+                                <span className="truncate">
+                                  {exercise.reps} powtórzeń
+                                </span>
                               </div>
                             )}
                             {exercise.hold_time_seconds && (
                               <div className="flex items-center gap-1 md:gap-2">
                                 <Clock className="w-3 h-3 text-green-400 flex-shrink-0" />
-                                <span className="truncate">{exercise.hold_time_seconds}s trzymaj</span>
+                                <span className="truncate">
+                                  {exercise.hold_time_seconds}s trzymaj
+                                </span>
                               </div>
                             )}
                             {exercise.rest_time_seconds && (
                               <div className="flex items-center gap-1 md:gap-2">
                                 <span className="w-2 h-2 bg-yellow-400 rounded-full flex-shrink-0" />
-                                <span className="truncate">{exercise.rest_time_seconds}s odpoczynek</span>
+                                <span className="truncate">
+                                  {exercise.rest_time_seconds}s odpoczynek
+                                </span>
                               </div>
                             )}
                           </div>
@@ -330,7 +345,9 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
                                 variant="outline"
                                 size="sm"
                                 className="border-white/20 text-white hover:bg-white/10 text-xs h-7 md:h-8"
-                                onClick={() => window.open(exercise.video_url, '_blank')}
+                                onClick={() =>
+                                  window.open(exercise.video_url, "_blank")
+                                }
                               >
                                 <Play className="w-3 h-3 mr-1" />
                                 Video
@@ -341,7 +358,9 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
                                 variant="outline"
                                 size="sm"
                                 className="border-white/20 text-white hover:bg-white/10 text-xs h-7 md:h-8"
-                                onClick={() => window.open(exercise.audio_url, '_blank')}
+                                onClick={() =>
+                                  window.open(exercise.audio_url, "_blank")
+                                }
                               >
                                 <Volume2 className="w-3 h-3 mr-1" />
                                 Audio
@@ -351,7 +370,9 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
 
                           {exercise.notes && (
                             <div className="bg-white/5 rounded-lg p-2 md:p-3 mt-3">
-                              <p className="text-white text-xs md:text-sm break-words">{exercise.notes}</p>
+                              <p className="text-white text-xs md:text-sm break-words">
+                                {exercise.notes}
+                              </p>
                             </div>
                           )}
                         </div>
@@ -366,19 +387,19 @@ const ChallengeExerciseModal: React.FC<ChallengeExerciseModalProps> = ({
 
         {/* Action Buttons */}
         <div className="flex gap-2 md:gap-3 pt-4 flex-shrink-0">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={onClose}
             className="flex-1 border-white/20 text-white hover:bg-white/10 text-sm md:text-base"
           >
             Zamknij
           </Button>
-          <Button 
+          <Button
             onClick={handleFinishDay}
             disabled={isLoading}
             className="flex-1 bg-gradient-to-r from-purple-500 via-pink-500 to-blue-500 hover:from-purple-600 hover:via-pink-600 hover:to-blue-600 text-sm md:text-base"
           >
-            {isLoading ? 'Zapisywanie...' : 'Zakończ dzień'}
+            {isLoading ? "Zapisywanie..." : "Zakończ dzień"}
           </Button>
         </div>
       </DialogContent>
