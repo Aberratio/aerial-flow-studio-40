@@ -44,58 +44,20 @@ const CollapsibleSection = ({ title, icon, children, defaultOpen = false }: Coll
 
 export const ActivityTab = () => {
   return (
-    <div className="space-y-4">
-      {/* Your Sports */}
-      <CollapsibleSection
-        title="Twoje dyscypliny"
-        icon={<Dumbbell className="h-5 w-5 text-purple-400" />}
-        defaultOpen={true}
-      >
-        <YourSportsSection />
-      </CollapsibleSection>
+    <div className="space-y-6">
+      {/* Your Sports - Always visible */}
+      <YourSportsSection />
 
-      {/* Achievements */}
-      <CollapsibleSection
-        title="Osiągnięcia"
-        icon={<Trophy className="h-5 w-5 text-yellow-400" />}
-        defaultOpen={true}
-      >
-        <AchievementsSection />
-      </CollapsibleSection>
+      {/* Achievements - Always visible */}
+      <AchievementsSection />
 
-      {/* Figure Journey */}
+      {/* Figure Journey - Collapsible */}
       <CollapsibleSection
-        title="Podróż przez figury"
+        title="Postęp w figurach"
         icon={<TrendingUp className="h-5 w-5 text-green-400" />}
         defaultOpen={false}
       >
         <FigureJourneySection />
-      </CollapsibleSection>
-
-      {/* Training Stats - Placeholder for future */}
-      <CollapsibleSection
-        title="Statystyki treningowe"
-        icon={<Target className="h-5 w-5 text-blue-400" />}
-        defaultOpen={false}
-      >
-        <div className="grid grid-cols-2 gap-4 text-center">
-          <div className="bg-white/5 rounded-lg p-4">
-            <div className="text-2xl font-bold text-foreground">0</div>
-            <div className="text-xs text-muted-foreground mt-1">Ukończone treningi</div>
-          </div>
-          <div className="bg-white/5 rounded-lg p-4">
-            <div className="text-2xl font-bold text-foreground">0h</div>
-            <div className="text-xs text-muted-foreground mt-1">Całkowity czas</div>
-          </div>
-          <div className="bg-white/5 rounded-lg p-4">
-            <div className="text-2xl font-bold text-foreground">0</div>
-            <div className="text-xs text-muted-foreground mt-1">Obecny streak</div>
-          </div>
-          <div className="bg-white/5 rounded-lg p-4">
-            <div className="text-2xl font-bold text-foreground">-</div>
-            <div className="text-xs text-muted-foreground mt-1">Ulubiona dyscyplina</div>
-          </div>
-        </div>
       </CollapsibleSection>
     </div>
   );

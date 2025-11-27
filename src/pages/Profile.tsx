@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Grid, Users, MessageCircle, Trophy } from 'lucide-react';
+import { Grid, Users, Trophy } from 'lucide-react';
 import { EditProfileModal } from '@/components/EditProfileModal';
 import { ProfileHeaderCompact } from '@/components/Profile/ProfileHeaderCompact';
 import { ContentTabs } from '@/components/Profile/ContentTabs';
 import { ShareProfileModal } from '@/components/ShareProfileModal';
 import { ActivityTab } from '@/components/Profile/ActivityTab';
 import { NewFriendRequestsModal } from '@/components/NewFriendRequestsModal';
+import { FriendInviteModal } from '@/components/FriendInviteModal';
+import { ProfileCompletionCard } from '@/components/Profile/ProfileCompletionCard';
+import { QuickActions } from '@/components/Profile/QuickActions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import Friends from './Friends';
-import Inbox from './Inbox';
 
 const Profile = () => {
   const { user } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [friendsRefreshTrigger, setFriendsRefreshTrigger] = useState(0);
   const [pendingRequestsCount, setPendingRequestsCount] = useState(0);
   const [showRequestsModal, setShowRequestsModal] = useState(false);
@@ -54,40 +57,42 @@ const Profile = () => {
       />
 
       <div className="max-w-4xl mx-auto p-3 sm:p-6">
-        {/* Main Tabs - At the top now */}
+        {/* Profile Completion Card - only shown if profile is incomplete */}
+        <div className="mb-6">
+          <ProfileCompletionCard />
+        </div>
+
+        {/* Quick Actions - helpful for new users */}
+        <div className="mb-6">
+          <QuickActions onInviteFriends={() => setShowInviteModal(true)} />
+        </div>
+
+        {/* Main Tabs */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-white/5 sticky top-[88px] sm:top-[96px] z-30">
-            <TabsTrigger value="posts" className="flex items-center gap-1 sm:gap-2">
+          <TabsList className="grid w-full grid-cols-3 bg-white/5 sticky top-[88px] sm:top-[96px] z-30 mb-6">
+            <TabsTrigger value="posts" className="flex items-center gap-2 py-3">
               <Grid className="h-4 w-4" />
-              <span className="hidden sm:inline">Posty</span>
+              <span className="text-xs sm:text-sm">Posty</span>
             </TabsTrigger>
-            <TabsTrigger value="friends" className="flex items-center gap-1 sm:gap-2">
+            <TabsTrigger value="friends" className="flex items-center gap-2 py-3">
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Znajomi</span>
+              <span className="text-xs sm:text-sm">Znajomi</span>
             </TabsTrigger>
-            <TabsTrigger value="inbox" className="flex items-center gap-1 sm:gap-2">
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden sm:inline">Wiadomości</span>
-            </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-1 sm:gap-2">
+            <TabsTrigger value="activity" className="flex items-center gap-2 py-3">
               <Trophy className="h-4 w-4" />
-              <span className="hidden sm:inline">Aktywność</span>
+              <span className="text-xs sm:text-sm">Aktywność</span>
             </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="posts" className="mt-6">
+          <TabsContent value="posts" className="mt-0">
             <ContentTabs isOwnProfile={true} />
           </TabsContent>
           
-          <TabsContent value="friends" className="mt-6">
+          <TabsContent value="friends" className="mt-0">
             <Friends />
           </TabsContent>
-          
-          <TabsContent value="inbox" className="mt-6">
-            <Inbox />
-          </TabsContent>
 
-          <TabsContent value="activity" className="mt-6">
+          <TabsContent value="activity" className="mt-0">
             <ActivityTab />
           </TabsContent>
         </Tabs>
@@ -108,6 +113,11 @@ const Profile = () => {
         isOpen={showRequestsModal}
         onClose={() => setShowRequestsModal(false)}
         onFriendsUpdated={handleFriendsUpdated}
+      />
+      <FriendInviteModal
+        isOpen={showInviteModal}
+        onClose={() => setShowInviteModal(false)}
+        onFriendAdded={handleFriendsUpdated}
       />
     </div>
   );

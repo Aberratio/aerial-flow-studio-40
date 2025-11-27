@@ -25,20 +25,20 @@ export const ProfileHeaderCompact = ({
   if (!user) return null;
 
   return (
-    <div className="bg-card/50 backdrop-blur-sm border-b border-white/10 p-4 sticky top-0 z-40">
-      <div className="max-w-4xl mx-auto flex items-center gap-4">
-        {/* Avatar */}
-        <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-2 border-primary/50">
+    <div className="bg-card/50 backdrop-blur-sm border-b border-white/10 p-4 sm:p-6 sticky top-0 z-40">
+      <div className="max-w-4xl mx-auto flex items-center gap-4 sm:gap-6">
+        {/* Avatar - larger on mobile */}
+        <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-primary/50 flex-shrink-0">
           <AvatarImage src={user.avatar_url || undefined} />
-          <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xl">
+          <AvatarFallback className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-2xl sm:text-3xl">
             {user.username?.[0]?.toUpperCase()}
           </AvatarFallback>
         </Avatar>
 
         {/* User Info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h1 className="text-lg sm:text-xl font-bold text-foreground truncate">
+          <div className="flex items-center gap-2 mb-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
               {user.username}
             </h1>
             {user.role === 'trainer' && (
@@ -49,7 +49,7 @@ export const ProfileHeaderCompact = ({
           </div>
           
           {/* Stats - Inline */}
-          <div className="flex items-center gap-3 text-xs sm:text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm sm:text-base text-muted-foreground mb-2">
             <span className="font-medium">{user.followersCount || 0} znajomych</span>
             {user.followingCount !== undefined && (
               <>
@@ -59,9 +59,9 @@ export const ProfileHeaderCompact = ({
             )}
           </div>
 
-          {/* Bio - Truncated on mobile */}
+          {/* Bio - Show more lines */}
           {user.bio && (
-            <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
+            <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">
               {user.bio}
             </p>
           )}
