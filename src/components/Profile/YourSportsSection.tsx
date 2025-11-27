@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Dumbbell } from "lucide-react";
 
 interface SportCategory {
   id: string;
@@ -130,7 +131,7 @@ export const YourSportsSection = () => {
     return (
       <Card className="glass-effect border-white/10">
         <CardHeader>
-          <CardTitle className="text-white">Choose Your Sports</CardTitle>
+          <CardTitle className="text-white">Wybierz swoje dyscypliny</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
@@ -167,7 +168,7 @@ export const YourSportsSection = () => {
               disabled={saving || selectedSports.length === 0}
               className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
             >
-              {saving ? 'Saving...' : 'Save Sports'}
+              {saving ? 'Zapisywanie...' : 'Zapisz'}
             </Button>
             <Button 
               variant="outline"
@@ -177,7 +178,7 @@ export const YourSportsSection = () => {
               }}
               className="border-white/20 text-white hover:bg-white/10"
             >
-              Cancel
+              Anuluj
             </Button>
           </div>
         </CardContent>
@@ -189,7 +190,7 @@ export const YourSportsSection = () => {
   return (
     <Card className="glass-effect border-white/10">
       <CardHeader>
-        <CardTitle className="text-white">Your Sports</CardTitle>
+        <CardTitle className="text-white">Twoje dyscypliny</CardTitle>
       </CardHeader>
       <CardContent>
         {userSports.length > 0 ? (
@@ -211,17 +212,20 @@ export const YourSportsSection = () => {
               onClick={() => setIsEditing(true)}
               className="border-white/20 text-white hover:bg-white/10"
             >
-              Change Sports
+              Zmień dyscypliny
             </Button>
           </>
         ) : (
-          <div className="text-center py-4">
-            <p className="text-muted-foreground mb-4">You haven't selected any sports yet</p>
+          <div className="text-center py-8">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center">
+              <Dumbbell className="w-8 h-8 text-purple-400" />
+            </div>
+            <p className="text-muted-foreground mb-4">Nie wybrałeś jeszcze żadnych dyscyplin</p>
             <Button 
               onClick={() => setIsEditing(true)}
               className="bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600"
             >
-              Choose Sports
+              Wybierz dyscypliny
             </Button>
           </div>
         )}

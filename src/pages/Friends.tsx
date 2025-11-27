@@ -143,12 +143,12 @@ const Friends = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-white">Your Friends</h2>
-          <p className="text-muted-foreground text-sm">Connect with fellow aerial athletes</p>
+          <h2 className="text-xl font-bold text-white">Twoi znajomi</h2>
+          <p className="text-muted-foreground text-sm">Połącz się ze społecznością sportowców</p>
         </div>
         <Button variant="primary" onClick={() => setShowFriendInvite(true)} size="sm">
           <UserPlus className="w-4 h-4 mr-2" />
-          <span className="hidden sm:inline">Find Friends</span>
+          <span className="hidden sm:inline">Znajdź znajomych</span>
         </Button>
       </div>
 
@@ -158,14 +158,14 @@ const Friends = () => {
           <CardContent className="p-4 text-center">
             <Users className="w-6 h-6 mx-auto mb-1 text-primary" />
             <h3 className="text-xl font-bold text-white">{friends.length}</h3>
-            <p className="text-muted-foreground text-xs">Friends</p>
+            <p className="text-muted-foreground text-xs">Znajomi</p>
           </CardContent>
         </Card>
         <Card className="glass-effect border-white/10">
           <CardContent className="p-4 text-center">
             <Mail className="w-6 h-6 mx-auto mb-1 text-purple-500" />
             <h3 className="text-xl font-bold text-white">{pendingRequestsCount}</h3>
-            <p className="text-muted-foreground text-xs">Requests</p>
+            <p className="text-muted-foreground text-xs">Zaproszenia</p>
           </CardContent>
         </Card>
       </div>
@@ -173,17 +173,19 @@ const Friends = () => {
       {/* Friends List or Empty State */}
       <Card className="glass-effect border-white/10">
         <CardHeader>
-          <CardTitle className="text-white">Friends List</CardTitle>
+          <CardTitle className="text-white">Lista znajomych</CardTitle>
         </CardHeader>
         <CardContent>
           {friends.length === 0 ? (
             <div className="text-center py-12">
-              <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h3 className="text-xl font-semibold text-white mb-2">No friends yet</h3>
-              <p className="text-muted-foreground mb-6">Start building your aerial community</p>
+              <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+                <Users className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400" />
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Jeszcze brak znajomych</h3>
+              <p className="text-muted-foreground mb-6 max-w-sm mx-auto px-4">Zacznij budować swoją społeczność sportową i dziel się postępami!</p>
               <Button variant="primary" onClick={() => setShowFriendInvite(true)}>
                 <UserPlus className="w-5 h-5 mr-2" />
-                Find Friends
+                Znajdź znajomych
               </Button>
             </div>
           ) : (
@@ -240,8 +242,8 @@ const Friends = () => {
           setFriendToRemove(null);
         }} 
         onConfirm={handleConfirmRemove} 
-        title="Remove Friend" 
-        description="Are you sure you want to remove this friend? You will no longer be able to see their friends-only content and they won't see yours." 
+        title="Usuń znajomego" 
+        description="Czy na pewno chcesz usunąć tego znajomego? Nie będziesz już widzieć ich treści przeznaczonych dla znajomych, a oni nie będą widzieć Twoich." 
       />
     </div>
   );

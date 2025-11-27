@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Grid, Award, Bookmark, Heart, MessageCircle } from 'lucide-react';
+import { Grid, Award, Bookmark, Heart, MessageCircle, Camera, Trophy, Dumbbell, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -129,13 +129,22 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyF
         loading ? (
           <div className="text-center py-8 text-muted-foreground">Ładowanie postów...</div>
         ) : userPosts.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Jeszcze brak postów!</p>
-            <p className="text-sm mt-2">
-              <Link to="/feed" className="text-purple-400 hover:text-purple-300">
-                Podziel się swoim pierwszym powietrznym momentem
-              </Link>
+          <div className="text-center py-12">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
+              <Grid className="w-10 h-10 sm:w-12 sm:h-12 text-purple-400" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+              Jeszcze brak postów
+            </h3>
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-sm mx-auto px-4">
+              Podziel się swoimi treningami, postępami i inspiracjami ze społecznością!
             </p>
+            <Button asChild className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600">
+              <Link to="/feed">
+                <Camera className="w-4 h-4 mr-2" />
+                Dodaj pierwszy post
+              </Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -193,9 +202,22 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyF
         achievementsLoading ? (
           <div className="text-center py-8 text-muted-foreground">Ładowanie osiągnięć...</div>
         ) : achievements.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Jeszcze brak zdobytych osiągnięć!</p>
-            <p className="text-sm mt-2">Zacznij trenować, aby odblokować swoje pierwsze osiągnięcie</p>
+          <div className="text-center py-12">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 flex items-center justify-center">
+              <Trophy className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-400" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+              Jeszcze brak osiągnięć
+            </h3>
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-sm mx-auto px-4">
+              Zacznij trenować i wykonuj wyzwania, aby odblokować swoje pierwsze osiągnięcie!
+            </p>
+            <Button asChild className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600">
+              <Link to="/challenges">
+                <Dumbbell className="w-4 h-4 mr-2" />
+                Zobacz wyzwania
+              </Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -215,9 +237,22 @@ export const ContentTabs: React.FC<ContentTabsProps> = ({ onPostSelect, privacyF
         savedPostsLoading ? (
           <div className="text-center py-8 text-muted-foreground">Ładowanie zapisanych postów...</div>
         ) : savedPosts.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Jeszcze brak zapisanych postów!</p>
-            <p className="text-sm mt-2">Zapisuj posty innych użytkowników, aby je tu zobaczyć</p>
+          <div className="text-center py-12">
+            <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+              <Bookmark className="w-10 h-10 sm:w-12 sm:h-12 text-blue-400" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-semibold text-white mb-2">
+              Jeszcze brak zapisanych postów
+            </h3>
+            <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-sm mx-auto px-4">
+              Zapisuj inspirujące posty innych użytkowników, aby mieć do nich szybki dostęp!
+            </p>
+            <Button asChild className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600">
+              <Link to="/feed">
+                <Grid className="w-4 h-4 mr-2" />
+                Przeglądaj feed
+              </Link>
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
