@@ -706,10 +706,11 @@ const ChallengeDayTimer = () => {
             user_id: user.id,
             challenge_id: challengeId,
             training_day_id: dayId,
+            attempt_number: 1,
             ...progressData,
           },
           {
-            onConflict: "user_id,challenge_id,training_day_id",
+            onConflict: "user_id,challenge_id,training_day_id,attempt_number",
           }
         );
 

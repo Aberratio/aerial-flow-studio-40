@@ -366,6 +366,7 @@ const ChallengePreview = () => {
             user_id: user.id,
             challenge_id: challengeId,
             training_day_id: trainingDay.id,
+            attempt_number: 1,
             status: "completed",
             exercises_completed: 0,
             total_exercises: 0,
@@ -373,7 +374,7 @@ const ChallengePreview = () => {
             changed_status_at: new Date().toISOString(),
           },
           {
-            onConflict: "user_id,challenge_id,training_day_id",
+            onConflict: "user_id,challenge_id,training_day_id,attempt_number",
           }
         );
 
