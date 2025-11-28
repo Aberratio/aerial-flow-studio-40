@@ -38,7 +38,6 @@ export const YourSportsSection = () => {
       const { data, error } = await supabase
         .from('sport_categories')
         .select('id, key_name, name, description, icon')
-        .eq('is_published', true)
         .order('name');
       
       if (error) throw error;
@@ -199,7 +198,7 @@ export const YourSportsSection = () => {
               {userSports.map(sportId => {
                 const sport = availableSports.find(s => s.id === sportId);
                 return (
-                  <Badge key={sportId} variant="secondary" className="bg-primary/20 text-primary flex items-center gap-2 px-3 py-2">
+                  <Badge key={sportId} variant="secondary" className="bg-primary/20 text-primary flex items-center gap-2 px-3 py-2 h-10">
                     {sport?.icon && <span className="text-lg">{sport.icon}</span>}
                     {sport?.name || sportId}
                   </Badge>
