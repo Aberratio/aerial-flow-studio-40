@@ -9,7 +9,6 @@ import { ActivityTab } from '@/components/Profile/ActivityTab';
 import { NewFriendRequestsModal } from '@/components/NewFriendRequestsModal';
 import { FriendInviteModal } from '@/components/FriendInviteModal';
 import { ProfileCompletionCard } from '@/components/Profile/ProfileCompletionCard';
-import { QuickActions } from '@/components/Profile/QuickActions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import Friends from './Friends';
@@ -56,20 +55,13 @@ const Profile = () => {
         onViewRequests={() => setShowRequestsModal(true)}
       />
 
-      <div className="max-w-4xl mx-auto p-3 sm:p-6">
+      <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
         {/* Profile Completion Card - only shown if profile is incomplete */}
-        <div className="mb-6">
-          <ProfileCompletionCard />
-        </div>
-
-        {/* Quick Actions - helpful for new users */}
-        <div className="mb-6">
-          <QuickActions onInviteFriends={() => setShowInviteModal(true)} />
-        </div>
+        <ProfileCompletionCard />
 
         {/* Main Tabs */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/5 sticky top-[88px] sm:top-[96px] z-30 mb-6">
+          <TabsList className="grid w-full grid-cols-3 bg-white/5 mb-4 sm:mb-6 overflow-hidden">
             <TabsTrigger value="posts" className="flex items-center gap-2 py-3">
               <Grid className="h-4 w-4" />
               <span className="text-xs sm:text-sm">Posty</span>

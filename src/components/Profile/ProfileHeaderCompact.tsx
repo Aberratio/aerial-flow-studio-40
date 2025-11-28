@@ -48,17 +48,6 @@ export const ProfileHeaderCompact = ({
             )}
           </div>
           
-          {/* Stats - Inline */}
-          <div className="flex items-center gap-3 text-sm sm:text-base text-muted-foreground mb-2">
-            <span className="font-medium">{user.followersCount || 0} znajomych</span>
-            {user.followingCount !== undefined && (
-              <>
-                <span>•</span>
-                <span className="font-medium">{user.followingCount || 0} obserwowanych</span>
-              </>
-            )}
-          </div>
-
           {/* Bio - Show more lines */}
           {user.bio && (
             <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2 sm:line-clamp-3">
