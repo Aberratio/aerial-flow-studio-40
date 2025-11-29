@@ -47,11 +47,6 @@ const GallerySection = lazy(() =>
     default: module.GallerySection,
   }))
 );
-const InstagramFeedSection = lazy(() =>
-  import("@/components/InstagramFeedSection").then((module) => ({
-    default: module.InstagramFeedSection,
-  }))
-);
 interface PricingPlan {
   id: string;
   plan_key: string;
@@ -431,18 +426,7 @@ const Landing = () => {
       )}
 
       {/* Instagram Feed Section - Conditionally rendered */}
-      {sections?.instagram_feed?.is_active && (
-        <LazySection threshold={0.1} rootMargin="300px">
-          <Suspense
-            fallback={
-              <div className="h-96 w-full bg-white/5 rounded-2xl animate-pulse" />
-            }
-          >
-            <InstagramFeedSection />
-          </Suspense>
-        </LazySection>
-      )}
-
+      
       {/* Pricing Section - Conditionally rendered */}
       {sections?.pricing?.is_active && (
         <LazySection

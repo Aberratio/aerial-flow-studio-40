@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { X, Image, Video, Loader2, Users, Lock, Globe, Instagram } from "lucide-react";
+import { X, Image, Video, Loader2, Users, Lock, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,21 +40,13 @@ export const EditPostModal = ({
   );
   const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [isLoading, setIsLoading] = useState(false);
-  const [hasInstagramContent, setHasInstagramContent] = useState(false);
   const { toast } = useToast();
   useEffect(() => {
     if (post && isOpen) {
       setContent(post.content || "");
       setPrivacy(post.privacy || "public");
-      setHasInstagramContent(!!(post.instagram_url || post.instagram_embed_html));
-      
-      // Only show preview for non-Instagram posts
-      if (!post.instagram_url && !post.instagram_embed_html) {
-        setSelectedFilePreview(post.image_url || post.video_url || null);
-        setMediaType(post.image_url ? "image" : "video");
-      } else {
-        setSelectedFilePreview(null);
-      }
+      setSelectedFilePreview(post.image_url || post.video_url || null);
+      setMediaType(post.image_url ? "image" : "video");
     }
   }, [post, isOpen]);
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,16 +159,6 @@ export const EditPostModal = ({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Instagram Post Warning */}
-          {hasInstagramContent && (
-            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-              <p className="text-blue-400 text-sm flex items-center">
-                <Instagram className="w-4 h-4 mr-2" />
-                To jest post z Instagrama. Możesz edytować tylko opis i prywatność.
-              </p>
-            </div>
-          )}
-
           {/* Privacy Setting */}
           <div>
             <label className="text-white text-sm font-medium mb-2 block">
@@ -227,81 +209,75 @@ export const EditPostModal = ({
             className="min-h-[120px] bg-white/5 border-white/10 text-white placeholder:text-muted-foreground resize-none"
           />
 
-          {/* Media Preview and Upload - Only for non-Instagram posts */}
-          {!hasInstagramContent && (
-            <>
-              {selectedFilePreview && mediaType === "image" && (
-                <div className="relative">
-                  <img
-                    src={selectedFilePreview}
-                    alt="Selected"
-                    className="w-full max-h-48 sm:max-h-64 object-cover rounded-lg"
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setSelectedFilePreview(null);
-                    }}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
+          {/* Media Preview and Upload */}
+          {selectedFilePreview && mediaType === "image" && (
+            <div className="relative">
+              <img
+                src={selectedFilePreview}
+                alt="Selected"
+                className="w-full max-h-48 sm:max-h-64 object-cover rounded-lg"
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
+                onClick={() => {
+                  setSelectedFile(null);
+                  setSelectedFilePreview(null);
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
 
-              {selectedFilePreview && mediaType === "video" && (
-                <div className="relative">
-                  <video
-                    src={selectedFilePreview}
-                    className="w-full max-h-48 sm:max-h-64 object-cover rounded-lg"
-                    controls
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
-                    onClick={() => {
-                      setSelectedFile(null);
-                      setSelectedFilePreview(null);
-                    }}
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              )}
-            </>
+          {selectedFilePreview && mediaType === "video" && (
+            <div className="relative">
+              <video
+                src={selectedFilePreview}
+                className="w-full max-h-48 sm:max-h-64 object-cover rounded-lg"
+                controls
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white"
+                onClick={() => {
+                  setSelectedFile(null);
+                  setSelectedFilePreview(null);
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
           )}
 
           {/* Action Buttons */}
           <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
-            {/* Media Upload - Only for non-Instagram posts */}
-            {!hasInstagramContent && (
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  id="image-upload-edit"
-                />
-                <label htmlFor="image-upload-edit">
-                  <Button
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-white text-sm"
-                    asChild
-                    onClick={() => setMediaType("image")}
-                  >
-                    <span className="flex items-center space-x-2 cursor-pointer">
-                      <Image className="w-4 h-4" />
-                      <span className="hidden sm:inline">Zmień zdjęcie</span>
-                      <span className="sm:hidden">Zdjęcie</span>
-                    </span>
-                  </Button>
-                </label>
-              </div>
-            )}
+            {/* Media Upload */}
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+                id="image-upload-edit"
+              />
+              <label htmlFor="image-upload-edit">
+                <Button
+                  variant="ghost"
+                  className="text-muted-foreground hover:text-white text-sm"
+                  asChild
+                  onClick={() => setMediaType("image")}
+                >
+                  <span className="flex items-center space-x-2 cursor-pointer">
+                    <Image className="w-4 h-4" />
+                    <span className="hidden sm:inline">Zmień zdjęcie</span>
+                    <span className="sm:hidden">Zdjęcie</span>
+                  </span>
+                </Button>
+              </label>
+            </div>
 
             {/* Cancel and Update Buttons */}
             <div className="flex space-x-2 justify-end w-full sm:w-auto">
