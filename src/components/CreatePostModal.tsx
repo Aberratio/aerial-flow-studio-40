@@ -8,7 +8,6 @@ import {
   Video,
   Loader2,
   Target,
-  Instagram,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -60,55 +59,8 @@ export const CreatePostModal = ({
   const [figureSearchTerm, setFigureSearchTerm] = useState("");
   const [availableFigures, setAvailableFigures] = useState([]);
   const [showFigureSearch, setShowFigureSearch] = useState(false);
-  const [instagramUrl, setInstagramUrl] = useState("");
-  const [instagramEmbedHtml, setInstagramEmbedHtml] = useState<string | null>(null);
-  const [loadingInstagram, setLoadingInstagram] = useState(false);
   const { toast } = useToast();
 
-  // Instagram embed handler - using official Instagram embed script
-  const handleInstagramFetch = React.useCallback(async () => {
-    if (!instagramUrl.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter an Instagram URL",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Extract post ID from URL (remove query parameters)
-    const instagramRegex = /instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)/;
-    const match = instagramUrl.match(instagramRegex);
-    
-    if (!match) {
-      toast({
-        title: "Error",
-        description: "Invalid Instagram URL format",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const postId = match[2];
-    const cleanUrl = `https://www.instagram.com/${match[1]}/${postId}/`;
-
-    // Generate Instagram blockquote embed HTML
-    const embedHtml = `<blockquote class="instagram-media" data-instgrm-permalink="${cleanUrl}" data-instgrm-version="14" style="background:#FFF; border:0; border-radius:3px; box-shadow:0 0 1px 0 rgba(0,0,0,0.5),0 1px 10px 0 rgba(0,0,0,0.15); margin: 1px; max-width:540px; min-width:326px; padding:0; width:99.375%; width:-webkit-calc(100% - 2px); width:calc(100% - 2px);"><div style="padding:16px;"><a href="${cleanUrl}" style="background:#FFFFFF; line-height:0; padding:0 0; text-align:center; text-decoration:none; width:100%;" target="_blank">View this post on Instagram</a></div></blockquote>`;
-
-    setInstagramEmbedHtml(embedHtml);
-    
-    // Trigger Instagram embed script to process the embed
-    setTimeout(() => {
-      if (window.instgrm) {
-        window.instgrm.Embeds.process();
-      }
-    }, 100);
-
-    toast({
-      title: "Success",
-      description: "Instagram post loaded successfully",
-    });
-  }, [instagramUrl, toast]);
 
   // Fetch available figures for selection
   const fetchFigures = async () => {
@@ -142,8 +94,6 @@ export const CreatePostModal = ({
       setSelectedFile(null);
       setSelectedFilePreview(null);
       setPrivacy("public");
-      setInstagramUrl("");
-      setInstagramEmbedHtml(null);
       setSelectedFigure(null);
       setShowFigureSearch(false);
     }
@@ -171,16 +121,6 @@ export const CreatePostModal = ({
       toast({
         title: "Error",
         description: "Please add some content to your post",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // If Instagram URL is provided but not loaded, show error
-    if (instagramUrl.trim() && !instagramEmbedHtml) {
-      toast({
-        title: "Error",
-        description: "Please click the Instagram button to load the post before publishing",
         variant: "destructive",
       });
       return;
@@ -236,8 +176,6 @@ export const CreatePostModal = ({
           privacy,
           image_url: mediaType === "image" ? mediaUrl : null,
           video_url: mediaType === "video" ? mediaUrl : null,
-          instagram_url: instagramUrl || null,
-          instagram_embed_html: instagramEmbedHtml || null,
           figure_id: selectedFigure?.id || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -266,8 +204,6 @@ export const CreatePostModal = ({
       setSelectedFile(null);
       setSelectedFilePreview(null);
       setPrivacy("public");
-      setInstagramUrl("");
-      setInstagramEmbedHtml(null);
       onClose();
 
       toast({
@@ -508,112 +444,32 @@ export const CreatePostModal = ({
             </div>
           )}
 
-          {/* Instagram URL Input */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-white">
-              Post Instagram (opcjonalnie)
-            </label>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
-              <input
-                type="text"
-                placeholder="Paste Instagram post URL here..."
-                value={instagramUrl}
-                onChange={(e) => {
-                  setInstagramUrl(e.target.value);
-                  // Clear embed if URL changes
-                  if (instagramEmbedHtml) {
-                    setInstagramEmbedHtml(null);
-                  }
-                }}
-                className="flex-1 p-3 bg-white/5 border border-white/10 rounded-md text-white placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-                disabled={!!instagramEmbedHtml}
-              />
+          {/* Add Photo Button */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+              id="image-upload"
+            />
+            <label htmlFor="image-upload">
               <Button
-                onClick={handleInstagramFetch}
-                disabled={loadingInstagram || !instagramUrl.trim() || !!instagramEmbedHtml}
-                className="w-full sm:w-auto flex-shrink-0"
-                variant={instagramEmbedHtml ? "secondary" : "default"}
+                variant="ghost"
+                className="text-muted-foreground hover:text-white text-sm"
+                asChild
+                onClick={() => setMediaType("image")}
               >
-                {loadingInstagram ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Loading...
-                  </>
-                ) : instagramEmbedHtml ? (
-                  <>
-                    <Instagram className="w-4 h-4 mr-2" />
-                    Loaded ✓
-                  </>
-                ) : (
-                  <>
-                    <Instagram className="w-4 h-4 mr-2" />
-                    Załaduj Instagram
-                  </>
-                )}
+                <span className="flex items-center space-x-2 cursor-pointer">
+                  <Image className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Add Photo</span>
+                  <span className="sm:hidden">Photo</span>
+                </span>
               </Button>
-            </div>
-            {instagramEmbedHtml && (
-              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center justify-between">
-                <p className="text-green-400 text-sm flex items-center">
-                  <Instagram className="w-4 h-4 mr-2" />
-                  Instagram post loaded successfully
-                </p>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setInstagramEmbedHtml(null);
-                    setInstagramUrl("");
-                  }}
-                  className="text-muted-foreground hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            )}
-            {instagramUrl.trim() && !instagramEmbedHtml && (
-              <p className="text-amber-400 text-xs flex items-center">
-                ⚠️ Click "Load Instagram Post" button to embed this post
-              </p>
-            )}
+            </label>
           </div>
 
-          {/* Add Photo Button - disabled when Instagram URL is present */}
-          {!instagramEmbedHtml && (
-            <div className="flex items-center space-x-2">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-                id="image-upload"
-                disabled={!!instagramUrl.trim()}
-              />
-              <label htmlFor="image-upload" className={instagramUrl.trim() ? 'cursor-not-allowed opacity-50' : ''}>
-                <Button
-                  variant="ghost"
-                  className="text-muted-foreground hover:text-white text-sm"
-                  asChild
-                  onClick={() => setMediaType("image")}
-                  disabled={!!instagramUrl.trim()}
-                >
-                  <span className="flex items-center space-x-2 cursor-pointer">
-                    <Image className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="hidden sm:inline">
-                      {instagramUrl.trim() ? 'Photo (disabled - Instagram URL present)' : 'Add Photo'}
-                    </span>
-                    <span className="sm:hidden">Photo</span>
-                  </span>
-                </Button>
-              </label>
-            </div>
-          )}
-
-          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">{instagramEmbedHtml && (
-              <div className="text-sm text-muted-foreground">
-                Instagram post selected - photo upload disabled
-              </div>
-            )}
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex-1"></div>
 
             <div className="flex space-x-2 justify-end">

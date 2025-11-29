@@ -27,15 +27,6 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
   const { user } = useAuth();
   const { comments, loading: commentsLoading, addComment } = usePostComments(post?.id || null);
 
-  // Process Instagram embeds when modal opens
-  useEffect(() => {
-    if (isOpen && post?.instagram_embed_html && window.instgrm) {
-      setTimeout(() => {
-        window.instgrm?.Embeds.process();
-      }, 100);
-    }
-  }, [isOpen, post?.instagram_embed_html]);
-
   if (!post) return null;
 
   const handleSubmitComment = async () => {
@@ -73,12 +64,7 @@ export const PostPreviewModal = ({ post, isOpen, onClose, onToggleLike, onToggle
         <div className="flex flex-col sm:flex-row h-full min-h-0">
           {/* Media Section */}
           <div className="flex-1 bg-black min-h-0 h-[50vh] sm:h-full flex items-center justify-center overflow-auto">
-            {post.instagram_embed_html ? (
-              <div 
-                className="w-full max-w-lg p-4"
-                dangerouslySetInnerHTML={{ __html: post.instagram_embed_html }}
-              />
-            ) : post.image_url ? (
+            {post.image_url ? (
               <PostPreviewImage imageUrl={post.image_url} />
             ) : post.video_url ? (
               <video 
