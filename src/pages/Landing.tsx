@@ -218,7 +218,7 @@ const Landing = () => {
             <div className="space-y-6 sm:space-y-8 text-center lg:text-left">
               <div className="space-y-4 sm:space-y-6">
                 <h1 className="text-4xl sm:text-5xl lg:text-7xl font-extrabold leading-tight">
-                  <span className="gradient-text-subtle block pb-2">
+                  <span className="gradient-text-subtle block pb-3">
                     Kanapa poczeka, wpadnij do nas na trening!
                   </span>
                 </h1>
@@ -426,7 +426,7 @@ const Landing = () => {
       )}
 
       {/* Instagram Feed Section - Conditionally rendered */}
-      
+
       {/* Pricing Section - Conditionally rendered */}
       {sections?.pricing?.is_active && (
         <LazySection
