@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Trophy, ChevronRight, Clock, ZoomIn, Crown, Star } from "lucide-react";
+import { Trophy, ChevronRight, Clock, Crown, Star, ChevronDown, ExternalLink } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import ExerciseImageModal from "@/components/ExerciseImageModal";
 import RetakeChallengeModal from "@/components/RetakeChallengeModal";
 import ChallengePurchaseModal from "@/components/ChallengePurchaseModal";
 import { supabase } from "@/integrations/supabase/client";
@@ -94,13 +93,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
 }) => {
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [isRetakeModalOpen, setIsRetakeModalOpen] = useState(false);
-  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
-  const [selectedExercise, setSelectedExercise] = useState<{
-    name: string;
-    image_url?: string;
-    difficulty_level: string;
-    instructions?: string;
-  } | null>(null);
+  const [expandedExerciseIndex, setExpandedExerciseIndex] = useState<number | null>(null);
+  const [showAllExercises, setShowAllExercises] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRetaking, setIsRetaking] = useState(false);
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
@@ -209,6 +203,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     const exerciseMap = new Map<
       string,
       {
+        id: string;
         name: string;
         image_url?: string;
         difficulty_level: string;
@@ -221,6 +216,7 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
         day.training_day_exercises.forEach((exercise) => {
           if (!exerciseMap.has(exercise.figure.name)) {
             exerciseMap.set(exercise.figure.name, {
+              id: exercise.figure.id,
               name: exercise.figure.name,
               image_url: exercise.figure.image_url,
               difficulty_level: exercise.figure.difficulty_level,
@@ -357,14 +353,8 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
     }
   };
 
-  const handleExerciseClick = (exercise: {
-    name: string;
-    image_url?: string;
-    difficulty_level: string;
-    instructions?: string;
-  }) => {
-    setSelectedExercise(exercise);
-    setIsExerciseModalOpen(true);
+  const handleExerciseClick = (index: number) => {
+    setExpandedExerciseIndex(prev => prev === index ? null : index);
   };
 
   if (isLoading) {
@@ -548,58 +538,111 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
                 </div>
               </Card>
 
-              {/* Exercises Grid */}
+              {/* Exercises List with Inline Expansion */}
               <div className="space-y-2">
                 <h4 className="text-sm font-medium text-white">
                   Ćwiczenia ({getUniqueExercisesWithImages().length})
                 </h4>
-                <div className="text-muted-foreground">
+                <div>
                   {(() => {
                     const exercises = getUniqueExercisesWithImages();
                     if (exercises.length === 0) {
                       return (
-                        <p className="text-xs">Brak skonfigurowanych ćwiczeń</p>
+                        <p className="text-xs text-muted-foreground">Brak skonfigurowanych ćwiczeń</p>
                       );
                     }
+                    
+                    const displayedExercises = showAllExercises ? exercises : exercises.slice(0, 6);
+                    
                     return (
-                      <div className="grid grid-cols-2 gap-2">
-                        {exercises.slice(0, 6).map((exercise, index) => (
-                          <div
-                            key={index}
-                            className="group cursor-pointer"
-                            onClick={() => handleExerciseClick(exercise)}
-                          >
-                            <div className="flex items-center gap-2 p-2 rounded-lg glass-effect border-white/10 hover:border-white/20 transition-all">
-                              <div className="relative">
+                      <div className="space-y-2">
+                        {displayedExercises.map((exercise, index) => (
+                          <div key={index} className="rounded-lg glass-effect border-white/10 overflow-hidden">
+                            {/* Exercise Header - Always Visible */}
+                            <div 
+                              className="flex items-center gap-3 p-3 cursor-pointer hover:bg-white/5 transition-colors"
+                              onClick={() => handleExerciseClick(index)}
+                            >
+                              {/* Thumbnail */}
+                              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
                                 {exercise.image_url ? (
-                                  <>
-                                    <img
-                                      src={exercise.image_url}
-                                      alt={exercise.name}
-                                      className="w-8 h-8 rounded object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
-                                      <ZoomIn className="w-3 h-3 text-white" />
-                                    </div>
-                                  </>
+                                  <img src={exercise.image_url} alt="" className="w-full h-full object-cover" />
                                 ) : (
-                                  <div className="w-8 h-8 rounded bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
-                                    <Trophy className="w-4 h-4 text-purple-400" />
+                                  <div className="w-full h-full bg-purple-500/20 flex items-center justify-center">
+                                    <Trophy className="w-5 h-5 text-purple-400" />
                                   </div>
                                 )}
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-xs font-medium text-white truncate group-hover:text-purple-300 transition-colors">
-                                  {exercise.name}
-                                </div>
-                              </div>
+                              
+                              {/* Name - FULL, no truncate */}
+                              <span className="flex-1 text-sm font-medium text-white">
+                                {exercise.name}
+                              </span>
+                              
+                              {/* Expand Icon */}
+                              <ChevronDown 
+                                className={`w-4 h-4 text-muted-foreground transition-transform ${
+                                  expandedExerciseIndex === index ? 'rotate-180' : ''
+                                }`} 
+                              />
                             </div>
+                            
+                            {/* Expanded Details - Only when expandedExerciseIndex === index */}
+                            {expandedExerciseIndex === index && (
+                              <div className="border-t border-white/10 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
+                                {/* Large Image */}
+                                {exercise.image_url && (
+                                  <div className="relative aspect-video rounded-lg overflow-hidden bg-black/50">
+                                    <img 
+                                      src={exercise.image_url} 
+                                      alt={exercise.name}
+                                      className="w-full h-full object-contain"
+                                    />
+                                  </div>
+                                )}
+                                
+                                {/* Difficulty Badge */}
+                                <Badge className={getDifficultyColor(exercise.difficulty_level)}>
+                                  {getDifficultyLabel(exercise.difficulty_level)}
+                                </Badge>
+                                
+                                {/* Instructions */}
+                                {exercise.instructions && (
+                                  <div className="text-sm text-muted-foreground leading-relaxed">
+                                    {exercise.instructions}
+                                  </div>
+                                )}
+                                
+                                {/* Link to Full Exercise Page */}
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onClose();
+                                    navigate(`/exercise/${exercise.id}`);
+                                  }}
+                                  className="w-full border-white/20 text-white hover:bg-white/10"
+                                >
+                                  Zobacz pełne ćwiczenie
+                                  <ExternalLink className="w-4 h-4 ml-2" />
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         ))}
-                        {exercises.length > 6 && (
-                          <div className="text-xs text-muted-foreground col-span-2 text-center py-1">
-                            +{exercises.length - 6} więcej ćwiczeń
-                          </div>
+                        
+                        {/* Show More Button */}
+                        {exercises.length > 6 && !showAllExercises && (
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => setShowAllExercises(true)}
+                            className="w-full text-purple-400 hover:text-purple-300 hover:bg-white/5"
+                          >
+                            Pokaż wszystkie ({exercises.length - 6} więcej)
+                            <ChevronDown className="w-4 h-4 ml-1" />
+                          </Button>
                         )}
                       </div>
                     );
@@ -782,16 +825,6 @@ const ChallengePreviewModal: React.FC<ChallengePreviewModalProps> = ({
         onConfirm={handleRetakeChallenge}
         challengeTitle={challenge?.title || ""}
         isLoading={isRetaking}
-      />
-
-      {/* Exercise Image Modal */}
-      <ExerciseImageModal
-        exercise={selectedExercise}
-        isOpen={isExerciseModalOpen}
-        onClose={() => {
-          setIsExerciseModalOpen(false);
-          setSelectedExercise(null);
-        }}
       />
 
       {/* Challenge Purchase Modal */}
