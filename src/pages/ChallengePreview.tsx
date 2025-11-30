@@ -849,7 +849,7 @@ const ChallengePreview = () => {
                                         handleRestDay(calendarDay, trainingDay)
                                       }
                                       variant="default"
-                                      className="w-full md:max-w-md md:mx-auto py-5 md:py-6 text-base md:text-lg font-bold rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30"
+                                      className="w-full md:max-w-md md:mx-auto py-5 md:py-6 text-base md:text-lg font-bold rounded-xl transition-all duration-300 hover:translate-y-[-2px] active:translate-y-0 bg-gradient-to-br from-emerald-600/50 to-emerald-700/50 hover:from-emerald-600/60 hover:to-emerald-700/60 shadow-sm"
                                     >
                                       <Bed className="w-5 h-5 md:w-6 md:h-6 mr-2" />
                                       Odpoczynek
@@ -862,10 +862,10 @@ const ChallengePreview = () => {
                                         );
                                       }}
                                       variant="default"
-                                      className="w-full md:max-w-md md:mx-auto py-5 md:py-6 text-base md:text-lg font-bold rounded-2xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 animate-pulse-glow"
+                                      className="w-full md:max-w-md md:mx-auto py-5 md:py-6 text-base md:text-lg font-bold rounded-xl transition-all duration-300 hover:translate-y-[-2px] active:translate-y-0"
                                     >
                                       <Play className="w-5 h-5 md:w-6 md:h-6 mr-2" />
-                                      🏃 ROZPOCZNIJ TRENING
+                                      Rozpocznij trening
                                     </Button>
                                   )}
                                 </div>
