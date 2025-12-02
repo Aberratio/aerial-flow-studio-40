@@ -12,6 +12,7 @@ import {
   LogIn,
   UserPlus2,
   Eye,
+  Target,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,10 +30,13 @@ import { useToast } from "@/hooks/use-toast";
 import { ShareProfileModal } from "@/components/ShareProfileModal";
 import { useProfilePreviewData } from "@/hooks/useProfilePreviewData";
 import { useFriendshipStatus } from "@/hooks/useFriendshipStatus";
+import { useUserRole } from "@/hooks/useUserRole";
+import { useUserChallenges } from "@/hooks/useUserChallenges";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfilePreviewModal } from "@/components/ProfilePreviewModal";
 import { FriendInviteModal } from "@/components/FriendInviteModal";
 import { FriendshipActions } from "@/components/FriendshipActions";
+import { ProfileChallengesSection } from "@/components/Profile/ProfileChallengesSection";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Navigate } from "react-router-dom";
 
@@ -41,6 +45,7 @@ const FriendProfile = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useUserRole();
 
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -50,6 +55,7 @@ const FriendProfile = () => {
   const [privacyFilter, setPrivacyFilter] = useState("all");
 
   const {
+    isFriend,
     isFollowing,
     sendFriendRequest,
     acceptFriendRequest,
@@ -57,6 +63,10 @@ const FriendProfile = () => {
     followUser,
     unfollowUser,
   } = useFriendshipStatus(id || "");
+
+  // Determine if current user can view challenges
+  const canViewChallenges = isAdmin || isFriend || user?.id === id;
+  const { challenges, loading: challengesLoading } = useUserChallenges(id || "", canViewChallenges);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -501,6 +511,24 @@ const FriendProfile = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Challenges Section - Only visible for friends and admins */}
+        {canViewChallenges && challenges.length > 0 && (
+          <Card className="glass-effect border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-6">
+                <Target className="w-6 h-6 text-purple-400" />
+                <h3 className="text-xl font-semibold text-white">
+                  Wyzwania użytkownika
+                </h3>
+              </div>
+              <ProfileChallengesSection 
+                challenges={challenges} 
+                loading={challengesLoading}
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Posts */}
         {allPosts.length > 0 && (

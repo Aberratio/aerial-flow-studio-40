@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Grid, Award } from 'lucide-react';
+import { Grid, Award, Target } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useFriendshipStatus } from '@/hooks/useFriendshipStatus';
 import { useProfilePreviewData } from '@/hooks/useProfilePreviewData';
+import { useUserRole } from '@/hooks/useUserRole';
 import { ProfilePreviewHeader } from '@/components/Profile/ProfilePreviewHeader';
 import { ProfilePreviewAchievements } from '@/components/Profile/ProfilePreviewAchievements';
 import { ProfilePreviewPosts } from '@/components/Profile/ProfilePreviewPosts';
+import { ProfileChallengesSection } from '@/components/Profile/ProfileChallengesSection';
 
 interface ProfilePreviewModalProps {
   isOpen: boolean;
@@ -17,14 +19,23 @@ interface ProfilePreviewModalProps {
 
 export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewModalProps) => {
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const [activeTab, setActiveTab] = useState('posts');
   const { 
+    isFriend,
     pendingFriendRequest, 
     loading: friendshipLoading,
     acceptFriendRequest,
     rejectFriendRequest
   } = useFriendshipStatus(userId);
-  const { profile, posts, achievements, loading } = useProfilePreviewData(userId, isOpen);
+  
+  const canViewChallenges = isAdmin || isFriend || user?.id === userId;
+  const { profile, posts, achievements, challenges, loading, challengesLoading } = useProfilePreviewData(
+    userId, 
+    isOpen, 
+    isFriend, 
+    isAdmin
+  );
 
   if (!isOpen || !userId) return null;
 
@@ -52,14 +63,14 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
             />
 
             {/* Content Tabs */}
-            <div className="flex space-x-1 mb-6 bg-white/5 rounded-lg p-1">
+            <div className={`flex space-x-1 mb-6 bg-white/5 rounded-lg p-1`}>
               <Button
                 variant="ghost"
                 className={`flex-1 transition-all ${
                   activeTab === 'posts' 
                     ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
                     : 'text-muted-foreground hover:text-white hover:bg-white/5'
-                } ${activeTab === 'posts' ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''}`}
+                }`}
                 onClick={() => setActiveTab('posts')}
               >
                 <Grid className="w-4 h-4 mr-2" />
@@ -71,12 +82,26 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
                   activeTab === 'achievements' 
                     ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
                     : 'text-muted-foreground hover:text-white hover:bg-white/5'
-                } ${activeTab === 'achievements' ? 'hover:bg-gradient-to-r hover:from-purple-500/20 hover:via-pink-500/20 hover:to-blue-500/20' : ''}`}
+                }`}
                 onClick={() => setActiveTab('achievements')}
               >
                 <Award className="w-4 h-4 mr-2" />
                 Achievements
               </Button>
+              {canViewChallenges && (
+                <Button
+                  variant="ghost"
+                  className={`flex-1 transition-all ${
+                    activeTab === 'challenges' 
+                      ? 'bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 text-white' 
+                      : 'text-muted-foreground hover:text-white hover:bg-white/5'
+                  }`}
+                  onClick={() => setActiveTab('challenges')}
+                >
+                  <Target className="w-4 h-4 mr-2" />
+                  Wyzwania
+                </Button>
+              )}
             </div>
 
             {/* Tab Content */}
@@ -98,6 +123,14 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
               ) : (
                 <ProfilePreviewAchievements achievements={achievements} />
               )
+            )}
+
+            {activeTab === 'challenges' && canViewChallenges && (
+              <ProfileChallengesSection 
+                challenges={challenges} 
+                loading={challengesLoading}
+                compact
+              />
             )}
           </div>
         ) : (
