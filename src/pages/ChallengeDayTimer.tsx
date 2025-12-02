@@ -493,6 +493,44 @@ const ChallengeDayTimer = () => {
     }
   }, [currentSegmentIndex, isRunning, isPreparingToStart, segments]);
 
+  // Auto-enter fullscreen when exercises are loaded
+  const hasAttemptedAutoFullscreen = useRef(false);
+  
+  useEffect(() => {
+    const requestFullscreenAuto = async () => {
+      if (hasAttemptedAutoFullscreen.current || exercises.length === 0 || isLoading) return;
+      hasAttemptedAutoFullscreen.current = true;
+
+      // Small delay to ensure DOM is ready
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      try {
+        interface ElementWithFullscreen extends HTMLElement {
+          webkitRequestFullscreen?: () => Promise<void>;
+          mozRequestFullScreen?: () => Promise<void>;
+          msRequestFullscreen?: () => Promise<void>;
+        }
+
+        const element = document.documentElement as ElementWithFullscreen;
+
+        if (element.requestFullscreen) {
+          await element.requestFullscreen();
+        } else if (element.webkitRequestFullscreen) {
+          await element.webkitRequestFullscreen();
+        } else if (element.mozRequestFullScreen) {
+          await element.mozRequestFullScreen();
+        } else if (element.msRequestFullscreen) {
+          await element.msRequestFullscreen();
+        }
+      } catch (error) {
+        // User may have denied fullscreen or it requires user interaction
+        console.warn('Auto-fullscreen failed (may require user interaction):', error);
+      }
+    };
+
+    requestFullscreenAuto();
+  }, [exercises.length, isLoading]);
+
   // Fullscreen API handling
   useEffect(() => {
     interface DocumentWithFullscreen extends Document {
