@@ -1,21 +1,29 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserChallenges, UserChallenge } from '@/hooks/useUserChallenges';
 
 interface ProfileData {
   profile: any;
   posts: any[];
   achievements: any[];
+  challenges: UserChallenge[];
   loading: boolean;
+  canViewChallenges: boolean;
 }
 
-export const useProfilePreviewData = (userId: string, isOpen: boolean) => {
+export const useProfilePreviewData = (userId: string, isOpen: boolean, isFriend: boolean = false, isAdmin: boolean = false) => {
   const { user } = useAuth();
+  const canViewChallenges = isAdmin || isFriend || user?.id === userId;
+  const { challenges, loading: challengesLoading } = useUserChallenges(userId, isOpen && canViewChallenges);
+  
   const [data, setData] = useState<ProfileData>({
     profile: null,
     posts: [],
     achievements: [],
-    loading: true
+    challenges: [],
+    loading: true,
+    canViewChallenges: false
   });
 
   useEffect(() => {
@@ -23,6 +31,15 @@ export const useProfilePreviewData = (userId: string, isOpen: boolean) => {
       fetchProfileData();
     }
   }, [isOpen, userId]);
+
+  // Update challenges when they load
+  useEffect(() => {
+    setData(prev => ({ 
+      ...prev, 
+      challenges,
+      canViewChallenges 
+    }));
+  }, [challenges, canViewChallenges]);
 
   const fetchProfileData = async () => {
     if (!userId) return;
@@ -109,12 +126,13 @@ export const useProfilePreviewData = (userId: string, isOpen: boolean) => {
 
       if (achievementsError) throw achievementsError;
 
-      setData({
+      setData(prev => ({
+        ...prev,
         profile: profileData,
         posts: postsWithCounts || [],
         achievements: achievementsData || [],
         loading: false
-      });
+      }));
 
     } catch (error) {
       console.error('Error fetching profile data:', error);
@@ -122,5 +140,5 @@ export const useProfilePreviewData = (userId: string, isOpen: boolean) => {
     }
   };
 
-  return data;
+  return { ...data, challengesLoading };
 };
