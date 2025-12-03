@@ -25,7 +25,7 @@ export const ProfileHeaderCompact = ({
   if (!user) return null;
 
   return (
-    <div className="bg-card/50 backdrop-blur-sm border-b border-white/10 p-4 sm:p-6 sticky top-0 z-40">
+    <div className="bg-card/50 backdrop-blur-sm border-b border-white/10 p-4 sm:p-6">
       <div className="max-w-4xl mx-auto flex items-center gap-4 sm:gap-6">
         {/* Avatar - larger on mobile */}
         <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-2 border-primary/50 flex-shrink-0">
