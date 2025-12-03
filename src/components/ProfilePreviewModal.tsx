@@ -43,13 +43,13 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-white">Profile Preview</DialogTitle>
+          <DialogTitle className="text-white">Podgląd profilu</DialogTitle>
         </DialogHeader>
         
         {loading ? (
           <div className="text-center py-8">
             <div className="animate-spin w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full mx-auto"></div>
-            <p className="text-muted-foreground mt-2">Loading profile...</p>
+            <p className="text-muted-foreground mt-2">Ładowanie profilu...</p>
           </div>
         ) : profile ? (
           <div className="space-y-6">
@@ -74,7 +74,7 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
                 onClick={() => setActiveTab('posts')}
               >
                 <Grid className="w-4 h-4 mr-2" />
-                Posts
+                Posty
               </Button>
               <Button
                 variant="ghost"
@@ -86,7 +86,7 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
                 onClick={() => setActiveTab('achievements')}
               >
                 <Award className="w-4 h-4 mr-2" />
-                Achievements
+                Osiągnięcia
               </Button>
               {canViewChallenges && (
                 <Button
@@ -108,7 +108,7 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
             {activeTab === 'posts' && (
               posts.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No posts yet</p>
+                  <p>Brak postów</p>
                 </div>
               ) : (
                 <ProfilePreviewPosts posts={posts} />
@@ -118,7 +118,7 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
             {activeTab === 'achievements' && (
               achievements.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
-                  <p>No achievements yet</p>
+                  <p>Brak osiągnięć</p>
                 </div>
               ) : (
                 <ProfilePreviewAchievements achievements={achievements} />
@@ -135,7 +135,7 @@ export const ProfilePreviewModal = ({ isOpen, onClose, userId }: ProfilePreviewM
           </div>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
-            <p>Profile not found</p>
+            <p>Nie znaleziono profilu</p>
           </div>
         )}
       </DialogContent>

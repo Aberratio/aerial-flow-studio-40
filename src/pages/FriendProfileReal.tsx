@@ -163,8 +163,8 @@ const FriendProfile = () => {
       } catch (error) {
         console.error("Error fetching profile data:", error);
         toast({
-          title: "Error",
-          description: "Failed to load profile data.",
+          title: "Błąd",
+          description: "Nie udało się załadować danych profilu.",
           variant: "destructive",
         });
       } finally {
@@ -193,8 +193,8 @@ const FriendProfile = () => {
     const success = await sendFriendRequest();
     if (success) {
       toast({
-        title: "Friend Request Sent",
-        description: `Your friend request has been sent to ${profileData?.username}`,
+        title: "Zaproszenie wysłane",
+        description: `Twoje zaproszenie zostało wysłane do ${profileData?.username}`,
       });
     }
   };
@@ -203,8 +203,8 @@ const FriendProfile = () => {
     const success = await acceptFriendRequest();
     if (success) {
       toast({
-        title: "Friend Request Accepted",
-        description: `You and ${profileData?.username} are now friends!`,
+        title: "Zaproszenie zaakceptowane",
+        description: `Ty i ${profileData?.username} jesteście teraz znajomymi!`,
       });
     }
   };
@@ -213,8 +213,8 @@ const FriendProfile = () => {
     const success = await rejectFriendRequest();
     if (success) {
       toast({
-        title: "Friend Request Rejected",
-        description: `You rejected ${profileData?.username}'s friend request.`,
+        title: "Zaproszenie odrzucone",
+        description: `Odrzuciłeś zaproszenie od ${profileData?.username}.`,
       });
     }
   };
@@ -223,8 +223,8 @@ const FriendProfile = () => {
     const success = await followUser();
     if (success) {
       toast({
-        title: "Now Following",
-        description: `You are now following ${profileData?.username}.`,
+        title: "Obserwujesz",
+        description: `Teraz obserwujesz ${profileData?.username}.`,
       });
     }
   };
@@ -233,8 +233,8 @@ const FriendProfile = () => {
     const success = await unfollowUser();
     if (success) {
       toast({
-        title: "Unfollowed",
-        description: `You are no longer following ${profileData?.username}.`,
+        title: "Nie obserwujesz",
+        description: `Nie obserwujesz już ${profileData?.username}.`,
       });
     }
   };
@@ -274,10 +274,10 @@ const FriendProfile = () => {
                       {profileData?.username}
                     </h1>
                     <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
-                      {profileData?.role === "trainer" && (
-                        <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold">
-                          Trainer
-                        </Badge>
+                    {profileData?.role === "trainer" && (
+                      <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold">
+                        Trener
+                      </Badge>
                       )}
                     </div>
                   </div>
@@ -292,7 +292,7 @@ const FriendProfile = () => {
                       <div className="gradient-text text-2xl font-bold">
                         {allPosts.length}
                       </div>
-                      <div className="text-muted-foreground text-sm">Posts</div>
+                      <div className="text-muted-foreground text-sm">Posty</div>
                     </div>
                   </div>
                 </div>
@@ -305,18 +305,18 @@ const FriendProfile = () => {
             <CardContent className="p-8 text-center">
               <UserPlus2 className="w-16 h-16 text-purple-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold text-white mb-4">
-                Join Our Fitness Community!
+                Dołącz do naszej społeczności!
               </h2>
               <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
-                Create your profile to connect with {profileData?.username} and
-                thousands of other fitness enthusiasts. Share your progress, get
-                inspired, and achieve your goals together!
+                Stwórz swój profil, aby połączyć się z {profileData?.username} i
+                tysiącami innych entuzjastów sportu. Dziel się swoimi postępami,
+                inspiruj się i osiągaj cele razem!
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button asChild variant="primary" size="lg">
                   <Link to="/">
                     <UserPlus2 className="w-5 h-5 mr-2" />
-                    Sign Up Now
+                    Zarejestruj się
                   </Link>
                 </Button>
                 <Button
@@ -327,7 +327,7 @@ const FriendProfile = () => {
                 >
                   <Link to="/">
                     <LogIn className="w-5 h-5 mr-2" />
-                    Already have an account?
+                    Masz już konto?
                   </Link>
                 </Button>
               </div>
@@ -339,7 +339,7 @@ const FriendProfile = () => {
             <Card className="glass-effect border-white/10">
               <CardContent className="p-6">
                 <h3 className="text-xl font-semibold text-white mb-6">
-                  Public Posts
+                  Publiczne posty
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {allPosts.slice(0, 6).map((post) => (
@@ -378,7 +378,7 @@ const FriendProfile = () => {
                 {allPosts.length > 6 && (
                   <div className="text-center mt-6">
                     <p className="text-muted-foreground">
-                      Sign up to see more posts from {profileData?.username}
+                      Zarejestruj się, aby zobaczyć więcej postów od {profileData?.username}
                     </p>
                   </div>
                 )}
@@ -431,7 +431,7 @@ const FriendProfile = () => {
                   <div className="flex items-center justify-center md:justify-start space-x-2 mt-2 md:mt-0">
                     {profileData?.role === "trainer" && (
                       <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black font-semibold">
-                        Trainer
+                        Trener
                       </Badge>
                     )}
                   </div>
@@ -445,7 +445,7 @@ const FriendProfile = () => {
                     <div className="gradient-text text-2xl font-bold">
                       {allPosts.length}
                     </div>
-                    <div className="text-muted-foreground text-sm">Posts</div>
+                    <div className="text-muted-foreground text-sm">Posty</div>
                   </div>
                 </div>
 
@@ -455,7 +455,7 @@ const FriendProfile = () => {
                     <div className="flex items-center space-x-2 mb-2">
                       <Eye className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">
-                        View as:
+                        Widok jako:
                       </span>
                     </div>
                     <Select
@@ -470,19 +470,19 @@ const FriendProfile = () => {
                           value="all"
                           className="text-white hover:bg-white/10"
                         >
-                          All Content (Private View)
+                          Cała zawartość (widok prywatny)
                         </SelectItem>
                         <SelectItem
                           value="public"
                           className="text-white hover:bg-white/10"
                         >
-                          Public Only
+                          Tylko publiczne
                         </SelectItem>
                         <SelectItem
                           value="friends"
                           className="text-white hover:bg-white/10"
                         >
-                          Friends Only
+                          Tylko dla znajomych
                         </SelectItem>
                       </SelectContent>
                     </Select>
@@ -504,7 +504,7 @@ const FriendProfile = () => {
                     className="border-white/20 text-white hover:bg-white/10 w-full sm:w-auto px-3 py-2 text-sm"
                   >
                     <Share2 className="w-4 h-4 mr-2" />
-                    Share
+                    Udostępnij
                   </Button>
                 </div>
               </div>
@@ -535,13 +535,13 @@ const FriendProfile = () => {
           <Card className="glass-effect border-white/10">
             <CardContent className="p-6">
               <h3 className="text-xl font-semibold text-white mb-6">
-                Posts
+                Posty
                 {user?.id === id && privacyFilter !== "all" && (
                   <span className="text-sm text-muted-foreground ml-2">
                     (
                     {privacyFilter === "public"
-                      ? "Public Only"
-                      : "Friends Only"}
+                      ? "Tylko publiczne"
+                      : "Tylko dla znajomych"}
                     )
                   </span>
                 )}
@@ -607,8 +607,8 @@ const FriendProfile = () => {
             <Card className="glass-effect border-white/10">
               <CardContent className="p-6 text-center">
                 <p className="text-muted-foreground">
-                  No {privacyFilter === "public" ? "public" : "friends-only"}{" "}
-                  posts to show.
+                  Brak {privacyFilter === "public" ? "publicznych" : "tylko dla znajomych"}{" "}
+                  postów do wyświetlenia.
                 </p>
               </CardContent>
             </Card>

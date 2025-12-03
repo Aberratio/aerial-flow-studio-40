@@ -29,8 +29,8 @@ export const ProfilePreviewHeader = ({
     const success = await onAcceptFriend();
     if (success) {
       toast({
-        title: "Friend request accepted!",
-        description: `You and ${profile.username} are now friends.`
+        title: "Zaproszenie zaakceptowane!",
+        description: `Ty i ${profile.username} jesteście teraz znajomymi.`
       });
     }
   };
@@ -39,8 +39,8 @@ export const ProfilePreviewHeader = ({
     const success = await onRejectFriend();
     if (success) {
       toast({
-        title: "Friend request declined",
-        description: `You declined ${profile.username}'s friend request.`
+        title: "Zaproszenie odrzucone",
+        description: `Odrzuciłeś zaproszenie od ${profile.username}.`
       });
     }
   };
@@ -63,7 +63,7 @@ export const ProfilePreviewHeader = ({
             ))}
             {profile.sports.length > 3 && (
               <Badge variant="secondary" className="text-xs">
-                +{profile.sports.length - 3} more
+                +{profile.sports.length - 3} więcej
               </Badge>
             )}
           </div>
@@ -71,7 +71,7 @@ export const ProfilePreviewHeader = ({
         <div className="flex items-center space-x-4 mt-2">
           {profile.role === 'trainer' && (
             <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black">
-              Trainer
+              Trener
             </Badge>
           )}
         </div>
@@ -86,7 +86,7 @@ export const ProfilePreviewHeader = ({
               disabled={friendshipLoading}
             >
               <Check className="w-4 h-4 mr-1" />
-              Accept
+              Akceptuj
             </Button>
             <Button
               size="sm"
@@ -96,13 +96,13 @@ export const ProfilePreviewHeader = ({
               disabled={friendshipLoading}
             >
               <X className="w-4 h-4 mr-1" />
-              Reject
+              Odrzuć
             </Button>
           </>
         )}
         <Link to={`/profile/${userId}`}>
           <Button variant="outline" className="border-white/20 text-white hover:bg-white/10">
-            View Full Profile
+            Zobacz pełny profil
           </Button>
         </Link>
       </div>
