@@ -23,14 +23,14 @@ export const ShareExerciseModal = ({ isOpen, onClose, exerciseId, exerciseName }
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast({
-        title: "Link copied!",
-        description: "Exercise link has been copied to your clipboard.",
+        title: "Link skopiowany!",
+        description: "Link do ćwiczenia został skopiowany do schowka.",
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       toast({
-        title: "Failed to copy",
-        description: "Could not copy link to clipboard.",
+        title: "Nie udało się skopiować",
+        description: "Nie można skopiować linku do schowka.",
         variant: "destructive",
       });
     }
@@ -40,9 +40,9 @@ export const ShareExerciseModal = ({ isOpen, onClose, exerciseId, exerciseName }
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto glass-effect border-white/10">
         <DialogHeader>
-          <DialogTitle className="text-white">Share Exercise</DialogTitle>
+          <DialogTitle className="text-white">Udostępnij ćwiczenie</DialogTitle>
           <DialogDescription className="text-muted-foreground">
-            Share {exerciseName} with others by copying the link below.
+            Udostępnij {exerciseName} innym kopiując link poniżej.
           </DialogDescription>
         </DialogHeader>
         
@@ -69,7 +69,7 @@ export const ShareExerciseModal = ({ isOpen, onClose, exerciseId, exerciseName }
           
           <div className="flex justify-end">
             <Button variant="ghost" onClick={onClose} className="text-muted-foreground hover:text-white">
-              Close
+              Zamknij
             </Button>
           </div>
         </div>

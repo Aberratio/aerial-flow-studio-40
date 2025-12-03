@@ -32,8 +32,8 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     const success = await sendFriendRequest();
     if (success) {
       toast({
-        title: "Friend Request Sent",
-        description: `Your friend request has been sent to ${username}`
+        title: "Zaproszenie wysłane",
+        description: `Twoje zaproszenie zostało wysłane do ${username}`
       });
     }
   };
@@ -42,8 +42,8 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     const success = await acceptFriendRequest();
     if (success) {
       toast({
-        title: "Friend Request Accepted",
-        description: `You and ${username} are now friends!`
+        title: "Zaproszenie zaakceptowane",
+        description: `Ty i ${username} jesteście teraz znajomymi!`
       });
     }
   };
@@ -52,8 +52,8 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     const success = await rejectFriendRequest();
     if (success) {
       toast({
-        title: "Friend Request Rejected",
-        description: `You rejected ${username}'s friend request.`
+        title: "Zaproszenie odrzucone",
+        description: `Odrzuciłeś zaproszenie od ${username}.`
       });
     }
   };
@@ -62,8 +62,8 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     const success = await cancelFriendRequest();
     if (success) {
       toast({
-        title: "Request Cancelled",
-        description: `Your friend request to ${username} has been cancelled.`
+        title: "Zaproszenie anulowane",
+        description: `Twoje zaproszenie do ${username} zostało anulowane.`
       });
     }
   };
@@ -72,8 +72,8 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     const success = await removeFriend();
     if (success) {
       toast({
-        title: "Friend Removed",
-        description: `${username} has been removed from your friends.`
+        title: "Znajomy usunięty",
+        description: `${username} został usunięty z Twoich znajomych.`
       });
       setShowRemoveFriendModal(false);
     }
@@ -83,8 +83,8 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     const success = await followUser();
     if (success) {
       toast({
-        title: "Now Following",
-        description: `You are now following ${username}.`
+        title: "Obserwujesz",
+        description: `Teraz obserwujesz ${username}.`
       });
     }
   };
@@ -93,8 +93,8 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
     const success = await unfollowUser();
     if (success) {
       toast({
-        title: "Unfollowed",
-        description: `You are no longer following ${username}.`
+        title: "Nie obserwujesz",
+        description: `Nie obserwujesz już ${username}.`
       });
     }
   };
@@ -114,15 +114,15 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-green-500/30 text-green-400 hover:bg-green-500/10"
         >
           <UserCheck className="w-4 h-4 mr-2" />
-          Friends
+          Znajomi
         </Button>
 
         <ConfirmDeleteModal
           isOpen={showRemoveFriendModal}
           onClose={() => setShowRemoveFriendModal(false)}
           onConfirm={handleRemoveFriend}
-          title="Remove Friend"
-          description={`Are you sure you want to remove ${username} from your friends? You will no longer be able to see their friends-only content and they won't see yours.`}
+          title="Usuń znajomego"
+          description={`Czy na pewno chcesz usunąć ${username} ze znajomych? Nie będziesz mógł widzieć treści tylko dla znajomych i oni też nie zobaczą Twoich.`}
         />
       </>
     );
@@ -138,7 +138,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           onClick={handleAcceptFriend}
         >
           <Check className="w-4 h-4 mr-2" />
-          Accept
+          Akceptuj
         </Button>
         <Button 
           size={size}
@@ -147,7 +147,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-red-500/30 text-red-400 hover:bg-red-500/10 w-full sm:w-auto px-3 py-2 text-sm"
         >
           <X className="w-4 h-4 mr-2" />
-          Decline
+          Odrzuć
         </Button>
         <Button 
           size={size}
@@ -156,7 +156,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10 w-full sm:w-auto px-3 py-2 text-sm"
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Follow
+          Obserwuj
         </Button>
       </div>
     );
@@ -172,7 +172,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           onClick={handleAcceptFriend}
         >
           <Check className="w-4 h-4 mr-2" />
-          Accept
+          Akceptuj
         </Button>
         <Button 
           size={size}
@@ -181,7 +181,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-red-500/30 text-red-400 hover:bg-red-500/10"
         >
           <X className="w-4 h-4 mr-2" />
-          Decline
+          Odrzuć
         </Button>
         <Button 
           size={size}
@@ -190,7 +190,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
         >
           <UserMinus className="w-4 h-4 mr-2" />
-          Unfollow
+          Przestań obserwować
         </Button>
       </div>
     );
@@ -207,7 +207,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
         >
           <UserX className="w-4 h-4 mr-2" />
-          Cancel Request
+          Anuluj zaproszenie
         </Button>
         <Button 
           size={size}
@@ -216,7 +216,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
         >
           <UserMinus className="w-4 h-4 mr-2" />
-          Unfollow
+          Przestań obserwować
         </Button>
       </div>
     );
@@ -233,7 +233,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10"
         >
           <UserX className="w-4 h-4 mr-2" />
-          Cancel Request
+          Anuluj zaproszenie
         </Button>
         <Button 
           size={size}
@@ -242,7 +242,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Follow
+          Obserwuj
         </Button>
       </div>
     );
@@ -258,7 +258,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           onClick={handleSendFriendRequest}
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Send Friend Request
+          Wyślij zaproszenie
         </Button>
         <Button 
           size={size}
@@ -267,7 +267,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-gray-500/30 text-gray-400 hover:bg-gray-500/10"
         >
           <UserMinus className="w-4 h-4 mr-2" />
-          Unfollow
+          Przestań obserwować
         </Button>
       </div>
     );
@@ -283,7 +283,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           onClick={handleSendFriendRequest}
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Send Friend Request
+          Wyślij zaproszenie
         </Button>
         <Button 
           size={size}
@@ -292,7 +292,7 @@ export const FriendshipActions = ({ userId, username, size = 'default' }: Friend
           className="border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
         >
           <UserPlus className="w-4 h-4 mr-2" />
-          Follow
+          Obserwuj
         </Button>
       </div>
     );

@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { ProfilePreviewModal } from '@/components/ProfilePreviewModal';
 
 interface FriendRequest {
@@ -92,7 +93,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
           bio: friendship.profiles?.bio || null,
           mutualFriends: 0 // TODO: Calculate mutual friends
         },
-        timestamp: formatDistanceToNow(new Date(friendship.created_at), { addSuffix: true }),
+        timestamp: formatDistanceToNow(new Date(friendship.created_at), { addSuffix: true, locale: pl }),
         type: 'received' as const
       })) || [];
 
@@ -106,7 +107,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
           bio: friendship.profiles?.bio || null,
           mutualFriends: 0 // TODO: Calculate mutual friends
         },
-        timestamp: formatDistanceToNow(new Date(friendship.created_at), { addSuffix: true }),
+        timestamp: formatDistanceToNow(new Date(friendship.created_at), { addSuffix: true, locale: pl }),
         type: 'sent' as const
       })) || [];
 
@@ -154,14 +155,14 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
       refetchCounts(); // Update follower/following counts
       onFriendsUpdated?.(); // Notify parent to refresh friends list
       toast({
-        title: "Friend request accepted!",
-        description: `You and ${username} are now friends.`
+        title: "Zaproszenie zaakceptowane!",
+        description: `Ty i ${username} jesteście teraz znajomymi.`
       });
     } catch (error) {
       console.error('Error accepting friend request:', error);
       toast({
-        title: "Error",
-        description: "Failed to accept friend request.",
+        title: "Błąd",
+        description: "Nie udało się zaakceptować zaproszenia.",
         variant: "destructive"
       });
     }
@@ -178,14 +179,14 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
 
       setRequests(prev => prev.filter(req => req.id !== requestId));
       toast({
-        title: "Friend request declined",
-        description: `You declined ${username}'s friend request.`
+        title: "Zaproszenie odrzucone",
+        description: `Odrzuciłeś zaproszenie od ${username}.`
       });
     } catch (error) {
       console.error('Error rejecting friend request:', error);
       toast({
-        title: "Error",
-        description: "Failed to decline friend request.",
+        title: "Błąd",
+        description: "Nie udało się odrzucić zaproszenia.",
         variant: "destructive"
       });
     }
@@ -202,14 +203,14 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
 
       setRequests(prev => prev.filter(req => req.id !== requestId));
       toast({
-        title: "Friend request cancelled",
-        description: `Your friend request to ${username} has been cancelled.`
+        title: "Zaproszenie anulowane",
+        description: `Twoje zaproszenie do ${username} zostało anulowane.`
       });
     } catch (error) {
       console.error('Error cancelling friend request:', error);
       toast({
-        title: "Error",
-        description: "Failed to cancel friend request.",
+        title: "Błąd",
+        description: "Nie udało się anulować zaproszenia.",
         variant: "destructive"
       });
     }
@@ -256,7 +257,7 @@ export const NewFriendRequestsModal = ({ isOpen, onClose, onFriendsUpdated }: Ne
                       <div className="min-w-0 flex-1">
                         <p className="font-medium text-white truncate">{request.user.username}</p>
                         <p className="text-sm text-muted-foreground">
-                          {request.user.bio || 'Aerial enthusiast'} • {request.timestamp}
+                          {request.user.bio || 'Entuzjasta sportu'} • {request.timestamp}
                         </p>
                       </div>
                     </div>

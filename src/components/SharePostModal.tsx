@@ -24,14 +24,14 @@ export const SharePostModal = ({ isOpen, onClose, postId, userName, post }: Shar
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast({
-        title: "Link copied!",
-        description: "Post link has been copied to your clipboard.",
+        title: "Link skopiowany!",
+        description: "Link do posta został skopiowany do schowka.",
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       toast({
-        title: "Failed to copy",
-        description: "Could not copy link to clipboard.",
+        title: "Nie udało się skopiować",
+        description: "Nie można skopiować linku do schowka.",
         variant: "destructive",
       });
     }

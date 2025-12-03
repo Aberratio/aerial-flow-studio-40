@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Heart, MessageCircle, Play } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { pl } from 'date-fns/locale';
 import { useNavigate } from 'react-router-dom';
 
 interface ProfilePreviewPostsProps {
@@ -15,7 +16,7 @@ export const ProfilePreviewPosts = ({ posts }: ProfilePreviewPostsProps) => {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold text-white mb-3">Recent Posts</h3>
+      <h3 className="text-lg font-semibold text-white mb-3">Ostatnie posty</h3>
       <div className="grid grid-cols-2 gap-3">
         {posts.map((post) => (
           <Card 
@@ -68,7 +69,7 @@ export const ProfilePreviewPosts = ({ posts }: ProfilePreviewPostsProps) => {
                   </div>
                 </div>
                 <span>
-                  {formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(post.created_at), { addSuffix: true, locale: pl })}
                 </span>
               </div>
             </CardContent>
