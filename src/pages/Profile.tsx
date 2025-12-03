@@ -61,16 +61,16 @@ const Profile = () => {
 
         {/* Main Tabs */}
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 bg-white/5 mb-4 sm:mb-6 overflow-hidden">
-            <TabsTrigger value="posts" className="flex items-center gap-2 py-3">
+          <TabsList className="grid w-full grid-cols-3 bg-white/5 mb-4 sm:mb-6 h-auto p-1 rounded-xl">
+            <TabsTrigger value="posts" className="flex items-center justify-center gap-2 py-2.5 rounded-lg">
               <Grid className="h-4 w-4" />
               <span className="text-xs sm:text-sm">Posty</span>
             </TabsTrigger>
-            <TabsTrigger value="friends" className="flex items-center gap-2 py-3">
+            <TabsTrigger value="friends" className="flex items-center justify-center gap-2 py-2.5 rounded-lg">
               <Users className="h-4 w-4" />
               <span className="text-xs sm:text-sm">Znajomi</span>
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2 py-3">
+            <TabsTrigger value="activity" className="flex items-center justify-center gap-2 py-2.5 rounded-lg">
               <Trophy className="h-4 w-4" />
               <span className="text-xs sm:text-sm">Aktywność</span>
             </TabsTrigger>
