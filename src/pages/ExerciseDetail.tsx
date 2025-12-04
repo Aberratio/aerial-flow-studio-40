@@ -1272,191 +1272,193 @@ const ExerciseDetail = () => {
           </div>
         </div>
 
-        {/* Versions Section */}
-        <div className="mt-12">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="w-full mb-6 bg-muted p-1">
-              <TabsTrigger
-                value="my-versions"
-                className="flex-1 text-xs sm:text-sm"
-              >
-                <User className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Moje wersje</span>
-                <span className="sm:hidden">Moje</span>
-                <span className="ml-1">({myVersions.length})</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="friends-versions"
-                className="flex-1 text-xs sm:text-sm"
-              >
-                <Users className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Znajomi</span>
-                <span className="sm:hidden">Znajomi</span>
-                <span className="ml-1">({friendsVersions.length})</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="community"
-                className="flex-1 text-xs sm:text-sm"
-              >
-                <Globe className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Społeczność</span>
-                <span className="sm:hidden">Społeczność</span>
-                <span className="ml-1">({communityVersions.length})</span>
-              </TabsTrigger>
-            </TabsList>
+        {/* Versions Section - only show if there are any posts */}
+        {(myVersions.length > 0 || friendsVersions.length > 0 || communityVersions.length > 0) && (
+          <div className="mt-12">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList className="w-full mb-6 bg-muted p-1">
+                <TabsTrigger
+                  value="my-versions"
+                  className="flex-1 text-xs sm:text-sm"
+                >
+                  <User className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Moje wersje</span>
+                  <span className="sm:hidden">Moje</span>
+                  <span className="ml-1">({myVersions.length})</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="friends-versions"
+                  className="flex-1 text-xs sm:text-sm"
+                >
+                  <Users className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Znajomi</span>
+                  <span className="sm:hidden">Znajomi</span>
+                  <span className="ml-1">({friendsVersions.length})</span>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="community"
+                  className="flex-1 text-xs sm:text-sm"
+                >
+                  <Globe className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Społeczność</span>
+                  <span className="sm:hidden">Społeczność</span>
+                  <span className="ml-1">({communityVersions.length})</span>
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="my-versions">
-              {myVersions.length === 0 ? (
-                <Card className="glass-effect border-white/10">
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">
-                      Brak wersji. Udostępnij swoją praktykę!
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {myVersions.map((post) => (
-                    <Card
-                      key={post.id}
-                      className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
-                      onClick={() => navigate(`/post/${post.id}`)}
-                    >
-                      <CardContent className="p-4">
-                        {post.image_url && (
-                          <img
-                            src={post.image_url}
-                            alt="Version"
-                            className="w-full h-32 object-cover rounded mb-3"
-                          />
-                        )}
-                        <p className="text-white text-sm line-clamp-2 mb-2">
-                          {post.content}
-                        </p>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div className="flex items-center space-x-1">
-                            <Avatar className="w-4 h-4">
-                              <AvatarImage src={post.profiles?.avatar_url} />
-                              <AvatarFallback>
-                                {post.profiles?.username?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{post.profiles?.username}</span>
+              <TabsContent value="my-versions">
+                {myVersions.length === 0 ? (
+                  <Card className="glass-effect border-white/10">
+                    <CardContent className="p-8 text-center">
+                      <p className="text-muted-foreground">
+                        Brak wersji. Udostępnij swoją praktykę!
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {myVersions.map((post) => (
+                      <Card
+                        key={post.id}
+                        className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
+                        onClick={() => navigate(`/post/${post.id}`)}
+                      >
+                        <CardContent className="p-4">
+                          {post.image_url && (
+                            <img
+                              src={post.image_url}
+                              alt="Version"
+                              className="w-full h-32 object-cover rounded mb-3"
+                            />
+                          )}
+                          <p className="text-white text-sm line-clamp-2 mb-2">
+                            {post.content}
+                          </p>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Avatar className="w-4 h-4">
+                                <AvatarImage src={post.profiles?.avatar_url} />
+                                <AvatarFallback>
+                                  {post.profiles?.username?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span>{post.profiles?.username}</span>
+                            </div>
+                            <span>
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </span>
                           </div>
-                          <span>
-                            {new Date(post.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
 
-            <TabsContent value="friends-versions">
-              {friendsVersions.length === 0 ? (
-                <Card className="glass-effect border-white/10">
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">
-                      Brak wersji znajomych.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {friendsVersions.map((post) => (
-                    <Card
-                      key={post.id}
-                      className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
-                      onClick={() => navigate(`/post/${post.id}`)}
-                    >
-                      <CardContent className="p-4">
-                        {post.image_url && (
-                          <img
-                            src={post.image_url}
-                            alt="Version"
-                            className="w-full h-32 object-cover rounded mb-3"
-                          />
-                        )}
-                        <p className="text-white text-sm line-clamp-2 mb-2">
-                          {post.content}
-                        </p>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div className="flex items-center space-x-1">
-                            <Avatar className="w-4 h-4">
-                              <AvatarImage src={post.profiles?.avatar_url} />
-                              <AvatarFallback>
-                                {post.profiles?.username?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{post.profiles?.username}</span>
+              <TabsContent value="friends-versions">
+                {friendsVersions.length === 0 ? (
+                  <Card className="glass-effect border-white/10">
+                    <CardContent className="p-8 text-center">
+                      <p className="text-muted-foreground">
+                        Brak wersji znajomych.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {friendsVersions.map((post) => (
+                      <Card
+                        key={post.id}
+                        className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
+                        onClick={() => navigate(`/post/${post.id}`)}
+                      >
+                        <CardContent className="p-4">
+                          {post.image_url && (
+                            <img
+                              src={post.image_url}
+                              alt="Version"
+                              className="w-full h-32 object-cover rounded mb-3"
+                            />
+                          )}
+                          <p className="text-white text-sm line-clamp-2 mb-2">
+                            {post.content}
+                          </p>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Avatar className="w-4 h-4">
+                                <AvatarImage src={post.profiles?.avatar_url} />
+                                <AvatarFallback>
+                                  {post.profiles?.username?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span>{post.profiles?.username}</span>
+                            </div>
+                            <span>
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </span>
                           </div>
-                          <span>
-                            {new Date(post.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
 
-            <TabsContent value="community">
-              {communityVersions.length === 0 ? (
-                <Card className="glass-effect border-white/10">
-                  <CardContent className="p-8 text-center">
-                    <p className="text-muted-foreground">
-                      Brak wersji społeczności.
-                    </p>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {communityVersions.map((post) => (
-                    <Card
-                      key={post.id}
-                      className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
-                      onClick={() => navigate(`/post/${post.id}`)}
-                    >
-                      <CardContent className="p-4">
-                        {post.image_url && (
-                          <img
-                            src={post.image_url}
-                            alt="Version"
-                            className="w-full h-32 object-cover rounded mb-3"
-                          />
-                        )}
-                        <p className="text-white text-sm line-clamp-2 mb-2">
-                          {post.content}
-                        </p>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <div className="flex items-center space-x-1">
-                            <Avatar className="w-4 h-4">
-                              <AvatarImage src={post.profiles?.avatar_url} />
-                              <AvatarFallback>
-                                {post.profiles?.username?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <span>{post.profiles?.username}</span>
+              <TabsContent value="community">
+                {communityVersions.length === 0 ? (
+                  <Card className="glass-effect border-white/10">
+                    <CardContent className="p-8 text-center">
+                      <p className="text-muted-foreground">
+                        Brak wersji społeczności.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {communityVersions.map((post) => (
+                      <Card
+                        key={post.id}
+                        className="glass-effect border-white/10 cursor-pointer hover:border-purple-500/30 transition-colors"
+                        onClick={() => navigate(`/post/${post.id}`)}
+                      >
+                        <CardContent className="p-4">
+                          {post.image_url && (
+                            <img
+                              src={post.image_url}
+                              alt="Version"
+                              className="w-full h-32 object-cover rounded mb-3"
+                            />
+                          )}
+                          <p className="text-white text-sm line-clamp-2 mb-2">
+                            {post.content}
+                          </p>
+                          <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                              <Avatar className="w-4 h-4">
+                                <AvatarImage src={post.profiles?.avatar_url} />
+                                <AvatarFallback>
+                                  {post.profiles?.username?.[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span>{post.profiles?.username}</span>
+                            </div>
+                            <span>
+                              {new Date(post.created_at).toLocaleDateString()}
+                            </span>
                           </div>
-                          <span>
-                            {new Date(post.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </div>
 
       {/* Modals */}
