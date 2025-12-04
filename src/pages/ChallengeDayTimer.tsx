@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Hand,
   Volume2,
@@ -10,6 +10,7 @@ import {
   Minimize,
   Info,
   Share,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -74,6 +75,8 @@ const ChallengeDayTimer = () => {
     dayId: string;
   }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isPracticeMode = searchParams.get('practice') === 'true';
   const { user } = useAuth();
   const { toast } = useToast();
   const { getCalendarDayByTrainingDay } = useChallengeCalendar(
@@ -1269,45 +1272,76 @@ const ChallengeDayTimer = () => {
         <DialogContent className="glass-effect border-white/10">
           <DialogHeader>
             <DialogTitle className="text-white">
-              Trening ukończony! 🎉
+              {isPracticeMode ? "Powtórka ukończona! 💪" : "Trening ukończony! 🎉"}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground">
-              Świetna robota! Co chcesz teraz zrobić?
+              {isPracticeMode 
+                ? "Świetna robota! To był trening w trybie powtórki - postęp nie został zapisany."
+                : "Świetna robota! Co chcesz teraz zrobić?"}
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-3 mt-6">
-            <Button
-              onClick={handleWorkoutComplete}
-              className="w-full"
-              variant="default"
-            >
-              Oznacz jako ukończone
-            </Button>
-            <Button
-              onClick={() => {
-                setIsCompleted(false);
-                setShowSharePostModal(true);
-              }}
-              variant="secondary"
-              className="w-full"
-            >
-              <Share className="w-4 h-4 mr-2" />
-              Ukończ i udostępnij
-            </Button>
-            <Button
-              onClick={() => {
-                setIsCompleted(false);
-                setCurrentSegmentIndex(0);
-                setTimeRemaining(segments[0]?.duration || 0);
-                setIsRunning(false);
-                setIsPreparingToStart(false);
-                setPreparationTime(10);
-              }}
-              variant="outline"
-              className="w-full"
-            >
-              Rozpocznij od nowa
-            </Button>
+            {isPracticeMode ? (
+              <>
+                <Button
+                  onClick={() => {
+                    setIsCompleted(false);
+                    setCurrentSegmentIndex(0);
+                    setTimeRemaining(segments[0]?.duration || 0);
+                    setIsRunning(false);
+                    setIsPreparingToStart(false);
+                    setPreparationTime(10);
+                  }}
+                  className="w-full"
+                  variant="default"
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Powtórz trening
+                </Button>
+                <Button
+                  onClick={() => navigate(`/challenges/${challengeId}`)}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Wróć do wyzwania
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  onClick={handleWorkoutComplete}
+                  className="w-full"
+                  variant="default"
+                >
+                  Oznacz jako ukończone
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsCompleted(false);
+                    setShowSharePostModal(true);
+                  }}
+                  variant="secondary"
+                  className="w-full"
+                >
+                  <Share className="w-4 h-4 mr-2" />
+                  Ukończ i udostępnij
+                </Button>
+                <Button
+                  onClick={() => {
+                    setIsCompleted(false);
+                    setCurrentSegmentIndex(0);
+                    setTimeRemaining(segments[0]?.duration || 0);
+                    setIsRunning(false);
+                    setIsPreparingToStart(false);
+                    setPreparationTime(10);
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Rozpocznij od nowa
+                </Button>
+              </>
+            )}
           </div>
         </DialogContent>
       </Dialog>

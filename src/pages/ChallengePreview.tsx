@@ -16,6 +16,7 @@ import {
   ChevronUp,
   CheckCircle,
   Crown,
+  RotateCcw,
 } from "lucide-react";
 import {
   Carousel,
@@ -868,6 +869,24 @@ const ChallengePreview = () => {
                                       Rozpocznij trening
                                     </Button>
                                   )}
+                                </div>
+                              )}
+
+                              {/* Practice Mode Button - for completed days with exercises */}
+                              {isCompleted && exercises.length > 0 && (
+                                <div className="mb-4 md:mb-6">
+                                  <Button
+                                    onClick={() => {
+                                      navigate(
+                                        `/challenge/${challengeId}/day/${trainingDay.id}/timer?practice=true`
+                                      );
+                                    }}
+                                    variant="ghost"
+                                    className="w-full md:max-w-md md:mx-auto py-3 text-sm text-white/50 hover:text-white/80 hover:bg-white/5 rounded-xl transition-all duration-300"
+                                  >
+                                    <RotateCcw className="w-4 h-4 mr-2" />
+                                    Powtórz trening
+                                  </Button>
                                 </div>
                               )}
 
