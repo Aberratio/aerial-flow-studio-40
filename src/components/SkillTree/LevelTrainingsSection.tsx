@@ -20,7 +20,7 @@ export default function LevelTrainingsSection({ levelId, sportCategory, isLevelU
   if (isLoading || levelTrainings.length === 0) return null;
 
   const handleStartTraining = (trainingId: string) => {
-    navigate(`/training/library/session/${trainingId}?from=level&levelId=${levelId}&sportCategory=${sportCategory}`);
+    navigate(`/training/${trainingId}/session?from=level&levelId=${levelId}&sportCategory=${sportCategory}`);
   };
 
   return (
@@ -49,11 +49,11 @@ export default function LevelTrainingsSection({ levelId, sportCategory, isLevelU
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm truncate text-white">{lt.training.title}</p>
                     <div className="flex gap-1 mt-1 flex-wrap">
-                      {lt.training.duration_seconds && (
-                        <Badge variant="outline" className="text-xs">
-                          {Math.round(lt.training.duration_seconds / 60)} min
-                        </Badge>
-                      )}
+                                {lt.training.duration_minutes && (
+                                  <Badge variant="outline" className="text-xs">
+                                    {lt.training.duration_minutes} min
+                                  </Badge>
+                                )}
                       {lt.is_required && (
                         <Badge className="text-xs bg-orange-500/20 text-orange-400 border-orange-400/30">
                           Wymagany

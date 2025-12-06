@@ -81,6 +81,12 @@ const TrainingExerciseSession = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
+
+  // Get URL parameters for level context
+  const searchParams = new URLSearchParams(window.location.search);
+  const fromLevel = searchParams.get('from') === 'level';
+  const levelId = searchParams.get('levelId');
+  const sportCategory = searchParams.get('sportCategory');
   
   const [session, setSession] = useState<TrainingSession | null>(null);
   const [loading, setLoading] = useState(true);
@@ -711,8 +717,57 @@ const TrainingExerciseSession = () => {
     localStorage.setItem("trainingTimerAudioMode", nextMode);
   };
 
-  const handleFinishSession = () => {
+  const handleFinishSession = async () => {
     releaseWakeLock();
+    
+    // Handle level completion tracking if coming from a level
+    if (fromLevel && levelId && user && sessionId) {
+      try {
+        // Check if already completed (first-completion-only logic)
+        const { data: existingCompletion } = await supabase
+          .from('user_sport_level_training_completions')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('sport_level_id', levelId)
+          .eq('training_id', sessionId)
+          .maybeSingle();
+
+        // Only record first completion
+        if (!existingCompletion) {
+          const { error } = await supabase
+            .from('user_sport_level_training_completions')
+            .insert({
+              user_id: user.id,
+              sport_level_id: levelId,
+              training_id: sessionId,
+              duration_seconds: session?.duration_minutes ? session.duration_minutes * 60 : 0,
+            });
+
+          if (error) {
+            console.error('Error recording training completion:', error);
+          } else {
+            toast({
+              title: "Trening ukończony!",
+              description: "Twój postęp został zapisany.",
+            });
+          }
+        } else {
+          toast({
+            title: "Trening powtórzony!",
+            description: "Świetna robota! (ukończenie już zapisane)",
+          });
+        }
+
+        // Navigate back to aerial journey
+        if (sportCategory) {
+          navigate(`/aerial-journey/${sportCategory}`);
+          return;
+        }
+      } catch (error) {
+        console.error('Error handling level completion:', error);
+      }
+    }
+
     toast({
       title: "Trening ukończony!",
       description: "Świetna robota! Sesja treningowa została ukończona.",
