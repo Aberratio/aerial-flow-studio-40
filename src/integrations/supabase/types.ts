@@ -1653,7 +1653,6 @@ export type Database = {
       }
       training_day_exercises: {
         Row: {
-          audio_url: string | null
           completion_mode: string | null
           created_at: string
           figure_id: string
@@ -1669,10 +1668,8 @@ export type Database = {
           video_position:
             | Database["public"]["Enums"]["video_position_type"]
             | null
-          video_url: string | null
         }
         Insert: {
-          audio_url?: string | null
           completion_mode?: string | null
           created_at?: string
           figure_id: string
@@ -1688,10 +1685,8 @@ export type Database = {
           video_position?:
             | Database["public"]["Enums"]["video_position_type"]
             | null
-          video_url?: string | null
         }
         Update: {
-          audio_url?: string | null
           completion_mode?: string | null
           created_at?: string
           figure_id?: string
@@ -1707,7 +1702,6 @@ export type Database = {
           video_position?:
             | Database["public"]["Enums"]["video_position_type"]
             | null
-          video_url?: string | null
         }
         Relationships: [
           {

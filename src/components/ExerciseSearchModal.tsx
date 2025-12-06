@@ -61,7 +61,7 @@ export const ExerciseSearchModal: React.FC<ExerciseSearchModalProps> = ({
   selectedExercises,
 }) => {
   const { toast } = useToast();
-  const { getFigureTypeLabel, getCategoryLabel } = useDictionary();
+  const { getFigureTypeLabel } = useDictionary();
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [filteredExercises, setFilteredExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(false);
@@ -254,7 +254,7 @@ export const ExerciseSearchModal: React.FC<ExerciseSearchModalProps> = ({
                   <SelectItem value="all">Wszystkie kategorie</SelectItem>
                   {categories.map((cat) => (
                     <SelectItem key={cat} value={cat}>
-                      {getCategoryLabel ? getCategoryLabel(cat) : cat}
+                      {cat}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -365,7 +365,7 @@ export const ExerciseSearchModal: React.FC<ExerciseSearchModalProps> = ({
                               )}
                               {exercise.category && (
                                 <Badge variant="outline" className="text-xs border-white/20 text-white/70">
-                                  {getCategoryLabel ? getCategoryLabel(exercise.category) : exercise.category}
+                                  {exercise.category}
                                 </Badge>
                               )}
                             </div>
