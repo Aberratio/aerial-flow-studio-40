@@ -12,9 +12,9 @@ interface LevelTraining {
     id: string;
     title: string;
     thumbnail_url?: string;
-    duration_seconds?: number;
+    duration_minutes?: number;
     difficulty_level?: string;
-    category: string;
+    type: string;
     premium?: boolean;
   };
 }
@@ -51,13 +51,13 @@ export const useLevelTrainings = (sportLevelId?: string) => {
           order_index,
           is_required,
           notes,
-          training:training_library(
+          training:training_sessions(
             id,
             title,
             thumbnail_url,
-            duration_seconds,
+            duration_minutes,
             difficulty_level,
-            category,
+            type,
             premium
           )
         `)
