@@ -82,12 +82,11 @@ interface LevelTrainingParams {
 interface Training {
   id: string;
   title: string;
-  category: string;
+  type: string;
   difficulty_level?: string;
-  duration_seconds?: number;
+  duration_minutes?: number;
   thumbnail_url?: string;
   premium?: boolean;
-  training_type: string;
 }
 
 interface LevelEditorSheetProps {
@@ -196,7 +195,7 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
         supabase.from("sport_categories").select("key_name, name").order("name"),
         supabase.from("figure_types").select("key, name_pl").order("order_index"),
         supabase.from("achievements").select("id, name, description, icon, points, rule_type").eq("rule_type", "sport_level_completion").order("name"),
-        supabase.from("training_library").select("id, title, category, difficulty_level, duration_seconds, thumbnail_url, premium, training_type").order("title")
+        supabase.from("training_sessions").select("id, title, type, difficulty_level, duration_minutes, thumbnail_url, premium").eq("published", true).order("title")
       ]);
 
       if (figuresRes.error) throw figuresRes.error;
@@ -440,8 +439,8 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
         return false;
       }
 
-      // Category filter
-      if (trainingCategoryFilter !== "all" && training.category !== trainingCategoryFilter) {
+      // Type filter
+      if (trainingCategoryFilter !== "all" && training.type !== trainingCategoryFilter) {
         return false;
       }
 
@@ -1147,9 +1146,9 @@ export default function LevelEditorSheet({ level, isOpen, onClose, sportKey, onS
                                     {getDifficultyLabel(training.difficulty_level)}
                                   </Badge>
                                 )}
-                                {training.duration_seconds && (
+                                {training.duration_minutes && (
                                   <Badge variant="outline" className="text-xs">
-                                    {Math.round(training.duration_seconds / 60)} min
+                                    {training.duration_minutes} min
                                   </Badge>
                                 )}
                                 {training.premium && (
