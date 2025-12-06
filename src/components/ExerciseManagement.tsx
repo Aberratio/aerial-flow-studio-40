@@ -7,18 +7,17 @@ import {
   Repeat,
   Timer,
   Video,
-  Volume2,
   FileText,
   ArrowUp,
   ArrowDown,
   Copy,
+  Search,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -33,12 +32,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDictionary } from "@/contexts/DictionaryContext";
+import { ExerciseSearchModal } from "@/components/ExerciseSearchModal";
 
 interface Exercise {
   id: string;
@@ -48,8 +47,6 @@ interface Exercise {
   reps?: number;
   hold_time_seconds?: number;
   rest_time_seconds?: number;
-  video_url?: string;
-  audio_url?: string;
   notes?: string;
   play_video?: boolean;
   video_position?: 'center' | 'top' | 'bottom' | 'left' | 'right';
@@ -89,19 +86,20 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
   canEdit,
   challengeType,
 }) => {
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [availableFigures, setAvailableFigures] = useState<Figure[]>([]);
-  const [selectedFigure, setSelectedFigure] = useState<string>("");
+  
+  // Edit form state
   const [sets, setSets] = useState<number | undefined>();
   const [reps, setReps] = useState<number | undefined>();
   const [holdTime, setHoldTime] = useState<number | undefined>();
   const [restTime, setRestTime] = useState<number | undefined>();
-  const [videoUrl, setVideoUrl] = useState("");
-  const [audioUrl, setAudioUrl] = useState("");
   const [notes, setNotes] = useState("");
   const [playVideo, setPlayVideo] = useState<boolean>(true);
   const [videoPosition, setVideoPosition] = useState<'center' | 'top' | 'bottom' | 'left' | 'right'>('center');
+  
   const { toast } = useToast();
   const { user } = useAuth();
   const { getDifficultyColor, getDifficultyLabel } = useDictionary();
@@ -117,13 +115,11 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         .select("id, name, difficulty_level, category, image_url, video_url, type")
         .order("name");
 
-      // Filter by "core" type for timer challenges
       if (challengeType === "timer") {
         query = query.eq("category", "core");
       }
 
       const { data, error } = await query;
-
       if (error) throw error;
       setAvailableFigures(data || []);
     } catch (error) {
@@ -131,176 +127,173 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     }
   };
 
-  const selectedFigureHasVideo = (): boolean => {
-    if (!selectedFigure) return false;
-    const figure = availableFigures.find(f => f.id === selectedFigure);
-    return !!(figure?.video_url);
-  };
-
-  useEffect(() => {
-    if (selectedFigure && !editingExercise) {
-      const figure = availableFigures.find(f => f.id === selectedFigure);
-      if (figure?.video_url) {
-        setPlayVideo(true);
-      }
-    }
-  }, [selectedFigure]);
-
-  const resetForm = () => {
-    setSelectedFigure("");
+  const resetEditForm = () => {
     setSets(undefined);
     setReps(undefined);
     setHoldTime(undefined);
     setRestTime(undefined);
-    setVideoUrl("");
-    setAudioUrl("");
     setNotes("");
     setPlayVideo(true);
     setVideoPosition('center');
     setEditingExercise(null);
   };
 
-  const openAddModal = () => {
-    resetForm();
-    setIsAddModalOpen(true);
-  };
-
   const openEditModal = (exercise: Exercise) => {
     setEditingExercise(exercise);
-    setSelectedFigure(exercise.figure_id);
     setSets(exercise.sets);
     setReps(exercise.reps);
     setHoldTime(exercise.hold_time_seconds);
     setRestTime(exercise.rest_time_seconds);
-    setVideoUrl(exercise.video_url || "");
-    setAudioUrl(exercise.audio_url || "");
     setNotes(exercise.notes || "");
     setPlayVideo(exercise.play_video ?? true);
     setVideoPosition(exercise.video_position || 'center');
-    setIsAddModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
-  const handleSave = async () => {
-    if (!selectedFigure) {
-      toast({
-        title: "Error",
-        description: "Please select a figure",
-        variant: "destructive",
-      });
-      return;
-    }
+  const selectedFigureHasVideo = (): boolean => {
+    if (!editingExercise) return false;
+    return !!(editingExercise.figure?.video_url);
+  };
 
-    // For temporary training day IDs (when creating new challenges),
-    // we'll handle the save in the parent component
+  const handleExerciseFromSearch = async (
+    selectedExercise: { id: string; name: string; hold_time_seconds?: number },
+    defaultSets?: number,
+    defaultReps?: number,
+    defaultHoldTime?: number
+  ) => {
+    // Create exercise with defaults
+    const figure = availableFigures.find(f => f.id === selectedExercise.id) || {
+      id: selectedExercise.id,
+      name: selectedExercise.name,
+      difficulty_level: '',
+      category: '',
+    };
+
+    const newExercise: Exercise = {
+      id: trainingDayId.startsWith("temp-") ? `temp-${Date.now()}` : "",
+      figure_id: selectedExercise.id,
+      order_index: exercises.length,
+      sets: defaultSets || 1,
+      reps: defaultReps || 1,
+      hold_time_seconds: defaultHoldTime || selectedExercise.hold_time_seconds || 30,
+      rest_time_seconds: 30,
+      notes: undefined,
+      play_video: figure.video_url ? true : undefined,
+      video_position: figure.video_url ? 'center' : undefined,
+      figure: figure as any,
+    };
+
     if (trainingDayId.startsWith("temp-")) {
-      const newExercise: Exercise = {
-        id: `temp-${Date.now()}`,
-        figure_id: selectedFigure,
-        order_index: editingExercise
-          ? editingExercise.order_index
-          : exercises.length,
-        sets,
-        reps,
-        hold_time_seconds: holdTime,
-        rest_time_seconds: restTime,
-        video_url: videoUrl || undefined,
-        audio_url: audioUrl || undefined,
-        notes: notes || undefined,
-        play_video: selectedFigureHasVideo() ? playVideo : undefined,
-        video_position: selectedFigureHasVideo() ? videoPosition : undefined,
-        figure: availableFigures.find((f) => f.id === selectedFigure),
-      };
+      onExercisesChange([...exercises, newExercise]);
+      toast({
+        title: "Dodano",
+        description: `${selectedExercise.name} zostało dodane`,
+      });
+    } else {
+      try {
+        const { data, error } = await supabase
+          .from("training_day_exercises")
+          .insert({
+            training_day_id: trainingDayId,
+            figure_id: selectedExercise.id,
+            order_index: exercises.length,
+            sets: newExercise.sets,
+            reps: newExercise.reps,
+            hold_time_seconds: newExercise.hold_time_seconds,
+            rest_time_seconds: newExercise.rest_time_seconds,
+            play_video: newExercise.play_video,
+            video_position: newExercise.video_position,
+          })
+          .select(`
+            *,
+            figure:figures(id, name, difficulty_level, category, image_url, video_url, instructions)
+          `)
+          .single();
 
-      const updatedExercises = editingExercise
-        ? exercises.map((ex) =>
-            ex.id === editingExercise.id ? newExercise : ex
-          )
-        : [...exercises, newExercise];
+        if (error) throw error;
 
+        onExercisesChange([...exercises, data]);
+        toast({
+          title: "Dodano",
+          description: `${selectedExercise.name} zostało dodane`,
+        });
+      } catch (error) {
+        console.error("Error adding exercise:", error);
+        toast({
+          title: "Błąd",
+          description: "Nie udało się dodać ćwiczenia",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingExercise) return;
+
+    const exerciseData = {
+      sets,
+      reps,
+      hold_time_seconds: holdTime,
+      rest_time_seconds: restTime,
+      notes: notes || null,
+      play_video: selectedFigureHasVideo() ? playVideo : null,
+      video_position: selectedFigureHasVideo() ? videoPosition : null,
+    };
+
+    if (trainingDayId.startsWith("temp-")) {
+      const updatedExercises = exercises.map((ex) =>
+        ex.id === editingExercise.id
+          ? { ...ex, ...exerciseData }
+          : ex
+      );
       onExercisesChange(updatedExercises);
-      setIsAddModalOpen(false);
-      resetForm();
+      setIsEditModalOpen(false);
+      resetEditForm();
       return;
     }
 
-    // Handle saving to database for existing training days
     try {
-      const exerciseData = {
-        training_day_id: trainingDayId,
-        figure_id: selectedFigure,
-        order_index: editingExercise
-          ? editingExercise.order_index
-          : exercises.length,
-        sets,
-        reps,
-        hold_time_seconds: holdTime,
-        rest_time_seconds: restTime,
-        video_url: videoUrl || null,
-        audio_url: audioUrl || null,
-        notes: notes || null,
-        play_video: selectedFigureHasVideo() ? playVideo : null,
-        video_position: selectedFigureHasVideo() ? videoPosition : null,
-      };
+      const { data, error } = await supabase
+        .from("training_day_exercises")
+        .update(exerciseData)
+        .eq("id", editingExercise.id)
+        .select(`
+          *,
+          figure:figures(id, name, difficulty_level, category, image_url, video_url, instructions)
+        `)
+        .single();
 
-      let result;
-      if (editingExercise) {
-        result = await supabase
-          .from("training_day_exercises")
-          .update(exerciseData)
-          .eq("id", editingExercise.id)
-          .select(
-            `
-            *,
-            figure:figures(id, name, difficulty_level, category)
-          `
-          )
-          .single();
+      if (error) throw error;
 
-        // Update all instances of this figure in the challenge if applyToAllDays is checked
-        // REMOVED: This functionality has been moved to the figures table level
-      } else {
-        result = await supabase
-          .from("training_day_exercises")
-          .insert(exerciseData)
-          .select(
-            `
-            *,
-            figure:figures(id, name, difficulty_level, category)
-          `
-          )
-          .single();
-      }
-
-      if (result.error) throw result.error;
-
-      const updatedExercises = editingExercise
-        ? exercises.map((ex) =>
-            ex.id === editingExercise.id ? result.data : ex
-          )
-        : [...exercises, result.data];
-
+      const updatedExercises = exercises.map((ex) =>
+        ex.id === editingExercise.id ? data : ex
+      );
       onExercisesChange(updatedExercises);
 
       toast({
-        title: "Success",
-        description: `Exercise ${
-          editingExercise ? "updated" : "added"
-        } successfully`,
+        title: "Zapisano",
+        description: "Ćwiczenie zostało zaktualizowane",
       });
 
-      setIsAddModalOpen(false);
-      resetForm();
+      setIsEditModalOpen(false);
+      resetEditForm();
     } catch (error) {
       console.error("Error saving exercise:", error);
       toast({
-        title: "Error",
-        description: "Failed to save exercise",
+        title: "Błąd",
+        description: "Nie udało się zapisać zmian",
         variant: "destructive",
       });
     }
   };
 
   const handleDelete = async (exerciseId: string) => {
+    if (trainingDayId.startsWith("temp-")) {
+      onExercisesChange(exercises.filter((ex) => ex.id !== exerciseId));
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from("training_day_exercises")
@@ -310,16 +303,15 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
       if (error) throw error;
 
       onExercisesChange(exercises.filter((ex) => ex.id !== exerciseId));
-
       toast({
-        title: "Success",
-        description: "Exercise deleted successfully",
+        title: "Usunięto",
+        description: "Ćwiczenie zostało usunięte",
       });
     } catch (error) {
       console.error("Error deleting exercise:", error);
       toast({
-        title: "Error",
-        description: "Failed to delete exercise",
+        title: "Błąd",
+        description: "Nie udało się usunąć ćwiczenia",
         variant: "destructive",
       });
     }
@@ -337,29 +329,17 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
 
     if (!trainingDayId.startsWith("temp-")) {
       try {
-        const { error: error1 } = await supabase
+        await supabase
           .from("training_day_exercises")
           .update({ order_index: currentExercise.order_index })
           .eq("id", aboveExercise.id);
 
-        const { error: error2 } = await supabase
+        await supabase
           .from("training_day_exercises")
           .update({ order_index: aboveExercise.order_index })
           .eq("id", currentExercise.id);
-
-        if (error1 || error2) throw error1 || error2;
-
-        toast({
-          title: "Success",
-          description: "Exercise moved up successfully",
-        });
       } catch (error) {
         console.error("Error moving exercise:", error);
-        toast({
-          title: "Error",
-          description: "Failed to move exercise",
-          variant: "destructive",
-        });
         return;
       }
     }
@@ -379,29 +359,17 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
 
     if (!trainingDayId.startsWith("temp-")) {
       try {
-        const { error: error1 } = await supabase
+        await supabase
           .from("training_day_exercises")
           .update({ order_index: currentExercise.order_index })
           .eq("id", belowExercise.id);
 
-        const { error: error2 } = await supabase
+        await supabase
           .from("training_day_exercises")
           .update({ order_index: belowExercise.order_index })
           .eq("id", currentExercise.id);
-
-        if (error1 || error2) throw error1 || error2;
-
-        toast({
-          title: "Success",
-          description: "Exercise moved down successfully",
-        });
       } catch (error) {
         console.error("Error moving exercise:", error);
-        toast({
-          title: "Error",
-          description: "Failed to move exercise",
-          variant: "destructive",
-        });
         return;
       }
     }
@@ -413,7 +381,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     try {
       const newOrderIndex = currentIndex + 1;
       
-      // Increment order_index for all exercises after the current one
       const updatedExercises = exercises.map((ex, idx) => {
         if (idx > currentIndex) {
           return { ...ex, order_index: ex.order_index + 1 };
@@ -421,7 +388,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         return ex;
       });
 
-      // Create the duplicate exercise
       const duplicatedExercise: Exercise = {
         ...exercise,
         id: trainingDayId.startsWith("temp-") ? `temp-${Date.now()}` : exercise.id,
@@ -429,19 +395,15 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
       };
 
       if (!trainingDayId.startsWith("temp-")) {
-        // Update order_index for affected exercises
         const affectedExercises = exercises.filter((_, idx) => idx > currentIndex);
         
         for (const ex of affectedExercises) {
-          const { error } = await supabase
+          await supabase
             .from("training_day_exercises")
             .update({ order_index: ex.order_index + 1 })
             .eq("id", ex.id);
-          
-          if (error) throw error;
         }
 
-        // Insert the new exercise
         const { data, error } = await supabase
           .from("training_day_exercises")
           .insert({
@@ -452,8 +414,6 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
             reps: exercise.reps,
             hold_time_seconds: exercise.hold_time_seconds,
             rest_time_seconds: exercise.rest_time_seconds,
-            video_url: exercise.video_url,
-            audio_url: exercise.audio_url,
             notes: exercise.notes,
             play_video: exercise.play_video,
             video_position: exercise.video_position,
@@ -469,12 +429,11 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         duplicatedExercise.figure = data.figure;
 
         toast({
-          title: "Success",
-          description: "Exercise duplicated successfully",
+          title: "Zduplikowano",
+          description: "Ćwiczenie zostało zduplikowane",
         });
       }
 
-      // Insert the duplicated exercise at the correct position
       const finalExercises = [
         ...updatedExercises.slice(0, newOrderIndex),
         duplicatedExercise,
@@ -485,27 +444,29 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
     } catch (error) {
       console.error("Error duplicating exercise:", error);
       toast({
-        title: "Error",
-        description: "Failed to duplicate exercise",
+        title: "Błąd",
+        description: "Nie udało się zduplikować ćwiczenia",
         variant: "destructive",
       });
     }
   };
 
+  const selectedExerciseIds = exercises.map(e => e.figure_id);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label className="text-sm font-medium">Exercises</Label>
+        <Label className="text-sm font-medium">Ćwiczenia ({exercises.length})</Label>
         {canEdit && (
           <Button
             type="button"
             variant="outline"
             size="sm"
-            onClick={openAddModal}
+            onClick={() => setIsSearchModalOpen(true)}
             className="flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" />
-            Add Exercise
+            <Search className="w-4 h-4" />
+            Dodaj ćwiczenia
           </Button>
         )}
       </div>
@@ -581,46 +542,34 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                 {exercise.sets && (
                   <div className="flex items-center gap-1">
                     <Repeat className="w-3 h-3" />
-                    <span>{exercise.sets} sets</span>
+                    <span>{exercise.sets} serii</span>
                   </div>
                 )}
                 {exercise.reps && (
                   <div className="flex items-center gap-1">
                     <span className="w-3 h-3 rounded-full bg-purple-400 flex-shrink-0" />
-                    <span>{exercise.reps} reps</span>
+                    <span>{exercise.reps} powt.</span>
                   </div>
                 )}
                 {exercise.hold_time_seconds && (
                   <div className="flex items-center gap-1">
                     <Timer className="w-3 h-3" />
-                    <span>{exercise.hold_time_seconds}s hold</span>
+                    <span>{exercise.hold_time_seconds}s trzymania</span>
                   </div>
                 )}
                 {exercise.rest_time_seconds && (
                   <div className="flex items-center gap-1">
                     <Clock className="w-3 h-3" />
-                    <span>{exercise.rest_time_seconds}s rest</span>
+                    <span>{exercise.rest_time_seconds}s przerwy</span>
                   </div>
                 )}
               </div>
 
               <div className="flex gap-2 mt-2">
-                {exercise.video_url && (
-                  <Badge variant="outline" className="text-xs">
-                    <Video className="w-3 h-3 mr-1" />
-                    Video
-                  </Badge>
-                )}
-                {exercise.audio_url && (
-                  <Badge variant="outline" className="text-xs">
-                    <Volume2 className="w-3 h-3 mr-1" />
-                    Audio
-                  </Badge>
-                )}
                 {exercise.notes && (
                   <Badge variant="outline" className="text-xs">
                     <FileText className="w-3 h-3 mr-1" />
-                    Notes
+                    Notatki
                   </Badge>
                 )}
               </div>
@@ -637,62 +586,50 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
         {exercises.length === 0 && (
           <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
             <Plus className="w-8 h-8 mx-auto mb-2 opacity-50" />
-            <p>No exercises added yet</p>
-            <p className="text-sm">Click "Add Exercise" to get started</p>
+            <p>Brak dodanych ćwiczeń</p>
+            <p className="text-sm">Kliknij "Dodaj ćwiczenia" aby zacząć</p>
           </div>
         )}
       </div>
 
-      {/* Add/Edit Exercise Modal */}
-      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+      {/* Exercise Search Modal */}
+      <ExerciseSearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onExerciseSelect={handleExerciseFromSearch}
+        selectedExercises={selectedExerciseIds}
+      />
+
+      {/* Edit Exercise Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
-              {editingExercise ? "Edit Exercise" : "Add Exercise"}
+              Edytuj: {editingExercise?.figure?.name}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Figure *</Label>
-              <Select value={selectedFigure} onValueChange={setSelectedFigure}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a figure" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableFigures.map((figure) => (
-                    <SelectItem key={figure.id} value={figure.id}>
-                      {figure.name} - {getDifficultyLabel(figure.difficulty_level)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Sets</Label>
+                <Label>Serie</Label>
                 <Input
                   type="number"
-                  placeholder="Number of sets"
+                  placeholder="Liczba serii"
                   value={sets || ""}
                   onChange={(e) =>
-                    setSets(
-                      e.target.value ? parseInt(e.target.value) : undefined
-                    )
+                    setSets(e.target.value ? parseInt(e.target.value) : undefined)
                   }
                 />
               </div>
               <div className="space-y-2">
-                <Label>Reps</Label>
+                <Label>Powtórzenia</Label>
                 <Input
                   type="number"
-                  placeholder="Number of reps"
+                  placeholder="Liczba powtórzeń"
                   value={reps || ""}
                   onChange={(e) =>
-                    setReps(
-                      e.target.value ? parseInt(e.target.value) : undefined
-                    )
+                    setReps(e.target.value ? parseInt(e.target.value) : undefined)
                   }
                 />
               </div>
@@ -700,40 +637,27 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Hold Time (seconds)</Label>
+                <Label>Czas trzymania (s)</Label>
                 <Input
                   type="number"
-                  placeholder="Hold duration"
+                  placeholder="Sekundy"
                   value={holdTime || ""}
                   onChange={(e) =>
-                    setHoldTime(
-                      e.target.value ? parseInt(e.target.value) : undefined
-                    )
+                    setHoldTime(e.target.value ? parseInt(e.target.value) : undefined)
                   }
                 />
               </div>
               <div className="space-y-2">
-                <Label>Rest Time (seconds)</Label>
+                <Label>Czas przerwy (s)</Label>
                 <Input
                   type="number"
-                  placeholder="Rest duration"
+                  placeholder="Sekundy"
                   value={restTime || ""}
                   onChange={(e) =>
-                    setRestTime(
-                      e.target.value ? parseInt(e.target.value) : undefined
-                    )
+                    setRestTime(e.target.value ? parseInt(e.target.value) : undefined)
                   }
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Video URL</Label>
-              <Input
-                placeholder="https://..."
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-              />
             </div>
 
             {selectedFigureHasVideo() && (
@@ -750,85 +674,35 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
                         <Video className="w-4 h-4" />
                         <span>Pokaż wideo podczas treningu</span>
                       </div>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Jeśli włączone, podczas treningu zamiast zdjęcia odtworzy się wideo figury
-                      </p>
                     </Label>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="video-position">Pozycja kadrowania video</Label>
+                  <Label>Pozycja kadrowania video</Label>
                   <Select
                     value={videoPosition}
                     onValueChange={(value: any) => setVideoPosition(value)}
                   >
-                    <SelectTrigger id="video-position">
+                    <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="center">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white rounded flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                          </div>
-                          Centrum
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="top">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white rounded flex items-start justify-center">
-                            <div className="w-1.5 h-1.5 bg-white rounded-full mt-0.5" />
-                          </div>
-                          Góra
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="bottom">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white rounded flex items-end justify-center">
-                            <div className="w-1.5 h-1.5 bg-white rounded-full mb-0.5" />
-                          </div>
-                          Dół
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="left">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white rounded flex items-center justify-start">
-                            <div className="w-1.5 h-1.5 bg-white rounded-full ml-0.5" />
-                          </div>
-                          Lewa strona
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="right">
-                        <div className="flex items-center gap-2">
-                          <div className="w-4 h-4 border-2 border-white rounded flex items-center justify-end">
-                            <div className="w-1.5 h-1.5 bg-white rounded-full mr-0.5" />
-                          </div>
-                          Prawa strona
-                        </div>
-                      </SelectItem>
+                      <SelectItem value="center">Centrum</SelectItem>
+                      <SelectItem value="top">Góra</SelectItem>
+                      <SelectItem value="bottom">Dół</SelectItem>
+                      <SelectItem value="left">Lewa strona</SelectItem>
+                      <SelectItem value="right">Prawa strona</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
-                    Określa, która część video jest widoczna gdy jest przycinane do kwadratu
-                  </p>
                 </div>
               </>
             )}
 
             <div className="space-y-2">
-              <Label>Audio URL</Label>
-              <Input
-                placeholder="https://..."
-                value={audioUrl}
-                onChange={(e) => setAudioUrl(e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Notes</Label>
+              <Label>Notatki</Label>
               <Textarea
-                placeholder="Additional instructions or notes..."
+                placeholder="Dodatkowe instrukcje..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
@@ -838,12 +712,15 @@ const ExerciseManagement: React.FC<ExerciseManagementProps> = ({
             <div className="flex justify-end gap-2 pt-4">
               <Button
                 variant="outline"
-                onClick={() => setIsAddModalOpen(false)}
+                onClick={() => {
+                  setIsEditModalOpen(false);
+                  resetEditForm();
+                }}
               >
-                Cancel
+                Anuluj
               </Button>
-              <Button onClick={handleSave}>
-                {editingExercise ? "Update" : "Add"} Exercise
+              <Button onClick={handleSaveEdit}>
+                Zapisz zmiany
               </Button>
             </div>
           </div>
